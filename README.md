@@ -133,8 +133,8 @@ async function create(client: SuiClient) {
     Price.fromHuman(configInfo.X, configInfo.Y, '1.0002')
   )
 
-  const UX = Amount.fromNum(0.01, config.info.X.decimals) // 100 suiUSDT
-  const UY = Amount.fromNum(0.01, config.info.Y.decimals) // 100 USDC
+  const UX = Amount.fromNum(100, config.info.X.decimals) // 100 suiUSDT
+  const UY = Amount.fromNum(100, config.info.Y.decimals) // 100 USDC
 
   // we find the max liquidity (max leverage) and then adjust it for slippage
   const maxL = config.findMaxPositionLiquidity({
@@ -252,7 +252,7 @@ export async function positionInfo(client: SuiClient) {
 }
 ```
 
-### Withdraw (reduce)
+### Withdraw (reduce) and Close (delete)
 
 Withdraws liquidity from the position.
 
@@ -278,7 +278,7 @@ export async function withdraw(client: SuiClient) {
   // The reduction (withdrawal) process consists of withdrawing the LP ammounts, any extra collateral, and
   // repaying the debt based on the reduction factor. All this needs to happen in the same transaction.
   //
-  // When the position is fully reduced, it becomes inactive and it's recommended to delete it
+  // When the position is fully reduced, it becomes inactive and it's recommended to delete (close) it
   // to claim the storage rebate. In order to delete it, the position must be fully reduced (factor = 1),
   // and all pending collected fees and rewards must be collected. This can be done manually but it's
   // somewhat intricate so `reduceAndMaybeDelete()` does this for you. See the implementation for more details.
