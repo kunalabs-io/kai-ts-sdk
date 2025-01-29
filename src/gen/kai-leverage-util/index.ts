@@ -1,0 +1,5 @@
+export const PACKAGE_ID = '0x1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4'
+export const PUBLISHED_AT = '0xd7879233416e2302feff2d4e8128f55140648b5236ad25d3eefa40d55a5dadd7'
+export const PKG_V1 = '0x1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4'
+export const PKG_V5 = '0xceb1846391e7985be91e33c258290908cb44db8a73b6bb7a6e61d09ff39799e9'
+export const PKG_V3 = '0xd7f2af9b0c736ce49b1a5aad829e620cc6b743da419a5d09ff5f1a86cedfb5bd'

@@ -1,0 +1,24 @@
+[config]
+rpc = "https://rpc.kunalabs.io:443"
+
+[packages]
+Kai = { local = "../../../../../move/kai" }
+KaiYwhUSDTeYSUI = { local = "../../../../../move/kai-ywhusdte-ysui" }
+KaiYUSDC = { local = "../../../../../move/kai-yusdc" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.35.2", override = true }
+MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "mainnet-v1.35.2", override = true }
+Cetus = { id = "0x6f5e582ede61fe5395b50c4a449ec11479a54d7ff8e0158247adfda60d98970b" }
+CetusClmm = { git = "https://github.com/CetusProtocol/cetus-clmm-interface.git", subdir = "sui/clmmpool", rev = "mainnet-v1.23.1" }
+IntegerMate = { git = "https://github.com/CetusProtocol/integer-mate.git", subdir = "sui", rev = "mainnet-v1.23.1" }
+KaiLeverage = { local = "../../../../../move/kai-leverage/core" }
+KaiLeverageUtil = { local = "../../../../../move/kai-leverage/util" }
+Pyth = { local = "../../../../../move/kai-leverage/core/vendor/pyth" }
+Wormhole = { id = "0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a" }
+whUSDCe = { id = "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf" }
+whUSDTe = { id = "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c" }
+BluefinSpot = { git = "https://github.com/fireflyprotocol/bluefin-spot-contract-interface.git", subdir = "", rev = "5e70db0" }
+KaiLeverageSupplyPoolInitWhusdce = { local = "../../../../../move/kai-leverage/supply-pool-init/whusdce" }
+KaiLeverageSupplyPoolInitWhusdte = { local = "../../../../../move/kai-leverage/supply-pool-init/whusdte" }
+KaiLeverageSupplyPoolInitSui = { local = "../../../../../move/kai-leverage/supply-pool-init/sui" }
+KaiLeverageSupplyPoolInitUsdc = { local = "../../../../../move/kai-leverage/supply-pool-init/usdc" }
+KaiLeverageSupplyPoolInitSuiUsdt = { local = "../../../../../move/kai-leverage/supply-pool-init/suiusdt" }

@@ -1,0 +1,3 @@
+export const PACKAGE_ID = '0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb'
+export const PUBLISHED_AT = '0x70968826ad1b4ba895753f634b0aea68d0672908ca1075a2abdf0fc9e0b2fc6a'
+export const PKG_V1 = '0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb'
