@@ -27,11 +27,13 @@ import {
   SUI,
   suiUSDT,
   USDC,
+  USDY,
   whUSDCe,
   whUSDTe,
   ySUI,
   ysuiUSDT,
   yUSDC,
+  yUSDY,
   yWHUSDCe,
   yWHUSDTe,
 } from '../coin-info'
@@ -407,6 +409,7 @@ export type VaultInfoMap = {
     ToPhantomTypeArgument<typeof whUSDTe.p>,
     ToPhantomTypeArgument<typeof yWHUSDTe.p>
   >
+  USDY: VaultInfo<ToPhantomTypeArgument<typeof USDY.p>, ToPhantomTypeArgument<typeof yUSDY.p>>
 }
 
 export const VAULTS: VaultInfoMap = {
@@ -444,6 +447,13 @@ export const VAULTS: VaultInfoMap = {
     id: '0x0fce8baed43faadf6831cd27e5b3a32a11d2a05b3cd1ed36c7c09c5f7bcb4ef4',
     capId: '0x78b79c0b8653a62df6fb494bd6df01a2145f0bdc592115ec086d52497d10f0d6',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.wUSDT],
+  }),
+  USDY: new VaultInfo({
+    T: USDY,
+    YT: yUSDY,
+    id: '0x02ec915b35fb958ca9a7d94e57d7254513ff711832ba8aebfc0ac3395152260b',
+    capId: '0xb6276d1c26ae8f1a8dfa065c2a409796b948586b5f8c88f5249aaab3f462ca2a',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDY],
   }),
 }
 

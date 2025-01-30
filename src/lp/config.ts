@@ -20,7 +20,18 @@ import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin-spo
 import * as cetus from '../gen/kai-leverage/cetus/functions'
 import * as bluefin from '../gen/kai-leverage/bluefin-spot/functions'
 import { ClmmPool } from './clmm-pool'
-import { BLUE, CETUS, CoinInfo, stSUI, SUI, suiUSDT, USDC, whUSDCe, whUSDTe } from '../coin-info'
+import {
+  BLUE,
+  CETUS,
+  CoinInfo,
+  stSUI,
+  SUI,
+  suiUSDT,
+  USDC,
+  USDY,
+  whUSDCe,
+  whUSDTe,
+} from '../coin-info'
 import { PositionMath } from './position-math'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
@@ -31,6 +42,7 @@ import {
   suiPioInfo,
   suiUsdtPioInfo,
   USDCPioInfo,
+  USDYPioInfo,
   whUSDCePioInfo,
   whUSDTePioInfo,
 } from '../pyth'
@@ -864,6 +876,30 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     rewardCoins: [SUI, BLUE, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Cetus USDC/USDY',
+    configId: '0x570b46aa3b355305d36e1921c6a5070c76b51e56859b0bde0b6bc0598a89381d',
+    poolObjectId: '0xdcd762ad374686fa890fc4f3b9bbfe2a244e713d7bffbfbd1b9221cb290da2ed',
+    lendFacilCap: '0xf4ea7f418929fba73b46f8a842a988470a93588c60e17f07a7a01cca05104ef3',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDY as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: USDCPioInfo,
+    pioInfoY: USDYPioInfo,
+    positionReified: Position_.r(USDC.p, USDY.p, CetusPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: CetusPool.r(USDC.p, USDY.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: true,
+    rewardCoins: [SUI],
   }),
 ]
 

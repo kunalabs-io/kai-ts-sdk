@@ -14,6 +14,7 @@ import * as package_source_5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59
 import * as package_source_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162 from '../_dependencies/source/0x779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162/init'
 import * as package_source_826f6e045f5b19fb883f5997fa344cbff2c78f0f9fc70115a09cffb8f338e456 from '../_dependencies/source/0x826f6e045f5b19fb883f5997fa344cbff2c78f0f9fc70115a09cffb8f338e456/init'
 import * as package_source_91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1 from '../_dependencies/source/0x91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1/init'
+import * as package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb from '../_dependencies/source/0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb/init'
 import * as package_source_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f from '../_dependencies/source/0xad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f/init'
 import * as package_source_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa from '../_dependencies/source/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/init'
 import * as package_source_c060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c from '../_dependencies/source/0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c/init'
@@ -31,6 +32,7 @@ import * as package_source_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951
 import * as package_source_fd3e54e465577273b7eb211212a01ca17418c667aec490eaf7fa5592bfd799f8 from '../kai-leverage-supply-pool-init-sui-usdt/init'
 import * as package_source_19163b40d52e67e20992f1b74c7376d30616ba966c8174e0990c58074d56eb8d from '../kai-leverage-supply-pool-init-sui/init'
 import * as package_source_a47906ee2160b8d1d89591a2bb37ed71053bfb3ed1b39581f03358950a91ca79 from '../kai-leverage-supply-pool-init-usdc/init'
+import * as package_source_cc89168df227621ceab8f2309f134fef00606cc056b61c598a776847367b8e36 from '../kai-leverage-supply-pool-init-usdy/init'
 import * as package_source_27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14 from '../kai-leverage-supply-pool-init-whusdce/init'
 import * as package_source_358b47a13abe067fe4054e414f4ee1d1524236cc60ffc716ec10931c5dbec795 from '../kai-leverage-supply-pool-init-whusdte/init'
 import * as package_source_1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4 from '../kai-leverage-util/init'
@@ -112,6 +114,9 @@ function registerClassesSource(loader: StructClassLoader) {
   package_source_91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1.registerClasses(
     loader
   )
+  package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb.registerClasses(
+    loader
+  )
   package_source_a4184b1a5829e7cced8e51e8e385b16d02642634cd3e72a50d31cdf4a78bfd5c.registerClasses(
     loader
   )
@@ -131,6 +136,9 @@ function registerClassesSource(loader: StructClassLoader) {
     loader
   )
   package_source_ca5a5a62f01c79a104bf4d31669e29daa387f325c241de4edbe30986a9bc8b0d.registerClasses(
+    loader
+  )
+  package_source_cc89168df227621ceab8f2309f134fef00606cc056b61c598a776847367b8e36.registerClasses(
     loader
   )
   package_source_dba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7.registerClasses(

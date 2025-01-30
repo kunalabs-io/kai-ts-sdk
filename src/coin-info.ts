@@ -13,6 +13,7 @@ import { YSUI } from './gen/kai-ywh-usd-te-ysui/ysui/structs'
 import { YUSDC } from './gen/kai-yusdc/yusdc/structs'
 import { compressSuiType } from './gen/_framework/util'
 import { KLSUIUSDT } from './gen/kai-leverage-supply-pool-init-sui-usdt/klsuiusdt/structs'
+import { KLUSDY } from './gen/kai-leverage-supply-pool-init-usdy/klusdy/structs'
 
 export interface CoinInfoConstructorArgs<T extends PhantomTypeArgument> {
   reified: PhantomReified<T>
@@ -128,6 +129,15 @@ export const klSuiUSDT = new CoinInfo({
   displaySymbol: 'klSuiUSDT',
 })
 
+export const klUSDY = new CoinInfo({
+  reified: KLUSDY.p,
+  decimals: 6,
+  name: 'Kai Leverage USDY',
+  description: 'Kai Leverage USDY',
+  symbol: 'klUSDY',
+  displaySymbol: 'klUSDY',
+})
+
 export const CETUS = new CoinInfo({
   reified: phantom(
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS'
@@ -227,6 +237,17 @@ export const ysuiUSDT = new CoinInfo({
   displaySymbol: 'ysuiUSDT',
 })
 
+export const yUSDY = new CoinInfo({
+  reified: phantom(
+    '0xdd7108db1a209d23d8a25dda78bdca4547b755094305971ed4064dfe5cdfa026::yusdy::YUSDY'
+  ),
+  decimals: 6,
+  name: 'Kai vault USDY',
+  description: 'Kai vault USDY',
+  symbol: 'yUSDY',
+  displaySymbol: 'yUSDY',
+})
+
 export const stSUI = new CoinInfo({
   reified: phantom(
     '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI'
@@ -237,6 +258,18 @@ export const stSUI = new CoinInfo({
   symbol: 'stSUI',
   displaySymbol: 'stSUI',
   iconUrl: 'https://images.alphafi.xyz/stSUI.png',
+})
+
+export const USDY = new CoinInfo({
+  reified: phantom(
+    '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY'
+  ),
+  decimals: 6,
+  name: 'Ondo US Dollar Yield',
+  description: 'Ondo US Dollar Yield',
+  symbol: 'USDY',
+  displaySymbol: 'USDY',
+  iconUrl: 'https://ondo.finance/images/tokens/usdy.svg',
 })
 
 export const COIN_INFOS = [
@@ -258,6 +291,9 @@ export const COIN_INFOS = [
   BLUE,
   suiUSDT,
   stSUI,
+  USDY,
+  klUSDY,
+  yUSDY,
 ]
 
 export const COIN_INFO_MAP = new Map(COIN_INFOS.map(c => [compressSuiType(c.typeName), c]))

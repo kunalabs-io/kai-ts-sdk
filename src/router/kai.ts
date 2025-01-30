@@ -11,7 +11,18 @@ import { compressSuiType } from '../gen/_framework/util'
 import * as cetusUtil from '../gen/kai-leverage-util/cetus/functions'
 import { swap as swap_ } from '../gen/cetus/router/functions'
 import * as coin from '../gen/sui/coin/functions'
-import { BLUE, CETUS, CoinInfo, SUI, suiUSDT, USDC, whUSDCe, whUSDTe, stSUI } from '../coin-info'
+import {
+  BLUE,
+  CETUS,
+  CoinInfo,
+  SUI,
+  suiUSDT,
+  USDC,
+  whUSDCe,
+  whUSDTe,
+  stSUI,
+  USDY,
+} from '../coin-info'
 import { CETUS_GLOBAL_CONFIG_ID } from '../constants'
 import {
   Router,
@@ -81,6 +92,11 @@ const poolInfos: Array<SwapInfo> = [
     coinA: stSUI,
     coinB: SUI,
     protocol: 'stsui',
+  },
+  {
+    coinA: USDC,
+    coinB: USDY,
+    poolId: '0xdcd762ad374686fa890fc4f3b9bbfe2a244e713d7bffbfbd1b9221cb290da2ed',
   },
 ]
 

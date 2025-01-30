@@ -4,5 +4,5 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true
   },
-  "include": [".eslintrc.js"]
+  "include": [".eslintrc.cjs"]
 }

@@ -31,7 +31,7 @@ export interface KaiLeverageSupplyPoolStrategyConstructorArgs<
 
 /**
  * Represents a strategy for interacting with a supply pool on the Kai Leverage protocol.
- */ 
+ */
 export class KaiLeverageSupplyPoolStrategyInfo<
   T extends PhantomTypeArgument,
   ST extends PhantomTypeArgument,
@@ -117,6 +117,15 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     vault: VAULTS.suiUSDT,
     adminCapId: '0xfc266e9294dc98c0a3392a93c523bbb10e6a96e972d84df2c04b11e94dc02043',
     supplyPoolInfo: SUPPLY_POOL_INFOS.suiUSDT,
+    policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+    ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+  }),
+  USDY: new KaiLeverageSupplyPoolStrategyInfo({
+    name: 'Kai Leverage USDY Supply Pool Strategy',
+    id: '0xd94386e274c96415197ecbaea101109af91a0e29405afa57940fd6d7455f9fa6',
+    vault: VAULTS.USDY,
+    adminCapId: '0x921363a7695577390f79fd86c24209cb49bea5bdc422797f0d6b02ee1bd26508',
+    supplyPoolInfo: SUPPLY_POOL_INFOS.USDY,
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),

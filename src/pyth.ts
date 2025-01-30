@@ -1,7 +1,7 @@
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { PhantomTypeArgument } from './gen/_framework/reified'
 import { PriceInfoObject as PriceInfoObject_ } from './gen/pyth/price-info/structs'
-import { CoinInfo, SUI, suiUSDT, USDC, whUSDCe, whUSDTe } from './coin-info'
+import { CoinInfo, SUI, suiUSDT, USDC, USDY, whUSDCe, whUSDTe } from './coin-info'
 import { Price } from './price'
 import Decimal from 'decimal.js'
 
@@ -64,21 +64,27 @@ export const suiUsdtPioInfo = new PriceFeedInfo({
   T: suiUSDT,
 })
 
+export const USDYPioInfo = new PriceFeedInfo({
+  priceFeedId: '0xe393449f6aff8a4b6d3e1165a7c9ebec103685f3b41e60db4277b5b6d10e7326',
+  priceInfoObjectId: '0x62e15c2fd1437a4d0e111dbd8a193f244878ba25cc7caa9120d0ee41ac151ea5',
+  T: USDY,
+})
+
+export function getPriceFromPio(pioData: PriceInfoObject_) {
+  const price = pioData.priceInfo.priceFeed.price
+
+  const expo = new Decimal(price.expo.magnitude.toString()).mul(price.expo.negative ? -1 : 1)
+  return new Decimal(price.price.magnitude.toString())
+    .mul(new Decimal(10).pow(expo))
+    .mul(price.price.negative ? -1 : 1)
+}
+
 export function pythPrice<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
   x: PriceInfoObject<X>,
   y: PriceInfoObject<Y>
 ) {
-  const getPrice = (pio: PriceInfoObject<PhantomTypeArgument>) => {
-    const price = pio.data.priceInfo.priceFeed.price
-
-    const expo = new Decimal(price.expo.magnitude.toString()).mul(price.expo.negative ? -1 : 1)
-    return new Decimal(price.price.magnitude.toString())
-      .mul(new Decimal(10).pow(expo))
-      .mul(price.price.negative ? -1 : 1)
-  }
-
-  const priceX = getPrice(x) // USD / X
-  const priceY = getPrice(y) // USD / Y
+  const priceX = getPriceFromPio(x.data) // USD / X
+  const priceY = getPriceFromPio(y.data) // USD / Y
 
   return Price.fromHuman(x.T, y.T, priceX.div(priceY))
 }

@@ -22,11 +22,13 @@ import {
   klSui,
   klSuiUSDT,
   klUsdc,
+  klUSDY,
   klwhUSDCe,
   klwhUSDTe,
   SUI,
   suiUSDT,
   USDC,
+  USDY,
   whUSDCe,
   whUSDTe,
 } from '../coin-info'
@@ -368,5 +370,10 @@ export const SUPPLY_POOL_INFOS = {
     id: '0xd03330033b6eda49e06d024240511736ffbad31278112cdd5c43c97be6d5535b',
     T: suiUSDT,
     ST: klSuiUSDT,
+  }),
+  USDY: new SupplyPoolInfo({
+    id: '0x23e210027526cf299898f6a470b435cb2afb5c2cb63990e0cad5568ad38beb79',
+    T: USDY,
+    ST: klUSDY,
   }),
 }
