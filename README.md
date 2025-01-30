@@ -133,6 +133,7 @@ async function create(client: SuiClient) {
     Price.fromHuman(configInfo.X, configInfo.Y, '1.0002')
   )
 
+  // principal deposit amounts
   const UX = Amount.fromNum(100, config.info.X.decimals) // 100 suiUSDT
   const UY = Amount.fromNum(100, config.info.Y.decimals) // 100 USDC
 
