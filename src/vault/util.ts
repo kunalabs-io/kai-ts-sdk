@@ -1,12 +1,19 @@
 import { SuiClient } from '@mysten/sui/client'
-import { findVaultInfoById, VaultInfo } from './vault'
-import { PhantomTypeArgument } from '../gen/_framework/reified'
+import { findVaultInfoById, VaultInfo, VAULTS } from './vault'
+import { phantom, PhantomTypeArgument } from '../gen/_framework/reified'
 import { Amount } from '../amount'
 import { min, muldiv } from '../math'
-import { Vault } from '../gen/kai/vault/structs'
+import { isVault, Vault } from '../gen/kai/vault/structs'
 import { TimeLockedBalance } from '../gen/kai/time-locked-balance/structs'
 import { Price } from '../price'
 import Decimal from 'decimal.js'
+import { parseTypeName } from '../gen/_framework/util'
+
+export interface WalletVaultInfo {
+  vault: VaultInfo<PhantomTypeArgument, PhantomTypeArgument>
+  ytBalance: Amount
+  equity: Amount
+}
 
 export function calcContinuousApy(apr: number, days: number): number {
   const time = days / 365
@@ -116,13 +123,13 @@ export function calcYtConversionRate<T extends PhantomTypeArgument, YT extends P
  * @param client - SuiClient
  * @param wallet - Wallet address
  * @param vaultData - Vault data
- * @returns Vault info
+ * @returns Wallet vault info
  */
 export async function getWalletVaultInfo(
   client: SuiClient,
   wallet: string,
   vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>
-) {
+): Promise<WalletVaultInfo> {
   const vault = findVaultInfoById(vaultData.id)
   if (!vault) {
     throw new Error(`VaultInfo not found for Vault id: ${vaultData.id}`)
@@ -138,7 +145,94 @@ export async function getWalletVaultInfo(
   )
 
   return {
+    vault,
     ytBalance,
     equity,
   }
+}
+
+/**
+ * Get vault data for a batch of vault ids.
+ *
+ * @param client - SuiClient
+ * @param ids - Vault ids
+ * @returns Vault data
+ */
+export async function getVaultDataBatch(client: SuiClient, ids: string[]) {
+  const res = await client.multiGetObjects({
+    ids,
+    options: {
+      showBcs: true,
+    },
+  })
+
+  return res.map((item, index) => {
+    if (!item.data) {
+      throw new Error(`No data in response for ${ids[index]}`)
+    }
+    if (item.data.bcs?.dataType !== 'moveObject') {
+      throw new Error(`Invalid object type for ${item.data.objectId}, expected moveObject`)
+    }
+    if (!isVault(item.data.bcs.type)) {
+      throw new Error(
+        `Invalid object type for ${item.data.objectId}, expected Vault, got ${item.data.bcs.type}`
+      )
+    }
+
+    const { typeArgs } = parseTypeName(item.data.bcs.type)
+    const vaultData = Vault.fromSuiObjectData(
+      [phantom(typeArgs[0]), phantom(typeArgs[1])],
+      item.data
+    )
+
+    return vaultData
+  })
+}
+
+/**
+ * Get info about a wallet's position in all vaults.
+ *
+ * @param client - SuiClient
+ * @param wallet - Wallet address
+ * @returns Wallet vault info
+ */
+export async function getWalletAllVaultInfo(
+  client: SuiClient,
+  wallet: string
+): Promise<WalletVaultInfo[]> {
+  const ret: WalletVaultInfo[] = []
+
+  const [ytBalances, vaultDatas] = await Promise.all([
+    client.getAllBalances({ owner: wallet }),
+    getVaultDataBatch(
+      client,
+      Object.values(VAULTS).map(v => v.id)
+    ),
+  ])
+  const balanceMap = ytBalances.reduce((acc, curr) => {
+    acc.set(curr.coinType, BigInt(curr.totalBalance))
+    return acc
+  }, new Map<string, bigint>())
+
+  for (const vaultData of vaultDatas) {
+    const vault = findVaultInfoById(vaultData.id)
+    if (!vault) {
+      throw new Error(`VaultInfo not found for Vault id: ${vaultData.id}`)
+    }
+    const ytBalance = balanceMap.get(vault.YT.typeName) || 0n
+
+    const rate = calcYtConversionRate(vault, vaultData)
+    const equity = Amount.fromInt(
+      BigInt(rate.numeric.mul(ytBalance.toString()).toFixed(0, Decimal.ROUND_FLOOR)),
+      vault.T.decimals
+    )
+
+    ret.push({
+      vault,
+      ytBalance: Amount.fromInt(ytBalance, vault.YT.decimals),
+      equity,
+    })
+  }
+
+  return ret
 }
