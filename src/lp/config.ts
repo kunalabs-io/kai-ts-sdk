@@ -24,6 +24,7 @@ import {
   BLUE,
   CETUS,
   CoinInfo,
+  DEEP,
   stSUI,
   SUI,
   suiUSDT,
@@ -38,6 +39,7 @@ import { Amount } from '../amount'
 import { Price } from '../price'
 import { min } from '../math'
 import {
+  DEEPPioInfo,
   PriceFeedInfo,
   suiPioInfo,
   suiUsdtPioInfo,
@@ -900,6 +902,30 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: CetusPool.r(USDC.p, USDY.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
     rewardCoins: [SUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Cetus DEEP/SUI',
+    configId: '0x92515fe20eb5c0510f42df2ab67f49ca41633571a038edfc180bd83bb9b01011',
+    poolObjectId: '0xe01243f37f712ef87e556afb9b1d03d0fae13f96d324ec912daffc339dfdcbd2',
+    lendFacilCap: '0x875c6cdf981545fa5fef0cf85ea366dfb3371cee4c07e62492def564e4649fd3',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.DEEP as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: DEEPPioInfo,
+    pioInfoY: suiPioInfo,
+    positionReified: Position_.r(DEEP.p, SUI.p, CetusPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: CetusPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [SUI, DEEP],
   }),
 ]
 

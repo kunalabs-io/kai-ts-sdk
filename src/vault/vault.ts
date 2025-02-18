@@ -24,12 +24,14 @@ import { PhantomTypeArgument, ToPhantomTypeArgument } from '../gen/_framework/re
 import { min } from '../math'
 import {
   CoinInfo,
+  DEEP,
   SUI,
   suiUSDT,
   USDC,
   USDY,
   whUSDCe,
   whUSDTe,
+  yDEEP,
   ySUI,
   ysuiUSDT,
   yUSDC,
@@ -410,6 +412,7 @@ export type VaultInfoMap = {
     ToPhantomTypeArgument<typeof yWHUSDTe.p>
   >
   USDY: VaultInfo<ToPhantomTypeArgument<typeof USDY.p>, ToPhantomTypeArgument<typeof yUSDY.p>>
+  DEEP: VaultInfo<ToPhantomTypeArgument<typeof DEEP.p>, ToPhantomTypeArgument<typeof yDEEP.p>>
 }
 
 export const VAULTS: VaultInfoMap = {
@@ -454,6 +457,13 @@ export const VAULTS: VaultInfoMap = {
     id: '0x02ec915b35fb958ca9a7d94e57d7254513ff711832ba8aebfc0ac3395152260b',
     capId: '0xb6276d1c26ae8f1a8dfa065c2a409796b948586b5f8c88f5249aaab3f462ca2a',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDY],
+  }),
+  DEEP: new VaultInfo({
+    T: DEEP,
+    YT: yDEEP,
+    id: '0x6e58792dccbaa1d1d708d9a847a7c5b3f90c7878d1b76fd79afa48d31063bca6',
+    capId: '0x09e7e4bbf7e8142b8f961152bc0dd919dd30743274090d2866097957901291b0',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.DEEP],
   }),
 }
 

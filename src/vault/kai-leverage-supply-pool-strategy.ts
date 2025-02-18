@@ -129,4 +129,13 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
+  DEEP: new KaiLeverageSupplyPoolStrategyInfo({
+    name: 'Kai Leverage DEEP Supply Pool Strategy',
+    id: '0x7315eec88a5a1c0afd42e329822bb28480d405b4aede213fa9973194799327b7',
+    vault: VAULTS.DEEP,
+    adminCapId: '0xc7d3197ec316ade31b8d97971c648bc4ddb83055769d9daced6c48f87e7eb27a',
+    supplyPoolInfo: SUPPLY_POOL_INFOS.DEEP,
+    policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+    ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+  }),
 }

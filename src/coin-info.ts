@@ -138,6 +138,17 @@ export const klUSDY = new CoinInfo({
   displaySymbol: 'klUSDY',
 })
 
+export const klDEEP = new CoinInfo({
+  reified: phantom(
+    '0x8fc45d22b3fc276662811e0bada806a3a5f4cb63cd095c418b98df4e8b389f3f::kldeep::KLDEEP'
+  ),
+  decimals: 6,
+  name: 'Kai Leverage DEEP',
+  description: 'Kai Leverage DEEP',
+  symbol: 'klDEEP',
+  displaySymbol: 'klDEEP',
+})
+
 export const CETUS = new CoinInfo({
   reified: phantom(
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS'
@@ -248,6 +259,17 @@ export const yUSDY = new CoinInfo({
   displaySymbol: 'yUSDY',
 })
 
+export const yDEEP = new CoinInfo({
+  reified: phantom(
+    '0x5b2fa5c76309a417ccd14a65f036b8d1ff4e76a143ed878a47fdecfe0b09860e::ydeep::YDEEP'
+  ),
+  decimals: 6,
+  name: 'Kai vault DEEP',
+  description: 'Kai vault DEEP',
+  symbol: 'yDEEP',
+  displaySymbol: 'yDEEP',
+})
+
 export const stSUI = new CoinInfo({
   reified: phantom(
     '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI'
@@ -272,6 +294,20 @@ export const USDY = new CoinInfo({
   iconUrl: 'https://ondo.finance/images/tokens/usdy.svg',
 })
 
+export const DEEP = new CoinInfo({
+  reified: phantom(
+    '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP'
+  ),
+  decimals: 6,
+  name: 'DeepBook Token',
+  description:
+    'The DEEP token secures the DeepBook protocol, the premier wholesale liquidity venue for on-chain trading.',
+  symbol: 'DEEP',
+  displaySymbol: 'DEEP',
+  iconUrl:
+    'https://coinmeta.polymedia.app/img/coins/0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270-deep-DEEP.svg',
+})
+
 export const COIN_INFOS = [
   SUI,
   whUSDCe,
@@ -294,6 +330,9 @@ export const COIN_INFOS = [
   USDY,
   klUSDY,
   yUSDY,
+  DEEP,
+  klDEEP,
+  yDEEP,
 ]
 
 export const COIN_INFO_MAP = new Map(COIN_INFOS.map(c => [compressSuiType(c.typeName), c]))

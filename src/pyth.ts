@@ -1,7 +1,7 @@
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { PhantomTypeArgument } from './gen/_framework/reified'
 import { PriceInfoObject as PriceInfoObject_ } from './gen/pyth/price-info/structs'
-import { CoinInfo, SUI, suiUSDT, USDC, USDY, whUSDCe, whUSDTe } from './coin-info'
+import { CoinInfo, SUI, suiUSDT, USDC, USDY, whUSDCe, whUSDTe, DEEP } from './coin-info'
 import { Price } from './price'
 import Decimal from 'decimal.js'
 
@@ -68,6 +68,12 @@ export const USDYPioInfo = new PriceFeedInfo({
   priceFeedId: '0xe393449f6aff8a4b6d3e1165a7c9ebec103685f3b41e60db4277b5b6d10e7326',
   priceInfoObjectId: '0x62e15c2fd1437a4d0e111dbd8a193f244878ba25cc7caa9120d0ee41ac151ea5',
   T: USDY,
+})
+
+export const DEEPPioInfo = new PriceFeedInfo({
+  priceFeedId: '0x29bdd5248234e33bd93d3b81100b5fa32eaa5997843847e2c2cb16d7c6d9f7ff',
+  priceInfoObjectId: '0x8c7f3a322b94cc69db2a2ac575cbd94bf5766113324c3a3eceac91e3e88a51ed',
+  T: DEEP,
 })
 
 export function getPriceFromPio(pioData: PriceInfoObject_) {

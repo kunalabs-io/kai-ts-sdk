@@ -2,11 +2,7 @@ import { Price } from '../price'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import * as balance from '../gen/sui/balance/functions'
-import {
-  normalizeStructTag,
-  SUI_CLOCK_OBJECT_ID,
-  SUI_SYSTEM_STATE_OBJECT_ID,
-} from '@mysten/sui/utils'
+import { SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui/utils'
 import { compressSuiType } from '../gen/_framework/util'
 import * as cetusUtil from '../gen/kai-leverage-util/cetus/functions'
 import { swap as swap_ } from '../gen/cetus/router/functions'
@@ -22,6 +18,7 @@ import {
   whUSDTe,
   stSUI,
   USDY,
+  DEEP,
 } from '../coin-info'
 import { CETUS_GLOBAL_CONFIG_ID } from '../constants'
 import {
@@ -97,6 +94,11 @@ const poolInfos: Array<SwapInfo> = [
     coinA: USDC,
     coinB: USDY,
     poolId: '0xdcd762ad374686fa890fc4f3b9bbfe2a244e713d7bffbfbd1b9221cb290da2ed',
+  },
+  {
+    coinA: DEEP,
+    coinB: SUI,
+    poolId: '0xe01243f37f712ef87e556afb9b1d03d0fae13f96d324ec912daffc339dfdcbd2',
   },
 ]
 

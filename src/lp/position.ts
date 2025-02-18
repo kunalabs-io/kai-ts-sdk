@@ -16,7 +16,7 @@ import { Price } from '../price'
 import { Amount } from '../amount'
 import { PositionMath } from './position-math'
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
-import { CoinInfo, SUI } from '../coin-info'
+import { CoinInfo } from '../coin-info'
 import Decimal from 'decimal.js'
 import { bluefinDecodeTick, cetusDecodeTick, ClmmPool } from './clmm-pool'
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
@@ -1311,7 +1311,7 @@ export class Position<
 
     const compoundThresholdCoins = await getMinSwapAmountBatch([this.X, this.Y])
 
-    const swapWithAmountIn = false
+    const swapWithAmountIn = true
     if (swapWithAmountIn) {
       const swapXAmt = await (async () => {
         const di = amountsDevInspect
@@ -1328,7 +1328,7 @@ export class Position<
           amountIn: amountsDevInspect.gotX.int,
         })
 
-        const slippageBuffer = new Decimal(1.005) // 0.5%
+        const slippageBuffer = new Decimal(1.001) // 0.1%
         return BigInt(
           new Decimal(needY.toString())
             .div(routerPrice.numeric)
@@ -1351,7 +1351,7 @@ export class Position<
 
         const needX = di.gotDx.int - di.gotX.int
 
-        const slippageBuffer = new Decimal(1.005) // 0.5%
+        const slippageBuffer = new Decimal(1.001) // 0.1%
         return BigInt(
           new Decimal(needX.toString())
             .mul(routerPrice.numeric)
@@ -2113,14 +2113,15 @@ export class Position<
       }),
     ]
 
+    const rewardsRouter = new KaiRouterAdapter()
     for (const reward of rewards) {
-      if (
-        args.convertRewardsTo &&
-        reward.amount.int > compoundThresholdCoins?.get(reward.coinInfo.typeName)!
-      ) {
+      const threshold =
+        compoundThresholdCoins?.get(reward.coinInfo.typeName) ?? BigInt(Number.MAX_SAFE_INTEGER)
+
+      if (args.convertRewardsTo && reward.amount.int > threshold) {
         const amountIn = reward.amount.int
 
-        const swapResult = await router.swapBalance({
+        const swapResult = await rewardsRouter.swapBalance({
           tx,
           inInfo: reward.coinInfo,
           outInfo: args.convertRewardsTo,

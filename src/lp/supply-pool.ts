@@ -19,6 +19,8 @@ import { normalizeSuiAddress, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import {
   CoinInfo,
+  DEEP,
+  klDEEP,
   klSui,
   klSuiUSDT,
   klUsdc,
@@ -375,5 +377,10 @@ export const SUPPLY_POOL_INFOS = {
     id: '0x23e210027526cf299898f6a470b435cb2afb5c2cb63990e0cad5568ad38beb79',
     T: USDY,
     ST: klUSDY,
+  }),
+  DEEP: new SupplyPoolInfo({
+    id: '0x2d001b7f8c8a08f99a4a13fcbaff7feaeac8447741791a2bcd664611cf819ee2',
+    T: DEEP,
+    ST: klDEEP,
   }),
 }
