@@ -94,6 +94,32 @@ export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeA
 }
 
 /**
+ * Get stats for all vaults.
+ *
+ * @param client - SuiClient
+ * @returns All vault stats
+ */
+export async function getAllVaultStats(client: SuiClient) {
+  const vaultInfos = Object.values(VAULTS)
+  const vaultDatas = await getVaultDataBatch(
+    client,
+    vaultInfos.map(v => v.id)
+  )
+
+  const ret = []
+  for (let i = 0; i < vaultDatas.length; i++) {
+    const vaultData = vaultDatas[i]
+    const vaultInfo = vaultInfos[i]
+    const stats = getVaultStats(vaultData)
+    ret.push({
+      vaultInfo,
+      ...stats,
+    })
+  }
+  return ret
+}
+
+/**
  * Calculate the conversion rate of a vault's yield-bearing tokens (YT) to the vault's underlying asset (T).
  * Multiplying the conversion rate by the amount of YT will give the amount of T.
  *

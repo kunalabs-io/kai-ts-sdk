@@ -100,6 +100,9 @@ async function stats(client: SuiClient) {
     apr: stats.apr,
     apy: stats.apy,
   })
+
+  // or this helper function that gets all vault stats
+  const allStats = await getAllVaultStats(client)
 }
 ```
 
