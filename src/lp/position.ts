@@ -16,7 +16,7 @@ import { Price } from '../price'
 import { Amount } from '../amount'
 import { PositionMath } from './position-math'
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
-import { CoinInfo } from '../coin-info'
+import { COIN_INFO_MAP, CoinInfo } from '../coin-info'
 import Decimal from 'decimal.js'
 import { bluefinDecodeTick, cetusDecodeTick, ClmmPool } from './clmm-pool'
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
@@ -314,6 +314,8 @@ export interface DevInspectLpUnclaimedRewardsResult {
   y: Amount
   /** Other accrued rewards */
   rewards: Map<CoinInfo<PhantomTypeArgument>, Amount>
+  /** Stashed rewards */
+  stashed: Map<CoinInfo<PhantomTypeArgument>, Amount>
 }
 
 export interface OwnerCollectFeesArgs {
@@ -347,11 +349,32 @@ export interface WithdrawAllRewardsResult {
   rewards: { coinInfo: CoinInfo<PhantomTypeArgument>; balance: TransactionArgument }[]
 }
 
+export interface OwnerTakeStashedRewardArgs {
+  /** The ID of the position's `PositionCap` object */
+  positionCapId: string
+  /** The coin info of the reward */
+  coinInfo: CoinInfo<PhantomTypeArgument>
+  /** The amount of the reward to take. If not provided, the full amount will be taken. */
+  amount?: bigint
+}
+
+export interface WithdrawAllStashedRewardsArgs {
+  /** The ID of the position's `PositionCap` object */
+  positionCapId: string
+}
+
+export type WithdrawAllStashedRewardsResult = {
+  coinInfo: CoinInfo<PhantomTypeArgument>
+  balance: TransactionArgument
+}[]
+
 export interface ConvertRewardsAndTransferArgs {
-  /** The result of `withdrawAllRewards` */
-  withdrawAllRewardsResult: WithdrawAllRewardsResult
   /** The result of `devInspectLpUnclaimedRewards` */
   rewardResults: DevInspectLpUnclaimedRewardsResult
+  /** The result of `withdrawAllRewards` */
+  withdrawAllRewardsResult?: WithdrawAllRewardsResult
+  /** The result of `withdrawAllStashedRewards` */
+  withdrawAllStashedRewardsResult?: WithdrawAllStashedRewardsResult
   /** The reward coin info to convert to */
   convertRewardsTo?: CoinInfo<PhantomTypeArgument>
   /** The allowed swap slippage, e.g. 0.01 is 1% */
@@ -1813,7 +1836,7 @@ export class Position<
   }
 
   /**
-   * Fetches the pending / unclaimed rewards available for the position by doing a dev inspect call
+   * Fetches the pending / unclaimed and stashed rewards available for the position by doing a dev inspect call
    *
    * @param client - The `SuiClient` instance.
    * @returns The intermediate result of rebalancing the position.
@@ -1918,6 +1941,7 @@ export class Position<
       x: Amount.fromInt(x, this.X.decimals),
       y: Amount.fromInt(y, this.Y.decimals),
       rewards: new Map(),
+      stashed: new Map(),
     }
 
     let i = 2
@@ -1925,6 +1949,19 @@ export class Position<
       const amt = BigInt(bcs.u64().parse(Uint8Array.from(valueResults[i].returnValues![0][0])))
       ret.rewards.set(rewardCoin, Amount.fromInt(amt, rewardCoin.decimals))
       i++
+    }
+
+    const positionData = this.reified.fromBcs(
+      Uint8Array.from(di.results![0].mutableReferenceOutputs![0][1])
+    )
+    for (const entry of positionData.ownerRewardStash.amounts.contents) {
+      const coinType = compressSuiType(entry.key.name)
+      const amount = entry.value
+      const coinInfo = COIN_INFO_MAP.get(coinType)
+      if (!coinInfo) {
+        throw new Error(`Coin info not found for stashed reward ${coinType}`)
+      }
+      ret.stashed.set(coinInfo, Amount.fromInt(amount, coinInfo.decimals))
     }
 
     return ret
@@ -2009,6 +2046,25 @@ export class Position<
   }
 
   /**
+   * Manually take a stashed reward from the position.
+   *
+   * @param tx - The transaction object.
+   * @param args - The arguments for the reward collection.
+   * @returns the `Balance` of the collected reward coin type T.
+   */
+  ownerTakeStashedReward(tx: Transaction, args: OwnerTakeStashedRewardArgs) {
+    return core.ownerTakeStashedRewards(
+      tx,
+      [this.X.typeName, this.Y.typeName, args.coinInfo.typeName, this.reified.typeArgs[2]],
+      {
+        position: this.id,
+        cap: args.positionCapId,
+        amount: args.amount ?? null,
+      }
+    )
+  }
+
+  /**
    * Delete the position object. The position can only be deleted if it has been reduced to 0 and
    * all pending rewards and fees have been collected (see `reduceAndMaybeDelete`).
    *
@@ -2070,7 +2126,33 @@ export class Position<
   }
 
   /**
-   * Convert the rewards collected using `withdrawAllRewards` to the desired coin and transfer them to the TX sender.
+   * Manually collect all stashed rewards from the position.
+   *
+   * @param tx - The transaction object.
+   * @param args - The arguments for the reward collection.
+   * @returns the `Balances` of all collected rewards.
+   */
+  withdrawAllStashedRewards(
+    tx: Transaction,
+    args: WithdrawAllStashedRewardsArgs
+  ): WithdrawAllStashedRewardsResult {
+    const result: WithdrawAllStashedRewardsResult = []
+    for (const rewardCoin of this.configInfo.rewardCoins) {
+      const balance = this.ownerTakeStashedReward(tx, {
+        positionCapId: args.positionCapId,
+        coinInfo: rewardCoin,
+      })
+      result.push({
+        coinInfo: rewardCoin,
+        balance,
+      })
+    }
+    return result
+  }
+
+  /**
+   * Convert the rewards collected using `withdrawAllRewards` and `withdrawAllStashedRewards` to the desired coin
+   * and transfer them to the TX sender.
    *
    * @param tx - The transaction object.
    * @param client - The `SuiClient` instance.
@@ -2097,36 +2179,71 @@ export class Position<
       compoundThresholdCoins = await getMinSwapAmountBatch(Array.from(allSwapCoins))
     }
 
-    const rewards = [
-      { coinInfo: this.X, balance: args.withdrawAllRewardsResult.feeX, amount: rewardResults.x },
-      { coinInfo: this.Y, balance: args.withdrawAllRewardsResult.feeY, amount: rewardResults.y },
-      ...args.withdrawAllRewardsResult.rewards.map(r => {
-        const amount = rewardResults.rewards.get(r.coinInfo)
-        if (!amount) {
-          throw new Error(`reward amount not found for ${r.coinInfo.typeName}`)
-        }
-        return {
-          coinInfo: r.coinInfo,
-          balance: r.balance,
-          amount,
-        }
-      }),
-    ]
+    const allRewards = new Map<
+      string,
+      { coinInfo: CoinInfo<PhantomTypeArgument>; balance: TransactionArgument; amount: bigint }
+    >()
+    const mergeReward = (
+      coinInfo: CoinInfo<PhantomTypeArgument>,
+      rewardBalance: TransactionArgument,
+      type: 'x' | 'y' | 'rewards' | 'stashed'
+    ) => {
+      let amount: bigint
+      switch (type) {
+        case 'x':
+          amount = rewardResults.x.int
+          break
+        case 'y':
+          amount = rewardResults.y.int
+          break
+        case 'rewards':
+          amount = rewardResults.rewards.get(coinInfo)?.int ?? 0n
+          break
+        case 'stashed':
+          amount = rewardResults.stashed.get(coinInfo)?.int ?? 0n
+          break
+      }
+
+      if (allRewards.has(coinInfo.typeName)) {
+        const entry = allRewards.get(coinInfo.typeName)!
+        balance.join(tx, coinInfo.typeName, {
+          self: entry.balance,
+          balance: rewardBalance,
+        })
+        entry.amount += amount
+        allRewards.set(coinInfo.typeName, entry)
+      } else {
+        allRewards.set(coinInfo.typeName, { coinInfo, balance: rewardBalance, amount })
+      }
+    }
+
+    if (args.withdrawAllRewardsResult) {
+      mergeReward(this.X, args.withdrawAllRewardsResult.feeX, 'x')
+      mergeReward(this.Y, args.withdrawAllRewardsResult.feeY, 'y')
+      for (const r of args.withdrawAllRewardsResult.rewards) {
+        mergeReward(r.coinInfo, r.balance, 'rewards')
+      }
+    }
+    if (args.withdrawAllStashedRewardsResult) {
+      for (const r of args.withdrawAllStashedRewardsResult) {
+        mergeReward(r.coinInfo, r.balance, 'stashed')
+      }
+    }
 
     const rewardsRouter = new KaiRouterAdapter()
-    for (const reward of rewards) {
+    for (const entry of allRewards.values()) {
       const threshold =
-        compoundThresholdCoins?.get(reward.coinInfo.typeName) ?? BigInt(Number.MAX_SAFE_INTEGER)
+        compoundThresholdCoins?.get(entry.coinInfo.typeName) ?? BigInt(Number.MAX_SAFE_INTEGER)
 
-      if (args.convertRewardsTo && reward.amount.int > threshold) {
-        const amountIn = reward.amount.int
+      if (args.convertRewardsTo && entry.amount > threshold) {
+        const amountIn = entry.amount
 
         const swapResult = await rewardsRouter.swapBalance({
           tx,
-          inInfo: reward.coinInfo,
+          inInfo: entry.coinInfo,
           outInfo: args.convertRewardsTo,
           amountIn,
-          balanceIn: reward.balance,
+          balanceIn: entry.balance,
           sender,
           slippage: args.slippage,
         })
@@ -2136,7 +2253,7 @@ export class Position<
         const coinOut = coin.fromBalance(tx, args.convertRewardsTo.typeName, balanceOut)
         tx.transferObjects([coinOut], sender)
       } else {
-        const coinOut = coin.fromBalance(tx, reward.coinInfo.typeName, reward.balance)
+        const coinOut = coin.fromBalance(tx, entry.coinInfo.typeName, entry.balance)
         tx.transferObjects([coinOut], sender)
       }
     }
@@ -2145,7 +2262,7 @@ export class Position<
   }
 
   /**
-   * A convenience function that combines `withdrawAllRewards` and `convertRewardsAndTransfer`.
+   * A convenience function that combines `withdrawAllRewards`, `withdrawAllStashedRewards` and `convertRewardsAndTransfer`.
    *
    * @param client - The `SuiClient` instance.
    * @param router - The `Router` instance.
@@ -2163,14 +2280,18 @@ export class Position<
     const withdrawAllRewardsResult = this.withdrawAllRewards(tx, {
       positionCapId: args.positionCapId,
     })
+    const withdrawAllStashedRewardsResult = this.withdrawAllStashedRewards(tx, {
+      positionCapId: args.positionCapId,
+    })
     const rewardResults = await this.devInspectLpUnclaimedRewards(client)
     tx = await this.convertRewardsAndTransfer(
       tx,
       client,
       router,
       {
+        rewardResults,
         withdrawAllRewardsResult,
-        rewardResults: rewardResults,
+        withdrawAllStashedRewardsResult,
         convertRewardsTo: args.convertRewardsTo,
         slippage: args.slippage,
       },
