@@ -2137,13 +2137,18 @@ export class Position<
     args: WithdrawAllStashedRewardsArgs
   ): WithdrawAllStashedRewardsResult {
     const result: WithdrawAllStashedRewardsResult = []
-    for (const rewardCoin of this.configInfo.rewardCoins) {
+    const coins = new Set<CoinInfo<PhantomTypeArgument>>([
+      ...this.configInfo.rewardCoins,
+      this.X,
+      this.Y,
+    ])
+    for (const coin of coins) {
       const balance = this.ownerTakeStashedReward(tx, {
         positionCapId: args.positionCapId,
-        coinInfo: rewardCoin,
+        coinInfo: coin,
       })
       result.push({
-        coinInfo: rewardCoin,
+        coinInfo: coin,
         balance,
       })
     }
@@ -2323,6 +2328,7 @@ export class Position<
     }
 
     const withdrawAllRewardsResult = this.withdrawAllRewards(tx, args)
+    const withdrawAllStashedRewardsResult = this.withdrawAllStashedRewards(tx, args)
     const rewardResults = await this.devInspectLpUnclaimedRewards(client)
     tx = await this.convertRewardsAndTransfer(
       tx,
@@ -2330,6 +2336,7 @@ export class Position<
       router,
       {
         withdrawAllRewardsResult,
+        withdrawAllStashedRewardsResult,
         rewardResults: rewardResults,
         convertRewardsTo: args.convertRewardsTo,
         slippage: args.slippage,
