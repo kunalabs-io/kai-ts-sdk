@@ -1,7 +1,7 @@
 import { Transaction, TransactionResult } from '@mysten/sui/transactions'
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { VaultInfo } from './vault'
-import * as klStrat from '../gen/kai/kai-leverage-supply-pool/functions'
+import * as klStrat from '../gen/kai-single-asset-vault/kai-leverage-supply-pool/functions'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { TransactionObjectInput } from '@mysten/sui/transactions'
 import { SupplyPoolInfo, SUPPLY_POOL_INFOS } from '../lp/supply-pool'

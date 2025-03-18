@@ -7,7 +7,7 @@ import { KLWHUSDTE } from './gen/kai-leverage-supply-pool-init-whusdte/klwhusdte
 import { SUI as SUI_ } from './gen/sui/sui/structs'
 import { KLSUI } from './gen/kai-leverage-supply-pool-init-sui/klsui/structs'
 import { KLUSDC } from './gen/kai-leverage-supply-pool-init-usdc/klusdc/structs'
-import { YWHUSDCE } from './gen/kai/ywhusdce/structs'
+import { YWHUSDCE } from './gen/kai-single-asset-vault/ywhusdce/structs'
 import { YWHUSDTE } from './gen/kai-ywh-usd-te-ysui/ywhusdte/structs'
 import { YSUI } from './gen/kai-ywh-usd-te-ysui/ysui/structs'
 import { YUSDC } from './gen/kai-yusdc/yusdc/structs'

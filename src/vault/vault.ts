@@ -14,12 +14,12 @@ import {
   totalAvailableBalance,
   withdraw,
   withdrawTAmt,
-} from '../gen/kai/vault/functions'
+} from '../gen/kai-single-asset-vault/vault/functions'
 import { Amount } from '../amount'
 import { normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { SuiClient } from '@mysten/sui/client'
 import { fromBalance, intoBalance } from '../gen/sui/coin/functions'
-import { Vault, VaultReified } from '../gen/kai/vault/structs'
+import { Vault, VaultReified } from '../gen/kai-single-asset-vault/vault/structs'
 import { PhantomTypeArgument, ToPhantomTypeArgument } from '../gen/_framework/reified'
 import { min } from '../math'
 import {
