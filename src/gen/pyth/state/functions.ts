@@ -4,51 +4,6 @@ import { ID } from '../../sui/object/structs'
 import { DataSource } from '../data-source/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface NewArgs {
-  upgradeCap: TransactionObjectInput
-  sources: Array<TransactionObjectInput> | TransactionArgument
-  governanceDataSource: TransactionObjectInput
-  stalePriceThreshold: bigint | TransactionArgument
-  baseUpdateFee: bigint | TransactionArgument
-}
-
-export function new_(tx: Transaction, args: NewArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::new`,
-    arguments: [
-      obj(tx, args.upgradeCap),
-      vector(tx, `${DataSource.$typeName}`, args.sources),
-      obj(tx, args.governanceDataSource),
-      pure(tx, args.stalePriceThreshold, `u64`),
-      pure(tx, args.baseUpdateFee, `u64`),
-    ],
-  })
-}
-
-export interface AuthorizeUpgradeArgs {
-  self: TransactionObjectInput
-  packageDigest: TransactionObjectInput
-}
-
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::authorize_upgrade`,
-    arguments: [obj(tx, args.self), obj(tx, args.packageDigest)],
-  })
-}
-
-export interface CommitUpgradeArgs {
-  self: TransactionObjectInput
-  receipt: TransactionObjectInput
-}
-
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::commit_upgrade`,
-    arguments: [obj(tx, args.self), obj(tx, args.receipt)],
-  })
-}
-
 export interface AssertAuthorizedDigestArgs {
   latestOnly: TransactionObjectInput
   self: TransactionObjectInput
@@ -66,6 +21,18 @@ export function assertLatestOnly(tx: Transaction, self: TransactionObjectInput) 
   return tx.moveCall({
     target: `${PUBLISHED_AT}::state::assert_latest_only`,
     arguments: [obj(tx, self)],
+  })
+}
+
+export interface AuthorizeUpgradeArgs {
+  self: TransactionObjectInput
+  packageDigest: TransactionObjectInput
+}
+
+export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::authorize_upgrade`,
+    arguments: [obj(tx, args.self), obj(tx, args.packageDigest)],
   })
 }
 
@@ -88,6 +55,18 @@ export function borrowMutConsumedVaasUnchecked(tx: Transaction, self: Transactio
   })
 }
 
+export interface CommitUpgradeArgs {
+  self: TransactionObjectInput
+  receipt: TransactionObjectInput
+}
+
+export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::commit_upgrade`,
+    arguments: [obj(tx, args.self), obj(tx, args.receipt)],
+  })
+}
+
 export interface CurrentPackageArgs {
   latestOnly: TransactionObjectInput
   self: TransactionObjectInput
@@ -97,31 +76,6 @@ export function currentPackage(tx: Transaction, args: CurrentPackageArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::state::current_package`,
     arguments: [obj(tx, args.latestOnly), obj(tx, args.self)],
-  })
-}
-
-export function governanceChain(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::governance_chain`,
-    arguments: [obj(tx, self)],
-  })
-}
-
-export function governanceContract(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::governance_contract`,
-    arguments: [obj(tx, self)],
-  })
-}
-
-export function governanceModule(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::state::governance_module`, arguments: [] })
-}
-
-export function migrateVersion(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::state::migrate_version`,
-    arguments: [obj(tx, self)],
   })
 }
 
@@ -165,11 +119,29 @@ export function getStalePriceThresholdSecs(tx: Transaction, s: TransactionObject
   })
 }
 
+export function governanceChain(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::governance_chain`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function governanceContract(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::governance_contract`,
+    arguments: [obj(tx, self)],
+  })
+}
+
 export function governanceDataSource(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::state::governance_data_source`,
     arguments: [obj(tx, self)],
   })
+}
+
+export function governanceModule(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::state::governance_module`, arguments: [] })
 }
 
 export interface IsValidDataSourceArgs {
@@ -203,6 +175,34 @@ export function migrateV011(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::state::migrate__v__0_1_1`,
     arguments: [obj(tx, self)],
+  })
+}
+
+export function migrateVersion(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::migrate_version`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export interface NewArgs {
+  upgradeCap: TransactionObjectInput
+  sources: Array<TransactionObjectInput> | TransactionArgument
+  governanceDataSource: TransactionObjectInput
+  stalePriceThreshold: bigint | TransactionArgument
+  baseUpdateFee: bigint | TransactionArgument
+}
+
+export function new_(tx: Transaction, args: NewArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::state::new`,
+    arguments: [
+      obj(tx, args.upgradeCap),
+      vector(tx, `${DataSource.$typeName}`, args.sources),
+      obj(tx, args.governanceDataSource),
+      pure(tx, args.stalePriceThreshold, `u64`),
+      pure(tx, args.baseUpdateFee, `u64`),
+    ],
   })
 }
 

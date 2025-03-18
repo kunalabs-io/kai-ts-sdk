@@ -2,10 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::acl::new`, arguments: [] })
-}
-
 export interface AddRoleArgs {
   acl: TransactionObjectInput
   member: string | TransactionArgument
@@ -46,6 +42,10 @@ export function hasRole(tx: Transaction, args: HasRoleArgs) {
     target: `${PUBLISHED_AT}::acl::has_role`,
     arguments: [obj(tx, args.acl), pure(tx, args.member, `address`), pure(tx, args.role, `u8`)],
   })
+}
+
+export function new_(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::acl::new`, arguments: [] })
 }
 
 export interface RemoveMemberArgs {

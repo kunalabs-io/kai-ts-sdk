@@ -2,6 +2,47 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface CalculateRouterSwapResultArgs {
+  pool1: TransactionObjectInput
+  pool2: TransactionObjectInput
+  bool1: boolean | TransactionArgument
+  bool2: boolean | TransactionArgument
+  bool3: boolean | TransactionArgument
+  u64: bigint | TransactionArgument
+}
+
+export function calculateRouterSwapResult(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: CalculateRouterSwapResultArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::router::calculate_router_swap_result`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool1),
+      obj(tx, args.pool2),
+      pure(tx, args.bool1, `bool`),
+      pure(tx, args.bool2, `bool`),
+      pure(tx, args.bool3, `bool`),
+      pure(tx, args.u64, `u64`),
+    ],
+  })
+}
+
+export interface CheckCoinThresholdArgs {
+  coin: TransactionObjectInput
+  u64: bigint | TransactionArgument
+}
+
+export function checkCoinThreshold(tx: Transaction, typeArg: string, args: CheckCoinThresholdArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::router::check_coin_threshold`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.coin), pure(tx, args.u64, `u64`)],
+  })
+}
+
 export interface SwapArgs {
   globalConfig: TransactionObjectInput
   pool: TransactionObjectInput
@@ -167,46 +208,5 @@ export function swapBaCb(tx: Transaction, typeArgs: [string, string, string], ar
       pure(tx, args.u1282, `u128`),
       obj(tx, args.clock),
     ],
-  })
-}
-
-export interface CalculateRouterSwapResultArgs {
-  pool1: TransactionObjectInput
-  pool2: TransactionObjectInput
-  bool1: boolean | TransactionArgument
-  bool2: boolean | TransactionArgument
-  bool3: boolean | TransactionArgument
-  u64: bigint | TransactionArgument
-}
-
-export function calculateRouterSwapResult(
-  tx: Transaction,
-  typeArgs: [string, string, string, string],
-  args: CalculateRouterSwapResultArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::calculate_router_swap_result`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.pool1),
-      obj(tx, args.pool2),
-      pure(tx, args.bool1, `bool`),
-      pure(tx, args.bool2, `bool`),
-      pure(tx, args.bool3, `bool`),
-      pure(tx, args.u64, `u64`),
-    ],
-  })
-}
-
-export interface CheckCoinThresholdArgs {
-  coin: TransactionObjectInput
-  u64: bigint | TransactionArgument
-}
-
-export function checkCoinThreshold(tx: Transaction, typeArg: string, args: CheckCoinThresholdArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::check_coin_threshold`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.coin), pure(tx, args.u64, `u64`)],
   })
 }

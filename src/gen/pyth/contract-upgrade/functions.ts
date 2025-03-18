@@ -36,16 +36,6 @@ export function deserialize(
   })
 }
 
-export function takeDigest(
-  tx: Transaction,
-  governancePayload: Array<number | TransactionArgument> | TransactionArgument
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::contract_upgrade::take_digest`,
-    arguments: [pure(tx, governancePayload, `vector<u8>`)],
-  })
-}
-
 export interface HandleUpgradeContractArgs {
   pythState: TransactionObjectInput
   digest: TransactionObjectInput
@@ -55,6 +45,16 @@ export function handleUpgradeContract(tx: Transaction, args: HandleUpgradeContra
   return tx.moveCall({
     target: `${PUBLISHED_AT}::contract_upgrade::handle_upgrade_contract`,
     arguments: [obj(tx, args.pythState), obj(tx, args.digest)],
+  })
+}
+
+export function takeDigest(
+  tx: Transaction,
+  governancePayload: Array<number | TransactionArgument> | TransactionArgument
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::contract_upgrade::take_digest`,
+    arguments: [pure(tx, governancePayload, `vector<u8>`)],
   })
 }
 

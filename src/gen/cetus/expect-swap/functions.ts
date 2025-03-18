@@ -2,6 +2,18 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface CheckRemainerAmountSubArgs {
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+}
+
+export function checkRemainerAmountSub(tx: Transaction, args: CheckRemainerAmountSubArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::check_remainer_amount_sub`,
+    arguments: [pure(tx, args.u641, `u64`), pure(tx, args.u642, `u64`)],
+  })
+}
+
 export interface ComputeSwapStepArgs {
   u1281: bigint | TransactionArgument
   u1282: bigint | TransactionArgument
@@ -24,98 +36,6 @@ export function computeSwapStep(tx: Transaction, args: ComputeSwapStepArgs) {
       pure(tx, args.bool1, `bool`),
       pure(tx, args.bool2, `bool`),
     ],
-  })
-}
-
-export function stepSwapResultAmountIn(tx: Transaction, swapStepResult: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_in`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultAmountOut(tx: Transaction, swapStepResult: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_out`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultFeeAmount(tx: Transaction, swapStepResult: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_fee_amount`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultCurrentSqrtPrice(
-  tx: Transaction,
-  swapStepResult: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_sqrt_price`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultTargetSqrtPrice(
-  tx: Transaction,
-  swapStepResult: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_target_sqrt_price`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultCurrentLiquidity(
-  tx: Transaction,
-  swapStepResult: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_liquidity`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export function stepSwapResultRemainderAmount(
-  tx: Transaction,
-  swapStepResult: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_remainder_amount`,
-    arguments: [obj(tx, swapStepResult)],
-  })
-}
-
-export interface UpdateSwapResultArgs {
-  swapResult: TransactionObjectInput
-  u2561: bigint | TransactionArgument
-  u2562: bigint | TransactionArgument
-  u2563: bigint | TransactionArgument
-}
-
-export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::update_swap_result`,
-    arguments: [
-      obj(tx, args.swapResult),
-      pure(tx, args.u2561, `u256`),
-      pure(tx, args.u2562, `u256`),
-      pure(tx, args.u2563, `u256`),
-    ],
-  })
-}
-
-export interface CheckRemainerAmountSubArgs {
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-}
-
-export function checkRemainerAmountSub(tx: Transaction, args: CheckRemainerAmountSubArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::check_remainer_amount_sub`,
-    arguments: [pure(tx, args.u641, `u64`), pure(tx, args.u642, `u64`)],
   })
 }
 
@@ -143,6 +63,91 @@ export function expectSwap(tx: Transaction, typeArgs: [string, string], args: Ex
   })
 }
 
+export function expectSwapResultAfterSqrtPrice(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_after_sqrt_price`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export function expectSwapResultAmountIn(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_in`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export function expectSwapResultAmountOut(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_out`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export function expectSwapResultFeeAmount(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_fee_amount`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export function expectSwapResultIsExceed(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_is_exceed`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export function expectSwapResultStepResults(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_results`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
+export interface ExpectSwapResultStepSwapResultArgs {
+  expectSwapResult: TransactionObjectInput
+  u64: bigint | TransactionArgument
+}
+
+export function expectSwapResultStepSwapResult(
+  tx: Transaction,
+  args: ExpectSwapResultStepSwapResultArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_swap_result`,
+    arguments: [obj(tx, args.expectSwapResult), pure(tx, args.u64, `u64`)],
+  })
+}
+
+export function expectSwapResultStepsLength(
+  tx: Transaction,
+  expectSwapResult: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_steps_length`,
+    arguments: [obj(tx, expectSwapResult)],
+  })
+}
+
 export interface GetExpectSwapResultArgs {
   pool: TransactionObjectInput
   bool1: boolean | TransactionArgument
@@ -167,87 +172,82 @@ export function getExpectSwapResult(
   })
 }
 
-export function expectSwapResultAmountOut(
-  tx: Transaction,
-  expectSwapResult: TransactionObjectInput
-) {
+export function stepSwapResultAmountIn(tx: Transaction, swapStepResult: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_out`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_in`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultIsExceed(
-  tx: Transaction,
-  expectSwapResult: TransactionObjectInput
-) {
+export function stepSwapResultAmountOut(tx: Transaction, swapStepResult: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_is_exceed`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_out`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultAmountIn(
+export function stepSwapResultCurrentLiquidity(
   tx: Transaction,
-  expectSwapResult: TransactionObjectInput
+  swapStepResult: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_in`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_liquidity`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultAfterSqrtPrice(
+export function stepSwapResultCurrentSqrtPrice(
   tx: Transaction,
-  expectSwapResult: TransactionObjectInput
+  swapStepResult: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_after_sqrt_price`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_sqrt_price`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultFeeAmount(
-  tx: Transaction,
-  expectSwapResult: TransactionObjectInput
-) {
+export function stepSwapResultFeeAmount(tx: Transaction, swapStepResult: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_fee_amount`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_fee_amount`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultStepResults(
+export function stepSwapResultRemainderAmount(
   tx: Transaction,
-  expectSwapResult: TransactionObjectInput
+  swapStepResult: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_results`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_remainder_amount`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export function expectSwapResultStepsLength(
+export function stepSwapResultTargetSqrtPrice(
   tx: Transaction,
-  expectSwapResult: TransactionObjectInput
+  swapStepResult: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_steps_length`,
-    arguments: [obj(tx, expectSwapResult)],
+    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_target_sqrt_price`,
+    arguments: [obj(tx, swapStepResult)],
   })
 }
 
-export interface ExpectSwapResultStepSwapResultArgs {
-  expectSwapResult: TransactionObjectInput
-  u64: bigint | TransactionArgument
+export interface UpdateSwapResultArgs {
+  swapResult: TransactionObjectInput
+  u2561: bigint | TransactionArgument
+  u2562: bigint | TransactionArgument
+  u2563: bigint | TransactionArgument
 }
 
-export function expectSwapResultStepSwapResult(
-  tx: Transaction,
-  args: ExpectSwapResultStepSwapResultArgs
-) {
+export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_swap_result`,
-    arguments: [obj(tx, args.expectSwapResult), pure(tx, args.u64, `u64`)],
+    target: `${PUBLISHED_AT}::expect_swap::update_swap_result`,
+    arguments: [
+      obj(tx, args.swapResult),
+      pure(tx, args.u2561, `u256`),
+      pure(tx, args.u2562, `u256`),
+      pure(tx, args.u2563, `u256`),
+    ],
   })
 }

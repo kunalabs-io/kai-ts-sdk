@@ -21,6 +21,356 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== CreatePoolEvent =============================== */
+
+export function isCreatePoolEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::factory::CreatePoolEvent`
+}
+
+export interface CreatePoolEventFields {
+  poolId: ToField<ID>
+  coinTypeA: ToField<String>
+  coinTypeB: ToField<String>
+  tickSpacing: ToField<'u32'>
+}
+
+export type CreatePoolEventReified = Reified<CreatePoolEvent, CreatePoolEventFields>
+
+export class CreatePoolEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::factory::CreatePoolEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = CreatePoolEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::factory::CreatePoolEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = CreatePoolEvent.$isPhantom
+
+  readonly poolId: ToField<ID>
+  readonly coinTypeA: ToField<String>
+  readonly coinTypeB: ToField<String>
+  readonly tickSpacing: ToField<'u32'>
+
+  private constructor(typeArgs: [], fields: CreatePoolEventFields) {
+    this.$fullTypeName = composeSuiType(
+      CreatePoolEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::factory::CreatePoolEvent`
+    this.$typeArgs = typeArgs
+
+    this.poolId = fields.poolId
+    this.coinTypeA = fields.coinTypeA
+    this.coinTypeB = fields.coinTypeB
+    this.tickSpacing = fields.tickSpacing
+  }
+
+  static reified(): CreatePoolEventReified {
+    return {
+      typeName: CreatePoolEvent.$typeName,
+      fullTypeName: composeSuiType(
+        CreatePoolEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::factory::CreatePoolEvent`,
+      typeArgs: [] as [],
+      isPhantom: CreatePoolEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => CreatePoolEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => CreatePoolEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => CreatePoolEvent.fromBcs(data),
+      bcs: CreatePoolEvent.bcs,
+      fromJSONField: (field: any) => CreatePoolEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => CreatePoolEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => CreatePoolEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => CreatePoolEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => CreatePoolEvent.fetch(client, id),
+      new: (fields: CreatePoolEventFields) => {
+        return new CreatePoolEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return CreatePoolEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<CreatePoolEvent>> {
+    return phantom(CreatePoolEvent.reified())
+  }
+  static get p() {
+    return CreatePoolEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('CreatePoolEvent', {
+      pool_id: ID.bcs,
+      coin_type_a: String.bcs,
+      coin_type_b: String.bcs,
+      tick_spacing: bcs.u32(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): CreatePoolEvent {
+    return CreatePoolEvent.reified().new({
+      poolId: decodeFromFields(ID.reified(), fields.pool_id),
+      coinTypeA: decodeFromFields(String.reified(), fields.coin_type_a),
+      coinTypeB: decodeFromFields(String.reified(), fields.coin_type_b),
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): CreatePoolEvent {
+    if (!isCreatePoolEvent(item.type)) {
+      throw new Error('not a CreatePoolEvent type')
+    }
+
+    return CreatePoolEvent.reified().new({
+      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
+      coinTypeA: decodeFromFieldsWithTypes(String.reified(), item.fields.coin_type_a),
+      coinTypeB: decodeFromFieldsWithTypes(String.reified(), item.fields.coin_type_b),
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): CreatePoolEvent {
+    return CreatePoolEvent.fromFields(CreatePoolEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      poolId: this.poolId,
+      coinTypeA: this.coinTypeA,
+      coinTypeB: this.coinTypeB,
+      tickSpacing: this.tickSpacing,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): CreatePoolEvent {
+    return CreatePoolEvent.reified().new({
+      poolId: decodeFromJSONField(ID.reified(), field.poolId),
+      coinTypeA: decodeFromJSONField(String.reified(), field.coinTypeA),
+      coinTypeB: decodeFromJSONField(String.reified(), field.coinTypeB),
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): CreatePoolEvent {
+    if (json.$typeName !== CreatePoolEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return CreatePoolEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): CreatePoolEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isCreatePoolEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a CreatePoolEvent object`)
+    }
+    return CreatePoolEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): CreatePoolEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isCreatePoolEvent(data.bcs.type)) {
+        throw new Error(`object at is not a CreatePoolEvent object`)
+      }
+
+      return CreatePoolEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return CreatePoolEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<CreatePoolEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching CreatePoolEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isCreatePoolEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a CreatePoolEvent object`)
+    }
+
+    return CreatePoolEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== InitFactoryEvent =============================== */
+
+export function isInitFactoryEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::factory::InitFactoryEvent`
+}
+
+export interface InitFactoryEventFields {
+  poolsId: ToField<ID>
+}
+
+export type InitFactoryEventReified = Reified<InitFactoryEvent, InitFactoryEventFields>
+
+export class InitFactoryEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::factory::InitFactoryEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = InitFactoryEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::factory::InitFactoryEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = InitFactoryEvent.$isPhantom
+
+  readonly poolsId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: InitFactoryEventFields) {
+    this.$fullTypeName = composeSuiType(
+      InitFactoryEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::factory::InitFactoryEvent`
+    this.$typeArgs = typeArgs
+
+    this.poolsId = fields.poolsId
+  }
+
+  static reified(): InitFactoryEventReified {
+    return {
+      typeName: InitFactoryEvent.$typeName,
+      fullTypeName: composeSuiType(
+        InitFactoryEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::factory::InitFactoryEvent`,
+      typeArgs: [] as [],
+      isPhantom: InitFactoryEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => InitFactoryEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => InitFactoryEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => InitFactoryEvent.fromBcs(data),
+      bcs: InitFactoryEvent.bcs,
+      fromJSONField: (field: any) => InitFactoryEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => InitFactoryEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => InitFactoryEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => InitFactoryEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => InitFactoryEvent.fetch(client, id),
+      new: (fields: InitFactoryEventFields) => {
+        return new InitFactoryEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return InitFactoryEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<InitFactoryEvent>> {
+    return phantom(InitFactoryEvent.reified())
+  }
+  static get p() {
+    return InitFactoryEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('InitFactoryEvent', {
+      pools_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): InitFactoryEvent {
+    return InitFactoryEvent.reified().new({
+      poolsId: decodeFromFields(ID.reified(), fields.pools_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): InitFactoryEvent {
+    if (!isInitFactoryEvent(item.type)) {
+      throw new Error('not a InitFactoryEvent type')
+    }
+
+    return InitFactoryEvent.reified().new({
+      poolsId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pools_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): InitFactoryEvent {
+    return InitFactoryEvent.fromFields(InitFactoryEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      poolsId: this.poolsId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): InitFactoryEvent {
+    return InitFactoryEvent.reified().new({
+      poolsId: decodeFromJSONField(ID.reified(), field.poolsId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): InitFactoryEvent {
+    if (json.$typeName !== InitFactoryEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return InitFactoryEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): InitFactoryEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isInitFactoryEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a InitFactoryEvent object`)
+    }
+    return InitFactoryEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): InitFactoryEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isInitFactoryEvent(data.bcs.type)) {
+        throw new Error(`object at is not a InitFactoryEvent object`)
+      }
+
+      return InitFactoryEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return InitFactoryEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<InitFactoryEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching InitFactoryEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isInitFactoryEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a InitFactoryEvent object`)
+    }
+
+    return InitFactoryEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== PoolSimpleInfo =============================== */
 
 export function isPoolSimpleInfo(type: string): boolean {
@@ -398,355 +748,5 @@ export class Pools implements StructClass {
     }
 
     return Pools.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== InitFactoryEvent =============================== */
-
-export function isInitFactoryEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::factory::InitFactoryEvent`
-}
-
-export interface InitFactoryEventFields {
-  poolsId: ToField<ID>
-}
-
-export type InitFactoryEventReified = Reified<InitFactoryEvent, InitFactoryEventFields>
-
-export class InitFactoryEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::factory::InitFactoryEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = InitFactoryEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::factory::InitFactoryEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = InitFactoryEvent.$isPhantom
-
-  readonly poolsId: ToField<ID>
-
-  private constructor(typeArgs: [], fields: InitFactoryEventFields) {
-    this.$fullTypeName = composeSuiType(
-      InitFactoryEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::factory::InitFactoryEvent`
-    this.$typeArgs = typeArgs
-
-    this.poolsId = fields.poolsId
-  }
-
-  static reified(): InitFactoryEventReified {
-    return {
-      typeName: InitFactoryEvent.$typeName,
-      fullTypeName: composeSuiType(
-        InitFactoryEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::factory::InitFactoryEvent`,
-      typeArgs: [] as [],
-      isPhantom: InitFactoryEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => InitFactoryEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => InitFactoryEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InitFactoryEvent.fromBcs(data),
-      bcs: InitFactoryEvent.bcs,
-      fromJSONField: (field: any) => InitFactoryEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => InitFactoryEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => InitFactoryEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => InitFactoryEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => InitFactoryEvent.fetch(client, id),
-      new: (fields: InitFactoryEventFields) => {
-        return new InitFactoryEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return InitFactoryEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<InitFactoryEvent>> {
-    return phantom(InitFactoryEvent.reified())
-  }
-  static get p() {
-    return InitFactoryEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('InitFactoryEvent', {
-      pools_id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): InitFactoryEvent {
-    return InitFactoryEvent.reified().new({
-      poolsId: decodeFromFields(ID.reified(), fields.pools_id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): InitFactoryEvent {
-    if (!isInitFactoryEvent(item.type)) {
-      throw new Error('not a InitFactoryEvent type')
-    }
-
-    return InitFactoryEvent.reified().new({
-      poolsId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pools_id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): InitFactoryEvent {
-    return InitFactoryEvent.fromFields(InitFactoryEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      poolsId: this.poolsId,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): InitFactoryEvent {
-    return InitFactoryEvent.reified().new({
-      poolsId: decodeFromJSONField(ID.reified(), field.poolsId),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): InitFactoryEvent {
-    if (json.$typeName !== InitFactoryEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return InitFactoryEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): InitFactoryEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isInitFactoryEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a InitFactoryEvent object`)
-    }
-    return InitFactoryEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): InitFactoryEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isInitFactoryEvent(data.bcs.type)) {
-        throw new Error(`object at is not a InitFactoryEvent object`)
-      }
-
-      return InitFactoryEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return InitFactoryEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<InitFactoryEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching InitFactoryEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isInitFactoryEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a InitFactoryEvent object`)
-    }
-
-    return InitFactoryEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== CreatePoolEvent =============================== */
-
-export function isCreatePoolEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::factory::CreatePoolEvent`
-}
-
-export interface CreatePoolEventFields {
-  poolId: ToField<ID>
-  coinTypeA: ToField<String>
-  coinTypeB: ToField<String>
-  tickSpacing: ToField<'u32'>
-}
-
-export type CreatePoolEventReified = Reified<CreatePoolEvent, CreatePoolEventFields>
-
-export class CreatePoolEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::factory::CreatePoolEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = CreatePoolEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::factory::CreatePoolEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = CreatePoolEvent.$isPhantom
-
-  readonly poolId: ToField<ID>
-  readonly coinTypeA: ToField<String>
-  readonly coinTypeB: ToField<String>
-  readonly tickSpacing: ToField<'u32'>
-
-  private constructor(typeArgs: [], fields: CreatePoolEventFields) {
-    this.$fullTypeName = composeSuiType(
-      CreatePoolEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::factory::CreatePoolEvent`
-    this.$typeArgs = typeArgs
-
-    this.poolId = fields.poolId
-    this.coinTypeA = fields.coinTypeA
-    this.coinTypeB = fields.coinTypeB
-    this.tickSpacing = fields.tickSpacing
-  }
-
-  static reified(): CreatePoolEventReified {
-    return {
-      typeName: CreatePoolEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CreatePoolEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::factory::CreatePoolEvent`,
-      typeArgs: [] as [],
-      isPhantom: CreatePoolEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => CreatePoolEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => CreatePoolEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreatePoolEvent.fromBcs(data),
-      bcs: CreatePoolEvent.bcs,
-      fromJSONField: (field: any) => CreatePoolEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => CreatePoolEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => CreatePoolEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => CreatePoolEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CreatePoolEvent.fetch(client, id),
-      new: (fields: CreatePoolEventFields) => {
-        return new CreatePoolEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return CreatePoolEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<CreatePoolEvent>> {
-    return phantom(CreatePoolEvent.reified())
-  }
-  static get p() {
-    return CreatePoolEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('CreatePoolEvent', {
-      pool_id: ID.bcs,
-      coin_type_a: String.bcs,
-      coin_type_b: String.bcs,
-      tick_spacing: bcs.u32(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): CreatePoolEvent {
-    return CreatePoolEvent.reified().new({
-      poolId: decodeFromFields(ID.reified(), fields.pool_id),
-      coinTypeA: decodeFromFields(String.reified(), fields.coin_type_a),
-      coinTypeB: decodeFromFields(String.reified(), fields.coin_type_b),
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): CreatePoolEvent {
-    if (!isCreatePoolEvent(item.type)) {
-      throw new Error('not a CreatePoolEvent type')
-    }
-
-    return CreatePoolEvent.reified().new({
-      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
-      coinTypeA: decodeFromFieldsWithTypes(String.reified(), item.fields.coin_type_a),
-      coinTypeB: decodeFromFieldsWithTypes(String.reified(), item.fields.coin_type_b),
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): CreatePoolEvent {
-    return CreatePoolEvent.fromFields(CreatePoolEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      poolId: this.poolId,
-      coinTypeA: this.coinTypeA,
-      coinTypeB: this.coinTypeB,
-      tickSpacing: this.tickSpacing,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): CreatePoolEvent {
-    return CreatePoolEvent.reified().new({
-      poolId: decodeFromJSONField(ID.reified(), field.poolId),
-      coinTypeA: decodeFromJSONField(String.reified(), field.coinTypeA),
-      coinTypeB: decodeFromJSONField(String.reified(), field.coinTypeB),
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): CreatePoolEvent {
-    if (json.$typeName !== CreatePoolEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return CreatePoolEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): CreatePoolEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isCreatePoolEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a CreatePoolEvent object`)
-    }
-    return CreatePoolEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): CreatePoolEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isCreatePoolEvent(data.bcs.type)) {
-        throw new Error(`object at is not a CreatePoolEvent object`)
-      }
-
-      return CreatePoolEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return CreatePoolEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<CreatePoolEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching CreatePoolEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCreatePoolEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a CreatePoolEvent object`)
-    }
-
-    return CreatePoolEvent.fromSuiObjectData(res.data)
   }
 }

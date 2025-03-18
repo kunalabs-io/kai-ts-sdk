@@ -3,132 +3,6 @@ import { obj, pure } from '../../_framework/util'
 import { Option } from '../../move-stdlib/option/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface CalcLiquidateColXArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  maxRepaymentAmtY: bigint | TransactionArgument
-}
-
-export function calcLiquidateColX(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CalcLiquidateColXArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::calc_liquidate_col_x`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      pure(tx, args.maxRepaymentAmtY, `u64`),
-    ],
-  })
-}
-
-export interface CalcLiquidateColYArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  maxRepaymentAmtX: bigint | TransactionArgument
-}
-
-export function calcLiquidateColY(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CalcLiquidateColYArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::calc_liquidate_col_y`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      pure(tx, args.maxRepaymentAmtX, `u64`),
-    ],
-  })
-}
-
-export interface OwnerTakeStashedRewardsArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  amount: bigint | TransactionArgument | TransactionArgument | null
-}
-
-export function ownerTakeStashedRewards(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: OwnerTakeStashedRewardsArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::owner_take_stashed_rewards`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      pure(tx, args.amount, `${Option.$typeName}<u64>`),
-    ],
-  })
-}
-
-export interface RepayDebtXArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  balance: TransactionObjectInput
-  supplyPool: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function repayDebtX(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RepayDebtXArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::repay_debt_x`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      obj(tx, args.balance),
-      obj(tx, args.supplyPool),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface RepayDebtYArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  balance: TransactionObjectInput
-  supplyPool: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function repayDebtY(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RepayDebtYArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::repay_debt_y`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      obj(tx, args.balance),
-      obj(tx, args.supplyPool),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
 export interface AddLiquidityArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -159,27 +33,37 @@ export function addLiquidity(tx: Transaction, typeArgs: [string, string], args: 
   })
 }
 
-export interface RemoveLiquidityArgs {
+export interface AddLiquidityFixCoinArgs {
+  position: TransactionObjectInput
   config: TransactionObjectInput
-  pool: TransactionObjectInput
-  lpPosition: TransactionObjectInput
-  deltaL: bigint | TransactionArgument
+  cap: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  amount: bigint | TransactionArgument
+  fixAmountX: boolean | TransactionArgument
   clock: TransactionObjectInput
 }
 
-export function removeLiquidity(
+export function addLiquidityFixCoin(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RemoveLiquidityArgs
+  args: AddLiquidityFixCoinArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::remove_liquidity`,
+    target: `${PUBLISHED_AT}::cetus::add_liquidity_fix_coin`,
     typeArguments: typeArgs,
     arguments: [
+      obj(tx, args.position),
       obj(tx, args.config),
-      obj(tx, args.pool),
-      obj(tx, args.lpPosition),
-      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusConfig),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.fixAmountX, `bool`),
       obj(tx, args.clock),
     ],
   })
@@ -253,6 +137,58 @@ export function calcDepositAmountsByLiquidity(
       obj(tx, args.tickA),
       obj(tx, args.tickB),
       pure(tx, args.deltaL, `u128`),
+    ],
+  })
+}
+
+export interface CalcLiquidateColXArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtY: bigint | TransactionArgument
+}
+
+export function calcLiquidateColX(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::calc_liquidate_col_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtY, `u64`),
+    ],
+  })
+}
+
+export interface CalcLiquidateColYArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtX: bigint | TransactionArgument
+}
+
+export function calcLiquidateColY(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::calc_liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtX, `u64`),
     ],
   })
 }
@@ -587,6 +523,28 @@ export function ownerCollectReward(
   })
 }
 
+export interface OwnerTakeStashedRewardsArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  amount: bigint | TransactionArgument | TransactionArgument | null
+}
+
+export function ownerTakeStashedRewards(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: OwnerTakeStashedRewardsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::owner_take_stashed_rewards`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      pure(tx, args.amount, `${Option.$typeName}<u64>`),
+    ],
+  })
+}
+
 export interface PositionModelArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -634,6 +592,42 @@ export function rebalanceAddLiquidity(
       obj(tx, args.cetusPool),
       obj(tx, args.cetusConfig),
       pure(tx, args.deltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RebalanceAddLiquidityByFixCoinArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  receipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  amount: bigint | TransactionArgument
+  fixAmountX: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function rebalanceAddLiquidityByFixCoin(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RebalanceAddLiquidityByFixCoinArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::rebalance_add_liquidity_by_fix_coin`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.receipt),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusConfig),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.fixAmountX, `bool`),
       obj(tx, args.clock),
     ],
   })
@@ -731,6 +725,84 @@ export function reduce(
   })
 }
 
+export interface RemoveLiquidityArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  lpPosition: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function removeLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveLiquidityArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::remove_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.lpPosition),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayDebtXArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  balance: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayDebtX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayDebtXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::repay_debt_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      obj(tx, args.balance),
+      obj(tx, args.supplyPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayDebtYArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  balance: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayDebtY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayDebtYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::repay_debt_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      obj(tx, args.balance),
+      obj(tx, args.supplyPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface SlippageToleranceAssertionArgs {
   pool: TransactionObjectInput
   p0DesiredX128: bigint | TransactionArgument
@@ -749,78 +821,6 @@ export function slippageToleranceAssertion(
       obj(tx, args.pool),
       pure(tx, args.p0DesiredX128, `u256`),
       pure(tx, args.maxSlippageBps, `u16`),
-    ],
-  })
-}
-
-export interface AddLiquidityFixCoinArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  cap: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  cetusPool: TransactionObjectInput
-  cetusConfig: TransactionObjectInput
-  amount: bigint | TransactionArgument
-  fixAmountX: boolean | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function addLiquidityFixCoin(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: AddLiquidityFixCoinArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::add_liquidity_fix_coin`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.cap),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      obj(tx, args.cetusPool),
-      obj(tx, args.cetusConfig),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.fixAmountX, `bool`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface RebalanceAddLiquidityByFixCoinArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  receipt: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  cetusPool: TransactionObjectInput
-  cetusConfig: TransactionObjectInput
-  amount: bigint | TransactionArgument
-  fixAmountX: boolean | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function rebalanceAddLiquidityByFixCoin(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: RebalanceAddLiquidityByFixCoinArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_add_liquidity_by_fix_coin`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.receipt),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      obj(tx, args.cetusPool),
-      obj(tx, args.cetusConfig),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.fixAmountX, `bool`),
-      obj(tx, args.clock),
     ],
   })
 }

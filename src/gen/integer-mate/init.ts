@@ -4,7 +4,7 @@ import * as i64 from './i64/structs'
 import { StructClassLoader } from '../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
+  loader.register(i128.I128)
   loader.register(i32.I32)
   loader.register(i64.I64)
-  loader.register(i128.I128)
 }

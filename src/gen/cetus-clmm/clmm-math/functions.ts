@@ -2,44 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface GetNextSqrtPriceFromInputArgs {
-  sqrtPrice: bigint | TransactionArgument
-  liquidity: bigint | TransactionArgument
-  amount: bigint | TransactionArgument
-  aToB: boolean | TransactionArgument
-}
-
-export function getNextSqrtPriceFromInput(tx: Transaction, args: GetNextSqrtPriceFromInputArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_input`,
-    arguments: [
-      pure(tx, args.sqrtPrice, `u128`),
-      pure(tx, args.liquidity, `u128`),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.aToB, `bool`),
-    ],
-  })
-}
-
-export interface GetNextSqrtPriceFromOutputArgs {
-  sqrtPrice: bigint | TransactionArgument
-  liquidity: bigint | TransactionArgument
-  amount: bigint | TransactionArgument
-  aToB: boolean | TransactionArgument
-}
-
-export function getNextSqrtPriceFromOutput(tx: Transaction, args: GetNextSqrtPriceFromOutputArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_output`,
-    arguments: [
-      pure(tx, args.sqrtPrice, `u128`),
-      pure(tx, args.liquidity, `u128`),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.aToB, `bool`),
-    ],
-  })
-}
-
 export interface ComputeSwapStepArgs {
   currentSqrtPrice: bigint | TransactionArgument
   targetSqrtPrice: bigint | TransactionArgument
@@ -88,29 +50,6 @@ export function getAmountByLiquidity(tx: Transaction, args: GetAmountByLiquidity
       pure(tx, args.currentSqrtPrice, `u128`),
       pure(tx, args.liquidity, `u128`),
       pure(tx, args.roundUp, `bool`),
-    ],
-  })
-}
-
-export interface GetLiquidityByAmountArgs {
-  lowerIndex: TransactionObjectInput
-  upperIndex: TransactionObjectInput
-  currentTickIndex: TransactionObjectInput
-  currentSqrtPrice: bigint | TransactionArgument
-  amount: bigint | TransactionArgument
-  isFixedA: boolean | TransactionArgument
-}
-
-export function getLiquidityByAmount(tx: Transaction, args: GetLiquidityByAmountArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_liquidity_by_amount`,
-    arguments: [
-      obj(tx, args.lowerIndex),
-      obj(tx, args.upperIndex),
-      obj(tx, args.currentTickIndex),
-      pure(tx, args.currentSqrtPrice, `u128`),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.isFixedA, `bool`),
     ],
   })
 }
@@ -191,6 +130,29 @@ export function getDeltaUpFromInput(tx: Transaction, args: GetDeltaUpFromInputAr
   })
 }
 
+export interface GetLiquidityByAmountArgs {
+  lowerIndex: TransactionObjectInput
+  upperIndex: TransactionObjectInput
+  currentTickIndex: TransactionObjectInput
+  currentSqrtPrice: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+  isFixedA: boolean | TransactionArgument
+}
+
+export function getLiquidityByAmount(tx: Transaction, args: GetLiquidityByAmountArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::clmm_math::get_liquidity_by_amount`,
+    arguments: [
+      obj(tx, args.lowerIndex),
+      obj(tx, args.upperIndex),
+      obj(tx, args.currentTickIndex),
+      pure(tx, args.currentSqrtPrice, `u128`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.isFixedA, `bool`),
+    ],
+  })
+}
+
 export interface GetLiquidityFromAArgs {
   sqrtPrice0: bigint | TransactionArgument
   sqrtPrice1: bigint | TransactionArgument
@@ -263,6 +225,44 @@ export function getNextSqrtPriceBDown(tx: Transaction, args: GetNextSqrtPriceBDo
       pure(tx, args.liquidity, `u128`),
       pure(tx, args.amount, `u64`),
       pure(tx, args.byAmountInput, `bool`),
+    ],
+  })
+}
+
+export interface GetNextSqrtPriceFromInputArgs {
+  sqrtPrice: bigint | TransactionArgument
+  liquidity: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+  aToB: boolean | TransactionArgument
+}
+
+export function getNextSqrtPriceFromInput(tx: Transaction, args: GetNextSqrtPriceFromInputArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_input`,
+    arguments: [
+      pure(tx, args.sqrtPrice, `u128`),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.aToB, `bool`),
+    ],
+  })
+}
+
+export interface GetNextSqrtPriceFromOutputArgs {
+  sqrtPrice: bigint | TransactionArgument
+  liquidity: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+  aToB: boolean | TransactionArgument
+}
+
+export function getNextSqrtPriceFromOutput(tx: Transaction, args: GetNextSqrtPriceFromOutputArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_output`,
+    arguments: [
+      pure(tx, args.sqrtPrice, `u128`),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.aToB, `bool`),
     ],
   })
 }

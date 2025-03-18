@@ -2,10 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function create(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::deny_list::create`, arguments: [] })
-}
-
 export interface AddPerTypeConfigArgs {
   denyList: TransactionObjectInput
   perTypeIndex: bigint | TransactionArgument
@@ -55,6 +51,10 @@ export function borrowPerTypeConfigMut(tx: Transaction, args: BorrowPerTypeConfi
       pure(tx, args.perTypeKey, `vector<u8>`),
     ],
   })
+}
+
+export function create(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::deny_list::create`, arguments: [] })
 }
 
 export interface MigrateV1ToV2Args {

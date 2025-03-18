@@ -2,159 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface SwapArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  balanceA: TransactionObjectInput
-  balanceB: TransactionObjectInput
-  a2B: boolean | TransactionArgument
-  byAmountIn: boolean | TransactionArgument
-  amount: bigint | TransactionArgument
-  amountLimit: bigint | TransactionArgument
-  sqrtPriceMaxLimit: bigint | TransactionArgument
-}
-
-export function swap(tx: Transaction, typeArgs: [string, string], args: SwapArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::swap`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.balanceA),
-      obj(tx, args.balanceB),
-      pure(tx, args.a2B, `bool`),
-      pure(tx, args.byAmountIn, `bool`),
-      pure(tx, args.amount, `u64`),
-      pure(tx, args.amountLimit, `u64`),
-      pure(tx, args.sqrtPriceMaxLimit, `u128`),
-    ],
-  })
-}
-
-export interface CreatePoolArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  poolName: Array<number | TransactionArgument> | TransactionArgument
-  iconUrl: Array<number | TransactionArgument> | TransactionArgument
-  coinASymbol: Array<number | TransactionArgument> | TransactionArgument
-  coinADecimals: number | TransactionArgument
-  coinAUrl: Array<number | TransactionArgument> | TransactionArgument
-  coinBSymbol: Array<number | TransactionArgument> | TransactionArgument
-  coinBDecimals: number | TransactionArgument
-  coinBUrl: Array<number | TransactionArgument> | TransactionArgument
-  tickSpacing: number | TransactionArgument
-  feeRate: bigint | TransactionArgument
-  currentSqrtPrice: bigint | TransactionArgument
-  creationFee: TransactionObjectInput
-}
-
-export function createPool(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: CreatePoolArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::create_pool`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      pure(tx, args.poolName, `vector<u8>`),
-      pure(tx, args.iconUrl, `vector<u8>`),
-      pure(tx, args.coinASymbol, `vector<u8>`),
-      pure(tx, args.coinADecimals, `u8`),
-      pure(tx, args.coinAUrl, `vector<u8>`),
-      pure(tx, args.coinBSymbol, `vector<u8>`),
-      pure(tx, args.coinBDecimals, `u8`),
-      pure(tx, args.coinBUrl, `vector<u8>`),
-      pure(tx, args.tickSpacing, `u32`),
-      pure(tx, args.feeRate, `u64`),
-      pure(tx, args.currentSqrtPrice, `u128`),
-      obj(tx, args.creationFee),
-    ],
-  })
-}
-
-export function liquidity(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::liquidity`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export function sequenceNumber(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::sequence_number`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export function currentSqrtPrice(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::current_sqrt_price`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export function currentTickIndex(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::current_tick_index`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export function protocolFeeShare(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::protocol_fee_share`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export interface FetchProvidedTicksArgs {
-  pool: TransactionObjectInput
-  ticks: Array<number | TransactionArgument> | TransactionArgument
-}
-
-export function fetchProvidedTicks(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: FetchProvidedTicksArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::fetch_provided_ticks`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.ticks, `vector<u32>`)],
-  })
-}
-
 export interface AddLiquidityArgs {
   clock: TransactionObjectInput
   protocolConfig: TransactionObjectInput
@@ -319,6 +166,50 @@ export function collectReward(
   })
 }
 
+export interface CreatePoolArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  poolName: Array<number | TransactionArgument> | TransactionArgument
+  iconUrl: Array<number | TransactionArgument> | TransactionArgument
+  coinASymbol: Array<number | TransactionArgument> | TransactionArgument
+  coinADecimals: number | TransactionArgument
+  coinAUrl: Array<number | TransactionArgument> | TransactionArgument
+  coinBSymbol: Array<number | TransactionArgument> | TransactionArgument
+  coinBDecimals: number | TransactionArgument
+  coinBUrl: Array<number | TransactionArgument> | TransactionArgument
+  tickSpacing: number | TransactionArgument
+  feeRate: bigint | TransactionArgument
+  currentSqrtPrice: bigint | TransactionArgument
+  creationFee: TransactionObjectInput
+}
+
+export function createPool(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: CreatePoolArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::create_pool`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      pure(tx, args.poolName, `vector<u8>`),
+      pure(tx, args.iconUrl, `vector<u8>`),
+      pure(tx, args.coinASymbol, `vector<u8>`),
+      pure(tx, args.coinADecimals, `u8`),
+      pure(tx, args.coinAUrl, `vector<u8>`),
+      pure(tx, args.coinBSymbol, `vector<u8>`),
+      pure(tx, args.coinBDecimals, `u8`),
+      pure(tx, args.coinBUrl, `vector<u8>`),
+      pure(tx, args.tickSpacing, `u32`),
+      pure(tx, args.feeRate, `u64`),
+      pure(tx, args.currentSqrtPrice, `u128`),
+      obj(tx, args.creationFee),
+    ],
+  })
+}
+
 export interface CreatePoolWithLiquidityArgs {
   clock: TransactionObjectInput
   protocolConfig: TransactionObjectInput
@@ -372,6 +263,47 @@ export function createPoolWithLiquidity(
       pure(tx, args.amount, `u64`),
       pure(tx, args.isFixedA, `bool`),
     ],
+  })
+}
+
+export function currentSqrtPrice(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::current_sqrt_price`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function currentTickIndex(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::current_tick_index`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface FetchProvidedTicksArgs {
+  pool: TransactionObjectInput
+  ticks: Array<number | TransactionArgument> | TransactionArgument
+}
+
+export function fetchProvidedTicks(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FetchProvidedTicksArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::fetch_provided_ticks`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.ticks, `vector<u32>`)],
   })
 }
 
@@ -639,6 +571,18 @@ export function isRewardPresent(
   })
 }
 
+export function liquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::liquidity`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
 export interface OpenPositionArgs {
   protocolConfig: TransactionObjectInput
   pool: TransactionObjectInput
@@ -656,6 +600,18 @@ export function openPosition(tx: Transaction, typeArgs: [string, string], args: 
       pure(tx, args.lowerTickBits, `u32`),
       pure(tx, args.upperTickBits, `u32`),
     ],
+  })
+}
+
+export function protocolFeeShare(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::protocol_fee_share`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
   })
 }
 
@@ -720,6 +676,50 @@ export function rewardInfosLength(
     target: `${PUBLISHED_AT}::pool::reward_infos_length`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
+  })
+}
+
+export function sequenceNumber(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::sequence_number`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface SwapArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  balanceA: TransactionObjectInput
+  balanceB: TransactionObjectInput
+  a2B: boolean | TransactionArgument
+  byAmountIn: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+  amountLimit: bigint | TransactionArgument
+  sqrtPriceMaxLimit: bigint | TransactionArgument
+}
+
+export function swap(tx: Transaction, typeArgs: [string, string], args: SwapArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::swap`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.balanceA),
+      obj(tx, args.balanceB),
+      pure(tx, args.a2B, `bool`),
+      pure(tx, args.byAmountIn, `bool`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.amountLimit, `u64`),
+      pure(tx, args.sqrtPriceMaxLimit, `u128`),
+    ],
   })
 }
 

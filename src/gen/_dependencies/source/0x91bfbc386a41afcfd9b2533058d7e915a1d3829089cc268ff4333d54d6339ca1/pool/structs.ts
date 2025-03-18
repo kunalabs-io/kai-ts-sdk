@@ -36,507 +36,175 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== Versioned =============================== */
+/* ============================== ComputeSwapState =============================== */
 
-export function isVersioned(type: string): boolean {
+export function isComputeSwapState(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::Versioned`
+  return type === `${PKG_V1}::pool::ComputeSwapState`
 }
 
-export interface VersionedFields {
-  id: ToField<UID>
-  version: ToField<'u64'>
-}
-
-export type VersionedReified = Reified<Versioned, VersionedFields>
-
-export class Versioned implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::Versioned`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Versioned.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::Versioned`
-  readonly $typeArgs: []
-  readonly $isPhantom = Versioned.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly version: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: VersionedFields) {
-    this.$fullTypeName = composeSuiType(
-      Versioned.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::Versioned`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.version = fields.version
-  }
-
-  static reified(): VersionedReified {
-    return {
-      typeName: Versioned.$typeName,
-      fullTypeName: composeSuiType(
-        Versioned.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool::Versioned`,
-      typeArgs: [] as [],
-      isPhantom: Versioned.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Versioned.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Versioned.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Versioned.fromBcs(data),
-      bcs: Versioned.bcs,
-      fromJSONField: (field: any) => Versioned.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Versioned.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Versioned.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Versioned.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Versioned.fetch(client, id),
-      new: (fields: VersionedFields) => {
-        return new Versioned([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Versioned.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Versioned>> {
-    return phantom(Versioned.reified())
-  }
-  static get p() {
-    return Versioned.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Versioned', {
-      id: UID.bcs,
-      version: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Versioned {
-    return Versioned.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      version: decodeFromFields('u64', fields.version),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Versioned {
-    if (!isVersioned(item.type)) {
-      throw new Error('not a Versioned type')
-    }
-
-    return Versioned.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      version: decodeFromFieldsWithTypes('u64', item.fields.version),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Versioned {
-    return Versioned.fromFields(Versioned.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      version: this.version.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Versioned {
-    return Versioned.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      version: decodeFromJSONField('u64', field.version),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Versioned {
-    if (json.$typeName !== Versioned.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Versioned.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Versioned {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isVersioned(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Versioned object`)
-    }
-    return Versioned.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Versioned {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isVersioned(data.bcs.type)) {
-        throw new Error(`object at is not a Versioned object`)
-      }
-
-      return Versioned.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Versioned.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Versioned> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Versioned object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVersioned(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Versioned object`)
-    }
-
-    return Versioned.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Position =============================== */
-
-export function isPosition(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::Position`
-}
-
-export interface PositionFields {
-  id: ToField<UID>
+export interface ComputeSwapStateFields {
+  amountA: ToField<'u128'>
+  amountB: ToField<'u128'>
+  amountSpecifiedRemaining: ToField<'u128'>
+  amountCalculated: ToField<'u128'>
+  sqrtPrice: ToField<'u128'>
+  tickCurrentIndex: ToField<I32>
+  feeGrowthGlobal: ToField<'u128'>
+  protocolFee: ToField<'u128'>
   liquidity: ToField<'u128'>
-  feeGrowthInsideA: ToField<'u128'>
-  feeGrowthInsideB: ToField<'u128'>
-  tokensOwedA: ToField<'u64'>
-  tokensOwedB: ToField<'u64'>
-  rewardInfos: ToField<Vector<PositionRewardInfo>>
+  feeAmount: ToField<'u128'>
 }
 
-export type PositionReified = Reified<Position, PositionFields>
+export type ComputeSwapStateReified = Reified<ComputeSwapState, ComputeSwapStateFields>
 
-export class Position implements StructClass {
+export class ComputeSwapState implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::pool::Position`
+  static readonly $typeName = `${PKG_V1}::pool::ComputeSwapState`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Position.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::Position`
+  readonly $typeName = ComputeSwapState.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::ComputeSwapState`
   readonly $typeArgs: []
-  readonly $isPhantom = Position.$isPhantom
+  readonly $isPhantom = ComputeSwapState.$isPhantom
 
-  readonly id: ToField<UID>
+  readonly amountA: ToField<'u128'>
+  readonly amountB: ToField<'u128'>
+  readonly amountSpecifiedRemaining: ToField<'u128'>
+  readonly amountCalculated: ToField<'u128'>
+  readonly sqrtPrice: ToField<'u128'>
+  readonly tickCurrentIndex: ToField<I32>
+  readonly feeGrowthGlobal: ToField<'u128'>
+  readonly protocolFee: ToField<'u128'>
   readonly liquidity: ToField<'u128'>
-  readonly feeGrowthInsideA: ToField<'u128'>
-  readonly feeGrowthInsideB: ToField<'u128'>
-  readonly tokensOwedA: ToField<'u64'>
-  readonly tokensOwedB: ToField<'u64'>
-  readonly rewardInfos: ToField<Vector<PositionRewardInfo>>
+  readonly feeAmount: ToField<'u128'>
 
-  private constructor(typeArgs: [], fields: PositionFields) {
+  private constructor(typeArgs: [], fields: ComputeSwapStateFields) {
     this.$fullTypeName = composeSuiType(
-      Position.$typeName,
+      ComputeSwapState.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::pool::Position`
+    ) as `${typeof PKG_V1}::pool::ComputeSwapState`
     this.$typeArgs = typeArgs
 
-    this.id = fields.id
+    this.amountA = fields.amountA
+    this.amountB = fields.amountB
+    this.amountSpecifiedRemaining = fields.amountSpecifiedRemaining
+    this.amountCalculated = fields.amountCalculated
+    this.sqrtPrice = fields.sqrtPrice
+    this.tickCurrentIndex = fields.tickCurrentIndex
+    this.feeGrowthGlobal = fields.feeGrowthGlobal
+    this.protocolFee = fields.protocolFee
     this.liquidity = fields.liquidity
-    this.feeGrowthInsideA = fields.feeGrowthInsideA
-    this.feeGrowthInsideB = fields.feeGrowthInsideB
-    this.tokensOwedA = fields.tokensOwedA
-    this.tokensOwedB = fields.tokensOwedB
-    this.rewardInfos = fields.rewardInfos
+    this.feeAmount = fields.feeAmount
   }
 
-  static reified(): PositionReified {
+  static reified(): ComputeSwapStateReified {
     return {
-      typeName: Position.$typeName,
-      fullTypeName: composeSuiType(Position.$typeName, ...[]) as `${typeof PKG_V1}::pool::Position`,
-      typeArgs: [] as [],
-      isPhantom: Position.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Position.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Position.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Position.fromBcs(data),
-      bcs: Position.bcs,
-      fromJSONField: (field: any) => Position.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Position.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Position.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Position.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Position.fetch(client, id),
-      new: (fields: PositionFields) => {
-        return new Position([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Position.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Position>> {
-    return phantom(Position.reified())
-  }
-  static get p() {
-    return Position.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Position', {
-      id: UID.bcs,
-      liquidity: bcs.u128(),
-      fee_growth_inside_a: bcs.u128(),
-      fee_growth_inside_b: bcs.u128(),
-      tokens_owed_a: bcs.u64(),
-      tokens_owed_b: bcs.u64(),
-      reward_infos: bcs.vector(PositionRewardInfo.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Position {
-    return Position.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      liquidity: decodeFromFields('u128', fields.liquidity),
-      feeGrowthInsideA: decodeFromFields('u128', fields.fee_growth_inside_a),
-      feeGrowthInsideB: decodeFromFields('u128', fields.fee_growth_inside_b),
-      tokensOwedA: decodeFromFields('u64', fields.tokens_owed_a),
-      tokensOwedB: decodeFromFields('u64', fields.tokens_owed_b),
-      rewardInfos: decodeFromFields(
-        reified.vector(PositionRewardInfo.reified()),
-        fields.reward_infos
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Position {
-    if (!isPosition(item.type)) {
-      throw new Error('not a Position type')
-    }
-
-    return Position.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
-      feeGrowthInsideA: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_inside_a),
-      feeGrowthInsideB: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_inside_b),
-      tokensOwedA: decodeFromFieldsWithTypes('u64', item.fields.tokens_owed_a),
-      tokensOwedB: decodeFromFieldsWithTypes('u64', item.fields.tokens_owed_b),
-      rewardInfos: decodeFromFieldsWithTypes(
-        reified.vector(PositionRewardInfo.reified()),
-        item.fields.reward_infos
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Position {
-    return Position.fromFields(Position.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      liquidity: this.liquidity.toString(),
-      feeGrowthInsideA: this.feeGrowthInsideA.toString(),
-      feeGrowthInsideB: this.feeGrowthInsideB.toString(),
-      tokensOwedA: this.tokensOwedA.toString(),
-      tokensOwedB: this.tokensOwedB.toString(),
-      rewardInfos: fieldToJSON<Vector<PositionRewardInfo>>(
-        `vector<${PositionRewardInfo.$typeName}>`,
-        this.rewardInfos
-      ),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Position {
-    return Position.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      liquidity: decodeFromJSONField('u128', field.liquidity),
-      feeGrowthInsideA: decodeFromJSONField('u128', field.feeGrowthInsideA),
-      feeGrowthInsideB: decodeFromJSONField('u128', field.feeGrowthInsideB),
-      tokensOwedA: decodeFromJSONField('u64', field.tokensOwedA),
-      tokensOwedB: decodeFromJSONField('u64', field.tokensOwedB),
-      rewardInfos: decodeFromJSONField(
-        reified.vector(PositionRewardInfo.reified()),
-        field.rewardInfos
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Position {
-    if (json.$typeName !== Position.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Position.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Position {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPosition(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Position object`)
-    }
-    return Position.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Position {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPosition(data.bcs.type)) {
-        throw new Error(`object at is not a Position object`)
-      }
-
-      return Position.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Position.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Position> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Position object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPosition(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Position object`)
-    }
-
-    return Position.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== PositionRewardInfo =============================== */
-
-export function isPositionRewardInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::PositionRewardInfo`
-}
-
-export interface PositionRewardInfoFields {
-  rewardGrowthInside: ToField<'u128'>
-  amountOwed: ToField<'u64'>
-}
-
-export type PositionRewardInfoReified = Reified<PositionRewardInfo, PositionRewardInfoFields>
-
-export class PositionRewardInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::PositionRewardInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PositionRewardInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::PositionRewardInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = PositionRewardInfo.$isPhantom
-
-  readonly rewardGrowthInside: ToField<'u128'>
-  readonly amountOwed: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: PositionRewardInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      PositionRewardInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::PositionRewardInfo`
-    this.$typeArgs = typeArgs
-
-    this.rewardGrowthInside = fields.rewardGrowthInside
-    this.amountOwed = fields.amountOwed
-  }
-
-  static reified(): PositionRewardInfoReified {
-    return {
-      typeName: PositionRewardInfo.$typeName,
+      typeName: ComputeSwapState.$typeName,
       fullTypeName: composeSuiType(
-        PositionRewardInfo.$typeName,
+        ComputeSwapState.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::pool::PositionRewardInfo`,
+      ) as `${typeof PKG_V1}::pool::ComputeSwapState`,
       typeArgs: [] as [],
-      isPhantom: PositionRewardInfo.$isPhantom,
+      isPhantom: ComputeSwapState.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PositionRewardInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionRewardInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromBcs(data),
-      bcs: PositionRewardInfo.bcs,
-      fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PositionRewardInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionRewardInfo.fetch(client, id),
-      new: (fields: PositionRewardInfoFields) => {
-        return new PositionRewardInfo([], fields)
+      fromFields: (fields: Record<string, any>) => ComputeSwapState.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ComputeSwapState.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ComputeSwapState.fromBcs(data),
+      bcs: ComputeSwapState.bcs,
+      fromJSONField: (field: any) => ComputeSwapState.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ComputeSwapState.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ComputeSwapState.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ComputeSwapState.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ComputeSwapState.fetch(client, id),
+      new: (fields: ComputeSwapStateFields) => {
+        return new ComputeSwapState([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return PositionRewardInfo.reified()
+    return ComputeSwapState.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<PositionRewardInfo>> {
-    return phantom(PositionRewardInfo.reified())
+  static phantom(): PhantomReified<ToTypeStr<ComputeSwapState>> {
+    return phantom(ComputeSwapState.reified())
   }
   static get p() {
-    return PositionRewardInfo.phantom()
+    return ComputeSwapState.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('PositionRewardInfo', {
-      reward_growth_inside: bcs.u128(),
-      amount_owed: bcs.u64(),
+    return bcs.struct('ComputeSwapState', {
+      amount_a: bcs.u128(),
+      amount_b: bcs.u128(),
+      amount_specified_remaining: bcs.u128(),
+      amount_calculated: bcs.u128(),
+      sqrt_price: bcs.u128(),
+      tick_current_index: I32.bcs,
+      fee_growth_global: bcs.u128(),
+      protocol_fee: bcs.u128(),
+      liquidity: bcs.u128(),
+      fee_amount: bcs.u128(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): PositionRewardInfo {
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromFields('u128', fields.reward_growth_inside),
-      amountOwed: decodeFromFields('u64', fields.amount_owed),
+  static fromFields(fields: Record<string, any>): ComputeSwapState {
+    return ComputeSwapState.reified().new({
+      amountA: decodeFromFields('u128', fields.amount_a),
+      amountB: decodeFromFields('u128', fields.amount_b),
+      amountSpecifiedRemaining: decodeFromFields('u128', fields.amount_specified_remaining),
+      amountCalculated: decodeFromFields('u128', fields.amount_calculated),
+      sqrtPrice: decodeFromFields('u128', fields.sqrt_price),
+      tickCurrentIndex: decodeFromFields(I32.reified(), fields.tick_current_index),
+      feeGrowthGlobal: decodeFromFields('u128', fields.fee_growth_global),
+      protocolFee: decodeFromFields('u128', fields.protocol_fee),
+      liquidity: decodeFromFields('u128', fields.liquidity),
+      feeAmount: decodeFromFields('u128', fields.fee_amount),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): PositionRewardInfo {
-    if (!isPositionRewardInfo(item.type)) {
-      throw new Error('not a PositionRewardInfo type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): ComputeSwapState {
+    if (!isComputeSwapState(item.type)) {
+      throw new Error('not a ComputeSwapState type')
     }
 
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_inside),
-      amountOwed: decodeFromFieldsWithTypes('u64', item.fields.amount_owed),
+    return ComputeSwapState.reified().new({
+      amountA: decodeFromFieldsWithTypes('u128', item.fields.amount_a),
+      amountB: decodeFromFieldsWithTypes('u128', item.fields.amount_b),
+      amountSpecifiedRemaining: decodeFromFieldsWithTypes(
+        'u128',
+        item.fields.amount_specified_remaining
+      ),
+      amountCalculated: decodeFromFieldsWithTypes('u128', item.fields.amount_calculated),
+      sqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.sqrt_price),
+      tickCurrentIndex: decodeFromFieldsWithTypes(I32.reified(), item.fields.tick_current_index),
+      feeGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global),
+      protocolFee: decodeFromFieldsWithTypes('u128', item.fields.protocol_fee),
+      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
+      feeAmount: decodeFromFieldsWithTypes('u128', item.fields.fee_amount),
     })
   }
 
-  static fromBcs(data: Uint8Array): PositionRewardInfo {
-    return PositionRewardInfo.fromFields(PositionRewardInfo.bcs.parse(data))
+  static fromBcs(data: Uint8Array): ComputeSwapState {
+    return ComputeSwapState.fromFields(ComputeSwapState.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      rewardGrowthInside: this.rewardGrowthInside.toString(),
-      amountOwed: this.amountOwed.toString(),
+      amountA: this.amountA.toString(),
+      amountB: this.amountB.toString(),
+      amountSpecifiedRemaining: this.amountSpecifiedRemaining.toString(),
+      amountCalculated: this.amountCalculated.toString(),
+      sqrtPrice: this.sqrtPrice.toString(),
+      tickCurrentIndex: this.tickCurrentIndex.toJSONField(),
+      feeGrowthGlobal: this.feeGrowthGlobal.toString(),
+      protocolFee: this.protocolFee.toString(),
+      liquidity: this.liquidity.toString(),
+      feeAmount: this.feeAmount.toString(),
     }
   }
 
@@ -544,57 +212,65 @@ export class PositionRewardInfo implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): PositionRewardInfo {
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromJSONField('u128', field.rewardGrowthInside),
-      amountOwed: decodeFromJSONField('u64', field.amountOwed),
+  static fromJSONField(field: any): ComputeSwapState {
+    return ComputeSwapState.reified().new({
+      amountA: decodeFromJSONField('u128', field.amountA),
+      amountB: decodeFromJSONField('u128', field.amountB),
+      amountSpecifiedRemaining: decodeFromJSONField('u128', field.amountSpecifiedRemaining),
+      amountCalculated: decodeFromJSONField('u128', field.amountCalculated),
+      sqrtPrice: decodeFromJSONField('u128', field.sqrtPrice),
+      tickCurrentIndex: decodeFromJSONField(I32.reified(), field.tickCurrentIndex),
+      feeGrowthGlobal: decodeFromJSONField('u128', field.feeGrowthGlobal),
+      protocolFee: decodeFromJSONField('u128', field.protocolFee),
+      liquidity: decodeFromJSONField('u128', field.liquidity),
+      feeAmount: decodeFromJSONField('u128', field.feeAmount),
     })
   }
 
-  static fromJSON(json: Record<string, any>): PositionRewardInfo {
-    if (json.$typeName !== PositionRewardInfo.$typeName) {
+  static fromJSON(json: Record<string, any>): ComputeSwapState {
+    if (json.$typeName !== ComputeSwapState.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return PositionRewardInfo.fromJSONField(json)
+    return ComputeSwapState.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): PositionRewardInfo {
+  static fromSuiParsedData(content: SuiParsedData): ComputeSwapState {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isPositionRewardInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PositionRewardInfo object`)
+    if (!isComputeSwapState(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ComputeSwapState object`)
     }
-    return PositionRewardInfo.fromFieldsWithTypes(content)
+    return ComputeSwapState.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): PositionRewardInfo {
+  static fromSuiObjectData(data: SuiObjectData): ComputeSwapState {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPositionRewardInfo(data.bcs.type)) {
-        throw new Error(`object at is not a PositionRewardInfo object`)
+      if (data.bcs.dataType !== 'moveObject' || !isComputeSwapState(data.bcs.type)) {
+        throw new Error(`object at is not a ComputeSwapState object`)
       }
 
-      return PositionRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ComputeSwapState.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return PositionRewardInfo.fromSuiParsedData(data.content)
+      return ComputeSwapState.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionRewardInfo> {
+  static async fetch(client: SuiClient, id: string): Promise<ComputeSwapState> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching PositionRewardInfo object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching ComputeSwapState object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionRewardInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PositionRewardInfo object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isComputeSwapState(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ComputeSwapState object`)
     }
 
-    return PositionRewardInfo.fromSuiObjectData(res.data)
+    return ComputeSwapState.fromSuiObjectData(res.data)
   }
 }
 
@@ -1311,455 +987,6 @@ export class PoolRewardInfo implements StructClass {
   }
 }
 
-/* ============================== Tick =============================== */
-
-export function isTick(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::Tick`
-}
-
-export interface TickFields {
-  id: ToField<UID>
-  liquidityGross: ToField<'u128'>
-  liquidityNet: ToField<I128>
-  feeGrowthOutsideA: ToField<'u128'>
-  feeGrowthOutsideB: ToField<'u128'>
-  rewardGrowthsOutside: ToField<Vector<'u128'>>
-  initialized: ToField<'bool'>
-}
-
-export type TickReified = Reified<Tick, TickFields>
-
-export class Tick implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::Tick`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Tick.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::Tick`
-  readonly $typeArgs: []
-  readonly $isPhantom = Tick.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly liquidityGross: ToField<'u128'>
-  readonly liquidityNet: ToField<I128>
-  readonly feeGrowthOutsideA: ToField<'u128'>
-  readonly feeGrowthOutsideB: ToField<'u128'>
-  readonly rewardGrowthsOutside: ToField<Vector<'u128'>>
-  readonly initialized: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: TickFields) {
-    this.$fullTypeName = composeSuiType(
-      Tick.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::Tick`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.liquidityGross = fields.liquidityGross
-    this.liquidityNet = fields.liquidityNet
-    this.feeGrowthOutsideA = fields.feeGrowthOutsideA
-    this.feeGrowthOutsideB = fields.feeGrowthOutsideB
-    this.rewardGrowthsOutside = fields.rewardGrowthsOutside
-    this.initialized = fields.initialized
-  }
-
-  static reified(): TickReified {
-    return {
-      typeName: Tick.$typeName,
-      fullTypeName: composeSuiType(Tick.$typeName, ...[]) as `${typeof PKG_V1}::pool::Tick`,
-      typeArgs: [] as [],
-      isPhantom: Tick.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Tick.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Tick.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Tick.fromBcs(data),
-      bcs: Tick.bcs,
-      fromJSONField: (field: any) => Tick.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Tick.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Tick.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Tick.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Tick.fetch(client, id),
-      new: (fields: TickFields) => {
-        return new Tick([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Tick.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Tick>> {
-    return phantom(Tick.reified())
-  }
-  static get p() {
-    return Tick.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Tick', {
-      id: UID.bcs,
-      liquidity_gross: bcs.u128(),
-      liquidity_net: I128.bcs,
-      fee_growth_outside_a: bcs.u128(),
-      fee_growth_outside_b: bcs.u128(),
-      reward_growths_outside: bcs.vector(bcs.u128()),
-      initialized: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Tick {
-    return Tick.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      liquidityGross: decodeFromFields('u128', fields.liquidity_gross),
-      liquidityNet: decodeFromFields(I128.reified(), fields.liquidity_net),
-      feeGrowthOutsideA: decodeFromFields('u128', fields.fee_growth_outside_a),
-      feeGrowthOutsideB: decodeFromFields('u128', fields.fee_growth_outside_b),
-      rewardGrowthsOutside: decodeFromFields(reified.vector('u128'), fields.reward_growths_outside),
-      initialized: decodeFromFields('bool', fields.initialized),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Tick {
-    if (!isTick(item.type)) {
-      throw new Error('not a Tick type')
-    }
-
-    return Tick.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      liquidityGross: decodeFromFieldsWithTypes('u128', item.fields.liquidity_gross),
-      liquidityNet: decodeFromFieldsWithTypes(I128.reified(), item.fields.liquidity_net),
-      feeGrowthOutsideA: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_outside_a),
-      feeGrowthOutsideB: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_outside_b),
-      rewardGrowthsOutside: decodeFromFieldsWithTypes(
-        reified.vector('u128'),
-        item.fields.reward_growths_outside
-      ),
-      initialized: decodeFromFieldsWithTypes('bool', item.fields.initialized),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Tick {
-    return Tick.fromFields(Tick.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      liquidityGross: this.liquidityGross.toString(),
-      liquidityNet: this.liquidityNet.toJSONField(),
-      feeGrowthOutsideA: this.feeGrowthOutsideA.toString(),
-      feeGrowthOutsideB: this.feeGrowthOutsideB.toString(),
-      rewardGrowthsOutside: fieldToJSON<Vector<'u128'>>(`vector<u128>`, this.rewardGrowthsOutside),
-      initialized: this.initialized,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Tick {
-    return Tick.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      liquidityGross: decodeFromJSONField('u128', field.liquidityGross),
-      liquidityNet: decodeFromJSONField(I128.reified(), field.liquidityNet),
-      feeGrowthOutsideA: decodeFromJSONField('u128', field.feeGrowthOutsideA),
-      feeGrowthOutsideB: decodeFromJSONField('u128', field.feeGrowthOutsideB),
-      rewardGrowthsOutside: decodeFromJSONField(reified.vector('u128'), field.rewardGrowthsOutside),
-      initialized: decodeFromJSONField('bool', field.initialized),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Tick {
-    if (json.$typeName !== Tick.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Tick.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Tick {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isTick(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Tick object`)
-    }
-    return Tick.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Tick {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isTick(data.bcs.type)) {
-        throw new Error(`object at is not a Tick object`)
-      }
-
-      return Tick.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Tick.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Tick> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Tick object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTick(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Tick object`)
-    }
-
-    return Tick.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ComputeSwapState =============================== */
-
-export function isComputeSwapState(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::ComputeSwapState`
-}
-
-export interface ComputeSwapStateFields {
-  amountA: ToField<'u128'>
-  amountB: ToField<'u128'>
-  amountSpecifiedRemaining: ToField<'u128'>
-  amountCalculated: ToField<'u128'>
-  sqrtPrice: ToField<'u128'>
-  tickCurrentIndex: ToField<I32>
-  feeGrowthGlobal: ToField<'u128'>
-  protocolFee: ToField<'u128'>
-  liquidity: ToField<'u128'>
-  feeAmount: ToField<'u128'>
-}
-
-export type ComputeSwapStateReified = Reified<ComputeSwapState, ComputeSwapStateFields>
-
-export class ComputeSwapState implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::ComputeSwapState`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ComputeSwapState.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::ComputeSwapState`
-  readonly $typeArgs: []
-  readonly $isPhantom = ComputeSwapState.$isPhantom
-
-  readonly amountA: ToField<'u128'>
-  readonly amountB: ToField<'u128'>
-  readonly amountSpecifiedRemaining: ToField<'u128'>
-  readonly amountCalculated: ToField<'u128'>
-  readonly sqrtPrice: ToField<'u128'>
-  readonly tickCurrentIndex: ToField<I32>
-  readonly feeGrowthGlobal: ToField<'u128'>
-  readonly protocolFee: ToField<'u128'>
-  readonly liquidity: ToField<'u128'>
-  readonly feeAmount: ToField<'u128'>
-
-  private constructor(typeArgs: [], fields: ComputeSwapStateFields) {
-    this.$fullTypeName = composeSuiType(
-      ComputeSwapState.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::ComputeSwapState`
-    this.$typeArgs = typeArgs
-
-    this.amountA = fields.amountA
-    this.amountB = fields.amountB
-    this.amountSpecifiedRemaining = fields.amountSpecifiedRemaining
-    this.amountCalculated = fields.amountCalculated
-    this.sqrtPrice = fields.sqrtPrice
-    this.tickCurrentIndex = fields.tickCurrentIndex
-    this.feeGrowthGlobal = fields.feeGrowthGlobal
-    this.protocolFee = fields.protocolFee
-    this.liquidity = fields.liquidity
-    this.feeAmount = fields.feeAmount
-  }
-
-  static reified(): ComputeSwapStateReified {
-    return {
-      typeName: ComputeSwapState.$typeName,
-      fullTypeName: composeSuiType(
-        ComputeSwapState.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool::ComputeSwapState`,
-      typeArgs: [] as [],
-      isPhantom: ComputeSwapState.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ComputeSwapState.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ComputeSwapState.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ComputeSwapState.fromBcs(data),
-      bcs: ComputeSwapState.bcs,
-      fromJSONField: (field: any) => ComputeSwapState.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ComputeSwapState.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ComputeSwapState.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ComputeSwapState.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ComputeSwapState.fetch(client, id),
-      new: (fields: ComputeSwapStateFields) => {
-        return new ComputeSwapState([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ComputeSwapState.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ComputeSwapState>> {
-    return phantom(ComputeSwapState.reified())
-  }
-  static get p() {
-    return ComputeSwapState.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ComputeSwapState', {
-      amount_a: bcs.u128(),
-      amount_b: bcs.u128(),
-      amount_specified_remaining: bcs.u128(),
-      amount_calculated: bcs.u128(),
-      sqrt_price: bcs.u128(),
-      tick_current_index: I32.bcs,
-      fee_growth_global: bcs.u128(),
-      protocol_fee: bcs.u128(),
-      liquidity: bcs.u128(),
-      fee_amount: bcs.u128(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ComputeSwapState {
-    return ComputeSwapState.reified().new({
-      amountA: decodeFromFields('u128', fields.amount_a),
-      amountB: decodeFromFields('u128', fields.amount_b),
-      amountSpecifiedRemaining: decodeFromFields('u128', fields.amount_specified_remaining),
-      amountCalculated: decodeFromFields('u128', fields.amount_calculated),
-      sqrtPrice: decodeFromFields('u128', fields.sqrt_price),
-      tickCurrentIndex: decodeFromFields(I32.reified(), fields.tick_current_index),
-      feeGrowthGlobal: decodeFromFields('u128', fields.fee_growth_global),
-      protocolFee: decodeFromFields('u128', fields.protocol_fee),
-      liquidity: decodeFromFields('u128', fields.liquidity),
-      feeAmount: decodeFromFields('u128', fields.fee_amount),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ComputeSwapState {
-    if (!isComputeSwapState(item.type)) {
-      throw new Error('not a ComputeSwapState type')
-    }
-
-    return ComputeSwapState.reified().new({
-      amountA: decodeFromFieldsWithTypes('u128', item.fields.amount_a),
-      amountB: decodeFromFieldsWithTypes('u128', item.fields.amount_b),
-      amountSpecifiedRemaining: decodeFromFieldsWithTypes(
-        'u128',
-        item.fields.amount_specified_remaining
-      ),
-      amountCalculated: decodeFromFieldsWithTypes('u128', item.fields.amount_calculated),
-      sqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.sqrt_price),
-      tickCurrentIndex: decodeFromFieldsWithTypes(I32.reified(), item.fields.tick_current_index),
-      feeGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global),
-      protocolFee: decodeFromFieldsWithTypes('u128', item.fields.protocol_fee),
-      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
-      feeAmount: decodeFromFieldsWithTypes('u128', item.fields.fee_amount),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ComputeSwapState {
-    return ComputeSwapState.fromFields(ComputeSwapState.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      amountA: this.amountA.toString(),
-      amountB: this.amountB.toString(),
-      amountSpecifiedRemaining: this.amountSpecifiedRemaining.toString(),
-      amountCalculated: this.amountCalculated.toString(),
-      sqrtPrice: this.sqrtPrice.toString(),
-      tickCurrentIndex: this.tickCurrentIndex.toJSONField(),
-      feeGrowthGlobal: this.feeGrowthGlobal.toString(),
-      protocolFee: this.protocolFee.toString(),
-      liquidity: this.liquidity.toString(),
-      feeAmount: this.feeAmount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ComputeSwapState {
-    return ComputeSwapState.reified().new({
-      amountA: decodeFromJSONField('u128', field.amountA),
-      amountB: decodeFromJSONField('u128', field.amountB),
-      amountSpecifiedRemaining: decodeFromJSONField('u128', field.amountSpecifiedRemaining),
-      amountCalculated: decodeFromJSONField('u128', field.amountCalculated),
-      sqrtPrice: decodeFromJSONField('u128', field.sqrtPrice),
-      tickCurrentIndex: decodeFromJSONField(I32.reified(), field.tickCurrentIndex),
-      feeGrowthGlobal: decodeFromJSONField('u128', field.feeGrowthGlobal),
-      protocolFee: decodeFromJSONField('u128', field.protocolFee),
-      liquidity: decodeFromJSONField('u128', field.liquidity),
-      feeAmount: decodeFromJSONField('u128', field.feeAmount),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ComputeSwapState {
-    if (json.$typeName !== ComputeSwapState.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ComputeSwapState.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ComputeSwapState {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isComputeSwapState(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ComputeSwapState object`)
-    }
-    return ComputeSwapState.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ComputeSwapState {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isComputeSwapState(data.bcs.type)) {
-        throw new Error(`object at is not a ComputeSwapState object`)
-      }
-
-      return ComputeSwapState.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ComputeSwapState.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ComputeSwapState> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ComputeSwapState object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isComputeSwapState(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ComputeSwapState object`)
-    }
-
-    return ComputeSwapState.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== PoolRewardVault =============================== */
 
 export function isPoolRewardVault(type: string): boolean {
@@ -1986,5 +1213,778 @@ export class PoolRewardVault<RewardCoin extends PhantomTypeArgument> implements 
     }
 
     return PoolRewardVault.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== Position =============================== */
+
+export function isPosition(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::Position`
+}
+
+export interface PositionFields {
+  id: ToField<UID>
+  liquidity: ToField<'u128'>
+  feeGrowthInsideA: ToField<'u128'>
+  feeGrowthInsideB: ToField<'u128'>
+  tokensOwedA: ToField<'u64'>
+  tokensOwedB: ToField<'u64'>
+  rewardInfos: ToField<Vector<PositionRewardInfo>>
+}
+
+export type PositionReified = Reified<Position, PositionFields>
+
+export class Position implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::Position`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Position.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::Position`
+  readonly $typeArgs: []
+  readonly $isPhantom = Position.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly liquidity: ToField<'u128'>
+  readonly feeGrowthInsideA: ToField<'u128'>
+  readonly feeGrowthInsideB: ToField<'u128'>
+  readonly tokensOwedA: ToField<'u64'>
+  readonly tokensOwedB: ToField<'u64'>
+  readonly rewardInfos: ToField<Vector<PositionRewardInfo>>
+
+  private constructor(typeArgs: [], fields: PositionFields) {
+    this.$fullTypeName = composeSuiType(
+      Position.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::Position`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.liquidity = fields.liquidity
+    this.feeGrowthInsideA = fields.feeGrowthInsideA
+    this.feeGrowthInsideB = fields.feeGrowthInsideB
+    this.tokensOwedA = fields.tokensOwedA
+    this.tokensOwedB = fields.tokensOwedB
+    this.rewardInfos = fields.rewardInfos
+  }
+
+  static reified(): PositionReified {
+    return {
+      typeName: Position.$typeName,
+      fullTypeName: composeSuiType(Position.$typeName, ...[]) as `${typeof PKG_V1}::pool::Position`,
+      typeArgs: [] as [],
+      isPhantom: Position.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Position.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Position.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Position.fromBcs(data),
+      bcs: Position.bcs,
+      fromJSONField: (field: any) => Position.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Position.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Position.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Position.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Position.fetch(client, id),
+      new: (fields: PositionFields) => {
+        return new Position([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Position.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Position>> {
+    return phantom(Position.reified())
+  }
+  static get p() {
+    return Position.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Position', {
+      id: UID.bcs,
+      liquidity: bcs.u128(),
+      fee_growth_inside_a: bcs.u128(),
+      fee_growth_inside_b: bcs.u128(),
+      tokens_owed_a: bcs.u64(),
+      tokens_owed_b: bcs.u64(),
+      reward_infos: bcs.vector(PositionRewardInfo.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Position {
+    return Position.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      liquidity: decodeFromFields('u128', fields.liquidity),
+      feeGrowthInsideA: decodeFromFields('u128', fields.fee_growth_inside_a),
+      feeGrowthInsideB: decodeFromFields('u128', fields.fee_growth_inside_b),
+      tokensOwedA: decodeFromFields('u64', fields.tokens_owed_a),
+      tokensOwedB: decodeFromFields('u64', fields.tokens_owed_b),
+      rewardInfos: decodeFromFields(
+        reified.vector(PositionRewardInfo.reified()),
+        fields.reward_infos
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Position {
+    if (!isPosition(item.type)) {
+      throw new Error('not a Position type')
+    }
+
+    return Position.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
+      feeGrowthInsideA: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_inside_a),
+      feeGrowthInsideB: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_inside_b),
+      tokensOwedA: decodeFromFieldsWithTypes('u64', item.fields.tokens_owed_a),
+      tokensOwedB: decodeFromFieldsWithTypes('u64', item.fields.tokens_owed_b),
+      rewardInfos: decodeFromFieldsWithTypes(
+        reified.vector(PositionRewardInfo.reified()),
+        item.fields.reward_infos
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Position {
+    return Position.fromFields(Position.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      liquidity: this.liquidity.toString(),
+      feeGrowthInsideA: this.feeGrowthInsideA.toString(),
+      feeGrowthInsideB: this.feeGrowthInsideB.toString(),
+      tokensOwedA: this.tokensOwedA.toString(),
+      tokensOwedB: this.tokensOwedB.toString(),
+      rewardInfos: fieldToJSON<Vector<PositionRewardInfo>>(
+        `vector<${PositionRewardInfo.$typeName}>`,
+        this.rewardInfos
+      ),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Position {
+    return Position.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      liquidity: decodeFromJSONField('u128', field.liquidity),
+      feeGrowthInsideA: decodeFromJSONField('u128', field.feeGrowthInsideA),
+      feeGrowthInsideB: decodeFromJSONField('u128', field.feeGrowthInsideB),
+      tokensOwedA: decodeFromJSONField('u64', field.tokensOwedA),
+      tokensOwedB: decodeFromJSONField('u64', field.tokensOwedB),
+      rewardInfos: decodeFromJSONField(
+        reified.vector(PositionRewardInfo.reified()),
+        field.rewardInfos
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Position {
+    if (json.$typeName !== Position.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Position.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Position {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPosition(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Position object`)
+    }
+    return Position.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Position {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPosition(data.bcs.type)) {
+        throw new Error(`object at is not a Position object`)
+      }
+
+      return Position.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Position.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Position> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Position object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPosition(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Position object`)
+    }
+
+    return Position.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PositionRewardInfo =============================== */
+
+export function isPositionRewardInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::PositionRewardInfo`
+}
+
+export interface PositionRewardInfoFields {
+  rewardGrowthInside: ToField<'u128'>
+  amountOwed: ToField<'u64'>
+}
+
+export type PositionRewardInfoReified = Reified<PositionRewardInfo, PositionRewardInfoFields>
+
+export class PositionRewardInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::PositionRewardInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PositionRewardInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::PositionRewardInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = PositionRewardInfo.$isPhantom
+
+  readonly rewardGrowthInside: ToField<'u128'>
+  readonly amountOwed: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: PositionRewardInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      PositionRewardInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::PositionRewardInfo`
+    this.$typeArgs = typeArgs
+
+    this.rewardGrowthInside = fields.rewardGrowthInside
+    this.amountOwed = fields.amountOwed
+  }
+
+  static reified(): PositionRewardInfoReified {
+    return {
+      typeName: PositionRewardInfo.$typeName,
+      fullTypeName: composeSuiType(
+        PositionRewardInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::PositionRewardInfo`,
+      typeArgs: [] as [],
+      isPhantom: PositionRewardInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PositionRewardInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionRewardInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromBcs(data),
+      bcs: PositionRewardInfo.bcs,
+      fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PositionRewardInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PositionRewardInfo.fetch(client, id),
+      new: (fields: PositionRewardInfoFields) => {
+        return new PositionRewardInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PositionRewardInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PositionRewardInfo>> {
+    return phantom(PositionRewardInfo.reified())
+  }
+  static get p() {
+    return PositionRewardInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PositionRewardInfo', {
+      reward_growth_inside: bcs.u128(),
+      amount_owed: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PositionRewardInfo {
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromFields('u128', fields.reward_growth_inside),
+      amountOwed: decodeFromFields('u64', fields.amount_owed),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PositionRewardInfo {
+    if (!isPositionRewardInfo(item.type)) {
+      throw new Error('not a PositionRewardInfo type')
+    }
+
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_inside),
+      amountOwed: decodeFromFieldsWithTypes('u64', item.fields.amount_owed),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PositionRewardInfo {
+    return PositionRewardInfo.fromFields(PositionRewardInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      rewardGrowthInside: this.rewardGrowthInside.toString(),
+      amountOwed: this.amountOwed.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PositionRewardInfo {
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromJSONField('u128', field.rewardGrowthInside),
+      amountOwed: decodeFromJSONField('u64', field.amountOwed),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PositionRewardInfo {
+    if (json.$typeName !== PositionRewardInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PositionRewardInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PositionRewardInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPositionRewardInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PositionRewardInfo object`)
+    }
+    return PositionRewardInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PositionRewardInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPositionRewardInfo(data.bcs.type)) {
+        throw new Error(`object at is not a PositionRewardInfo object`)
+      }
+
+      return PositionRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PositionRewardInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PositionRewardInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PositionRewardInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionRewardInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PositionRewardInfo object`)
+    }
+
+    return PositionRewardInfo.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Tick =============================== */
+
+export function isTick(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::Tick`
+}
+
+export interface TickFields {
+  id: ToField<UID>
+  liquidityGross: ToField<'u128'>
+  liquidityNet: ToField<I128>
+  feeGrowthOutsideA: ToField<'u128'>
+  feeGrowthOutsideB: ToField<'u128'>
+  rewardGrowthsOutside: ToField<Vector<'u128'>>
+  initialized: ToField<'bool'>
+}
+
+export type TickReified = Reified<Tick, TickFields>
+
+export class Tick implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::Tick`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Tick.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::Tick`
+  readonly $typeArgs: []
+  readonly $isPhantom = Tick.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly liquidityGross: ToField<'u128'>
+  readonly liquidityNet: ToField<I128>
+  readonly feeGrowthOutsideA: ToField<'u128'>
+  readonly feeGrowthOutsideB: ToField<'u128'>
+  readonly rewardGrowthsOutside: ToField<Vector<'u128'>>
+  readonly initialized: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: TickFields) {
+    this.$fullTypeName = composeSuiType(
+      Tick.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::Tick`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.liquidityGross = fields.liquidityGross
+    this.liquidityNet = fields.liquidityNet
+    this.feeGrowthOutsideA = fields.feeGrowthOutsideA
+    this.feeGrowthOutsideB = fields.feeGrowthOutsideB
+    this.rewardGrowthsOutside = fields.rewardGrowthsOutside
+    this.initialized = fields.initialized
+  }
+
+  static reified(): TickReified {
+    return {
+      typeName: Tick.$typeName,
+      fullTypeName: composeSuiType(Tick.$typeName, ...[]) as `${typeof PKG_V1}::pool::Tick`,
+      typeArgs: [] as [],
+      isPhantom: Tick.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Tick.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Tick.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Tick.fromBcs(data),
+      bcs: Tick.bcs,
+      fromJSONField: (field: any) => Tick.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Tick.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Tick.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Tick.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Tick.fetch(client, id),
+      new: (fields: TickFields) => {
+        return new Tick([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Tick.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Tick>> {
+    return phantom(Tick.reified())
+  }
+  static get p() {
+    return Tick.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Tick', {
+      id: UID.bcs,
+      liquidity_gross: bcs.u128(),
+      liquidity_net: I128.bcs,
+      fee_growth_outside_a: bcs.u128(),
+      fee_growth_outside_b: bcs.u128(),
+      reward_growths_outside: bcs.vector(bcs.u128()),
+      initialized: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Tick {
+    return Tick.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      liquidityGross: decodeFromFields('u128', fields.liquidity_gross),
+      liquidityNet: decodeFromFields(I128.reified(), fields.liquidity_net),
+      feeGrowthOutsideA: decodeFromFields('u128', fields.fee_growth_outside_a),
+      feeGrowthOutsideB: decodeFromFields('u128', fields.fee_growth_outside_b),
+      rewardGrowthsOutside: decodeFromFields(reified.vector('u128'), fields.reward_growths_outside),
+      initialized: decodeFromFields('bool', fields.initialized),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Tick {
+    if (!isTick(item.type)) {
+      throw new Error('not a Tick type')
+    }
+
+    return Tick.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      liquidityGross: decodeFromFieldsWithTypes('u128', item.fields.liquidity_gross),
+      liquidityNet: decodeFromFieldsWithTypes(I128.reified(), item.fields.liquidity_net),
+      feeGrowthOutsideA: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_outside_a),
+      feeGrowthOutsideB: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_outside_b),
+      rewardGrowthsOutside: decodeFromFieldsWithTypes(
+        reified.vector('u128'),
+        item.fields.reward_growths_outside
+      ),
+      initialized: decodeFromFieldsWithTypes('bool', item.fields.initialized),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Tick {
+    return Tick.fromFields(Tick.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      liquidityGross: this.liquidityGross.toString(),
+      liquidityNet: this.liquidityNet.toJSONField(),
+      feeGrowthOutsideA: this.feeGrowthOutsideA.toString(),
+      feeGrowthOutsideB: this.feeGrowthOutsideB.toString(),
+      rewardGrowthsOutside: fieldToJSON<Vector<'u128'>>(`vector<u128>`, this.rewardGrowthsOutside),
+      initialized: this.initialized,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Tick {
+    return Tick.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      liquidityGross: decodeFromJSONField('u128', field.liquidityGross),
+      liquidityNet: decodeFromJSONField(I128.reified(), field.liquidityNet),
+      feeGrowthOutsideA: decodeFromJSONField('u128', field.feeGrowthOutsideA),
+      feeGrowthOutsideB: decodeFromJSONField('u128', field.feeGrowthOutsideB),
+      rewardGrowthsOutside: decodeFromJSONField(reified.vector('u128'), field.rewardGrowthsOutside),
+      initialized: decodeFromJSONField('bool', field.initialized),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Tick {
+    if (json.$typeName !== Tick.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Tick.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Tick {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isTick(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Tick object`)
+    }
+    return Tick.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Tick {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isTick(data.bcs.type)) {
+        throw new Error(`object at is not a Tick object`)
+      }
+
+      return Tick.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Tick.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Tick> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Tick object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isTick(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Tick object`)
+    }
+
+    return Tick.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Versioned =============================== */
+
+export function isVersioned(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::Versioned`
+}
+
+export interface VersionedFields {
+  id: ToField<UID>
+  version: ToField<'u64'>
+}
+
+export type VersionedReified = Reified<Versioned, VersionedFields>
+
+export class Versioned implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::Versioned`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Versioned.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::Versioned`
+  readonly $typeArgs: []
+  readonly $isPhantom = Versioned.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly version: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: VersionedFields) {
+    this.$fullTypeName = composeSuiType(
+      Versioned.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::Versioned`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.version = fields.version
+  }
+
+  static reified(): VersionedReified {
+    return {
+      typeName: Versioned.$typeName,
+      fullTypeName: composeSuiType(
+        Versioned.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::Versioned`,
+      typeArgs: [] as [],
+      isPhantom: Versioned.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Versioned.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Versioned.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Versioned.fromBcs(data),
+      bcs: Versioned.bcs,
+      fromJSONField: (field: any) => Versioned.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Versioned.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Versioned.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Versioned.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Versioned.fetch(client, id),
+      new: (fields: VersionedFields) => {
+        return new Versioned([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Versioned.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Versioned>> {
+    return phantom(Versioned.reified())
+  }
+  static get p() {
+    return Versioned.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Versioned', {
+      id: UID.bcs,
+      version: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Versioned {
+    return Versioned.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      version: decodeFromFields('u64', fields.version),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Versioned {
+    if (!isVersioned(item.type)) {
+      throw new Error('not a Versioned type')
+    }
+
+    return Versioned.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      version: decodeFromFieldsWithTypes('u64', item.fields.version),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Versioned {
+    return Versioned.fromFields(Versioned.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      version: this.version.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Versioned {
+    return Versioned.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      version: decodeFromJSONField('u64', field.version),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Versioned {
+    if (json.$typeName !== Versioned.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Versioned.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Versioned {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isVersioned(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Versioned object`)
+    }
+    return Versioned.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Versioned {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isVersioned(data.bcs.type)) {
+        throw new Error(`object at is not a Versioned object`)
+      }
+
+      return Versioned.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Versioned.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Versioned> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Versioned object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isVersioned(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Versioned object`)
+    }
+
+    return Versioned.fromSuiObjectData(res.data)
   }
 }

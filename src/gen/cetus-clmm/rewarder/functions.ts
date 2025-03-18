@@ -2,21 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::new`, arguments: [] })
-}
-
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::init`, arguments: [] })
-}
-
-export function lastUpdateTime(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::last_update_time`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
 export function balanceOf(tx: Transaction, typeArg: string, vault: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::rewarder::balance_of`,
@@ -83,6 +68,21 @@ export function growthGlobal(tx: Transaction, rewarder: TransactionObjectInput) 
     target: `${PUBLISHED_AT}::rewarder::growth_global`,
     arguments: [obj(tx, rewarder)],
   })
+}
+
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::init`, arguments: [] })
+}
+
+export function lastUpdateTime(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::last_update_time`,
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function new_(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::new`, arguments: [] })
 }
 
 export function pointsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {

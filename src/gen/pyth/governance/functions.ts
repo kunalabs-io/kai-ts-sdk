@@ -9,32 +9,6 @@ export function destroy(tx: Transaction, receipt: TransactionObjectInput) {
   })
 }
 
-export function takePayload(tx: Transaction, receipt: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance::take_payload`,
-    arguments: [obj(tx, receipt)],
-  })
-}
-
-export interface VerifyVaaArgs {
-  pythState: TransactionObjectInput
-  verifiedVaa: TransactionObjectInput
-}
-
-export function verifyVaa(tx: Transaction, args: VerifyVaaArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance::verify_vaa`,
-    arguments: [obj(tx, args.pythState), obj(tx, args.verifiedVaa)],
-  })
-}
-
-export function takeDigest(tx: Transaction, receipt: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance::take_digest`,
-    arguments: [obj(tx, receipt)],
-  })
-}
-
 export interface ExecuteGovernanceInstructionArgs {
   pythState: TransactionObjectInput
   receipt: TransactionObjectInput
@@ -50,9 +24,35 @@ export function executeGovernanceInstruction(
   })
 }
 
+export function takeDigest(tx: Transaction, receipt: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance::take_digest`,
+    arguments: [obj(tx, receipt)],
+  })
+}
+
+export function takePayload(tx: Transaction, receipt: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance::take_payload`,
+    arguments: [obj(tx, receipt)],
+  })
+}
+
 export function takeSequence(tx: Transaction, receipt: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance::take_sequence`,
     arguments: [obj(tx, receipt)],
+  })
+}
+
+export interface VerifyVaaArgs {
+  pythState: TransactionObjectInput
+  verifiedVaa: TransactionObjectInput
+}
+
+export function verifyVaa(tx: Transaction, args: VerifyVaaArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance::verify_vaa`,
+    arguments: [obj(tx, args.pythState), obj(tx, args.verifiedVaa)],
   })
 }

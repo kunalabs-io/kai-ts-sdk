@@ -2,16 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { GenericArg, generic, obj, pure, vector } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function hash(
-  tx: Transaction,
-  bytes: Array<number | TransactionArgument> | TransactionArgument
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::hash`,
-    arguments: [pure(tx, bytes, `vector<u8>`)],
-  })
-}
-
 export interface ConstructProofsArgs {
   messages: Array<Array<number | TransactionArgument> | TransactionArgument> | TransactionArgument
   depth: number | TransactionArgument
@@ -37,6 +27,16 @@ export function greaterThan(tx: Transaction, args: GreaterThanArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::merkle_tree::greater_than`,
     arguments: [obj(tx, args.a), obj(tx, args.b)],
+  })
+}
+
+export function hash(
+  tx: Transaction,
+  bytes: Array<number | TransactionArgument> | TransactionArgument
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::merkle_tree::hash`,
+    arguments: [pure(tx, bytes, `vector<u8>`)],
   })
 }
 

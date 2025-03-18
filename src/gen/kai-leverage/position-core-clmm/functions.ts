@@ -4,77 +4,6 @@ import { Option } from '../../move-stdlib/option/structs'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function liqMarginBps(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::liq_margin_bps`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export function liqBonusBps(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::liq_bonus_bps`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export function baseLiqFactorBps(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::base_liq_factor_bps`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export function deleverageMarginBps(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::deleverage_margin_bps`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export function baseDeleverageFactorBps(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::base_deleverage_factor_bps`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export function dx(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  ticket: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::dx`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, ticket)],
-  })
-}
-
-export function dy(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  ticket: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::dy`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, ticket)],
-  })
-}
-
-export function deltaL(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  ticket: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::delta_l`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, ticket)],
-  })
-}
-
 export function aDeleverage(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::position_core_clmm::a_deleverage`, arguments: [] })
 }
@@ -194,6 +123,20 @@ export function allowNewPositions(tx: Transaction, config: TransactionObjectInpu
 export function allowedOracles(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::allowed_oracles`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function baseDeleverageFactorBps(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::base_deleverage_factor_bps`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function baseLiqFactorBps(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::base_liq_factor_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -464,13 +407,6 @@ export function createEmptyConfig(tx: Transaction, poolObjectId: string | Transa
   })
 }
 
-export function poolObjectId(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::pool_object_id`,
-    arguments: [obj(tx, config)],
-  })
-}
-
 export interface CreateRebalanceReceiptArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -533,6 +469,13 @@ export function deleverageInfoConstructor(tx: Transaction, args: DeleverageInfoC
       pure(tx, args.xRepaid, `u64`),
       pure(tx, args.yRepaid, `u64`),
     ],
+  })
+}
+
+export function deleverageMarginBps(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::deleverage_margin_bps`,
+    arguments: [obj(tx, config)],
   })
 }
 
@@ -610,6 +553,18 @@ export function deleverageTicketRepayY(
   })
 }
 
+export function deltaL(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::delta_l`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
 export function destroyCreatePositionTicket(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -646,6 +601,30 @@ export function destroyReductionTicket(
 ) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::destroy_reduction_ticket`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
+export function dx(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dx`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
+export function dy(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dy`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -871,9 +850,23 @@ export function lendFacilCap(tx: Transaction, config: TransactionObjectInput) {
   })
 }
 
+export function liqBonusBps(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::liq_bonus_bps`,
+    arguments: [obj(tx, config)],
+  })
+}
+
 export function liqFeeBps(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::liq_fee_bps`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function liqMarginBps(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::liq_margin_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1006,30 +999,6 @@ export function newCreatePositionTicket(
   })
 }
 
-export function principalX(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  ticket: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::principal_x`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, ticket)],
-  })
-}
-
-export function principalY(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  ticket: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::principal_y`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, ticket)],
-  })
-}
-
 export interface OwnerTakeStashedRewardsArgs {
   position: TransactionObjectInput
   cap: TransactionObjectInput
@@ -1056,6 +1025,13 @@ export function pcPositionId(tx: Transaction, cap: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::pc_position_id`,
     arguments: [obj(tx, cap)],
+  })
+}
+
+export function poolObjectId(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::pool_object_id`,
+    arguments: [obj(tx, config)],
   })
 }
 
@@ -1167,6 +1143,30 @@ export function positionShareObject(
     target: `${PUBLISHED_AT}::position_core_clmm::position_share_object`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
+  })
+}
+
+export function principalX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::principal_x`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
+export function principalY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::principal_y`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
   })
 }
 

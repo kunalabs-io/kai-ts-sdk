@@ -2,14 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function maxTick(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::max_tick`, arguments: [] })
-}
-
-export function minTick(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::min_tick`, arguments: [] })
-}
-
 export function asU8(tx: Transaction, b: boolean | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::tick_math::as_u8`,
@@ -61,8 +53,16 @@ export function maxSqrtPrice(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::max_sqrt_price`, arguments: [] })
 }
 
+export function maxTick(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::max_tick`, arguments: [] })
+}
+
 export function minSqrtPrice(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::min_sqrt_price`, arguments: [] })
+}
+
+export function minTick(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick_math::min_tick`, arguments: [] })
 }
 
 export function tickBound(tx: Transaction) {

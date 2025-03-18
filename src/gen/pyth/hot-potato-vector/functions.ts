@@ -15,6 +15,14 @@ export function borrow(tx: Transaction, typeArg: string, args: BorrowArgs) {
   })
 }
 
+export function destroy(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::hot_potato_vector::destroy`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, hotPotatoVector)],
+  })
+}
+
 export function isEmpty(tx: Transaction, typeArg: string, potato: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::hot_potato_vector::is_empty`,
@@ -31,14 +39,6 @@ export function length(tx: Transaction, typeArg: string, potato: TransactionObje
   })
 }
 
-export function popBack(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::pop_back`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, hotPotatoVector)],
-  })
-}
-
 export function new_(
   tx: Transaction,
   typeArg: string,
@@ -51,9 +51,9 @@ export function new_(
   })
 }
 
-export function destroy(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
+export function popBack(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::destroy`,
+    target: `${PUBLISHED_AT}::hot_potato_vector::pop_back`,
     typeArguments: [typeArg],
     arguments: [obj(tx, hotPotatoVector)],
   })

@@ -2,13 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function destroy(tx: Transaction, batch: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::destroy`,
-    arguments: [obj(tx, batch)],
-  })
-}
-
 export interface DeserializeArgs {
   bytes: Array<number | TransactionArgument> | TransactionArgument
   clock: TransactionObjectInput
@@ -37,6 +30,13 @@ export function deserializePriceInfo(tx: Transaction, args: DeserializePriceInfo
   return tx.moveCall({
     target: `${PUBLISHED_AT}::batch_price_attestation::deserialize_price_info`,
     arguments: [obj(tx, args.cur), obj(tx, args.clock)],
+  })
+}
+
+export function destroy(tx: Transaction, batch: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::batch_price_attestation::destroy`,
+    arguments: [obj(tx, batch)],
   })
 }
 

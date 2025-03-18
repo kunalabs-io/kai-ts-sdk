@@ -22,217 +22,6 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== PoolSimpleInfo =============================== */
-
-export function isPoolSimpleInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool_factory::PoolSimpleInfo`
-}
-
-export interface PoolSimpleInfoFields {
-  poolId: ToField<ID>
-  poolKey: ToField<ID>
-  coinTypeA: ToField<TypeName>
-  coinTypeB: ToField<TypeName>
-  feeType: ToField<TypeName>
-  fee: ToField<'u32'>
-  tickSpacing: ToField<'u32'>
-}
-
-export type PoolSimpleInfoReified = Reified<PoolSimpleInfo, PoolSimpleInfoFields>
-
-export class PoolSimpleInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool_factory::PoolSimpleInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PoolSimpleInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = PoolSimpleInfo.$isPhantom
-
-  readonly poolId: ToField<ID>
-  readonly poolKey: ToField<ID>
-  readonly coinTypeA: ToField<TypeName>
-  readonly coinTypeB: ToField<TypeName>
-  readonly feeType: ToField<TypeName>
-  readonly fee: ToField<'u32'>
-  readonly tickSpacing: ToField<'u32'>
-
-  private constructor(typeArgs: [], fields: PoolSimpleInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      PoolSimpleInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`
-    this.$typeArgs = typeArgs
-
-    this.poolId = fields.poolId
-    this.poolKey = fields.poolKey
-    this.coinTypeA = fields.coinTypeA
-    this.coinTypeB = fields.coinTypeB
-    this.feeType = fields.feeType
-    this.fee = fields.fee
-    this.tickSpacing = fields.tickSpacing
-  }
-
-  static reified(): PoolSimpleInfoReified {
-    return {
-      typeName: PoolSimpleInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PoolSimpleInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`,
-      typeArgs: [] as [],
-      isPhantom: PoolSimpleInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PoolSimpleInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolSimpleInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolSimpleInfo.fromBcs(data),
-      bcs: PoolSimpleInfo.bcs,
-      fromJSONField: (field: any) => PoolSimpleInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PoolSimpleInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PoolSimpleInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PoolSimpleInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PoolSimpleInfo.fetch(client, id),
-      new: (fields: PoolSimpleInfoFields) => {
-        return new PoolSimpleInfo([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PoolSimpleInfo.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PoolSimpleInfo>> {
-    return phantom(PoolSimpleInfo.reified())
-  }
-  static get p() {
-    return PoolSimpleInfo.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PoolSimpleInfo', {
-      pool_id: ID.bcs,
-      pool_key: ID.bcs,
-      coin_type_a: TypeName.bcs,
-      coin_type_b: TypeName.bcs,
-      fee_type: TypeName.bcs,
-      fee: bcs.u32(),
-      tick_spacing: bcs.u32(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PoolSimpleInfo {
-    return PoolSimpleInfo.reified().new({
-      poolId: decodeFromFields(ID.reified(), fields.pool_id),
-      poolKey: decodeFromFields(ID.reified(), fields.pool_key),
-      coinTypeA: decodeFromFields(TypeName.reified(), fields.coin_type_a),
-      coinTypeB: decodeFromFields(TypeName.reified(), fields.coin_type_b),
-      feeType: decodeFromFields(TypeName.reified(), fields.fee_type),
-      fee: decodeFromFields('u32', fields.fee),
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PoolSimpleInfo {
-    if (!isPoolSimpleInfo(item.type)) {
-      throw new Error('not a PoolSimpleInfo type')
-    }
-
-    return PoolSimpleInfo.reified().new({
-      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
-      poolKey: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_key),
-      coinTypeA: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_a),
-      coinTypeB: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_b),
-      feeType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.fee_type),
-      fee: decodeFromFieldsWithTypes('u32', item.fields.fee),
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PoolSimpleInfo {
-    return PoolSimpleInfo.fromFields(PoolSimpleInfo.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      poolId: this.poolId,
-      poolKey: this.poolKey,
-      coinTypeA: this.coinTypeA.toJSONField(),
-      coinTypeB: this.coinTypeB.toJSONField(),
-      feeType: this.feeType.toJSONField(),
-      fee: this.fee,
-      tickSpacing: this.tickSpacing,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PoolSimpleInfo {
-    return PoolSimpleInfo.reified().new({
-      poolId: decodeFromJSONField(ID.reified(), field.poolId),
-      poolKey: decodeFromJSONField(ID.reified(), field.poolKey),
-      coinTypeA: decodeFromJSONField(TypeName.reified(), field.coinTypeA),
-      coinTypeB: decodeFromJSONField(TypeName.reified(), field.coinTypeB),
-      feeType: decodeFromJSONField(TypeName.reified(), field.feeType),
-      fee: decodeFromJSONField('u32', field.fee),
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PoolSimpleInfo {
-    if (json.$typeName !== PoolSimpleInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PoolSimpleInfo.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PoolSimpleInfo {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPoolSimpleInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PoolSimpleInfo object`)
-    }
-    return PoolSimpleInfo.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PoolSimpleInfo {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPoolSimpleInfo(data.bcs.type)) {
-        throw new Error(`object at is not a PoolSimpleInfo object`)
-      }
-
-      return PoolSimpleInfo.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PoolSimpleInfo.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PoolSimpleInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PoolSimpleInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolSimpleInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PoolSimpleInfo object`)
-    }
-
-    return PoolSimpleInfo.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== PoolConfig =============================== */
 
 export function isPoolConfig(type: string): boolean {
@@ -588,5 +377,216 @@ export class PoolFactoryAdminCap implements StructClass {
     }
 
     return PoolFactoryAdminCap.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PoolSimpleInfo =============================== */
+
+export function isPoolSimpleInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool_factory::PoolSimpleInfo`
+}
+
+export interface PoolSimpleInfoFields {
+  poolId: ToField<ID>
+  poolKey: ToField<ID>
+  coinTypeA: ToField<TypeName>
+  coinTypeB: ToField<TypeName>
+  feeType: ToField<TypeName>
+  fee: ToField<'u32'>
+  tickSpacing: ToField<'u32'>
+}
+
+export type PoolSimpleInfoReified = Reified<PoolSimpleInfo, PoolSimpleInfoFields>
+
+export class PoolSimpleInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool_factory::PoolSimpleInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PoolSimpleInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = PoolSimpleInfo.$isPhantom
+
+  readonly poolId: ToField<ID>
+  readonly poolKey: ToField<ID>
+  readonly coinTypeA: ToField<TypeName>
+  readonly coinTypeB: ToField<TypeName>
+  readonly feeType: ToField<TypeName>
+  readonly fee: ToField<'u32'>
+  readonly tickSpacing: ToField<'u32'>
+
+  private constructor(typeArgs: [], fields: PoolSimpleInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      PoolSimpleInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`
+    this.$typeArgs = typeArgs
+
+    this.poolId = fields.poolId
+    this.poolKey = fields.poolKey
+    this.coinTypeA = fields.coinTypeA
+    this.coinTypeB = fields.coinTypeB
+    this.feeType = fields.feeType
+    this.fee = fields.fee
+    this.tickSpacing = fields.tickSpacing
+  }
+
+  static reified(): PoolSimpleInfoReified {
+    return {
+      typeName: PoolSimpleInfo.$typeName,
+      fullTypeName: composeSuiType(
+        PoolSimpleInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool_factory::PoolSimpleInfo`,
+      typeArgs: [] as [],
+      isPhantom: PoolSimpleInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PoolSimpleInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolSimpleInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PoolSimpleInfo.fromBcs(data),
+      bcs: PoolSimpleInfo.bcs,
+      fromJSONField: (field: any) => PoolSimpleInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PoolSimpleInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PoolSimpleInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PoolSimpleInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PoolSimpleInfo.fetch(client, id),
+      new: (fields: PoolSimpleInfoFields) => {
+        return new PoolSimpleInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PoolSimpleInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PoolSimpleInfo>> {
+    return phantom(PoolSimpleInfo.reified())
+  }
+  static get p() {
+    return PoolSimpleInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PoolSimpleInfo', {
+      pool_id: ID.bcs,
+      pool_key: ID.bcs,
+      coin_type_a: TypeName.bcs,
+      coin_type_b: TypeName.bcs,
+      fee_type: TypeName.bcs,
+      fee: bcs.u32(),
+      tick_spacing: bcs.u32(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PoolSimpleInfo {
+    return PoolSimpleInfo.reified().new({
+      poolId: decodeFromFields(ID.reified(), fields.pool_id),
+      poolKey: decodeFromFields(ID.reified(), fields.pool_key),
+      coinTypeA: decodeFromFields(TypeName.reified(), fields.coin_type_a),
+      coinTypeB: decodeFromFields(TypeName.reified(), fields.coin_type_b),
+      feeType: decodeFromFields(TypeName.reified(), fields.fee_type),
+      fee: decodeFromFields('u32', fields.fee),
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PoolSimpleInfo {
+    if (!isPoolSimpleInfo(item.type)) {
+      throw new Error('not a PoolSimpleInfo type')
+    }
+
+    return PoolSimpleInfo.reified().new({
+      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
+      poolKey: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_key),
+      coinTypeA: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_a),
+      coinTypeB: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_b),
+      feeType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.fee_type),
+      fee: decodeFromFieldsWithTypes('u32', item.fields.fee),
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PoolSimpleInfo {
+    return PoolSimpleInfo.fromFields(PoolSimpleInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      poolId: this.poolId,
+      poolKey: this.poolKey,
+      coinTypeA: this.coinTypeA.toJSONField(),
+      coinTypeB: this.coinTypeB.toJSONField(),
+      feeType: this.feeType.toJSONField(),
+      fee: this.fee,
+      tickSpacing: this.tickSpacing,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PoolSimpleInfo {
+    return PoolSimpleInfo.reified().new({
+      poolId: decodeFromJSONField(ID.reified(), field.poolId),
+      poolKey: decodeFromJSONField(ID.reified(), field.poolKey),
+      coinTypeA: decodeFromJSONField(TypeName.reified(), field.coinTypeA),
+      coinTypeB: decodeFromJSONField(TypeName.reified(), field.coinTypeB),
+      feeType: decodeFromJSONField(TypeName.reified(), field.feeType),
+      fee: decodeFromJSONField('u32', field.fee),
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PoolSimpleInfo {
+    if (json.$typeName !== PoolSimpleInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PoolSimpleInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PoolSimpleInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPoolSimpleInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PoolSimpleInfo object`)
+    }
+    return PoolSimpleInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PoolSimpleInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPoolSimpleInfo(data.bcs.type)) {
+        throw new Error(`object at is not a PoolSimpleInfo object`)
+      }
+
+      return PoolSimpleInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PoolSimpleInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PoolSimpleInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PoolSimpleInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolSimpleInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PoolSimpleInfo object`)
+    }
+
+    return PoolSimpleInfo.fromSuiObjectData(res.data)
   }
 }

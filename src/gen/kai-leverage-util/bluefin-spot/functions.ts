@@ -2,59 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface CreateRebalanceReceiptArgs {
-  position: TransactionObjectInput
-  pool: TransactionObjectInput
-}
-
-export function createRebalanceReceipt(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CreateRebalanceReceiptArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::create_rebalance_receipt`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.position), obj(tx, args.pool)],
-  })
-}
-
-export interface RebalanceAddLiquidityArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  receipt: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  bluefinPool: TransactionObjectInput
-  bluefinConfig: TransactionObjectInput
-  balanceX: TransactionObjectInput
-  balanceY: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function rebalanceAddLiquidity(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: RebalanceAddLiquidityArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_add_liquidity`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.receipt),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      obj(tx, args.bluefinPool),
-      obj(tx, args.bluefinConfig),
-      obj(tx, args.balanceX),
-      obj(tx, args.balanceY),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
 export interface CalcMaxAddLiquidityAmountsArgs {
   position: TransactionObjectInput
   pool: TransactionObjectInput
@@ -76,6 +23,23 @@ export function calcMaxAddLiquidityAmounts(
       pure(tx, args.availableX, `u64`),
       pure(tx, args.availableY, `u64`),
     ],
+  })
+}
+
+export interface CreateRebalanceReceiptArgs {
+  position: TransactionObjectInput
+  pool: TransactionObjectInput
+}
+
+export function createRebalanceReceipt(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreateRebalanceReceiptArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::create_rebalance_receipt`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.position), obj(tx, args.pool)],
   })
 }
 
@@ -104,6 +68,42 @@ export function ownerAddLiquidity(
       obj(tx, args.position),
       obj(tx, args.config),
       obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.bluefinPool),
+      obj(tx, args.bluefinConfig),
+      obj(tx, args.balanceX),
+      obj(tx, args.balanceY),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RebalanceAddLiquidityArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  receipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  bluefinPool: TransactionObjectInput
+  bluefinConfig: TransactionObjectInput
+  balanceX: TransactionObjectInput
+  balanceY: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function rebalanceAddLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RebalanceAddLiquidityArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.receipt),
       obj(tx, args.priceInfo),
       obj(tx, args.debtInfo),
       obj(tx, args.bluefinPool),

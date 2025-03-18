@@ -6,7 +6,6 @@ import * as package_onchain_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d95
 import * as package_onchain_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa from '../_dependencies/onchain/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/init'
 import * as package_source_1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f from '../_dependencies/source/0x1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f/init'
 import * as package_source_1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6 from '../_dependencies/source/0x1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6/init'
-import * as package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d from '../_dependencies/source/0x25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d/init'
 import * as package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d from '../_dependencies/source/0x26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d/init'
 import * as package_source_375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068 from '../_dependencies/source/0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068/init'
 import * as package_source_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/init'
@@ -21,6 +20,7 @@ import * as package_source_c060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95
 import * as package_source_ca5a5a62f01c79a104bf4d31669e29daa387f325c241de4edbe30986a9bc8b0d from '../_dependencies/source/0xca5a5a62f01c79a104bf4d31669e29daa387f325c241de4edbe30986a9bc8b0d/init'
 import * as package_source_d9dd55ac7eb676dc78f7d0ae3bc5529d7fd6b52ac0d0edb2d7820c52d080026 from '../_dependencies/source/0xd9dd55ac7eb676dc78f7d0ae3bc5529d7fd6b52ac0d0edb2d7820c52d080026/init'
 import * as package_source_dba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7 from '../_dependencies/source/0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7/init'
+import * as package_source_deeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270 from '../_dependencies/source/0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270/init'
 import * as package_source_e0917b74a5912e4ad186ac634e29c922ab83903f71af7500969f9411706f9b9a from '../_dependencies/source/0xe0917b74a5912e4ad186ac634e29c922ab83903f71af7500969f9411706f9b9a/init'
 import * as package_source_e87f1b2d498106a2c61421cec75b7b5c5e348512b0dc263949a0e7a3c256571a from '../_dependencies/source/0xe87f1b2d498106a2c61421cec75b7b5c5e348512b0dc263949a0e7a3c256571a/init'
 import * as package_source_ecf47609d7da919ea98e7fd04f6e0648a0a79b337aaad373fa37aac8febf19c8 from '../_dependencies/source/0xecf47609d7da919ea98e7fd04f6e0648a0a79b337aaad373fa37aac8febf19c8/init'
@@ -37,9 +37,9 @@ import * as package_source_27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd
 import * as package_source_358b47a13abe067fe4054e414f4ee1d1524236cc60ffc716ec10931c5dbec795 from '../kai-leverage-supply-pool-init-whusdte/init'
 import * as package_source_1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4 from '../kai-leverage-util/init'
 import * as package_source_51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523 from '../kai-leverage/init'
+import * as package_source_1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273 from '../kai-single-asset-vault/init'
 import * as package_source_a4184b1a5829e7cced8e51e8e385b16d02642634cd3e72a50d31cdf4a78bfd5c from '../kai-yusdc/init'
 import * as package_source_b8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613 from '../kai-ywh-usd-te-ysui/init'
-import * as package_source_1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273 from '../kai/init'
 import * as package_source_1 from '../move-stdlib/init'
 import * as package_source_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e from '../pyth/init'
 import * as package_source_2 from '../sui/init'
@@ -70,9 +70,6 @@ function registerClassesSource(loader: StructClassLoader) {
     loader
   )
   package_source_1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb.registerClasses(
-    loader
-  )
-  package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d.registerClasses(
     loader
   )
   package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d.registerClasses(
@@ -142,6 +139,9 @@ function registerClassesSource(loader: StructClassLoader) {
     loader
   )
   package_source_dba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7.registerClasses(
+    loader
+  )
+  package_source_deeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270.registerClasses(
     loader
   )
   package_source_e0917b74a5912e4ad186ac634e29c922ab83903f71af7500969f9411706f9b9a.registerClasses(

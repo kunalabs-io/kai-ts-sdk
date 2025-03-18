@@ -3,44 +3,6 @@ import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { ID } from '../object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction, typeArg: string, cap: GenericArg) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::new`,
-    typeArguments: [typeArg],
-    arguments: [generic(tx, `${typeArg}`, cap)],
-  })
-}
-
-export interface TransferArgs {
-  config: TransactionObjectInput
-  owner: string | TransactionArgument
-}
-
-export function transfer(tx: Transaction, typeArg: string, args: TransferArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::transfer`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), pure(tx, args.owner, `address`)],
-  })
-}
-
-export interface ExistsWithTypeArgs {
-  config: TransactionObjectInput
-  name: GenericArg
-}
-
-export function existsWithType(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: ExistsWithTypeArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::exists_with_type`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), generic(tx, `${typeArgs[1]}`, args.name)],
-  })
-}
-
 export interface AddForNextEpochArgs {
   config: TransactionObjectInput
   cap: GenericArg
@@ -87,6 +49,23 @@ export function borrowForNextEpochMut(
   })
 }
 
+export interface ExistsWithTypeArgs {
+  config: TransactionObjectInput
+  name: GenericArg
+}
+
+export function existsWithType(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: ExistsWithTypeArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::exists_with_type`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), generic(tx, `${typeArgs[1]}`, args.name)],
+  })
+}
+
 export interface ExistsWithTypeForNextEpochArgs {
   config: TransactionObjectInput
   name: GenericArg
@@ -101,6 +80,14 @@ export function existsWithTypeForNextEpoch(
     target: `${PUBLISHED_AT}::config::exists_with_type_for_next_epoch`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.config), generic(tx, `${typeArgs[1]}`, args.name)],
+  })
+}
+
+export function new_(tx: Transaction, typeArg: string, cap: GenericArg) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::new`,
+    typeArguments: [typeArg],
+    arguments: [generic(tx, `${typeArg}`, cap)],
   })
 }
 
@@ -183,5 +170,18 @@ export function share(tx: Transaction, typeArg: string, config: TransactionObjec
     target: `${PUBLISHED_AT}::config::share`,
     typeArguments: [typeArg],
     arguments: [obj(tx, config)],
+  })
+}
+
+export interface TransferArgs {
+  config: TransactionObjectInput
+  owner: string | TransactionArgument
+}
+
+export function transfer(tx: Transaction, typeArg: string, args: TransferArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::transfer`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.config), pure(tx, args.owner, `address`)],
   })
 }

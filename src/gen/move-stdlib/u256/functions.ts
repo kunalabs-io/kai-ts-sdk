@@ -2,30 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { pure } from '../../_framework/util'
 import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
-export interface MaxArgs {
-  x: bigint | TransactionArgument
-  y: bigint | TransactionArgument
-}
-
-export function max(tx: Transaction, args: MaxArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u256::max`,
-    arguments: [pure(tx, args.x, `u256`), pure(tx, args.y, `u256`)],
-  })
-}
-
-export interface MinArgs {
-  x: bigint | TransactionArgument
-  y: bigint | TransactionArgument
-}
-
-export function min(tx: Transaction, args: MinArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u256::min`,
-    arguments: [pure(tx, args.x, `u256`), pure(tx, args.y, `u256`)],
-  })
-}
-
 export function bitwiseNot(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::u256::bitwise_not`,
@@ -57,6 +33,30 @@ export function divideAndRoundUp(tx: Transaction, args: DivideAndRoundUpArgs) {
   })
 }
 
+export interface MaxArgs {
+  x: bigint | TransactionArgument
+  y: bigint | TransactionArgument
+}
+
+export function max(tx: Transaction, args: MaxArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u256::max`,
+    arguments: [pure(tx, args.x, `u256`), pure(tx, args.y, `u256`)],
+  })
+}
+
+export interface MinArgs {
+  x: bigint | TransactionArgument
+  y: bigint | TransactionArgument
+}
+
+export function min(tx: Transaction, args: MinArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u256::min`,
+    arguments: [pure(tx, args.x, `u256`), pure(tx, args.y, `u256`)],
+  })
+}
+
 export interface PowArgs {
   base: bigint | TransactionArgument
   exponent: number | TransactionArgument
@@ -72,6 +72,13 @@ export function pow(tx: Transaction, args: PowArgs) {
 export function toString(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::u256::to_string`,
+    arguments: [pure(tx, x, `u256`)],
+  })
+}
+
+export function tryAsU128(tx: Transaction, x: bigint | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u256::try_as_u128`,
     arguments: [pure(tx, x, `u256`)],
   })
 }
@@ -100,13 +107,6 @@ export function tryAsU64(tx: Transaction, x: bigint | TransactionArgument) {
 export function tryAsU8(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::u256::try_as_u8`,
-    arguments: [pure(tx, x, `u256`)],
-  })
-}
-
-export function tryAsU128(tx: Transaction, x: bigint | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u256::try_as_u128`,
     arguments: [pure(tx, x, `u256`)],
   })
 }

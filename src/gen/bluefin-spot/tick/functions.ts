@@ -2,24 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::tick_spacing`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
-    arguments: [obj(tx, tick)],
-  })
-}
-
-export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
-}
-
 export function bitmap(tx: Transaction, manager: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick::bitmap`, arguments: [obj(tx, manager)] })
 }
@@ -119,6 +101,24 @@ export function isTickInitialized(tx: Transaction, args: IsTickInitializedArgs) 
   })
 }
 
+export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
+    arguments: [obj(tx, tick)],
+  })
+}
+
+export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
+}
+
 export function sqrtPrice(tx: Transaction, tick: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick::sqrt_price`, arguments: [obj(tx, tick)] })
+}
+
+export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::tick_spacing`,
+    arguments: [obj(tx, manager)],
+  })
 }

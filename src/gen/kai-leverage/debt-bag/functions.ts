@@ -2,21 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function destroyEmpty(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_bag::destroy_empty`,
-    arguments: [obj(tx, self)],
-  })
-}
-
-export function empty(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::empty`, arguments: [] })
-}
-
-export function isEmpty(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::is_empty`, arguments: [obj(tx, self)] })
-}
-
 export interface AddArgs {
   self: TransactionObjectInput
   shares: TransactionObjectInput
@@ -30,8 +15,15 @@ export function add(tx: Transaction, typeArgs: [string, string], args: AddArgs) 
   })
 }
 
-export function key(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::key`, arguments: [obj(tx, info)] })
+export function destroyEmpty(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::debt_bag::destroy_empty`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function empty(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::empty`, arguments: [] })
 }
 
 export interface GetAssetIdxOptArgs {
@@ -104,6 +96,14 @@ export function getShareTypeForAsset(
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
+}
+
+export function isEmpty(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::is_empty`, arguments: [obj(tx, self)] })
+}
+
+export function key(tx: Transaction, info: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::key`, arguments: [obj(tx, info)] })
 }
 
 export function takeAll(tx: Transaction, typeArg: string, self: TransactionObjectInput) {

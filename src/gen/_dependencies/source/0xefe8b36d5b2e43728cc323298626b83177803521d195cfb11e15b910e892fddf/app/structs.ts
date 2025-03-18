@@ -21,6 +21,159 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== APP =============================== */
+
+export function isAPP(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::app::APP`
+}
+
+export interface APPFields {
+  dummyField: ToField<'bool'>
+}
+
+export type APPReified = Reified<APP, APPFields>
+
+export class APP implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::app::APP`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = APP.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::app::APP`
+  readonly $typeArgs: []
+  readonly $isPhantom = APP.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: APPFields) {
+    this.$fullTypeName = composeSuiType(APP.$typeName, ...typeArgs) as `${typeof PKG_V1}::app::APP`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): APPReified {
+    return {
+      typeName: APP.$typeName,
+      fullTypeName: composeSuiType(APP.$typeName, ...[]) as `${typeof PKG_V1}::app::APP`,
+      typeArgs: [] as [],
+      isPhantom: APP.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => APP.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => APP.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => APP.fromBcs(data),
+      bcs: APP.bcs,
+      fromJSONField: (field: any) => APP.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => APP.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => APP.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => APP.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => APP.fetch(client, id),
+      new: (fields: APPFields) => {
+        return new APP([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return APP.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<APP>> {
+    return phantom(APP.reified())
+  }
+  static get p() {
+    return APP.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('APP', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): APP {
+    return APP.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): APP {
+    if (!isAPP(item.type)) {
+      throw new Error('not a APP type')
+    }
+
+    return APP.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): APP {
+    return APP.fromFields(APP.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): APP {
+    return APP.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): APP {
+    if (json.$typeName !== APP.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return APP.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): APP {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAPP(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a APP object`)
+    }
+    return APP.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): APP {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAPP(data.bcs.type)) {
+        throw new Error(`object at is not a APP object`)
+      }
+
+      return APP.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return APP.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<APP> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching APP object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAPP(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a APP object`)
+    }
+
+    return APP.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== AdminCap =============================== */
 
 export function isAdminCap(type: string): boolean {
@@ -239,158 +392,5 @@ export class AdminCap implements StructClass {
     }
 
     return AdminCap.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== APP =============================== */
-
-export function isAPP(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::app::APP`
-}
-
-export interface APPFields {
-  dummyField: ToField<'bool'>
-}
-
-export type APPReified = Reified<APP, APPFields>
-
-export class APP implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::app::APP`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = APP.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::app::APP`
-  readonly $typeArgs: []
-  readonly $isPhantom = APP.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: APPFields) {
-    this.$fullTypeName = composeSuiType(APP.$typeName, ...typeArgs) as `${typeof PKG_V1}::app::APP`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): APPReified {
-    return {
-      typeName: APP.$typeName,
-      fullTypeName: composeSuiType(APP.$typeName, ...[]) as `${typeof PKG_V1}::app::APP`,
-      typeArgs: [] as [],
-      isPhantom: APP.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => APP.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => APP.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => APP.fromBcs(data),
-      bcs: APP.bcs,
-      fromJSONField: (field: any) => APP.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => APP.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => APP.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => APP.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => APP.fetch(client, id),
-      new: (fields: APPFields) => {
-        return new APP([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return APP.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<APP>> {
-    return phantom(APP.reified())
-  }
-  static get p() {
-    return APP.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('APP', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): APP {
-    return APP.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): APP {
-    if (!isAPP(item.type)) {
-      throw new Error('not a APP type')
-    }
-
-    return APP.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): APP {
-    return APP.fromFields(APP.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): APP {
-    return APP.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): APP {
-    if (json.$typeName !== APP.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return APP.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): APP {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAPP(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a APP object`)
-    }
-    return APP.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): APP {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAPP(data.bcs.type)) {
-        throw new Error(`object at is not a APP object`)
-      }
-
-      return APP.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return APP.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<APP> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching APP object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAPP(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a APP object`)
-    }
-
-    return APP.fromSuiObjectData(res.data)
   }
 }

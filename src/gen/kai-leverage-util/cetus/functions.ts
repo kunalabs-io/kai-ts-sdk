@@ -2,6 +2,30 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface CalcMaxAddLiquidityAmountsArgs {
+  position: TransactionObjectInput
+  pool: TransactionObjectInput
+  availableX: bigint | TransactionArgument
+  availableY: bigint | TransactionArgument
+}
+
+export function calcMaxAddLiquidityAmounts(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcMaxAddLiquidityAmountsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::calc_max_add_liquidity_amounts`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.pool),
+      pure(tx, args.availableX, `u64`),
+      pure(tx, args.availableY, `u64`),
+    ],
+  })
+}
+
 export interface CreateRebalanceReceiptArgs {
   position: TransactionObjectInput
   pool: TransactionObjectInput
@@ -45,41 +69,39 @@ export function flashSwap(tx: Transaction, typeArgs: [string, string], args: Fla
   })
 }
 
-export interface RepayFlashSwapArgs {
+export interface OwnerAddLiquidityArgs {
+  position: TransactionObjectInput
   config: TransactionObjectInput
-  pool: TransactionObjectInput
-  coinA: TransactionObjectInput
-  coinB: TransactionObjectInput
-  receipt: TransactionObjectInput
+  cap: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  balanceX: TransactionObjectInput
+  balanceY: TransactionObjectInput
+  clock: TransactionObjectInput
 }
 
-export function repayFlashSwap(
+export function ownerAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashSwapArgs
+  args: OwnerAddLiquidityArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::repay_flash_swap`,
+    target: `${PUBLISHED_AT}::cetus::owner_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
+      obj(tx, args.position),
       obj(tx, args.config),
-      obj(tx, args.pool),
-      obj(tx, args.coinA),
-      obj(tx, args.coinB),
-      obj(tx, args.receipt),
+      obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusConfig),
+      obj(tx, args.balanceX),
+      obj(tx, args.balanceY),
+      obj(tx, args.clock),
     ],
-  })
-}
-
-export function swapPayAmount(
-  tx: Transaction,
-  typeArgs: [string, string],
-  receipt: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::swap_pay_amount`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, receipt)],
   })
 }
 
@@ -108,66 +130,6 @@ export function rebalanceAddLiquidity(
       obj(tx, args.position),
       obj(tx, args.config),
       obj(tx, args.receipt),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      obj(tx, args.cetusPool),
-      obj(tx, args.cetusConfig),
-      obj(tx, args.balanceX),
-      obj(tx, args.balanceY),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface CalcMaxAddLiquidityAmountsArgs {
-  position: TransactionObjectInput
-  pool: TransactionObjectInput
-  availableX: bigint | TransactionArgument
-  availableY: bigint | TransactionArgument
-}
-
-export function calcMaxAddLiquidityAmounts(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CalcMaxAddLiquidityAmountsArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::calc_max_add_liquidity_amounts`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.pool),
-      pure(tx, args.availableX, `u64`),
-      pure(tx, args.availableY, `u64`),
-    ],
-  })
-}
-
-export interface OwnerAddLiquidityArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  cap: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  cetusPool: TransactionObjectInput
-  cetusConfig: TransactionObjectInput
-  balanceX: TransactionObjectInput
-  balanceY: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function ownerAddLiquidity(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: OwnerAddLiquidityArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::owner_add_liquidity`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.cap),
       obj(tx, args.priceInfo),
       obj(tx, args.debtInfo),
       obj(tx, args.cetusPool),
@@ -316,5 +278,43 @@ export function rebalanceFinalizeAddLiquidity(
       obj(tx, args.receipt),
       obj(tx, args.clock),
     ],
+  })
+}
+
+export interface RepayFlashSwapArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  coinA: TransactionObjectInput
+  coinB: TransactionObjectInput
+  receipt: TransactionObjectInput
+}
+
+export function repayFlashSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RepayFlashSwapArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::repay_flash_swap`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.coinA),
+      obj(tx, args.coinB),
+      obj(tx, args.receipt),
+    ],
+  })
+}
+
+export function swapPayAmount(
+  tx: Transaction,
+  typeArgs: [string, string],
+  receipt: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::swap_pay_amount`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, receipt)],
   })
 }

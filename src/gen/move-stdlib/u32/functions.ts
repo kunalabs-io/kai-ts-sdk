@@ -2,30 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { pure } from '../../_framework/util'
 import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
-export interface MaxArgs {
-  x: number | TransactionArgument
-  y: number | TransactionArgument
-}
-
-export function max(tx: Transaction, args: MaxArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u32::max`,
-    arguments: [pure(tx, args.x, `u32`), pure(tx, args.y, `u32`)],
-  })
-}
-
-export interface MinArgs {
-  x: number | TransactionArgument
-  y: number | TransactionArgument
-}
-
-export function min(tx: Transaction, args: MinArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u32::min`,
-    arguments: [pure(tx, args.x, `u32`), pure(tx, args.y, `u32`)],
-  })
-}
-
 export function bitwiseNot(tx: Transaction, x: number | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::u32::bitwise_not`,
@@ -53,6 +29,30 @@ export interface DivideAndRoundUpArgs {
 export function divideAndRoundUp(tx: Transaction, args: DivideAndRoundUpArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::u32::divide_and_round_up`,
+    arguments: [pure(tx, args.x, `u32`), pure(tx, args.y, `u32`)],
+  })
+}
+
+export interface MaxArgs {
+  x: number | TransactionArgument
+  y: number | TransactionArgument
+}
+
+export function max(tx: Transaction, args: MaxArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u32::max`,
+    arguments: [pure(tx, args.x, `u32`), pure(tx, args.y, `u32`)],
+  })
+}
+
+export interface MinArgs {
+  x: number | TransactionArgument
+  y: number | TransactionArgument
+}
+
+export function min(tx: Transaction, args: MinArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u32::min`,
     arguments: [pure(tx, args.x, `u32`), pure(tx, args.y, `u32`)],
   })
 }

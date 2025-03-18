@@ -3,6 +3,24 @@ import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface AddLendFacilArgs {
+  pool: TransactionObjectInput
+  facilId: string | TransactionArgument
+  interestModel: TransactionObjectInput
+}
+
+export function addLendFacil(tx: Transaction, typeArgs: [string, string], args: AddLendFacilArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::add_lend_facil`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.facilId, `${ID.$typeName}`),
+      obj(tx, args.interestModel),
+    ],
+  })
+}
+
 export interface BorrowArgs {
   pool: TransactionObjectInput
   facilCap: TransactionObjectInput
@@ -19,64 +37,6 @@ export function borrow(tx: Transaction, typeArgs: [string, string], args: Borrow
       obj(tx, args.facilCap),
       pure(tx, args.amount, `u64`),
       obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface SupplyArgs {
-  pool: TransactionObjectInput
-  balance: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function supply(tx: Transaction, typeArgs: [string, string], args: SupplyArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::supply_pool::supply`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.balance), obj(tx, args.clock)],
-  })
-}
-
-export interface WithdrawArgs {
-  pool: TransactionObjectInput
-  balance: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function withdraw(tx: Transaction, typeArgs: [string, string], args: WithdrawArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::supply_pool::withdraw`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.balance), obj(tx, args.clock)],
-  })
-}
-
-export function checkVersion(
-  tx: Transaction,
-  typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::supply_pool::check_version`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, pool)],
-  })
-}
-
-export interface AddLendFacilArgs {
-  pool: TransactionObjectInput
-  facilId: string | TransactionArgument
-  interestModel: TransactionObjectInput
-}
-
-export function addLendFacil(tx: Transaction, typeArgs: [string, string], args: AddLendFacilArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::supply_pool::add_lend_facil`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.pool),
-      pure(tx, args.facilId, `${ID.$typeName}`),
-      obj(tx, args.interestModel),
     ],
   })
 }
@@ -180,6 +140,18 @@ export function calcWithdrawByShares(
     target: `${PUBLISHED_AT}::supply_pool::calc_withdraw_by_shares`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.pool), pure(tx, args.shareAmount, `u64`), obj(tx, args.clock)],
+  })
+}
+
+export function checkVersion(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::check_version`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
   })
 }
 
@@ -528,6 +500,20 @@ export function setLendFacilMaxUtilizationBps(
   })
 }
 
+export interface SupplyArgs {
+  pool: TransactionObjectInput
+  balance: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function supply(tx: Transaction, typeArgs: [string, string], args: SupplyArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::supply`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), obj(tx, args.balance), obj(tx, args.clock)],
+  })
+}
+
 export function takeCollectedFees(
   tx: Transaction,
   typeArgs: [string, string],
@@ -578,5 +564,19 @@ export function utilizationBps(
     target: `${PUBLISHED_AT}::supply_pool::utilization_bps`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
+  })
+}
+
+export interface WithdrawArgs {
+  pool: TransactionObjectInput
+  balance: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function withdraw(tx: Transaction, typeArgs: [string, string], args: WithdrawArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::withdraw`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), obj(tx, args.balance), obj(tx, args.clock)],
   })
 }

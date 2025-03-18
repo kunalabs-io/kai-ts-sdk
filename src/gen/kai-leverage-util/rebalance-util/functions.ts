@@ -22,6 +22,7 @@ export function calcFX64(tx: Transaction, args: CalcFX64Args) {
 export interface CalcRewardSellAmountsArgs {
   rewardAmount: bigint | TransactionArgument
   fX64: bigint | TransactionArgument
+  pX128: bigint | TransactionArgument
   priceToXX128: bigint | TransactionArgument
   priceToYX128: bigint | TransactionArgument
 }
@@ -32,6 +33,7 @@ export function calcRewardSellAmounts(tx: Transaction, args: CalcRewardSellAmoun
     arguments: [
       pure(tx, args.rewardAmount, `u64`),
       pure(tx, args.fX64, `u128`),
+      pure(tx, args.pX128, `u256`),
       pure(tx, args.priceToXX128, `u256`),
       pure(tx, args.priceToYX128, `u256`),
     ],

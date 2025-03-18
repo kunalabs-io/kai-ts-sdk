@@ -2,16 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function deserialize(
-  tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::update_guardian_set::deserialize`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
-  })
-}
-
 export function authorizeGovernance(tx: Transaction, state: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::update_guardian_set::authorize_governance`,
@@ -19,16 +9,13 @@ export function authorizeGovernance(tx: Transaction, state: TransactionObjectInp
   })
 }
 
-export interface UpdateGuardianSetArgs {
-  state: TransactionObjectInput
-  decreeReceipt: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function updateGuardianSet(tx: Transaction, args: UpdateGuardianSetArgs) {
+export function deserialize(
+  tx: Transaction,
+  vecU8: Array<number | TransactionArgument> | TransactionArgument
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::update_guardian_set::update_guardian_set`,
-    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt), obj(tx, args.clock)],
+    target: `${PUBLISHED_AT}::update_guardian_set::deserialize`,
+    arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }
 
@@ -48,5 +35,18 @@ export function handleUpdateGuardianSet(tx: Transaction, args: HandleUpdateGuard
       pure(tx, args.vecU8, `vector<u8>`),
       obj(tx, args.clock),
     ],
+  })
+}
+
+export interface UpdateGuardianSetArgs {
+  state: TransactionObjectInput
+  decreeReceipt: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function updateGuardianSet(tx: Transaction, args: UpdateGuardianSetArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::update_guardian_set::update_guardian_set`,
+    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt), obj(tx, args.clock)],
   })
 }

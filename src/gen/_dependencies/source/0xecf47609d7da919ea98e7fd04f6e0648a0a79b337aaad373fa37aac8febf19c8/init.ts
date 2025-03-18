@@ -5,6 +5,7 @@ import * as treasury from './treasury/structs'
 import { StructClassLoader } from '../../../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
+  loader.register(mintAllowance.MintAllowance)
   loader.register(roles.BlocklisterChanged)
   loader.register(roles.BlocklisterKey)
   loader.register(roles.MasterMinterChanged)
@@ -16,7 +17,7 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(roles.PauserChanged)
   loader.register(roles.PauserKey)
   loader.register(roles.Roles)
-  loader.register(mintAllowance.MintAllowance)
+  loader.register(stablecoin.STABLECOIN)
   loader.register(treasury.Blocklisted)
   loader.register(treasury.Burn)
   loader.register(treasury.ControllerConfigured)
@@ -37,5 +38,4 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(treasury.TreasuryCapKey)
   loader.register(treasury.Unblocklisted)
   loader.register(treasury.Unpause)
-  loader.register(stablecoin.STABLECOIN)
 }

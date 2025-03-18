@@ -19,297 +19,123 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== Partners =============================== */
+/* ============================== ClaimRefFeeEvent =============================== */
 
-export function isPartners(type: string): boolean {
+export function isClaimRefFeeEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::Partners`
+  return type === `${PKG_V1}::partner::ClaimRefFeeEvent`
 }
 
-export interface PartnersFields {
-  id: ToField<UID>
-  partners: ToField<VecMap<String, ID>>
-}
-
-export type PartnersReified = Reified<Partners, PartnersFields>
-
-export class Partners implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::partner::Partners`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Partners.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::Partners`
-  readonly $typeArgs: []
-  readonly $isPhantom = Partners.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly partners: ToField<VecMap<String, ID>>
-
-  private constructor(typeArgs: [], fields: PartnersFields) {
-    this.$fullTypeName = composeSuiType(
-      Partners.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::partner::Partners`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.partners = fields.partners
-  }
-
-  static reified(): PartnersReified {
-    return {
-      typeName: Partners.$typeName,
-      fullTypeName: composeSuiType(
-        Partners.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::partner::Partners`,
-      typeArgs: [] as [],
-      isPhantom: Partners.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Partners.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Partners.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Partners.fromBcs(data),
-      bcs: Partners.bcs,
-      fromJSONField: (field: any) => Partners.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Partners.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Partners.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Partners.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Partners.fetch(client, id),
-      new: (fields: PartnersFields) => {
-        return new Partners([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Partners.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Partners>> {
-    return phantom(Partners.reified())
-  }
-  static get p() {
-    return Partners.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Partners', {
-      id: UID.bcs,
-      partners: VecMap.bcs(String.bcs, ID.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Partners {
-    return Partners.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      partners: decodeFromFields(VecMap.reified(String.reified(), ID.reified()), fields.partners),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Partners {
-    if (!isPartners(item.type)) {
-      throw new Error('not a Partners type')
-    }
-
-    return Partners.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      partners: decodeFromFieldsWithTypes(
-        VecMap.reified(String.reified(), ID.reified()),
-        item.fields.partners
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Partners {
-    return Partners.fromFields(Partners.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      partners: this.partners.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Partners {
-    return Partners.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      partners: decodeFromJSONField(VecMap.reified(String.reified(), ID.reified()), field.partners),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Partners {
-    if (json.$typeName !== Partners.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Partners.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Partners {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPartners(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Partners object`)
-    }
-    return Partners.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Partners {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPartners(data.bcs.type)) {
-        throw new Error(`object at is not a Partners object`)
-      }
-
-      return Partners.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Partners.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Partners> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Partners object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartners(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Partners object`)
-    }
-
-    return Partners.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== PartnerCap =============================== */
-
-export function isPartnerCap(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::PartnerCap`
-}
-
-export interface PartnerCapFields {
-  id: ToField<UID>
-  name: ToField<String>
+export interface ClaimRefFeeEventFields {
   partnerId: ToField<ID>
+  amount: ToField<'u64'>
+  typeName: ToField<String>
 }
 
-export type PartnerCapReified = Reified<PartnerCap, PartnerCapFields>
+export type ClaimRefFeeEventReified = Reified<ClaimRefFeeEvent, ClaimRefFeeEventFields>
 
-export class PartnerCap implements StructClass {
+export class ClaimRefFeeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::partner::PartnerCap`
+  static readonly $typeName = `${PKG_V1}::partner::ClaimRefFeeEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PartnerCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::PartnerCap`
+  readonly $typeName = ClaimRefFeeEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::ClaimRefFeeEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = PartnerCap.$isPhantom
+  readonly $isPhantom = ClaimRefFeeEvent.$isPhantom
 
-  readonly id: ToField<UID>
-  readonly name: ToField<String>
   readonly partnerId: ToField<ID>
+  readonly amount: ToField<'u64'>
+  readonly typeName: ToField<String>
 
-  private constructor(typeArgs: [], fields: PartnerCapFields) {
+  private constructor(typeArgs: [], fields: ClaimRefFeeEventFields) {
     this.$fullTypeName = composeSuiType(
-      PartnerCap.$typeName,
+      ClaimRefFeeEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::partner::PartnerCap`
+    ) as `${typeof PKG_V1}::partner::ClaimRefFeeEvent`
     this.$typeArgs = typeArgs
 
-    this.id = fields.id
-    this.name = fields.name
     this.partnerId = fields.partnerId
+    this.amount = fields.amount
+    this.typeName = fields.typeName
   }
 
-  static reified(): PartnerCapReified {
+  static reified(): ClaimRefFeeEventReified {
     return {
-      typeName: PartnerCap.$typeName,
+      typeName: ClaimRefFeeEvent.$typeName,
       fullTypeName: composeSuiType(
-        PartnerCap.$typeName,
+        ClaimRefFeeEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::partner::PartnerCap`,
+      ) as `${typeof PKG_V1}::partner::ClaimRefFeeEvent`,
       typeArgs: [] as [],
-      isPhantom: PartnerCap.$isPhantom,
+      isPhantom: ClaimRefFeeEvent.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PartnerCap.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PartnerCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PartnerCap.fromBcs(data),
-      bcs: PartnerCap.bcs,
-      fromJSONField: (field: any) => PartnerCap.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PartnerCap.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PartnerCap.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PartnerCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PartnerCap.fetch(client, id),
-      new: (fields: PartnerCapFields) => {
-        return new PartnerCap([], fields)
+      fromFields: (fields: Record<string, any>) => ClaimRefFeeEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ClaimRefFeeEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ClaimRefFeeEvent.fromBcs(data),
+      bcs: ClaimRefFeeEvent.bcs,
+      fromJSONField: (field: any) => ClaimRefFeeEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ClaimRefFeeEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ClaimRefFeeEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ClaimRefFeeEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ClaimRefFeeEvent.fetch(client, id),
+      new: (fields: ClaimRefFeeEventFields) => {
+        return new ClaimRefFeeEvent([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return PartnerCap.reified()
+    return ClaimRefFeeEvent.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<PartnerCap>> {
-    return phantom(PartnerCap.reified())
+  static phantom(): PhantomReified<ToTypeStr<ClaimRefFeeEvent>> {
+    return phantom(ClaimRefFeeEvent.reified())
   }
   static get p() {
-    return PartnerCap.phantom()
+    return ClaimRefFeeEvent.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('PartnerCap', {
-      id: UID.bcs,
-      name: String.bcs,
+    return bcs.struct('ClaimRefFeeEvent', {
       partner_id: ID.bcs,
+      amount: bcs.u64(),
+      type_name: String.bcs,
     })
   }
 
-  static fromFields(fields: Record<string, any>): PartnerCap {
-    return PartnerCap.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      name: decodeFromFields(String.reified(), fields.name),
+  static fromFields(fields: Record<string, any>): ClaimRefFeeEvent {
+    return ClaimRefFeeEvent.reified().new({
       partnerId: decodeFromFields(ID.reified(), fields.partner_id),
+      amount: decodeFromFields('u64', fields.amount),
+      typeName: decodeFromFields(String.reified(), fields.type_name),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): PartnerCap {
-    if (!isPartnerCap(item.type)) {
-      throw new Error('not a PartnerCap type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): ClaimRefFeeEvent {
+    if (!isClaimRefFeeEvent(item.type)) {
+      throw new Error('not a ClaimRefFeeEvent type')
     }
 
-    return PartnerCap.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      name: decodeFromFieldsWithTypes(String.reified(), item.fields.name),
+    return ClaimRefFeeEvent.reified().new({
       partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+      typeName: decodeFromFieldsWithTypes(String.reified(), item.fields.type_name),
     })
   }
 
-  static fromBcs(data: Uint8Array): PartnerCap {
-    return PartnerCap.fromFields(PartnerCap.bcs.parse(data))
+  static fromBcs(data: Uint8Array): ClaimRefFeeEvent {
+    return ClaimRefFeeEvent.fromFields(ClaimRefFeeEvent.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      id: this.id,
-      name: this.name,
       partnerId: this.partnerId,
+      amount: this.amount.toString(),
+      typeName: this.typeName,
     }
   }
 
@@ -317,424 +143,58 @@ export class PartnerCap implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): PartnerCap {
-    return PartnerCap.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      name: decodeFromJSONField(String.reified(), field.name),
+  static fromJSONField(field: any): ClaimRefFeeEvent {
+    return ClaimRefFeeEvent.reified().new({
       partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
+      amount: decodeFromJSONField('u64', field.amount),
+      typeName: decodeFromJSONField(String.reified(), field.typeName),
     })
   }
 
-  static fromJSON(json: Record<string, any>): PartnerCap {
-    if (json.$typeName !== PartnerCap.$typeName) {
+  static fromJSON(json: Record<string, any>): ClaimRefFeeEvent {
+    if (json.$typeName !== ClaimRefFeeEvent.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return PartnerCap.fromJSONField(json)
+    return ClaimRefFeeEvent.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): PartnerCap {
+  static fromSuiParsedData(content: SuiParsedData): ClaimRefFeeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isPartnerCap(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PartnerCap object`)
+    if (!isClaimRefFeeEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ClaimRefFeeEvent object`)
     }
-    return PartnerCap.fromFieldsWithTypes(content)
+    return ClaimRefFeeEvent.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): PartnerCap {
+  static fromSuiObjectData(data: SuiObjectData): ClaimRefFeeEvent {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPartnerCap(data.bcs.type)) {
-        throw new Error(`object at is not a PartnerCap object`)
+      if (data.bcs.dataType !== 'moveObject' || !isClaimRefFeeEvent(data.bcs.type)) {
+        throw new Error(`object at is not a ClaimRefFeeEvent object`)
       }
 
-      return PartnerCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ClaimRefFeeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return PartnerCap.fromSuiParsedData(data.content)
+      return ClaimRefFeeEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PartnerCap> {
+  static async fetch(client: SuiClient, id: string): Promise<ClaimRefFeeEvent> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching PartnerCap object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching ClaimRefFeeEvent object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartnerCap(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PartnerCap object`)
-    }
-
-    return PartnerCap.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Partner =============================== */
-
-export function isPartner(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::Partner`
-}
-
-export interface PartnerFields {
-  id: ToField<UID>
-  name: ToField<String>
-  refFeeRate: ToField<'u64'>
-  startTime: ToField<'u64'>
-  endTime: ToField<'u64'>
-  balances: ToField<Bag>
-}
-
-export type PartnerReified = Reified<Partner, PartnerFields>
-
-export class Partner implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::partner::Partner`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Partner.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::Partner`
-  readonly $typeArgs: []
-  readonly $isPhantom = Partner.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly name: ToField<String>
-  readonly refFeeRate: ToField<'u64'>
-  readonly startTime: ToField<'u64'>
-  readonly endTime: ToField<'u64'>
-  readonly balances: ToField<Bag>
-
-  private constructor(typeArgs: [], fields: PartnerFields) {
-    this.$fullTypeName = composeSuiType(
-      Partner.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::partner::Partner`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.name = fields.name
-    this.refFeeRate = fields.refFeeRate
-    this.startTime = fields.startTime
-    this.endTime = fields.endTime
-    this.balances = fields.balances
-  }
-
-  static reified(): PartnerReified {
-    return {
-      typeName: Partner.$typeName,
-      fullTypeName: composeSuiType(
-        Partner.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::partner::Partner`,
-      typeArgs: [] as [],
-      isPhantom: Partner.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Partner.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Partner.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Partner.fromBcs(data),
-      bcs: Partner.bcs,
-      fromJSONField: (field: any) => Partner.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Partner.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Partner.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Partner.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Partner.fetch(client, id),
-      new: (fields: PartnerFields) => {
-        return new Partner([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Partner.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Partner>> {
-    return phantom(Partner.reified())
-  }
-  static get p() {
-    return Partner.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Partner', {
-      id: UID.bcs,
-      name: String.bcs,
-      ref_fee_rate: bcs.u64(),
-      start_time: bcs.u64(),
-      end_time: bcs.u64(),
-      balances: Bag.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Partner {
-    return Partner.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      name: decodeFromFields(String.reified(), fields.name),
-      refFeeRate: decodeFromFields('u64', fields.ref_fee_rate),
-      startTime: decodeFromFields('u64', fields.start_time),
-      endTime: decodeFromFields('u64', fields.end_time),
-      balances: decodeFromFields(Bag.reified(), fields.balances),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Partner {
-    if (!isPartner(item.type)) {
-      throw new Error('not a Partner type')
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isClaimRefFeeEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ClaimRefFeeEvent object`)
     }
 
-    return Partner.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      name: decodeFromFieldsWithTypes(String.reified(), item.fields.name),
-      refFeeRate: decodeFromFieldsWithTypes('u64', item.fields.ref_fee_rate),
-      startTime: decodeFromFieldsWithTypes('u64', item.fields.start_time),
-      endTime: decodeFromFieldsWithTypes('u64', item.fields.end_time),
-      balances: decodeFromFieldsWithTypes(Bag.reified(), item.fields.balances),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Partner {
-    return Partner.fromFields(Partner.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      name: this.name,
-      refFeeRate: this.refFeeRate.toString(),
-      startTime: this.startTime.toString(),
-      endTime: this.endTime.toString(),
-      balances: this.balances.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Partner {
-    return Partner.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      name: decodeFromJSONField(String.reified(), field.name),
-      refFeeRate: decodeFromJSONField('u64', field.refFeeRate),
-      startTime: decodeFromJSONField('u64', field.startTime),
-      endTime: decodeFromJSONField('u64', field.endTime),
-      balances: decodeFromJSONField(Bag.reified(), field.balances),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Partner {
-    if (json.$typeName !== Partner.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Partner.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Partner {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPartner(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Partner object`)
-    }
-    return Partner.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Partner {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPartner(data.bcs.type)) {
-        throw new Error(`object at is not a Partner object`)
-      }
-
-      return Partner.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Partner.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Partner> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Partner object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartner(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Partner object`)
-    }
-
-    return Partner.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== InitPartnerEvent =============================== */
-
-export function isInitPartnerEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::InitPartnerEvent`
-}
-
-export interface InitPartnerEventFields {
-  partnersId: ToField<ID>
-}
-
-export type InitPartnerEventReified = Reified<InitPartnerEvent, InitPartnerEventFields>
-
-export class InitPartnerEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::partner::InitPartnerEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = InitPartnerEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::InitPartnerEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = InitPartnerEvent.$isPhantom
-
-  readonly partnersId: ToField<ID>
-
-  private constructor(typeArgs: [], fields: InitPartnerEventFields) {
-    this.$fullTypeName = composeSuiType(
-      InitPartnerEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::partner::InitPartnerEvent`
-    this.$typeArgs = typeArgs
-
-    this.partnersId = fields.partnersId
-  }
-
-  static reified(): InitPartnerEventReified {
-    return {
-      typeName: InitPartnerEvent.$typeName,
-      fullTypeName: composeSuiType(
-        InitPartnerEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::partner::InitPartnerEvent`,
-      typeArgs: [] as [],
-      isPhantom: InitPartnerEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => InitPartnerEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => InitPartnerEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InitPartnerEvent.fromBcs(data),
-      bcs: InitPartnerEvent.bcs,
-      fromJSONField: (field: any) => InitPartnerEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => InitPartnerEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => InitPartnerEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => InitPartnerEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => InitPartnerEvent.fetch(client, id),
-      new: (fields: InitPartnerEventFields) => {
-        return new InitPartnerEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return InitPartnerEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<InitPartnerEvent>> {
-    return phantom(InitPartnerEvent.reified())
-  }
-  static get p() {
-    return InitPartnerEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('InitPartnerEvent', {
-      partners_id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): InitPartnerEvent {
-    return InitPartnerEvent.reified().new({
-      partnersId: decodeFromFields(ID.reified(), fields.partners_id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): InitPartnerEvent {
-    if (!isInitPartnerEvent(item.type)) {
-      throw new Error('not a InitPartnerEvent type')
-    }
-
-    return InitPartnerEvent.reified().new({
-      partnersId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partners_id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): InitPartnerEvent {
-    return InitPartnerEvent.fromFields(InitPartnerEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      partnersId: this.partnersId,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): InitPartnerEvent {
-    return InitPartnerEvent.reified().new({
-      partnersId: decodeFromJSONField(ID.reified(), field.partnersId),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): InitPartnerEvent {
-    if (json.$typeName !== InitPartnerEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return InitPartnerEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): InitPartnerEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isInitPartnerEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a InitPartnerEvent object`)
-    }
-    return InitPartnerEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): InitPartnerEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isInitPartnerEvent(data.bcs.type)) {
-        throw new Error(`object at is not a InitPartnerEvent object`)
-      }
-
-      return InitPartnerEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return InitPartnerEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<InitPartnerEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching InitPartnerEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isInitPartnerEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a InitPartnerEvent object`)
-    }
-
-    return InitPartnerEvent.fromSuiObjectData(res.data)
+    return ClaimRefFeeEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -949,6 +409,904 @@ export class CreatePartnerEvent implements StructClass {
     }
 
     return CreatePartnerEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== InitPartnerEvent =============================== */
+
+export function isInitPartnerEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::partner::InitPartnerEvent`
+}
+
+export interface InitPartnerEventFields {
+  partnersId: ToField<ID>
+}
+
+export type InitPartnerEventReified = Reified<InitPartnerEvent, InitPartnerEventFields>
+
+export class InitPartnerEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::partner::InitPartnerEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = InitPartnerEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::InitPartnerEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = InitPartnerEvent.$isPhantom
+
+  readonly partnersId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: InitPartnerEventFields) {
+    this.$fullTypeName = composeSuiType(
+      InitPartnerEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::partner::InitPartnerEvent`
+    this.$typeArgs = typeArgs
+
+    this.partnersId = fields.partnersId
+  }
+
+  static reified(): InitPartnerEventReified {
+    return {
+      typeName: InitPartnerEvent.$typeName,
+      fullTypeName: composeSuiType(
+        InitPartnerEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::partner::InitPartnerEvent`,
+      typeArgs: [] as [],
+      isPhantom: InitPartnerEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => InitPartnerEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => InitPartnerEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => InitPartnerEvent.fromBcs(data),
+      bcs: InitPartnerEvent.bcs,
+      fromJSONField: (field: any) => InitPartnerEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => InitPartnerEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => InitPartnerEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => InitPartnerEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => InitPartnerEvent.fetch(client, id),
+      new: (fields: InitPartnerEventFields) => {
+        return new InitPartnerEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return InitPartnerEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<InitPartnerEvent>> {
+    return phantom(InitPartnerEvent.reified())
+  }
+  static get p() {
+    return InitPartnerEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('InitPartnerEvent', {
+      partners_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): InitPartnerEvent {
+    return InitPartnerEvent.reified().new({
+      partnersId: decodeFromFields(ID.reified(), fields.partners_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): InitPartnerEvent {
+    if (!isInitPartnerEvent(item.type)) {
+      throw new Error('not a InitPartnerEvent type')
+    }
+
+    return InitPartnerEvent.reified().new({
+      partnersId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partners_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): InitPartnerEvent {
+    return InitPartnerEvent.fromFields(InitPartnerEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      partnersId: this.partnersId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): InitPartnerEvent {
+    return InitPartnerEvent.reified().new({
+      partnersId: decodeFromJSONField(ID.reified(), field.partnersId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): InitPartnerEvent {
+    if (json.$typeName !== InitPartnerEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return InitPartnerEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): InitPartnerEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isInitPartnerEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a InitPartnerEvent object`)
+    }
+    return InitPartnerEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): InitPartnerEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isInitPartnerEvent(data.bcs.type)) {
+        throw new Error(`object at is not a InitPartnerEvent object`)
+      }
+
+      return InitPartnerEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return InitPartnerEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<InitPartnerEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching InitPartnerEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isInitPartnerEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a InitPartnerEvent object`)
+    }
+
+    return InitPartnerEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Partner =============================== */
+
+export function isPartner(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::partner::Partner`
+}
+
+export interface PartnerFields {
+  id: ToField<UID>
+  name: ToField<String>
+  refFeeRate: ToField<'u64'>
+  startTime: ToField<'u64'>
+  endTime: ToField<'u64'>
+  balances: ToField<Bag>
+}
+
+export type PartnerReified = Reified<Partner, PartnerFields>
+
+export class Partner implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::partner::Partner`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Partner.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::Partner`
+  readonly $typeArgs: []
+  readonly $isPhantom = Partner.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly name: ToField<String>
+  readonly refFeeRate: ToField<'u64'>
+  readonly startTime: ToField<'u64'>
+  readonly endTime: ToField<'u64'>
+  readonly balances: ToField<Bag>
+
+  private constructor(typeArgs: [], fields: PartnerFields) {
+    this.$fullTypeName = composeSuiType(
+      Partner.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::partner::Partner`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.name = fields.name
+    this.refFeeRate = fields.refFeeRate
+    this.startTime = fields.startTime
+    this.endTime = fields.endTime
+    this.balances = fields.balances
+  }
+
+  static reified(): PartnerReified {
+    return {
+      typeName: Partner.$typeName,
+      fullTypeName: composeSuiType(
+        Partner.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::partner::Partner`,
+      typeArgs: [] as [],
+      isPhantom: Partner.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Partner.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Partner.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Partner.fromBcs(data),
+      bcs: Partner.bcs,
+      fromJSONField: (field: any) => Partner.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Partner.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Partner.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Partner.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Partner.fetch(client, id),
+      new: (fields: PartnerFields) => {
+        return new Partner([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Partner.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Partner>> {
+    return phantom(Partner.reified())
+  }
+  static get p() {
+    return Partner.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Partner', {
+      id: UID.bcs,
+      name: String.bcs,
+      ref_fee_rate: bcs.u64(),
+      start_time: bcs.u64(),
+      end_time: bcs.u64(),
+      balances: Bag.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Partner {
+    return Partner.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      name: decodeFromFields(String.reified(), fields.name),
+      refFeeRate: decodeFromFields('u64', fields.ref_fee_rate),
+      startTime: decodeFromFields('u64', fields.start_time),
+      endTime: decodeFromFields('u64', fields.end_time),
+      balances: decodeFromFields(Bag.reified(), fields.balances),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Partner {
+    if (!isPartner(item.type)) {
+      throw new Error('not a Partner type')
+    }
+
+    return Partner.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      name: decodeFromFieldsWithTypes(String.reified(), item.fields.name),
+      refFeeRate: decodeFromFieldsWithTypes('u64', item.fields.ref_fee_rate),
+      startTime: decodeFromFieldsWithTypes('u64', item.fields.start_time),
+      endTime: decodeFromFieldsWithTypes('u64', item.fields.end_time),
+      balances: decodeFromFieldsWithTypes(Bag.reified(), item.fields.balances),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Partner {
+    return Partner.fromFields(Partner.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      name: this.name,
+      refFeeRate: this.refFeeRate.toString(),
+      startTime: this.startTime.toString(),
+      endTime: this.endTime.toString(),
+      balances: this.balances.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Partner {
+    return Partner.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      name: decodeFromJSONField(String.reified(), field.name),
+      refFeeRate: decodeFromJSONField('u64', field.refFeeRate),
+      startTime: decodeFromJSONField('u64', field.startTime),
+      endTime: decodeFromJSONField('u64', field.endTime),
+      balances: decodeFromJSONField(Bag.reified(), field.balances),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Partner {
+    if (json.$typeName !== Partner.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Partner.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Partner {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPartner(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Partner object`)
+    }
+    return Partner.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Partner {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPartner(data.bcs.type)) {
+        throw new Error(`object at is not a Partner object`)
+      }
+
+      return Partner.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Partner.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Partner> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Partner object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartner(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Partner object`)
+    }
+
+    return Partner.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PartnerCap =============================== */
+
+export function isPartnerCap(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::partner::PartnerCap`
+}
+
+export interface PartnerCapFields {
+  id: ToField<UID>
+  name: ToField<String>
+  partnerId: ToField<ID>
+}
+
+export type PartnerCapReified = Reified<PartnerCap, PartnerCapFields>
+
+export class PartnerCap implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::partner::PartnerCap`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PartnerCap.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::PartnerCap`
+  readonly $typeArgs: []
+  readonly $isPhantom = PartnerCap.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly name: ToField<String>
+  readonly partnerId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: PartnerCapFields) {
+    this.$fullTypeName = composeSuiType(
+      PartnerCap.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::partner::PartnerCap`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.name = fields.name
+    this.partnerId = fields.partnerId
+  }
+
+  static reified(): PartnerCapReified {
+    return {
+      typeName: PartnerCap.$typeName,
+      fullTypeName: composeSuiType(
+        PartnerCap.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::partner::PartnerCap`,
+      typeArgs: [] as [],
+      isPhantom: PartnerCap.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PartnerCap.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PartnerCap.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PartnerCap.fromBcs(data),
+      bcs: PartnerCap.bcs,
+      fromJSONField: (field: any) => PartnerCap.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PartnerCap.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PartnerCap.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PartnerCap.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PartnerCap.fetch(client, id),
+      new: (fields: PartnerCapFields) => {
+        return new PartnerCap([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PartnerCap.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PartnerCap>> {
+    return phantom(PartnerCap.reified())
+  }
+  static get p() {
+    return PartnerCap.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PartnerCap', {
+      id: UID.bcs,
+      name: String.bcs,
+      partner_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PartnerCap {
+    return PartnerCap.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      name: decodeFromFields(String.reified(), fields.name),
+      partnerId: decodeFromFields(ID.reified(), fields.partner_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PartnerCap {
+    if (!isPartnerCap(item.type)) {
+      throw new Error('not a PartnerCap type')
+    }
+
+    return PartnerCap.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      name: decodeFromFieldsWithTypes(String.reified(), item.fields.name),
+      partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PartnerCap {
+    return PartnerCap.fromFields(PartnerCap.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      name: this.name,
+      partnerId: this.partnerId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PartnerCap {
+    return PartnerCap.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      name: decodeFromJSONField(String.reified(), field.name),
+      partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PartnerCap {
+    if (json.$typeName !== PartnerCap.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PartnerCap.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PartnerCap {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPartnerCap(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PartnerCap object`)
+    }
+    return PartnerCap.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PartnerCap {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPartnerCap(data.bcs.type)) {
+        throw new Error(`object at is not a PartnerCap object`)
+      }
+
+      return PartnerCap.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PartnerCap.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PartnerCap> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PartnerCap object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartnerCap(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PartnerCap object`)
+    }
+
+    return PartnerCap.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Partners =============================== */
+
+export function isPartners(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::partner::Partners`
+}
+
+export interface PartnersFields {
+  id: ToField<UID>
+  partners: ToField<VecMap<String, ID>>
+}
+
+export type PartnersReified = Reified<Partners, PartnersFields>
+
+export class Partners implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::partner::Partners`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Partners.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::Partners`
+  readonly $typeArgs: []
+  readonly $isPhantom = Partners.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly partners: ToField<VecMap<String, ID>>
+
+  private constructor(typeArgs: [], fields: PartnersFields) {
+    this.$fullTypeName = composeSuiType(
+      Partners.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::partner::Partners`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.partners = fields.partners
+  }
+
+  static reified(): PartnersReified {
+    return {
+      typeName: Partners.$typeName,
+      fullTypeName: composeSuiType(
+        Partners.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::partner::Partners`,
+      typeArgs: [] as [],
+      isPhantom: Partners.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Partners.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Partners.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Partners.fromBcs(data),
+      bcs: Partners.bcs,
+      fromJSONField: (field: any) => Partners.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Partners.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Partners.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Partners.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Partners.fetch(client, id),
+      new: (fields: PartnersFields) => {
+        return new Partners([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Partners.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Partners>> {
+    return phantom(Partners.reified())
+  }
+  static get p() {
+    return Partners.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Partners', {
+      id: UID.bcs,
+      partners: VecMap.bcs(String.bcs, ID.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Partners {
+    return Partners.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      partners: decodeFromFields(VecMap.reified(String.reified(), ID.reified()), fields.partners),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Partners {
+    if (!isPartners(item.type)) {
+      throw new Error('not a Partners type')
+    }
+
+    return Partners.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      partners: decodeFromFieldsWithTypes(
+        VecMap.reified(String.reified(), ID.reified()),
+        item.fields.partners
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Partners {
+    return Partners.fromFields(Partners.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      partners: this.partners.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Partners {
+    return Partners.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      partners: decodeFromJSONField(VecMap.reified(String.reified(), ID.reified()), field.partners),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Partners {
+    if (json.$typeName !== Partners.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Partners.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Partners {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPartners(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Partners object`)
+    }
+    return Partners.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Partners {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPartners(data.bcs.type)) {
+        throw new Error(`object at is not a Partners object`)
+      }
+
+      return Partners.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Partners.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Partners> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Partners object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPartners(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Partners object`)
+    }
+
+    return Partners.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== ReceiveRefFeeEvent =============================== */
+
+export function isReceiveRefFeeEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::partner::ReceiveRefFeeEvent`
+}
+
+export interface ReceiveRefFeeEventFields {
+  partnerId: ToField<ID>
+  amount: ToField<'u64'>
+  typeName: ToField<String>
+}
+
+export type ReceiveRefFeeEventReified = Reified<ReceiveRefFeeEvent, ReceiveRefFeeEventFields>
+
+export class ReceiveRefFeeEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::partner::ReceiveRefFeeEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ReceiveRefFeeEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = ReceiveRefFeeEvent.$isPhantom
+
+  readonly partnerId: ToField<ID>
+  readonly amount: ToField<'u64'>
+  readonly typeName: ToField<String>
+
+  private constructor(typeArgs: [], fields: ReceiveRefFeeEventFields) {
+    this.$fullTypeName = composeSuiType(
+      ReceiveRefFeeEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`
+    this.$typeArgs = typeArgs
+
+    this.partnerId = fields.partnerId
+    this.amount = fields.amount
+    this.typeName = fields.typeName
+  }
+
+  static reified(): ReceiveRefFeeEventReified {
+    return {
+      typeName: ReceiveRefFeeEvent.$typeName,
+      fullTypeName: composeSuiType(
+        ReceiveRefFeeEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`,
+      typeArgs: [] as [],
+      isPhantom: ReceiveRefFeeEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ReceiveRefFeeEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ReceiveRefFeeEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ReceiveRefFeeEvent.fromBcs(data),
+      bcs: ReceiveRefFeeEvent.bcs,
+      fromJSONField: (field: any) => ReceiveRefFeeEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ReceiveRefFeeEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ReceiveRefFeeEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ReceiveRefFeeEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ReceiveRefFeeEvent.fetch(client, id),
+      new: (fields: ReceiveRefFeeEventFields) => {
+        return new ReceiveRefFeeEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ReceiveRefFeeEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ReceiveRefFeeEvent>> {
+    return phantom(ReceiveRefFeeEvent.reified())
+  }
+  static get p() {
+    return ReceiveRefFeeEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ReceiveRefFeeEvent', {
+      partner_id: ID.bcs,
+      amount: bcs.u64(),
+      type_name: String.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ReceiveRefFeeEvent {
+    return ReceiveRefFeeEvent.reified().new({
+      partnerId: decodeFromFields(ID.reified(), fields.partner_id),
+      amount: decodeFromFields('u64', fields.amount),
+      typeName: decodeFromFields(String.reified(), fields.type_name),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ReceiveRefFeeEvent {
+    if (!isReceiveRefFeeEvent(item.type)) {
+      throw new Error('not a ReceiveRefFeeEvent type')
+    }
+
+    return ReceiveRefFeeEvent.reified().new({
+      partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+      typeName: decodeFromFieldsWithTypes(String.reified(), item.fields.type_name),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ReceiveRefFeeEvent {
+    return ReceiveRefFeeEvent.fromFields(ReceiveRefFeeEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      partnerId: this.partnerId,
+      amount: this.amount.toString(),
+      typeName: this.typeName,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ReceiveRefFeeEvent {
+    return ReceiveRefFeeEvent.reified().new({
+      partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
+      amount: decodeFromJSONField('u64', field.amount),
+      typeName: decodeFromJSONField(String.reified(), field.typeName),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ReceiveRefFeeEvent {
+    if (json.$typeName !== ReceiveRefFeeEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ReceiveRefFeeEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ReceiveRefFeeEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isReceiveRefFeeEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ReceiveRefFeeEvent object`)
+    }
+    return ReceiveRefFeeEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ReceiveRefFeeEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isReceiveRefFeeEvent(data.bcs.type)) {
+        throw new Error(`object at is not a ReceiveRefFeeEvent object`)
+      }
+
+      return ReceiveRefFeeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ReceiveRefFeeEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ReceiveRefFeeEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ReceiveRefFeeEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isReceiveRefFeeEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ReceiveRefFeeEvent object`)
+    }
+
+    return ReceiveRefFeeEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -1320,363 +1678,5 @@ export class UpdateTimeRangeEvent implements StructClass {
     }
 
     return UpdateTimeRangeEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ReceiveRefFeeEvent =============================== */
-
-export function isReceiveRefFeeEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::ReceiveRefFeeEvent`
-}
-
-export interface ReceiveRefFeeEventFields {
-  partnerId: ToField<ID>
-  amount: ToField<'u64'>
-  typeName: ToField<String>
-}
-
-export type ReceiveRefFeeEventReified = Reified<ReceiveRefFeeEvent, ReceiveRefFeeEventFields>
-
-export class ReceiveRefFeeEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::partner::ReceiveRefFeeEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ReceiveRefFeeEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = ReceiveRefFeeEvent.$isPhantom
-
-  readonly partnerId: ToField<ID>
-  readonly amount: ToField<'u64'>
-  readonly typeName: ToField<String>
-
-  private constructor(typeArgs: [], fields: ReceiveRefFeeEventFields) {
-    this.$fullTypeName = composeSuiType(
-      ReceiveRefFeeEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`
-    this.$typeArgs = typeArgs
-
-    this.partnerId = fields.partnerId
-    this.amount = fields.amount
-    this.typeName = fields.typeName
-  }
-
-  static reified(): ReceiveRefFeeEventReified {
-    return {
-      typeName: ReceiveRefFeeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        ReceiveRefFeeEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::partner::ReceiveRefFeeEvent`,
-      typeArgs: [] as [],
-      isPhantom: ReceiveRefFeeEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ReceiveRefFeeEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ReceiveRefFeeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ReceiveRefFeeEvent.fromBcs(data),
-      bcs: ReceiveRefFeeEvent.bcs,
-      fromJSONField: (field: any) => ReceiveRefFeeEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ReceiveRefFeeEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ReceiveRefFeeEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ReceiveRefFeeEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ReceiveRefFeeEvent.fetch(client, id),
-      new: (fields: ReceiveRefFeeEventFields) => {
-        return new ReceiveRefFeeEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ReceiveRefFeeEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ReceiveRefFeeEvent>> {
-    return phantom(ReceiveRefFeeEvent.reified())
-  }
-  static get p() {
-    return ReceiveRefFeeEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ReceiveRefFeeEvent', {
-      partner_id: ID.bcs,
-      amount: bcs.u64(),
-      type_name: String.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ReceiveRefFeeEvent {
-    return ReceiveRefFeeEvent.reified().new({
-      partnerId: decodeFromFields(ID.reified(), fields.partner_id),
-      amount: decodeFromFields('u64', fields.amount),
-      typeName: decodeFromFields(String.reified(), fields.type_name),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ReceiveRefFeeEvent {
-    if (!isReceiveRefFeeEvent(item.type)) {
-      throw new Error('not a ReceiveRefFeeEvent type')
-    }
-
-    return ReceiveRefFeeEvent.reified().new({
-      partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
-      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
-      typeName: decodeFromFieldsWithTypes(String.reified(), item.fields.type_name),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ReceiveRefFeeEvent {
-    return ReceiveRefFeeEvent.fromFields(ReceiveRefFeeEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      partnerId: this.partnerId,
-      amount: this.amount.toString(),
-      typeName: this.typeName,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ReceiveRefFeeEvent {
-    return ReceiveRefFeeEvent.reified().new({
-      partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
-      amount: decodeFromJSONField('u64', field.amount),
-      typeName: decodeFromJSONField(String.reified(), field.typeName),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ReceiveRefFeeEvent {
-    if (json.$typeName !== ReceiveRefFeeEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ReceiveRefFeeEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ReceiveRefFeeEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isReceiveRefFeeEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ReceiveRefFeeEvent object`)
-    }
-    return ReceiveRefFeeEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ReceiveRefFeeEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isReceiveRefFeeEvent(data.bcs.type)) {
-        throw new Error(`object at is not a ReceiveRefFeeEvent object`)
-      }
-
-      return ReceiveRefFeeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ReceiveRefFeeEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ReceiveRefFeeEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ReceiveRefFeeEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isReceiveRefFeeEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ReceiveRefFeeEvent object`)
-    }
-
-    return ReceiveRefFeeEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ClaimRefFeeEvent =============================== */
-
-export function isClaimRefFeeEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::partner::ClaimRefFeeEvent`
-}
-
-export interface ClaimRefFeeEventFields {
-  partnerId: ToField<ID>
-  amount: ToField<'u64'>
-  typeName: ToField<String>
-}
-
-export type ClaimRefFeeEventReified = Reified<ClaimRefFeeEvent, ClaimRefFeeEventFields>
-
-export class ClaimRefFeeEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::partner::ClaimRefFeeEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ClaimRefFeeEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::partner::ClaimRefFeeEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = ClaimRefFeeEvent.$isPhantom
-
-  readonly partnerId: ToField<ID>
-  readonly amount: ToField<'u64'>
-  readonly typeName: ToField<String>
-
-  private constructor(typeArgs: [], fields: ClaimRefFeeEventFields) {
-    this.$fullTypeName = composeSuiType(
-      ClaimRefFeeEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::partner::ClaimRefFeeEvent`
-    this.$typeArgs = typeArgs
-
-    this.partnerId = fields.partnerId
-    this.amount = fields.amount
-    this.typeName = fields.typeName
-  }
-
-  static reified(): ClaimRefFeeEventReified {
-    return {
-      typeName: ClaimRefFeeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        ClaimRefFeeEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::partner::ClaimRefFeeEvent`,
-      typeArgs: [] as [],
-      isPhantom: ClaimRefFeeEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ClaimRefFeeEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ClaimRefFeeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ClaimRefFeeEvent.fromBcs(data),
-      bcs: ClaimRefFeeEvent.bcs,
-      fromJSONField: (field: any) => ClaimRefFeeEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ClaimRefFeeEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ClaimRefFeeEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ClaimRefFeeEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ClaimRefFeeEvent.fetch(client, id),
-      new: (fields: ClaimRefFeeEventFields) => {
-        return new ClaimRefFeeEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ClaimRefFeeEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ClaimRefFeeEvent>> {
-    return phantom(ClaimRefFeeEvent.reified())
-  }
-  static get p() {
-    return ClaimRefFeeEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ClaimRefFeeEvent', {
-      partner_id: ID.bcs,
-      amount: bcs.u64(),
-      type_name: String.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ClaimRefFeeEvent {
-    return ClaimRefFeeEvent.reified().new({
-      partnerId: decodeFromFields(ID.reified(), fields.partner_id),
-      amount: decodeFromFields('u64', fields.amount),
-      typeName: decodeFromFields(String.reified(), fields.type_name),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ClaimRefFeeEvent {
-    if (!isClaimRefFeeEvent(item.type)) {
-      throw new Error('not a ClaimRefFeeEvent type')
-    }
-
-    return ClaimRefFeeEvent.reified().new({
-      partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
-      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
-      typeName: decodeFromFieldsWithTypes(String.reified(), item.fields.type_name),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ClaimRefFeeEvent {
-    return ClaimRefFeeEvent.fromFields(ClaimRefFeeEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      partnerId: this.partnerId,
-      amount: this.amount.toString(),
-      typeName: this.typeName,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ClaimRefFeeEvent {
-    return ClaimRefFeeEvent.reified().new({
-      partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
-      amount: decodeFromJSONField('u64', field.amount),
-      typeName: decodeFromJSONField(String.reified(), field.typeName),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ClaimRefFeeEvent {
-    if (json.$typeName !== ClaimRefFeeEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ClaimRefFeeEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ClaimRefFeeEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isClaimRefFeeEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ClaimRefFeeEvent object`)
-    }
-    return ClaimRefFeeEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ClaimRefFeeEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isClaimRefFeeEvent(data.bcs.type)) {
-        throw new Error(`object at is not a ClaimRefFeeEvent object`)
-      }
-
-      return ClaimRefFeeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ClaimRefFeeEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ClaimRefFeeEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ClaimRefFeeEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isClaimRefFeeEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ClaimRefFeeEvent object`)
-    }
-
-    return ClaimRefFeeEvent.fromSuiObjectData(res.data)
   }
 }

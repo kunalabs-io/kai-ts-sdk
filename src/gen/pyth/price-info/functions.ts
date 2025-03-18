@@ -3,25 +3,6 @@ import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface ContainsArgs {
-  parentId: TransactionObjectInput
-  priceIdentifier: TransactionObjectInput
-}
-
-export function contains(tx: Transaction, args: ContainsArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::contains`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.priceIdentifier)],
-  })
-}
-
-export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::uid_to_inner`,
-    arguments: [obj(tx, priceInfo)],
-  })
-}
-
 export interface AddArgs {
   parentId: TransactionObjectInput
   priceIdentifier: TransactionObjectInput
@@ -39,10 +20,15 @@ export function add(tx: Transaction, args: AddArgs) {
   })
 }
 
-export function getPriceIdentifier(tx: Transaction, priceInfo: TransactionObjectInput) {
+export interface ContainsArgs {
+  parentId: TransactionObjectInput
+  priceIdentifier: TransactionObjectInput
+}
+
+export function contains(tx: Transaction, args: ContainsArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_price_identifier`,
-    arguments: [obj(tx, priceInfo)],
+    target: `${PUBLISHED_AT}::price_info::contains`,
+    arguments: [obj(tx, args.parentId), obj(tx, args.priceIdentifier)],
   })
 }
 
@@ -110,6 +96,13 @@ export function getPriceFeed(tx: Transaction, priceInfo: TransactionObjectInput)
   })
 }
 
+export function getPriceIdentifier(tx: Transaction, priceInfo: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::price_info::get_price_identifier`,
+    arguments: [obj(tx, priceInfo)],
+  })
+}
+
 export function getPriceInfoFromPriceInfoObject(
   tx: Transaction,
   priceInfo: TransactionObjectInput
@@ -148,6 +141,13 @@ export function newPriceInfoRegistry(tx: Transaction, parentId: TransactionObjec
   return tx.moveCall({
     target: `${PUBLISHED_AT}::price_info::new_price_info_registry`,
     arguments: [obj(tx, parentId)],
+  })
+}
+
+export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::price_info::uid_to_inner`,
+    arguments: [obj(tx, priceInfo)],
   })
 }
 

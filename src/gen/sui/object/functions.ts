@@ -3,10 +3,6 @@ import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { ID } from './structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::object::new`, arguments: [] })
-}
-
 export function authenticatorState(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::object::authenticator_state`, arguments: [] })
 }
@@ -39,18 +35,18 @@ export function delete_(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::object::delete`, arguments: [obj(tx, id)] })
 }
 
+export function deleteImpl(tx: Transaction, id: string | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::object::delete_impl`,
+    arguments: [pure(tx, id, `address`)],
+  })
+}
+
 export function id(tx: Transaction, typeArg: string, obj: GenericArg) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::object::id`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, obj)],
-  })
-}
-
-export function deleteImpl(tx: Transaction, id: string | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::object::delete_impl`,
-    arguments: [pure(tx, id, `address`)],
   })
 }
 
@@ -99,6 +95,10 @@ export function idToBytes(tx: Transaction, id: string | TransactionArgument) {
     target: `${PUBLISHED_AT}::object::id_to_bytes`,
     arguments: [pure(tx, id, `${ID.$typeName}`)],
   })
+}
+
+export function new_(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::object::new`, arguments: [] })
 }
 
 export function newUidFromHash(tx: Transaction, bytes: string | TransactionArgument) {

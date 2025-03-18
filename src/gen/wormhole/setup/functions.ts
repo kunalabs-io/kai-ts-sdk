@@ -2,10 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::setup::init`, arguments: [] })
-}
-
 export interface CompleteArgs {
   deployerCap: TransactionObjectInput
   upgradeCap: TransactionObjectInput
@@ -31,4 +27,8 @@ export function complete(tx: Transaction, args: CompleteArgs) {
       pure(tx, args.u64, `u64`),
     ],
   })
+}
+
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::setup::init`, arguments: [] })
 }

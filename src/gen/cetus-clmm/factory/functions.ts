@@ -4,8 +4,8 @@ import { String } from '../../move-stdlib/string/structs'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function index(tx: Transaction, pools: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::index`, arguments: [obj(tx, pools)] })
+export function coinTypes(tx: Transaction, info: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::coin_types`, arguments: [obj(tx, info)] })
 }
 
 export interface CreatePoolArgs {
@@ -29,17 +29,6 @@ export function createPool(tx: Transaction, typeArgs: [string, string], args: Cr
       pure(tx, args.url, `${String.$typeName}`),
       obj(tx, args.clock),
     ],
-  })
-}
-
-export function poolId(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::pool_id`, arguments: [obj(tx, info)] })
-}
-
-export function tickSpacing(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::tick_spacing`,
-    arguments: [obj(tx, info)],
   })
 }
 
@@ -85,10 +74,6 @@ export function createPoolWithLiquidity(
   })
 }
 
-export function coinTypes(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::coin_types`, arguments: [obj(tx, info)] })
-}
-
 export interface FetchPoolsArgs {
   pools: TransactionObjectInput
   start: Array<string | TransactionArgument> | TransactionArgument
@@ -106,6 +91,10 @@ export function fetchPools(tx: Transaction, args: FetchPoolsArgs) {
   })
 }
 
+export function index(tx: Transaction, pools: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::index`, arguments: [obj(tx, pools)] })
+}
+
 export function newPoolKey(
   tx: Transaction,
   typeArgs: [string, string],
@@ -116,6 +105,10 @@ export function newPoolKey(
     typeArguments: typeArgs,
     arguments: [pure(tx, tickSpacing, `u32`)],
   })
+}
+
+export function poolId(tx: Transaction, info: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::pool_id`, arguments: [obj(tx, info)] })
 }
 
 export function poolKey(tx: Transaction, info: TransactionObjectInput) {
@@ -131,5 +124,12 @@ export function poolSimpleInfo(tx: Transaction, args: PoolSimpleInfoArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::factory::pool_simple_info`,
     arguments: [obj(tx, args.pools), pure(tx, args.poolKey, `${ID.$typeName}`)],
+  })
+}
+
+export function tickSpacing(tx: Transaction, info: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::tick_spacing`,
+    arguments: [obj(tx, info)],
   })
 }

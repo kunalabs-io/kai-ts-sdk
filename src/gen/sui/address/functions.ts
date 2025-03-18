@@ -2,28 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { pure } from '../../_framework/util'
 import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
-export function length(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::address::length`, arguments: [] })
-}
-
-export function max(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::address::max`, arguments: [] })
-}
-
-export function toString(tx: Transaction, a: string | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::address::to_string`,
-    arguments: [pure(tx, a, `address`)],
-  })
-}
-
-export function toBytes(tx: Transaction, a: string | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::address::to_bytes`,
-    arguments: [pure(tx, a, `address`)],
-  })
-}
-
 export function fromAsciiBytes(
   tx: Transaction,
   bytes: Array<number | TransactionArgument> | TransactionArgument
@@ -58,9 +36,31 @@ export function hexCharValue(tx: Transaction, c: number | TransactionArgument) {
   })
 }
 
+export function length(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::address::length`, arguments: [] })
+}
+
+export function max(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::address::max`, arguments: [] })
+}
+
 export function toAsciiString(tx: Transaction, a: string | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::address::to_ascii_string`,
+    arguments: [pure(tx, a, `address`)],
+  })
+}
+
+export function toBytes(tx: Transaction, a: string | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::address::to_bytes`,
+    arguments: [pure(tx, a, `address`)],
+  })
+}
+
+export function toString(tx: Transaction, a: string | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::address::to_string`,
     arguments: [pure(tx, a, `address`)],
   })
 }

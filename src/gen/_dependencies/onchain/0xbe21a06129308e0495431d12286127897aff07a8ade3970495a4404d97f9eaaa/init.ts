@@ -9,12 +9,12 @@ import { StructClassLoader } from '../../../_framework/loader'
 export function registerClasses(loader: StructClassLoader) {
   loader.register(linkedTable.LinkedTable)
   loader.register(linkedTable.Node)
+  loader.register(optionU128.OptionU128)
   loader.register(optionU64.OptionU64)
   loader.register(random.Random)
   loader.register(skipList.Item)
   loader.register(skipList.Node)
   loader.register(skipList.SkipList)
-  loader.register(optionU128.OptionU128)
   loader.register(skipListU128.Item)
   loader.register(skipListU128.SkipList)
   loader.register(skipListU128.SkipListNode)

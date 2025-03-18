@@ -22,15 +22,16 @@ export function decimals(tx: Transaction, type: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::pyth::decimals`, arguments: [obj(tx, type)] })
 }
 
-export interface GetPriceArgs {
-  self: TransactionObjectInput
-  type: TransactionObjectInput
+export interface DivPriceNumericX128Args {
+  priceInfo: TransactionObjectInput
+  x: TransactionObjectInput
+  y: TransactionObjectInput
 }
 
-export function getPrice(tx: Transaction, args: GetPriceArgs) {
+export function divPriceNumericX128(tx: Transaction, args: DivPriceNumericX128Args) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price`,
-    arguments: [obj(tx, args.self), obj(tx, args.type)],
+    target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128`,
+    arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
   })
 }
 
@@ -46,16 +47,15 @@ export function getEmaPrice(tx: Transaction, args: GetEmaPriceArgs) {
   })
 }
 
-export interface DivPriceNumericX128Args {
-  priceInfo: TransactionObjectInput
-  x: TransactionObjectInput
-  y: TransactionObjectInput
+export interface GetPriceArgs {
+  self: TransactionObjectInput
+  type: TransactionObjectInput
 }
 
-export function divPriceNumericX128(tx: Transaction, args: DivPriceNumericX128Args) {
+export function getPrice(tx: Transaction, args: GetPriceArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
+    target: `${PUBLISHED_AT}::pyth::get_price`,
+    arguments: [obj(tx, args.self), obj(tx, args.type)],
   })
 }
 

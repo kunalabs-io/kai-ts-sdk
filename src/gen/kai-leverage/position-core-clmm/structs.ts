@@ -38,469 +38,6 @@ import { BcsType, bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== AMigrate =============================== */
-
-export function isAMigrate(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::AMigrate`
-}
-
-export interface AMigrateFields {
-  dummyField: ToField<'bool'>
-}
-
-export type AMigrateReified = Reified<AMigrate, AMigrateFields>
-
-export class AMigrate implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::AMigrate`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = AMigrate.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AMigrate`
-  readonly $typeArgs: []
-  readonly $isPhantom = AMigrate.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: AMigrateFields) {
-    this.$fullTypeName = composeSuiType(
-      AMigrate.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): AMigrateReified {
-    return {
-      typeName: AMigrate.$typeName,
-      fullTypeName: composeSuiType(
-        AMigrate.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`,
-      typeArgs: [] as [],
-      isPhantom: AMigrate.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AMigrate.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AMigrate.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AMigrate.fromBcs(data),
-      bcs: AMigrate.bcs,
-      fromJSONField: (field: any) => AMigrate.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AMigrate.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AMigrate.fetch(client, id),
-      new: (fields: AMigrateFields) => {
-        return new AMigrate([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AMigrate.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<AMigrate>> {
-    return phantom(AMigrate.reified())
-  }
-  static get p() {
-    return AMigrate.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('AMigrate', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): AMigrate {
-    if (!isAMigrate(item.type)) {
-      throw new Error('not a AMigrate type')
-    }
-
-    return AMigrate.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): AMigrate {
-    return AMigrate.fromFields(AMigrate.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): AMigrate {
-    if (json.$typeName !== AMigrate.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return AMigrate.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): AMigrate {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAMigrate(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AMigrate object`)
-    }
-    return AMigrate.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): AMigrate {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAMigrate(data.bcs.type)) {
-        throw new Error(`object at is not a AMigrate object`)
-      }
-
-      return AMigrate.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AMigrate.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<AMigrate> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AMigrate object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAMigrate(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AMigrate object`)
-    }
-
-    return AMigrate.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RebalanceInfo =============================== */
-
-export function isRebalanceInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::RebalanceInfo`
-}
-
-export interface RebalanceInfoFields {
-  id: ToField<ID>
-  positionId: ToField<ID>
-  collectedAmmFeeX: ToField<'u64'>
-  collectedAmmFeeY: ToField<'u64'>
-  collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
-  feesTaken: ToField<VecMap<TypeName, 'u64'>>
-  takenCx: ToField<'u64'>
-  takenCy: ToField<'u64'>
-  deltaL: ToField<'u128'>
-  deltaX: ToField<'u64'>
-  deltaY: ToField<'u64'>
-  xRepaid: ToField<'u64'>
-  yRepaid: ToField<'u64'>
-  addedCx: ToField<'u64'>
-  addedCy: ToField<'u64'>
-  stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
-}
-
-export type RebalanceInfoReified = Reified<RebalanceInfo, RebalanceInfoFields>
-
-export class RebalanceInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::RebalanceInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RebalanceInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = RebalanceInfo.$isPhantom
-
-  readonly id: ToField<ID>
-  readonly positionId: ToField<ID>
-  readonly collectedAmmFeeX: ToField<'u64'>
-  readonly collectedAmmFeeY: ToField<'u64'>
-  readonly collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
-  readonly feesTaken: ToField<VecMap<TypeName, 'u64'>>
-  readonly takenCx: ToField<'u64'>
-  readonly takenCy: ToField<'u64'>
-  readonly deltaL: ToField<'u128'>
-  readonly deltaX: ToField<'u64'>
-  readonly deltaY: ToField<'u64'>
-  readonly xRepaid: ToField<'u64'>
-  readonly yRepaid: ToField<'u64'>
-  readonly addedCx: ToField<'u64'>
-  readonly addedCy: ToField<'u64'>
-  readonly stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
-
-  private constructor(typeArgs: [], fields: RebalanceInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      RebalanceInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.positionId = fields.positionId
-    this.collectedAmmFeeX = fields.collectedAmmFeeX
-    this.collectedAmmFeeY = fields.collectedAmmFeeY
-    this.collectedAmmRewards = fields.collectedAmmRewards
-    this.feesTaken = fields.feesTaken
-    this.takenCx = fields.takenCx
-    this.takenCy = fields.takenCy
-    this.deltaL = fields.deltaL
-    this.deltaX = fields.deltaX
-    this.deltaY = fields.deltaY
-    this.xRepaid = fields.xRepaid
-    this.yRepaid = fields.yRepaid
-    this.addedCx = fields.addedCx
-    this.addedCy = fields.addedCy
-    this.stashedAmmRewards = fields.stashedAmmRewards
-  }
-
-  static reified(): RebalanceInfoReified {
-    return {
-      typeName: RebalanceInfo.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`,
-      typeArgs: [] as [],
-      isPhantom: RebalanceInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RebalanceInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RebalanceInfo.fromBcs(data),
-      bcs: RebalanceInfo.bcs,
-      fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RebalanceInfo.fetch(client, id),
-      new: (fields: RebalanceInfoFields) => {
-        return new RebalanceInfo([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RebalanceInfo.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RebalanceInfo>> {
-    return phantom(RebalanceInfo.reified())
-  }
-  static get p() {
-    return RebalanceInfo.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RebalanceInfo', {
-      id: ID.bcs,
-      position_id: ID.bcs,
-      collected_amm_fee_x: bcs.u64(),
-      collected_amm_fee_y: bcs.u64(),
-      collected_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
-      fees_taken: VecMap.bcs(TypeName.bcs, bcs.u64()),
-      taken_cx: bcs.u64(),
-      taken_cy: bcs.u64(),
-      delta_l: bcs.u128(),
-      delta_x: bcs.u64(),
-      delta_y: bcs.u64(),
-      x_repaid: bcs.u64(),
-      y_repaid: bcs.u64(),
-      added_cx: bcs.u64(),
-      added_cy: bcs.u64(),
-      stashed_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RebalanceInfo {
-    return RebalanceInfo.reified().new({
-      id: decodeFromFields(ID.reified(), fields.id),
-      positionId: decodeFromFields(ID.reified(), fields.position_id),
-      collectedAmmFeeX: decodeFromFields('u64', fields.collected_amm_fee_x),
-      collectedAmmFeeY: decodeFromFields('u64', fields.collected_amm_fee_y),
-      collectedAmmRewards: decodeFromFields(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        fields.collected_amm_rewards
-      ),
-      feesTaken: decodeFromFields(VecMap.reified(TypeName.reified(), 'u64'), fields.fees_taken),
-      takenCx: decodeFromFields('u64', fields.taken_cx),
-      takenCy: decodeFromFields('u64', fields.taken_cy),
-      deltaL: decodeFromFields('u128', fields.delta_l),
-      deltaX: decodeFromFields('u64', fields.delta_x),
-      deltaY: decodeFromFields('u64', fields.delta_y),
-      xRepaid: decodeFromFields('u64', fields.x_repaid),
-      yRepaid: decodeFromFields('u64', fields.y_repaid),
-      addedCx: decodeFromFields('u64', fields.added_cx),
-      addedCy: decodeFromFields('u64', fields.added_cy),
-      stashedAmmRewards: decodeFromFields(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        fields.stashed_amm_rewards
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceInfo {
-    if (!isRebalanceInfo(item.type)) {
-      throw new Error('not a RebalanceInfo type')
-    }
-
-    return RebalanceInfo.reified().new({
-      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
-      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
-      collectedAmmFeeX: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_x),
-      collectedAmmFeeY: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_y),
-      collectedAmmRewards: decodeFromFieldsWithTypes(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.collected_amm_rewards
-      ),
-      feesTaken: decodeFromFieldsWithTypes(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.fees_taken
-      ),
-      takenCx: decodeFromFieldsWithTypes('u64', item.fields.taken_cx),
-      takenCy: decodeFromFieldsWithTypes('u64', item.fields.taken_cy),
-      deltaL: decodeFromFieldsWithTypes('u128', item.fields.delta_l),
-      deltaX: decodeFromFieldsWithTypes('u64', item.fields.delta_x),
-      deltaY: decodeFromFieldsWithTypes('u64', item.fields.delta_y),
-      xRepaid: decodeFromFieldsWithTypes('u64', item.fields.x_repaid),
-      yRepaid: decodeFromFieldsWithTypes('u64', item.fields.y_repaid),
-      addedCx: decodeFromFieldsWithTypes('u64', item.fields.added_cx),
-      addedCy: decodeFromFieldsWithTypes('u64', item.fields.added_cy),
-      stashedAmmRewards: decodeFromFieldsWithTypes(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.stashed_amm_rewards
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RebalanceInfo {
-    return RebalanceInfo.fromFields(RebalanceInfo.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      positionId: this.positionId,
-      collectedAmmFeeX: this.collectedAmmFeeX.toString(),
-      collectedAmmFeeY: this.collectedAmmFeeY.toString(),
-      collectedAmmRewards: this.collectedAmmRewards.toJSONField(),
-      feesTaken: this.feesTaken.toJSONField(),
-      takenCx: this.takenCx.toString(),
-      takenCy: this.takenCy.toString(),
-      deltaL: this.deltaL.toString(),
-      deltaX: this.deltaX.toString(),
-      deltaY: this.deltaY.toString(),
-      xRepaid: this.xRepaid.toString(),
-      yRepaid: this.yRepaid.toString(),
-      addedCx: this.addedCx.toString(),
-      addedCy: this.addedCy.toString(),
-      stashedAmmRewards: this.stashedAmmRewards.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RebalanceInfo {
-    return RebalanceInfo.reified().new({
-      id: decodeFromJSONField(ID.reified(), field.id),
-      positionId: decodeFromJSONField(ID.reified(), field.positionId),
-      collectedAmmFeeX: decodeFromJSONField('u64', field.collectedAmmFeeX),
-      collectedAmmFeeY: decodeFromJSONField('u64', field.collectedAmmFeeY),
-      collectedAmmRewards: decodeFromJSONField(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        field.collectedAmmRewards
-      ),
-      feesTaken: decodeFromJSONField(VecMap.reified(TypeName.reified(), 'u64'), field.feesTaken),
-      takenCx: decodeFromJSONField('u64', field.takenCx),
-      takenCy: decodeFromJSONField('u64', field.takenCy),
-      deltaL: decodeFromJSONField('u128', field.deltaL),
-      deltaX: decodeFromJSONField('u64', field.deltaX),
-      deltaY: decodeFromJSONField('u64', field.deltaY),
-      xRepaid: decodeFromJSONField('u64', field.xRepaid),
-      yRepaid: decodeFromJSONField('u64', field.yRepaid),
-      addedCx: decodeFromJSONField('u64', field.addedCx),
-      addedCy: decodeFromJSONField('u64', field.addedCy),
-      stashedAmmRewards: decodeFromJSONField(
-        VecMap.reified(TypeName.reified(), 'u64'),
-        field.stashedAmmRewards
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RebalanceInfo {
-    if (json.$typeName !== RebalanceInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RebalanceInfo.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRebalanceInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceInfo object`)
-    }
-    return RebalanceInfo.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
-        throw new Error(`object at is not a RebalanceInfo object`)
-      }
-
-      return RebalanceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RebalanceInfo.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RebalanceInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RebalanceInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RebalanceInfo object`)
-    }
-
-    return RebalanceInfo.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== ACollectProtocolFees =============================== */
 
 export function isACollectProtocolFees(type: string): boolean {
@@ -986,6 +523,165 @@ export class ADeleverage implements StructClass {
     }
 
     return ADeleverage.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== AMigrate =============================== */
+
+export function isAMigrate(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position_core_clmm::AMigrate`
+}
+
+export interface AMigrateFields {
+  dummyField: ToField<'bool'>
+}
+
+export type AMigrateReified = Reified<AMigrate, AMigrateFields>
+
+export class AMigrate implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position_core_clmm::AMigrate`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AMigrate.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AMigrate`
+  readonly $typeArgs: []
+  readonly $isPhantom = AMigrate.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: AMigrateFields) {
+    this.$fullTypeName = composeSuiType(
+      AMigrate.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): AMigrateReified {
+    return {
+      typeName: AMigrate.$typeName,
+      fullTypeName: composeSuiType(
+        AMigrate.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`,
+      typeArgs: [] as [],
+      isPhantom: AMigrate.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AMigrate.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AMigrate.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AMigrate.fromBcs(data),
+      bcs: AMigrate.bcs,
+      fromJSONField: (field: any) => AMigrate.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AMigrate.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AMigrate.fetch(client, id),
+      new: (fields: AMigrateFields) => {
+        return new AMigrate([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AMigrate.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AMigrate>> {
+    return phantom(AMigrate.reified())
+  }
+  static get p() {
+    return AMigrate.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AMigrate', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AMigrate {
+    return AMigrate.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AMigrate {
+    if (!isAMigrate(item.type)) {
+      throw new Error('not a AMigrate type')
+    }
+
+    return AMigrate.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AMigrate {
+    return AMigrate.fromFields(AMigrate.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AMigrate {
+    return AMigrate.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): AMigrate {
+    if (json.$typeName !== AMigrate.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AMigrate.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AMigrate {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAMigrate(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AMigrate object`)
+    }
+    return AMigrate.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AMigrate {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAMigrate(data.bcs.type)) {
+        throw new Error(`object at is not a AMigrate object`)
+      }
+
+      return AMigrate.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AMigrate.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AMigrate> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AMigrate object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAMigrate(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AMigrate object`)
+    }
+
+    return AMigrate.fromSuiObjectData(res.data)
   }
 }
 
@@ -5454,6 +5150,310 @@ export class PythConfig implements StructClass {
     }
 
     return PythConfig.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== RebalanceInfo =============================== */
+
+export function isRebalanceInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position_core_clmm::RebalanceInfo`
+}
+
+export interface RebalanceInfoFields {
+  id: ToField<ID>
+  positionId: ToField<ID>
+  collectedAmmFeeX: ToField<'u64'>
+  collectedAmmFeeY: ToField<'u64'>
+  collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  takenCx: ToField<'u64'>
+  takenCy: ToField<'u64'>
+  deltaL: ToField<'u128'>
+  deltaX: ToField<'u64'>
+  deltaY: ToField<'u64'>
+  xRepaid: ToField<'u64'>
+  yRepaid: ToField<'u64'>
+  addedCx: ToField<'u64'>
+  addedCy: ToField<'u64'>
+  stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+}
+
+export type RebalanceInfoReified = Reified<RebalanceInfo, RebalanceInfoFields>
+
+export class RebalanceInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position_core_clmm::RebalanceInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RebalanceInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = RebalanceInfo.$isPhantom
+
+  readonly id: ToField<ID>
+  readonly positionId: ToField<ID>
+  readonly collectedAmmFeeX: ToField<'u64'>
+  readonly collectedAmmFeeY: ToField<'u64'>
+  readonly collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  readonly feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  readonly takenCx: ToField<'u64'>
+  readonly takenCy: ToField<'u64'>
+  readonly deltaL: ToField<'u128'>
+  readonly deltaX: ToField<'u64'>
+  readonly deltaY: ToField<'u64'>
+  readonly xRepaid: ToField<'u64'>
+  readonly yRepaid: ToField<'u64'>
+  readonly addedCx: ToField<'u64'>
+  readonly addedCy: ToField<'u64'>
+  readonly stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+
+  private constructor(typeArgs: [], fields: RebalanceInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      RebalanceInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.positionId = fields.positionId
+    this.collectedAmmFeeX = fields.collectedAmmFeeX
+    this.collectedAmmFeeY = fields.collectedAmmFeeY
+    this.collectedAmmRewards = fields.collectedAmmRewards
+    this.feesTaken = fields.feesTaken
+    this.takenCx = fields.takenCx
+    this.takenCy = fields.takenCy
+    this.deltaL = fields.deltaL
+    this.deltaX = fields.deltaX
+    this.deltaY = fields.deltaY
+    this.xRepaid = fields.xRepaid
+    this.yRepaid = fields.yRepaid
+    this.addedCx = fields.addedCx
+    this.addedCy = fields.addedCy
+    this.stashedAmmRewards = fields.stashedAmmRewards
+  }
+
+  static reified(): RebalanceInfoReified {
+    return {
+      typeName: RebalanceInfo.$typeName,
+      fullTypeName: composeSuiType(
+        RebalanceInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`,
+      typeArgs: [] as [],
+      isPhantom: RebalanceInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RebalanceInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RebalanceInfo.fromBcs(data),
+      bcs: RebalanceInfo.bcs,
+      fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RebalanceInfo.fetch(client, id),
+      new: (fields: RebalanceInfoFields) => {
+        return new RebalanceInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RebalanceInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RebalanceInfo>> {
+    return phantom(RebalanceInfo.reified())
+  }
+  static get p() {
+    return RebalanceInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RebalanceInfo', {
+      id: ID.bcs,
+      position_id: ID.bcs,
+      collected_amm_fee_x: bcs.u64(),
+      collected_amm_fee_y: bcs.u64(),
+      collected_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
+      fees_taken: VecMap.bcs(TypeName.bcs, bcs.u64()),
+      taken_cx: bcs.u64(),
+      taken_cy: bcs.u64(),
+      delta_l: bcs.u128(),
+      delta_x: bcs.u64(),
+      delta_y: bcs.u64(),
+      x_repaid: bcs.u64(),
+      y_repaid: bcs.u64(),
+      added_cx: bcs.u64(),
+      added_cy: bcs.u64(),
+      stashed_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RebalanceInfo {
+    return RebalanceInfo.reified().new({
+      id: decodeFromFields(ID.reified(), fields.id),
+      positionId: decodeFromFields(ID.reified(), fields.position_id),
+      collectedAmmFeeX: decodeFromFields('u64', fields.collected_amm_fee_x),
+      collectedAmmFeeY: decodeFromFields('u64', fields.collected_amm_fee_y),
+      collectedAmmRewards: decodeFromFields(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        fields.collected_amm_rewards
+      ),
+      feesTaken: decodeFromFields(VecMap.reified(TypeName.reified(), 'u64'), fields.fees_taken),
+      takenCx: decodeFromFields('u64', fields.taken_cx),
+      takenCy: decodeFromFields('u64', fields.taken_cy),
+      deltaL: decodeFromFields('u128', fields.delta_l),
+      deltaX: decodeFromFields('u64', fields.delta_x),
+      deltaY: decodeFromFields('u64', fields.delta_y),
+      xRepaid: decodeFromFields('u64', fields.x_repaid),
+      yRepaid: decodeFromFields('u64', fields.y_repaid),
+      addedCx: decodeFromFields('u64', fields.added_cx),
+      addedCy: decodeFromFields('u64', fields.added_cy),
+      stashedAmmRewards: decodeFromFields(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        fields.stashed_amm_rewards
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceInfo {
+    if (!isRebalanceInfo(item.type)) {
+      throw new Error('not a RebalanceInfo type')
+    }
+
+    return RebalanceInfo.reified().new({
+      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
+      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
+      collectedAmmFeeX: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_x),
+      collectedAmmFeeY: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_y),
+      collectedAmmRewards: decodeFromFieldsWithTypes(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        item.fields.collected_amm_rewards
+      ),
+      feesTaken: decodeFromFieldsWithTypes(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        item.fields.fees_taken
+      ),
+      takenCx: decodeFromFieldsWithTypes('u64', item.fields.taken_cx),
+      takenCy: decodeFromFieldsWithTypes('u64', item.fields.taken_cy),
+      deltaL: decodeFromFieldsWithTypes('u128', item.fields.delta_l),
+      deltaX: decodeFromFieldsWithTypes('u64', item.fields.delta_x),
+      deltaY: decodeFromFieldsWithTypes('u64', item.fields.delta_y),
+      xRepaid: decodeFromFieldsWithTypes('u64', item.fields.x_repaid),
+      yRepaid: decodeFromFieldsWithTypes('u64', item.fields.y_repaid),
+      addedCx: decodeFromFieldsWithTypes('u64', item.fields.added_cx),
+      addedCy: decodeFromFieldsWithTypes('u64', item.fields.added_cy),
+      stashedAmmRewards: decodeFromFieldsWithTypes(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        item.fields.stashed_amm_rewards
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RebalanceInfo {
+    return RebalanceInfo.fromFields(RebalanceInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      positionId: this.positionId,
+      collectedAmmFeeX: this.collectedAmmFeeX.toString(),
+      collectedAmmFeeY: this.collectedAmmFeeY.toString(),
+      collectedAmmRewards: this.collectedAmmRewards.toJSONField(),
+      feesTaken: this.feesTaken.toJSONField(),
+      takenCx: this.takenCx.toString(),
+      takenCy: this.takenCy.toString(),
+      deltaL: this.deltaL.toString(),
+      deltaX: this.deltaX.toString(),
+      deltaY: this.deltaY.toString(),
+      xRepaid: this.xRepaid.toString(),
+      yRepaid: this.yRepaid.toString(),
+      addedCx: this.addedCx.toString(),
+      addedCy: this.addedCy.toString(),
+      stashedAmmRewards: this.stashedAmmRewards.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RebalanceInfo {
+    return RebalanceInfo.reified().new({
+      id: decodeFromJSONField(ID.reified(), field.id),
+      positionId: decodeFromJSONField(ID.reified(), field.positionId),
+      collectedAmmFeeX: decodeFromJSONField('u64', field.collectedAmmFeeX),
+      collectedAmmFeeY: decodeFromJSONField('u64', field.collectedAmmFeeY),
+      collectedAmmRewards: decodeFromJSONField(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        field.collectedAmmRewards
+      ),
+      feesTaken: decodeFromJSONField(VecMap.reified(TypeName.reified(), 'u64'), field.feesTaken),
+      takenCx: decodeFromJSONField('u64', field.takenCx),
+      takenCy: decodeFromJSONField('u64', field.takenCy),
+      deltaL: decodeFromJSONField('u128', field.deltaL),
+      deltaX: decodeFromJSONField('u64', field.deltaX),
+      deltaY: decodeFromJSONField('u64', field.deltaY),
+      xRepaid: decodeFromJSONField('u64', field.xRepaid),
+      yRepaid: decodeFromJSONField('u64', field.yRepaid),
+      addedCx: decodeFromJSONField('u64', field.addedCx),
+      addedCy: decodeFromJSONField('u64', field.addedCy),
+      stashedAmmRewards: decodeFromJSONField(
+        VecMap.reified(TypeName.reified(), 'u64'),
+        field.stashedAmmRewards
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RebalanceInfo {
+    if (json.$typeName !== RebalanceInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RebalanceInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRebalanceInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceInfo object`)
+    }
+    return RebalanceInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
+        throw new Error(`object at is not a RebalanceInfo object`)
+      }
+
+      return RebalanceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RebalanceInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RebalanceInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RebalanceInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RebalanceInfo object`)
+    }
+
+    return RebalanceInfo.fromSuiObjectData(res.data)
   }
 }
 

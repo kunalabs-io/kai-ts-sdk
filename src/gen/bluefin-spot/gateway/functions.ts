@@ -2,6 +2,32 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface ClosePositionArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  destination: string | TransactionArgument
+}
+
+export function closePosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ClosePositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::gateway::close_position`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.destination, `address`),
+    ],
+  })
+}
+
 export interface CollectFeeArgs {
   clock: TransactionObjectInput
   protocolConfig: TransactionObjectInput
@@ -42,64 +68,6 @@ export function collectReward(
       obj(tx, args.protocolConfig),
       obj(tx, args.pool),
       obj(tx, args.position),
-    ],
-  })
-}
-
-export interface RemoveLiquidityArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  liquidity: bigint | TransactionArgument
-  minCoinsA: bigint | TransactionArgument
-  minCoinsB: bigint | TransactionArgument
-  destination: string | TransactionArgument
-}
-
-export function removeLiquidity(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: RemoveLiquidityArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::gateway::remove_liquidity`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      pure(tx, args.liquidity, `u128`),
-      pure(tx, args.minCoinsA, `u64`),
-      pure(tx, args.minCoinsB, `u64`),
-      pure(tx, args.destination, `address`),
-    ],
-  })
-}
-
-export interface ClosePositionArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  destination: string | TransactionArgument
-}
-
-export function closePosition(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: ClosePositionArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::gateway::close_position`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      pure(tx, args.destination, `address`),
     ],
   })
 }
@@ -214,6 +182,38 @@ export function provideLiquidityWithFixedAmount(
       pure(tx, args.coinAMax, `u64`),
       pure(tx, args.coinBMax, `u64`),
       pure(tx, args.isFixedA, `bool`),
+    ],
+  })
+}
+
+export interface RemoveLiquidityArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  liquidity: bigint | TransactionArgument
+  minCoinsA: bigint | TransactionArgument
+  minCoinsB: bigint | TransactionArgument
+  destination: string | TransactionArgument
+}
+
+export function removeLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveLiquidityArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::gateway::remove_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.minCoinsA, `u64`),
+      pure(tx, args.minCoinsB, `u64`),
+      pure(tx, args.destination, `address`),
     ],
   })
 }

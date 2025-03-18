@@ -34,6 +34,177 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== CoinTypeKey =============================== */
+
+export function isCoinTypeKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::token_registry::CoinTypeKey`
+}
+
+export interface CoinTypeKeyFields {
+  chain: ToField<'u16'>
+  addr: ToField<Vector<'u8'>>
+}
+
+export type CoinTypeKeyReified = Reified<CoinTypeKey, CoinTypeKeyFields>
+
+export class CoinTypeKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::token_registry::CoinTypeKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = CoinTypeKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::token_registry::CoinTypeKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = CoinTypeKey.$isPhantom
+
+  readonly chain: ToField<'u16'>
+  readonly addr: ToField<Vector<'u8'>>
+
+  private constructor(typeArgs: [], fields: CoinTypeKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      CoinTypeKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::token_registry::CoinTypeKey`
+    this.$typeArgs = typeArgs
+
+    this.chain = fields.chain
+    this.addr = fields.addr
+  }
+
+  static reified(): CoinTypeKeyReified {
+    return {
+      typeName: CoinTypeKey.$typeName,
+      fullTypeName: composeSuiType(
+        CoinTypeKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::token_registry::CoinTypeKey`,
+      typeArgs: [] as [],
+      isPhantom: CoinTypeKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => CoinTypeKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => CoinTypeKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => CoinTypeKey.fromBcs(data),
+      bcs: CoinTypeKey.bcs,
+      fromJSONField: (field: any) => CoinTypeKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => CoinTypeKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => CoinTypeKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => CoinTypeKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => CoinTypeKey.fetch(client, id),
+      new: (fields: CoinTypeKeyFields) => {
+        return new CoinTypeKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return CoinTypeKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<CoinTypeKey>> {
+    return phantom(CoinTypeKey.reified())
+  }
+  static get p() {
+    return CoinTypeKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('CoinTypeKey', {
+      chain: bcs.u16(),
+      addr: bcs.vector(bcs.u8()),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): CoinTypeKey {
+    return CoinTypeKey.reified().new({
+      chain: decodeFromFields('u16', fields.chain),
+      addr: decodeFromFields(reified.vector('u8'), fields.addr),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): CoinTypeKey {
+    if (!isCoinTypeKey(item.type)) {
+      throw new Error('not a CoinTypeKey type')
+    }
+
+    return CoinTypeKey.reified().new({
+      chain: decodeFromFieldsWithTypes('u16', item.fields.chain),
+      addr: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.addr),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): CoinTypeKey {
+    return CoinTypeKey.fromFields(CoinTypeKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      chain: this.chain,
+      addr: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.addr),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): CoinTypeKey {
+    return CoinTypeKey.reified().new({
+      chain: decodeFromJSONField('u16', field.chain),
+      addr: decodeFromJSONField(reified.vector('u8'), field.addr),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): CoinTypeKey {
+    if (json.$typeName !== CoinTypeKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return CoinTypeKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): CoinTypeKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isCoinTypeKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a CoinTypeKey object`)
+    }
+    return CoinTypeKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): CoinTypeKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isCoinTypeKey(data.bcs.type)) {
+        throw new Error(`object at is not a CoinTypeKey object`)
+      }
+
+      return CoinTypeKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return CoinTypeKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<CoinTypeKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching CoinTypeKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isCoinTypeKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a CoinTypeKey object`)
+    }
+
+    return CoinTypeKey.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== Key =============================== */
 
 export function isKey(type: string): boolean {
@@ -239,177 +410,6 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     }
 
     return Key.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== CoinTypeKey =============================== */
-
-export function isCoinTypeKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::token_registry::CoinTypeKey`
-}
-
-export interface CoinTypeKeyFields {
-  chain: ToField<'u16'>
-  addr: ToField<Vector<'u8'>>
-}
-
-export type CoinTypeKeyReified = Reified<CoinTypeKey, CoinTypeKeyFields>
-
-export class CoinTypeKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::token_registry::CoinTypeKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = CoinTypeKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::token_registry::CoinTypeKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = CoinTypeKey.$isPhantom
-
-  readonly chain: ToField<'u16'>
-  readonly addr: ToField<Vector<'u8'>>
-
-  private constructor(typeArgs: [], fields: CoinTypeKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      CoinTypeKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::token_registry::CoinTypeKey`
-    this.$typeArgs = typeArgs
-
-    this.chain = fields.chain
-    this.addr = fields.addr
-  }
-
-  static reified(): CoinTypeKeyReified {
-    return {
-      typeName: CoinTypeKey.$typeName,
-      fullTypeName: composeSuiType(
-        CoinTypeKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::token_registry::CoinTypeKey`,
-      typeArgs: [] as [],
-      isPhantom: CoinTypeKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => CoinTypeKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => CoinTypeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CoinTypeKey.fromBcs(data),
-      bcs: CoinTypeKey.bcs,
-      fromJSONField: (field: any) => CoinTypeKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => CoinTypeKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => CoinTypeKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => CoinTypeKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CoinTypeKey.fetch(client, id),
-      new: (fields: CoinTypeKeyFields) => {
-        return new CoinTypeKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return CoinTypeKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<CoinTypeKey>> {
-    return phantom(CoinTypeKey.reified())
-  }
-  static get p() {
-    return CoinTypeKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('CoinTypeKey', {
-      chain: bcs.u16(),
-      addr: bcs.vector(bcs.u8()),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): CoinTypeKey {
-    return CoinTypeKey.reified().new({
-      chain: decodeFromFields('u16', fields.chain),
-      addr: decodeFromFields(reified.vector('u8'), fields.addr),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): CoinTypeKey {
-    if (!isCoinTypeKey(item.type)) {
-      throw new Error('not a CoinTypeKey type')
-    }
-
-    return CoinTypeKey.reified().new({
-      chain: decodeFromFieldsWithTypes('u16', item.fields.chain),
-      addr: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.addr),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): CoinTypeKey {
-    return CoinTypeKey.fromFields(CoinTypeKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      chain: this.chain,
-      addr: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.addr),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): CoinTypeKey {
-    return CoinTypeKey.reified().new({
-      chain: decodeFromJSONField('u16', field.chain),
-      addr: decodeFromJSONField(reified.vector('u8'), field.addr),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): CoinTypeKey {
-    if (json.$typeName !== CoinTypeKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return CoinTypeKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): CoinTypeKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isCoinTypeKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a CoinTypeKey object`)
-    }
-    return CoinTypeKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): CoinTypeKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isCoinTypeKey(data.bcs.type)) {
-        throw new Error(`object at is not a CoinTypeKey object`)
-      }
-
-      return CoinTypeKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return CoinTypeKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<CoinTypeKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching CoinTypeKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCoinTypeKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a CoinTypeKey object`)
-    }
-
-    return CoinTypeKey.fromSuiObjectData(res.data)
   }
 }
 

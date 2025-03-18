@@ -16,26 +16,6 @@ export function absDiff(tx: Transaction, args: AbsDiffArgs) {
   })
 }
 
-export interface GetPriceArgs {
-  state: TransactionObjectInput
-  priceInfoObject: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function getPrice(tx: Transaction, args: GetPriceArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price`,
-    arguments: [obj(tx, args.state), obj(tx, args.priceInfoObject), obj(tx, args.clock)],
-  })
-}
-
-export function getStalePriceThresholdSecs(tx: Transaction, state: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_stale_price_threshold_secs`,
-    arguments: [obj(tx, state)],
-  })
-}
-
 export interface CheckPriceIsFreshArgs {
   price: TransactionObjectInput
   clock: TransactionObjectInput
@@ -147,6 +127,19 @@ export function createPriceInfosHotPotato(tx: Transaction, args: CreatePriceInfo
   })
 }
 
+export interface GetPriceArgs {
+  state: TransactionObjectInput
+  priceInfoObject: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function getPrice(tx: Transaction, args: GetPriceArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pyth::get_price`,
+    arguments: [obj(tx, args.state), obj(tx, args.priceInfoObject), obj(tx, args.clock)],
+  })
+}
+
 export interface GetPriceNoOlderThanArgs {
   priceInfoObject: TransactionObjectInput
   clock: TransactionObjectInput
@@ -168,6 +161,13 @@ export function getPriceUnsafe(tx: Transaction, priceInfoObject: TransactionObje
   return tx.moveCall({
     target: `${PUBLISHED_AT}::pyth::get_price_unsafe`,
     arguments: [obj(tx, priceInfoObject)],
+  })
+}
+
+export function getStalePriceThresholdSecs(tx: Transaction, state: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pyth::get_stale_price_threshold_secs`,
+    arguments: [obj(tx, state)],
   })
 }
 

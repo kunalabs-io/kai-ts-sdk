@@ -18,6 +18,351 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== AddFeeTierEvent =============================== */
+
+export function isAddFeeTierEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::AddFeeTierEvent`
+}
+
+export interface AddFeeTierEventFields {
+  tickSpacing: ToField<'u32'>
+  feeRate: ToField<'u64'>
+}
+
+export type AddFeeTierEventReified = Reified<AddFeeTierEvent, AddFeeTierEventFields>
+
+export class AddFeeTierEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::AddFeeTierEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AddFeeTierEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::AddFeeTierEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = AddFeeTierEvent.$isPhantom
+
+  readonly tickSpacing: ToField<'u32'>
+  readonly feeRate: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: AddFeeTierEventFields) {
+    this.$fullTypeName = composeSuiType(
+      AddFeeTierEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::AddFeeTierEvent`
+    this.$typeArgs = typeArgs
+
+    this.tickSpacing = fields.tickSpacing
+    this.feeRate = fields.feeRate
+  }
+
+  static reified(): AddFeeTierEventReified {
+    return {
+      typeName: AddFeeTierEvent.$typeName,
+      fullTypeName: composeSuiType(
+        AddFeeTierEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::AddFeeTierEvent`,
+      typeArgs: [] as [],
+      isPhantom: AddFeeTierEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AddFeeTierEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AddFeeTierEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AddFeeTierEvent.fromBcs(data),
+      bcs: AddFeeTierEvent.bcs,
+      fromJSONField: (field: any) => AddFeeTierEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AddFeeTierEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AddFeeTierEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AddFeeTierEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AddFeeTierEvent.fetch(client, id),
+      new: (fields: AddFeeTierEventFields) => {
+        return new AddFeeTierEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AddFeeTierEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AddFeeTierEvent>> {
+    return phantom(AddFeeTierEvent.reified())
+  }
+  static get p() {
+    return AddFeeTierEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AddFeeTierEvent', {
+      tick_spacing: bcs.u32(),
+      fee_rate: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AddFeeTierEvent {
+    return AddFeeTierEvent.reified().new({
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+      feeRate: decodeFromFields('u64', fields.fee_rate),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AddFeeTierEvent {
+    if (!isAddFeeTierEvent(item.type)) {
+      throw new Error('not a AddFeeTierEvent type')
+    }
+
+    return AddFeeTierEvent.reified().new({
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AddFeeTierEvent {
+    return AddFeeTierEvent.fromFields(AddFeeTierEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      tickSpacing: this.tickSpacing,
+      feeRate: this.feeRate.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AddFeeTierEvent {
+    return AddFeeTierEvent.reified().new({
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+      feeRate: decodeFromJSONField('u64', field.feeRate),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AddFeeTierEvent {
+    if (json.$typeName !== AddFeeTierEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AddFeeTierEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AddFeeTierEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAddFeeTierEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AddFeeTierEvent object`)
+    }
+    return AddFeeTierEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AddFeeTierEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAddFeeTierEvent(data.bcs.type)) {
+        throw new Error(`object at is not a AddFeeTierEvent object`)
+      }
+
+      return AddFeeTierEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AddFeeTierEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AddFeeTierEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AddFeeTierEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddFeeTierEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AddFeeTierEvent object`)
+    }
+
+    return AddFeeTierEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== AddRoleEvent =============================== */
+
+export function isAddRoleEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::AddRoleEvent`
+}
+
+export interface AddRoleEventFields {
+  member: ToField<'address'>
+  role: ToField<'u8'>
+}
+
+export type AddRoleEventReified = Reified<AddRoleEvent, AddRoleEventFields>
+
+export class AddRoleEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::AddRoleEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AddRoleEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::AddRoleEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = AddRoleEvent.$isPhantom
+
+  readonly member: ToField<'address'>
+  readonly role: ToField<'u8'>
+
+  private constructor(typeArgs: [], fields: AddRoleEventFields) {
+    this.$fullTypeName = composeSuiType(
+      AddRoleEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::AddRoleEvent`
+    this.$typeArgs = typeArgs
+
+    this.member = fields.member
+    this.role = fields.role
+  }
+
+  static reified(): AddRoleEventReified {
+    return {
+      typeName: AddRoleEvent.$typeName,
+      fullTypeName: composeSuiType(
+        AddRoleEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::AddRoleEvent`,
+      typeArgs: [] as [],
+      isPhantom: AddRoleEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AddRoleEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AddRoleEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AddRoleEvent.fromBcs(data),
+      bcs: AddRoleEvent.bcs,
+      fromJSONField: (field: any) => AddRoleEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AddRoleEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AddRoleEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AddRoleEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AddRoleEvent.fetch(client, id),
+      new: (fields: AddRoleEventFields) => {
+        return new AddRoleEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AddRoleEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AddRoleEvent>> {
+    return phantom(AddRoleEvent.reified())
+  }
+  static get p() {
+    return AddRoleEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AddRoleEvent', {
+      member: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      role: bcs.u8(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AddRoleEvent {
+    return AddRoleEvent.reified().new({
+      member: decodeFromFields('address', fields.member),
+      role: decodeFromFields('u8', fields.role),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AddRoleEvent {
+    if (!isAddRoleEvent(item.type)) {
+      throw new Error('not a AddRoleEvent type')
+    }
+
+    return AddRoleEvent.reified().new({
+      member: decodeFromFieldsWithTypes('address', item.fields.member),
+      role: decodeFromFieldsWithTypes('u8', item.fields.role),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AddRoleEvent {
+    return AddRoleEvent.fromFields(AddRoleEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      member: this.member,
+      role: this.role,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AddRoleEvent {
+    return AddRoleEvent.reified().new({
+      member: decodeFromJSONField('address', field.member),
+      role: decodeFromJSONField('u8', field.role),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AddRoleEvent {
+    if (json.$typeName !== AddRoleEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AddRoleEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AddRoleEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAddRoleEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AddRoleEvent object`)
+    }
+    return AddRoleEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AddRoleEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAddRoleEvent(data.bcs.type)) {
+        throw new Error(`object at is not a AddRoleEvent object`)
+      }
+
+      return AddRoleEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AddRoleEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AddRoleEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AddRoleEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddRoleEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AddRoleEvent object`)
+    }
+
+    return AddRoleEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== AdminCap =============================== */
 
 export function isAdminCap(type: string): boolean {
@@ -175,107 +520,116 @@ export class AdminCap implements StructClass {
   }
 }
 
-/* ============================== ProtocolFeeClaimCap =============================== */
+/* ============================== DeleteFeeTierEvent =============================== */
 
-export function isProtocolFeeClaimCap(type: string): boolean {
+export function isDeleteFeeTierEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::config::ProtocolFeeClaimCap`
+  return type === `${PKG_V1}::config::DeleteFeeTierEvent`
 }
 
-export interface ProtocolFeeClaimCapFields {
-  id: ToField<UID>
+export interface DeleteFeeTierEventFields {
+  tickSpacing: ToField<'u32'>
+  feeRate: ToField<'u64'>
 }
 
-export type ProtocolFeeClaimCapReified = Reified<ProtocolFeeClaimCap, ProtocolFeeClaimCapFields>
+export type DeleteFeeTierEventReified = Reified<DeleteFeeTierEvent, DeleteFeeTierEventFields>
 
-export class ProtocolFeeClaimCap implements StructClass {
+export class DeleteFeeTierEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::config::ProtocolFeeClaimCap`
+  static readonly $typeName = `${PKG_V1}::config::DeleteFeeTierEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ProtocolFeeClaimCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::ProtocolFeeClaimCap`
+  readonly $typeName = DeleteFeeTierEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::DeleteFeeTierEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = ProtocolFeeClaimCap.$isPhantom
+  readonly $isPhantom = DeleteFeeTierEvent.$isPhantom
 
-  readonly id: ToField<UID>
+  readonly tickSpacing: ToField<'u32'>
+  readonly feeRate: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: ProtocolFeeClaimCapFields) {
+  private constructor(typeArgs: [], fields: DeleteFeeTierEventFields) {
     this.$fullTypeName = composeSuiType(
-      ProtocolFeeClaimCap.$typeName,
+      DeleteFeeTierEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::config::ProtocolFeeClaimCap`
+    ) as `${typeof PKG_V1}::config::DeleteFeeTierEvent`
     this.$typeArgs = typeArgs
 
-    this.id = fields.id
+    this.tickSpacing = fields.tickSpacing
+    this.feeRate = fields.feeRate
   }
 
-  static reified(): ProtocolFeeClaimCapReified {
+  static reified(): DeleteFeeTierEventReified {
     return {
-      typeName: ProtocolFeeClaimCap.$typeName,
+      typeName: DeleteFeeTierEvent.$typeName,
       fullTypeName: composeSuiType(
-        ProtocolFeeClaimCap.$typeName,
+        DeleteFeeTierEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::config::ProtocolFeeClaimCap`,
+      ) as `${typeof PKG_V1}::config::DeleteFeeTierEvent`,
       typeArgs: [] as [],
-      isPhantom: ProtocolFeeClaimCap.$isPhantom,
+      isPhantom: DeleteFeeTierEvent.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ProtocolFeeClaimCap.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ProtocolFeeClaimCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ProtocolFeeClaimCap.fromBcs(data),
-      bcs: ProtocolFeeClaimCap.bcs,
-      fromJSONField: (field: any) => ProtocolFeeClaimCap.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ProtocolFeeClaimCap.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ProtocolFeeClaimCap.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ProtocolFeeClaimCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ProtocolFeeClaimCap.fetch(client, id),
-      new: (fields: ProtocolFeeClaimCapFields) => {
-        return new ProtocolFeeClaimCap([], fields)
+      fromFields: (fields: Record<string, any>) => DeleteFeeTierEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DeleteFeeTierEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => DeleteFeeTierEvent.fromBcs(data),
+      bcs: DeleteFeeTierEvent.bcs,
+      fromJSONField: (field: any) => DeleteFeeTierEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => DeleteFeeTierEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => DeleteFeeTierEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => DeleteFeeTierEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => DeleteFeeTierEvent.fetch(client, id),
+      new: (fields: DeleteFeeTierEventFields) => {
+        return new DeleteFeeTierEvent([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return ProtocolFeeClaimCap.reified()
+    return DeleteFeeTierEvent.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<ProtocolFeeClaimCap>> {
-    return phantom(ProtocolFeeClaimCap.reified())
+  static phantom(): PhantomReified<ToTypeStr<DeleteFeeTierEvent>> {
+    return phantom(DeleteFeeTierEvent.reified())
   }
   static get p() {
-    return ProtocolFeeClaimCap.phantom()
+    return DeleteFeeTierEvent.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('ProtocolFeeClaimCap', {
-      id: UID.bcs,
+    return bcs.struct('DeleteFeeTierEvent', {
+      tick_spacing: bcs.u32(),
+      fee_rate: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): ProtocolFeeClaimCap {
-    return ProtocolFeeClaimCap.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+  static fromFields(fields: Record<string, any>): DeleteFeeTierEvent {
+    return DeleteFeeTierEvent.reified().new({
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+      feeRate: decodeFromFields('u64', fields.fee_rate),
+    })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): ProtocolFeeClaimCap {
-    if (!isProtocolFeeClaimCap(item.type)) {
-      throw new Error('not a ProtocolFeeClaimCap type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): DeleteFeeTierEvent {
+    if (!isDeleteFeeTierEvent(item.type)) {
+      throw new Error('not a DeleteFeeTierEvent type')
     }
 
-    return ProtocolFeeClaimCap.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+    return DeleteFeeTierEvent.reified().new({
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
     })
   }
 
-  static fromBcs(data: Uint8Array): ProtocolFeeClaimCap {
-    return ProtocolFeeClaimCap.fromFields(ProtocolFeeClaimCap.bcs.parse(data))
+  static fromBcs(data: Uint8Array): DeleteFeeTierEvent {
+    return DeleteFeeTierEvent.fromFields(DeleteFeeTierEvent.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      id: this.id,
+      tickSpacing: this.tickSpacing,
+      feeRate: this.feeRate.toString(),
     }
   }
 
@@ -283,54 +637,57 @@ export class ProtocolFeeClaimCap implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): ProtocolFeeClaimCap {
-    return ProtocolFeeClaimCap.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+  static fromJSONField(field: any): DeleteFeeTierEvent {
+    return DeleteFeeTierEvent.reified().new({
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+      feeRate: decodeFromJSONField('u64', field.feeRate),
+    })
   }
 
-  static fromJSON(json: Record<string, any>): ProtocolFeeClaimCap {
-    if (json.$typeName !== ProtocolFeeClaimCap.$typeName) {
+  static fromJSON(json: Record<string, any>): DeleteFeeTierEvent {
+    if (json.$typeName !== DeleteFeeTierEvent.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return ProtocolFeeClaimCap.fromJSONField(json)
+    return DeleteFeeTierEvent.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): ProtocolFeeClaimCap {
+  static fromSuiParsedData(content: SuiParsedData): DeleteFeeTierEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isProtocolFeeClaimCap(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ProtocolFeeClaimCap object`)
+    if (!isDeleteFeeTierEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a DeleteFeeTierEvent object`)
     }
-    return ProtocolFeeClaimCap.fromFieldsWithTypes(content)
+    return DeleteFeeTierEvent.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): ProtocolFeeClaimCap {
+  static fromSuiObjectData(data: SuiObjectData): DeleteFeeTierEvent {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isProtocolFeeClaimCap(data.bcs.type)) {
-        throw new Error(`object at is not a ProtocolFeeClaimCap object`)
+      if (data.bcs.dataType !== 'moveObject' || !isDeleteFeeTierEvent(data.bcs.type)) {
+        throw new Error(`object at is not a DeleteFeeTierEvent object`)
       }
 
-      return ProtocolFeeClaimCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeleteFeeTierEvent.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return ProtocolFeeClaimCap.fromSuiParsedData(data.content)
+      return DeleteFeeTierEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ProtocolFeeClaimCap> {
+  static async fetch(client: SuiClient, id: string): Promise<DeleteFeeTierEvent> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching ProtocolFeeClaimCap object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching DeleteFeeTierEvent object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isProtocolFeeClaimCap(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ProtocolFeeClaimCap object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeleteFeeTierEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a DeleteFeeTierEvent object`)
     }
 
-    return ProtocolFeeClaimCap.fromSuiObjectData(res.data)
+    return DeleteFeeTierEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -871,6 +1228,846 @@ export class InitConfigEvent implements StructClass {
   }
 }
 
+/* ============================== ProtocolFeeClaimCap =============================== */
+
+export function isProtocolFeeClaimCap(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::ProtocolFeeClaimCap`
+}
+
+export interface ProtocolFeeClaimCapFields {
+  id: ToField<UID>
+}
+
+export type ProtocolFeeClaimCapReified = Reified<ProtocolFeeClaimCap, ProtocolFeeClaimCapFields>
+
+export class ProtocolFeeClaimCap implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::ProtocolFeeClaimCap`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ProtocolFeeClaimCap.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::ProtocolFeeClaimCap`
+  readonly $typeArgs: []
+  readonly $isPhantom = ProtocolFeeClaimCap.$isPhantom
+
+  readonly id: ToField<UID>
+
+  private constructor(typeArgs: [], fields: ProtocolFeeClaimCapFields) {
+    this.$fullTypeName = composeSuiType(
+      ProtocolFeeClaimCap.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::ProtocolFeeClaimCap`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): ProtocolFeeClaimCapReified {
+    return {
+      typeName: ProtocolFeeClaimCap.$typeName,
+      fullTypeName: composeSuiType(
+        ProtocolFeeClaimCap.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::ProtocolFeeClaimCap`,
+      typeArgs: [] as [],
+      isPhantom: ProtocolFeeClaimCap.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ProtocolFeeClaimCap.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ProtocolFeeClaimCap.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ProtocolFeeClaimCap.fromBcs(data),
+      bcs: ProtocolFeeClaimCap.bcs,
+      fromJSONField: (field: any) => ProtocolFeeClaimCap.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ProtocolFeeClaimCap.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ProtocolFeeClaimCap.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ProtocolFeeClaimCap.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ProtocolFeeClaimCap.fetch(client, id),
+      new: (fields: ProtocolFeeClaimCapFields) => {
+        return new ProtocolFeeClaimCap([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ProtocolFeeClaimCap.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ProtocolFeeClaimCap>> {
+    return phantom(ProtocolFeeClaimCap.reified())
+  }
+  static get p() {
+    return ProtocolFeeClaimCap.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ProtocolFeeClaimCap', {
+      id: UID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ProtocolFeeClaimCap {
+    return ProtocolFeeClaimCap.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ProtocolFeeClaimCap {
+    if (!isProtocolFeeClaimCap(item.type)) {
+      throw new Error('not a ProtocolFeeClaimCap type')
+    }
+
+    return ProtocolFeeClaimCap.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ProtocolFeeClaimCap {
+    return ProtocolFeeClaimCap.fromFields(ProtocolFeeClaimCap.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ProtocolFeeClaimCap {
+    return ProtocolFeeClaimCap.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+  }
+
+  static fromJSON(json: Record<string, any>): ProtocolFeeClaimCap {
+    if (json.$typeName !== ProtocolFeeClaimCap.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ProtocolFeeClaimCap.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ProtocolFeeClaimCap {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isProtocolFeeClaimCap(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ProtocolFeeClaimCap object`)
+    }
+    return ProtocolFeeClaimCap.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ProtocolFeeClaimCap {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isProtocolFeeClaimCap(data.bcs.type)) {
+        throw new Error(`object at is not a ProtocolFeeClaimCap object`)
+      }
+
+      return ProtocolFeeClaimCap.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ProtocolFeeClaimCap.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ProtocolFeeClaimCap> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ProtocolFeeClaimCap object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isProtocolFeeClaimCap(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ProtocolFeeClaimCap object`)
+    }
+
+    return ProtocolFeeClaimCap.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== RemoveMemberEvent =============================== */
+
+export function isRemoveMemberEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::RemoveMemberEvent`
+}
+
+export interface RemoveMemberEventFields {
+  member: ToField<'address'>
+}
+
+export type RemoveMemberEventReified = Reified<RemoveMemberEvent, RemoveMemberEventFields>
+
+export class RemoveMemberEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::RemoveMemberEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RemoveMemberEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::RemoveMemberEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = RemoveMemberEvent.$isPhantom
+
+  readonly member: ToField<'address'>
+
+  private constructor(typeArgs: [], fields: RemoveMemberEventFields) {
+    this.$fullTypeName = composeSuiType(
+      RemoveMemberEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::RemoveMemberEvent`
+    this.$typeArgs = typeArgs
+
+    this.member = fields.member
+  }
+
+  static reified(): RemoveMemberEventReified {
+    return {
+      typeName: RemoveMemberEvent.$typeName,
+      fullTypeName: composeSuiType(
+        RemoveMemberEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::RemoveMemberEvent`,
+      typeArgs: [] as [],
+      isPhantom: RemoveMemberEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RemoveMemberEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveMemberEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RemoveMemberEvent.fromBcs(data),
+      bcs: RemoveMemberEvent.bcs,
+      fromJSONField: (field: any) => RemoveMemberEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RemoveMemberEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RemoveMemberEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RemoveMemberEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RemoveMemberEvent.fetch(client, id),
+      new: (fields: RemoveMemberEventFields) => {
+        return new RemoveMemberEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RemoveMemberEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RemoveMemberEvent>> {
+    return phantom(RemoveMemberEvent.reified())
+  }
+  static get p() {
+    return RemoveMemberEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RemoveMemberEvent', {
+      member: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RemoveMemberEvent {
+    return RemoveMemberEvent.reified().new({ member: decodeFromFields('address', fields.member) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RemoveMemberEvent {
+    if (!isRemoveMemberEvent(item.type)) {
+      throw new Error('not a RemoveMemberEvent type')
+    }
+
+    return RemoveMemberEvent.reified().new({
+      member: decodeFromFieldsWithTypes('address', item.fields.member),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RemoveMemberEvent {
+    return RemoveMemberEvent.fromFields(RemoveMemberEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      member: this.member,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RemoveMemberEvent {
+    return RemoveMemberEvent.reified().new({ member: decodeFromJSONField('address', field.member) })
+  }
+
+  static fromJSON(json: Record<string, any>): RemoveMemberEvent {
+    if (json.$typeName !== RemoveMemberEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RemoveMemberEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RemoveMemberEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRemoveMemberEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RemoveMemberEvent object`)
+    }
+    return RemoveMemberEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RemoveMemberEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRemoveMemberEvent(data.bcs.type)) {
+        throw new Error(`object at is not a RemoveMemberEvent object`)
+      }
+
+      return RemoveMemberEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RemoveMemberEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RemoveMemberEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RemoveMemberEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRemoveMemberEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RemoveMemberEvent object`)
+    }
+
+    return RemoveMemberEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== RemoveRoleEvent =============================== */
+
+export function isRemoveRoleEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::RemoveRoleEvent`
+}
+
+export interface RemoveRoleEventFields {
+  member: ToField<'address'>
+  role: ToField<'u8'>
+}
+
+export type RemoveRoleEventReified = Reified<RemoveRoleEvent, RemoveRoleEventFields>
+
+export class RemoveRoleEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::RemoveRoleEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RemoveRoleEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::RemoveRoleEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = RemoveRoleEvent.$isPhantom
+
+  readonly member: ToField<'address'>
+  readonly role: ToField<'u8'>
+
+  private constructor(typeArgs: [], fields: RemoveRoleEventFields) {
+    this.$fullTypeName = composeSuiType(
+      RemoveRoleEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::RemoveRoleEvent`
+    this.$typeArgs = typeArgs
+
+    this.member = fields.member
+    this.role = fields.role
+  }
+
+  static reified(): RemoveRoleEventReified {
+    return {
+      typeName: RemoveRoleEvent.$typeName,
+      fullTypeName: composeSuiType(
+        RemoveRoleEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::RemoveRoleEvent`,
+      typeArgs: [] as [],
+      isPhantom: RemoveRoleEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RemoveRoleEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveRoleEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RemoveRoleEvent.fromBcs(data),
+      bcs: RemoveRoleEvent.bcs,
+      fromJSONField: (field: any) => RemoveRoleEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RemoveRoleEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RemoveRoleEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RemoveRoleEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RemoveRoleEvent.fetch(client, id),
+      new: (fields: RemoveRoleEventFields) => {
+        return new RemoveRoleEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RemoveRoleEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RemoveRoleEvent>> {
+    return phantom(RemoveRoleEvent.reified())
+  }
+  static get p() {
+    return RemoveRoleEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RemoveRoleEvent', {
+      member: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      role: bcs.u8(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RemoveRoleEvent {
+    return RemoveRoleEvent.reified().new({
+      member: decodeFromFields('address', fields.member),
+      role: decodeFromFields('u8', fields.role),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RemoveRoleEvent {
+    if (!isRemoveRoleEvent(item.type)) {
+      throw new Error('not a RemoveRoleEvent type')
+    }
+
+    return RemoveRoleEvent.reified().new({
+      member: decodeFromFieldsWithTypes('address', item.fields.member),
+      role: decodeFromFieldsWithTypes('u8', item.fields.role),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RemoveRoleEvent {
+    return RemoveRoleEvent.fromFields(RemoveRoleEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      member: this.member,
+      role: this.role,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RemoveRoleEvent {
+    return RemoveRoleEvent.reified().new({
+      member: decodeFromJSONField('address', field.member),
+      role: decodeFromJSONField('u8', field.role),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RemoveRoleEvent {
+    if (json.$typeName !== RemoveRoleEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RemoveRoleEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RemoveRoleEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRemoveRoleEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RemoveRoleEvent object`)
+    }
+    return RemoveRoleEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RemoveRoleEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRemoveRoleEvent(data.bcs.type)) {
+        throw new Error(`object at is not a RemoveRoleEvent object`)
+      }
+
+      return RemoveRoleEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RemoveRoleEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RemoveRoleEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RemoveRoleEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRemoveRoleEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RemoveRoleEvent object`)
+    }
+
+    return RemoveRoleEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== SetPackageVersion =============================== */
+
+export function isSetPackageVersion(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::SetPackageVersion`
+}
+
+export interface SetPackageVersionFields {
+  newVersion: ToField<'u64'>
+  oldVersion: ToField<'u64'>
+}
+
+export type SetPackageVersionReified = Reified<SetPackageVersion, SetPackageVersionFields>
+
+export class SetPackageVersion implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::SetPackageVersion`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = SetPackageVersion.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::SetPackageVersion`
+  readonly $typeArgs: []
+  readonly $isPhantom = SetPackageVersion.$isPhantom
+
+  readonly newVersion: ToField<'u64'>
+  readonly oldVersion: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: SetPackageVersionFields) {
+    this.$fullTypeName = composeSuiType(
+      SetPackageVersion.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::SetPackageVersion`
+    this.$typeArgs = typeArgs
+
+    this.newVersion = fields.newVersion
+    this.oldVersion = fields.oldVersion
+  }
+
+  static reified(): SetPackageVersionReified {
+    return {
+      typeName: SetPackageVersion.$typeName,
+      fullTypeName: composeSuiType(
+        SetPackageVersion.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::SetPackageVersion`,
+      typeArgs: [] as [],
+      isPhantom: SetPackageVersion.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => SetPackageVersion.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => SetPackageVersion.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SetPackageVersion.fromBcs(data),
+      bcs: SetPackageVersion.bcs,
+      fromJSONField: (field: any) => SetPackageVersion.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SetPackageVersion.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => SetPackageVersion.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => SetPackageVersion.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SetPackageVersion.fetch(client, id),
+      new: (fields: SetPackageVersionFields) => {
+        return new SetPackageVersion([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return SetPackageVersion.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<SetPackageVersion>> {
+    return phantom(SetPackageVersion.reified())
+  }
+  static get p() {
+    return SetPackageVersion.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('SetPackageVersion', {
+      new_version: bcs.u64(),
+      old_version: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): SetPackageVersion {
+    return SetPackageVersion.reified().new({
+      newVersion: decodeFromFields('u64', fields.new_version),
+      oldVersion: decodeFromFields('u64', fields.old_version),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): SetPackageVersion {
+    if (!isSetPackageVersion(item.type)) {
+      throw new Error('not a SetPackageVersion type')
+    }
+
+    return SetPackageVersion.reified().new({
+      newVersion: decodeFromFieldsWithTypes('u64', item.fields.new_version),
+      oldVersion: decodeFromFieldsWithTypes('u64', item.fields.old_version),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): SetPackageVersion {
+    return SetPackageVersion.fromFields(SetPackageVersion.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      newVersion: this.newVersion.toString(),
+      oldVersion: this.oldVersion.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): SetPackageVersion {
+    return SetPackageVersion.reified().new({
+      newVersion: decodeFromJSONField('u64', field.newVersion),
+      oldVersion: decodeFromJSONField('u64', field.oldVersion),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): SetPackageVersion {
+    if (json.$typeName !== SetPackageVersion.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return SetPackageVersion.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): SetPackageVersion {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSetPackageVersion(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a SetPackageVersion object`)
+    }
+    return SetPackageVersion.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): SetPackageVersion {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSetPackageVersion(data.bcs.type)) {
+        throw new Error(`object at is not a SetPackageVersion object`)
+      }
+
+      return SetPackageVersion.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return SetPackageVersion.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<SetPackageVersion> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching SetPackageVersion object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSetPackageVersion(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a SetPackageVersion object`)
+    }
+
+    return SetPackageVersion.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== SetRolesEvent =============================== */
+
+export function isSetRolesEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::config::SetRolesEvent`
+}
+
+export interface SetRolesEventFields {
+  member: ToField<'address'>
+  roles: ToField<'u128'>
+}
+
+export type SetRolesEventReified = Reified<SetRolesEvent, SetRolesEventFields>
+
+export class SetRolesEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::config::SetRolesEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = SetRolesEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::config::SetRolesEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = SetRolesEvent.$isPhantom
+
+  readonly member: ToField<'address'>
+  readonly roles: ToField<'u128'>
+
+  private constructor(typeArgs: [], fields: SetRolesEventFields) {
+    this.$fullTypeName = composeSuiType(
+      SetRolesEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::config::SetRolesEvent`
+    this.$typeArgs = typeArgs
+
+    this.member = fields.member
+    this.roles = fields.roles
+  }
+
+  static reified(): SetRolesEventReified {
+    return {
+      typeName: SetRolesEvent.$typeName,
+      fullTypeName: composeSuiType(
+        SetRolesEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::config::SetRolesEvent`,
+      typeArgs: [] as [],
+      isPhantom: SetRolesEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => SetRolesEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => SetRolesEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SetRolesEvent.fromBcs(data),
+      bcs: SetRolesEvent.bcs,
+      fromJSONField: (field: any) => SetRolesEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SetRolesEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => SetRolesEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => SetRolesEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SetRolesEvent.fetch(client, id),
+      new: (fields: SetRolesEventFields) => {
+        return new SetRolesEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return SetRolesEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<SetRolesEvent>> {
+    return phantom(SetRolesEvent.reified())
+  }
+  static get p() {
+    return SetRolesEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('SetRolesEvent', {
+      member: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      roles: bcs.u128(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): SetRolesEvent {
+    return SetRolesEvent.reified().new({
+      member: decodeFromFields('address', fields.member),
+      roles: decodeFromFields('u128', fields.roles),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): SetRolesEvent {
+    if (!isSetRolesEvent(item.type)) {
+      throw new Error('not a SetRolesEvent type')
+    }
+
+    return SetRolesEvent.reified().new({
+      member: decodeFromFieldsWithTypes('address', item.fields.member),
+      roles: decodeFromFieldsWithTypes('u128', item.fields.roles),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): SetRolesEvent {
+    return SetRolesEvent.fromFields(SetRolesEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      member: this.member,
+      roles: this.roles.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): SetRolesEvent {
+    return SetRolesEvent.reified().new({
+      member: decodeFromJSONField('address', field.member),
+      roles: decodeFromJSONField('u128', field.roles),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): SetRolesEvent {
+    if (json.$typeName !== SetRolesEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return SetRolesEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): SetRolesEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSetRolesEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a SetRolesEvent object`)
+    }
+    return SetRolesEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): SetRolesEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSetRolesEvent(data.bcs.type)) {
+        throw new Error(`object at is not a SetRolesEvent object`)
+      }
+
+      return SetRolesEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return SetRolesEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<SetRolesEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching SetRolesEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSetRolesEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a SetRolesEvent object`)
+    }
+
+    return SetRolesEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== UpdateFeeRateEvent =============================== */
 
 export function isUpdateFeeRateEvent(type: string): boolean {
@@ -1039,177 +2236,6 @@ export class UpdateFeeRateEvent implements StructClass {
     }
 
     return UpdateFeeRateEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== AddFeeTierEvent =============================== */
-
-export function isAddFeeTierEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::AddFeeTierEvent`
-}
-
-export interface AddFeeTierEventFields {
-  tickSpacing: ToField<'u32'>
-  feeRate: ToField<'u64'>
-}
-
-export type AddFeeTierEventReified = Reified<AddFeeTierEvent, AddFeeTierEventFields>
-
-export class AddFeeTierEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::AddFeeTierEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = AddFeeTierEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::AddFeeTierEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = AddFeeTierEvent.$isPhantom
-
-  readonly tickSpacing: ToField<'u32'>
-  readonly feeRate: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: AddFeeTierEventFields) {
-    this.$fullTypeName = composeSuiType(
-      AddFeeTierEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::AddFeeTierEvent`
-    this.$typeArgs = typeArgs
-
-    this.tickSpacing = fields.tickSpacing
-    this.feeRate = fields.feeRate
-  }
-
-  static reified(): AddFeeTierEventReified {
-    return {
-      typeName: AddFeeTierEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddFeeTierEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::AddFeeTierEvent`,
-      typeArgs: [] as [],
-      isPhantom: AddFeeTierEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AddFeeTierEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AddFeeTierEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddFeeTierEvent.fromBcs(data),
-      bcs: AddFeeTierEvent.bcs,
-      fromJSONField: (field: any) => AddFeeTierEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AddFeeTierEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AddFeeTierEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AddFeeTierEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddFeeTierEvent.fetch(client, id),
-      new: (fields: AddFeeTierEventFields) => {
-        return new AddFeeTierEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AddFeeTierEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<AddFeeTierEvent>> {
-    return phantom(AddFeeTierEvent.reified())
-  }
-  static get p() {
-    return AddFeeTierEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('AddFeeTierEvent', {
-      tick_spacing: bcs.u32(),
-      fee_rate: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): AddFeeTierEvent {
-    return AddFeeTierEvent.reified().new({
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      feeRate: decodeFromFields('u64', fields.fee_rate),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): AddFeeTierEvent {
-    if (!isAddFeeTierEvent(item.type)) {
-      throw new Error('not a AddFeeTierEvent type')
-    }
-
-    return AddFeeTierEvent.reified().new({
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): AddFeeTierEvent {
-    return AddFeeTierEvent.fromFields(AddFeeTierEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      tickSpacing: this.tickSpacing,
-      feeRate: this.feeRate.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): AddFeeTierEvent {
-    return AddFeeTierEvent.reified().new({
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      feeRate: decodeFromJSONField('u64', field.feeRate),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): AddFeeTierEvent {
-    if (json.$typeName !== AddFeeTierEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return AddFeeTierEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): AddFeeTierEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAddFeeTierEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AddFeeTierEvent object`)
-    }
-    return AddFeeTierEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): AddFeeTierEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAddFeeTierEvent(data.bcs.type)) {
-        throw new Error(`object at is not a AddFeeTierEvent object`)
-      }
-
-      return AddFeeTierEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AddFeeTierEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<AddFeeTierEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AddFeeTierEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddFeeTierEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AddFeeTierEvent object`)
-    }
-
-    return AddFeeTierEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -1389,1031 +2415,5 @@ export class UpdateFeeTierEvent implements StructClass {
     }
 
     return UpdateFeeTierEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== DeleteFeeTierEvent =============================== */
-
-export function isDeleteFeeTierEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::DeleteFeeTierEvent`
-}
-
-export interface DeleteFeeTierEventFields {
-  tickSpacing: ToField<'u32'>
-  feeRate: ToField<'u64'>
-}
-
-export type DeleteFeeTierEventReified = Reified<DeleteFeeTierEvent, DeleteFeeTierEventFields>
-
-export class DeleteFeeTierEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::DeleteFeeTierEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = DeleteFeeTierEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::DeleteFeeTierEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = DeleteFeeTierEvent.$isPhantom
-
-  readonly tickSpacing: ToField<'u32'>
-  readonly feeRate: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: DeleteFeeTierEventFields) {
-    this.$fullTypeName = composeSuiType(
-      DeleteFeeTierEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::DeleteFeeTierEvent`
-    this.$typeArgs = typeArgs
-
-    this.tickSpacing = fields.tickSpacing
-    this.feeRate = fields.feeRate
-  }
-
-  static reified(): DeleteFeeTierEventReified {
-    return {
-      typeName: DeleteFeeTierEvent.$typeName,
-      fullTypeName: composeSuiType(
-        DeleteFeeTierEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::DeleteFeeTierEvent`,
-      typeArgs: [] as [],
-      isPhantom: DeleteFeeTierEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => DeleteFeeTierEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DeleteFeeTierEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeleteFeeTierEvent.fromBcs(data),
-      bcs: DeleteFeeTierEvent.bcs,
-      fromJSONField: (field: any) => DeleteFeeTierEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => DeleteFeeTierEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => DeleteFeeTierEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => DeleteFeeTierEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeleteFeeTierEvent.fetch(client, id),
-      new: (fields: DeleteFeeTierEventFields) => {
-        return new DeleteFeeTierEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return DeleteFeeTierEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<DeleteFeeTierEvent>> {
-    return phantom(DeleteFeeTierEvent.reified())
-  }
-  static get p() {
-    return DeleteFeeTierEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('DeleteFeeTierEvent', {
-      tick_spacing: bcs.u32(),
-      fee_rate: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): DeleteFeeTierEvent {
-    return DeleteFeeTierEvent.reified().new({
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      feeRate: decodeFromFields('u64', fields.fee_rate),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): DeleteFeeTierEvent {
-    if (!isDeleteFeeTierEvent(item.type)) {
-      throw new Error('not a DeleteFeeTierEvent type')
-    }
-
-    return DeleteFeeTierEvent.reified().new({
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): DeleteFeeTierEvent {
-    return DeleteFeeTierEvent.fromFields(DeleteFeeTierEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      tickSpacing: this.tickSpacing,
-      feeRate: this.feeRate.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): DeleteFeeTierEvent {
-    return DeleteFeeTierEvent.reified().new({
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      feeRate: decodeFromJSONField('u64', field.feeRate),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): DeleteFeeTierEvent {
-    if (json.$typeName !== DeleteFeeTierEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return DeleteFeeTierEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): DeleteFeeTierEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isDeleteFeeTierEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a DeleteFeeTierEvent object`)
-    }
-    return DeleteFeeTierEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): DeleteFeeTierEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isDeleteFeeTierEvent(data.bcs.type)) {
-        throw new Error(`object at is not a DeleteFeeTierEvent object`)
-      }
-
-      return DeleteFeeTierEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return DeleteFeeTierEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<DeleteFeeTierEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DeleteFeeTierEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeleteFeeTierEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a DeleteFeeTierEvent object`)
-    }
-
-    return DeleteFeeTierEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== SetRolesEvent =============================== */
-
-export function isSetRolesEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::SetRolesEvent`
-}
-
-export interface SetRolesEventFields {
-  member: ToField<'address'>
-  roles: ToField<'u128'>
-}
-
-export type SetRolesEventReified = Reified<SetRolesEvent, SetRolesEventFields>
-
-export class SetRolesEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::SetRolesEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = SetRolesEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::SetRolesEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = SetRolesEvent.$isPhantom
-
-  readonly member: ToField<'address'>
-  readonly roles: ToField<'u128'>
-
-  private constructor(typeArgs: [], fields: SetRolesEventFields) {
-    this.$fullTypeName = composeSuiType(
-      SetRolesEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::SetRolesEvent`
-    this.$typeArgs = typeArgs
-
-    this.member = fields.member
-    this.roles = fields.roles
-  }
-
-  static reified(): SetRolesEventReified {
-    return {
-      typeName: SetRolesEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SetRolesEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::SetRolesEvent`,
-      typeArgs: [] as [],
-      isPhantom: SetRolesEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SetRolesEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => SetRolesEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SetRolesEvent.fromBcs(data),
-      bcs: SetRolesEvent.bcs,
-      fromJSONField: (field: any) => SetRolesEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SetRolesEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => SetRolesEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => SetRolesEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SetRolesEvent.fetch(client, id),
-      new: (fields: SetRolesEventFields) => {
-        return new SetRolesEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return SetRolesEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<SetRolesEvent>> {
-    return phantom(SetRolesEvent.reified())
-  }
-  static get p() {
-    return SetRolesEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('SetRolesEvent', {
-      member: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      roles: bcs.u128(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): SetRolesEvent {
-    return SetRolesEvent.reified().new({
-      member: decodeFromFields('address', fields.member),
-      roles: decodeFromFields('u128', fields.roles),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): SetRolesEvent {
-    if (!isSetRolesEvent(item.type)) {
-      throw new Error('not a SetRolesEvent type')
-    }
-
-    return SetRolesEvent.reified().new({
-      member: decodeFromFieldsWithTypes('address', item.fields.member),
-      roles: decodeFromFieldsWithTypes('u128', item.fields.roles),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): SetRolesEvent {
-    return SetRolesEvent.fromFields(SetRolesEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      member: this.member,
-      roles: this.roles.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): SetRolesEvent {
-    return SetRolesEvent.reified().new({
-      member: decodeFromJSONField('address', field.member),
-      roles: decodeFromJSONField('u128', field.roles),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): SetRolesEvent {
-    if (json.$typeName !== SetRolesEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return SetRolesEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): SetRolesEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSetRolesEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a SetRolesEvent object`)
-    }
-    return SetRolesEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): SetRolesEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSetRolesEvent(data.bcs.type)) {
-        throw new Error(`object at is not a SetRolesEvent object`)
-      }
-
-      return SetRolesEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return SetRolesEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<SetRolesEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SetRolesEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSetRolesEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a SetRolesEvent object`)
-    }
-
-    return SetRolesEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== AddRoleEvent =============================== */
-
-export function isAddRoleEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::AddRoleEvent`
-}
-
-export interface AddRoleEventFields {
-  member: ToField<'address'>
-  role: ToField<'u8'>
-}
-
-export type AddRoleEventReified = Reified<AddRoleEvent, AddRoleEventFields>
-
-export class AddRoleEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::AddRoleEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = AddRoleEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::AddRoleEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = AddRoleEvent.$isPhantom
-
-  readonly member: ToField<'address'>
-  readonly role: ToField<'u8'>
-
-  private constructor(typeArgs: [], fields: AddRoleEventFields) {
-    this.$fullTypeName = composeSuiType(
-      AddRoleEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::AddRoleEvent`
-    this.$typeArgs = typeArgs
-
-    this.member = fields.member
-    this.role = fields.role
-  }
-
-  static reified(): AddRoleEventReified {
-    return {
-      typeName: AddRoleEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddRoleEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::AddRoleEvent`,
-      typeArgs: [] as [],
-      isPhantom: AddRoleEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AddRoleEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AddRoleEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddRoleEvent.fromBcs(data),
-      bcs: AddRoleEvent.bcs,
-      fromJSONField: (field: any) => AddRoleEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AddRoleEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AddRoleEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AddRoleEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddRoleEvent.fetch(client, id),
-      new: (fields: AddRoleEventFields) => {
-        return new AddRoleEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AddRoleEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<AddRoleEvent>> {
-    return phantom(AddRoleEvent.reified())
-  }
-  static get p() {
-    return AddRoleEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('AddRoleEvent', {
-      member: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      role: bcs.u8(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): AddRoleEvent {
-    return AddRoleEvent.reified().new({
-      member: decodeFromFields('address', fields.member),
-      role: decodeFromFields('u8', fields.role),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): AddRoleEvent {
-    if (!isAddRoleEvent(item.type)) {
-      throw new Error('not a AddRoleEvent type')
-    }
-
-    return AddRoleEvent.reified().new({
-      member: decodeFromFieldsWithTypes('address', item.fields.member),
-      role: decodeFromFieldsWithTypes('u8', item.fields.role),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): AddRoleEvent {
-    return AddRoleEvent.fromFields(AddRoleEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      member: this.member,
-      role: this.role,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): AddRoleEvent {
-    return AddRoleEvent.reified().new({
-      member: decodeFromJSONField('address', field.member),
-      role: decodeFromJSONField('u8', field.role),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): AddRoleEvent {
-    if (json.$typeName !== AddRoleEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return AddRoleEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): AddRoleEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAddRoleEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AddRoleEvent object`)
-    }
-    return AddRoleEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): AddRoleEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAddRoleEvent(data.bcs.type)) {
-        throw new Error(`object at is not a AddRoleEvent object`)
-      }
-
-      return AddRoleEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AddRoleEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<AddRoleEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AddRoleEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddRoleEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AddRoleEvent object`)
-    }
-
-    return AddRoleEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RemoveRoleEvent =============================== */
-
-export function isRemoveRoleEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::RemoveRoleEvent`
-}
-
-export interface RemoveRoleEventFields {
-  member: ToField<'address'>
-  role: ToField<'u8'>
-}
-
-export type RemoveRoleEventReified = Reified<RemoveRoleEvent, RemoveRoleEventFields>
-
-export class RemoveRoleEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::RemoveRoleEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RemoveRoleEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::RemoveRoleEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = RemoveRoleEvent.$isPhantom
-
-  readonly member: ToField<'address'>
-  readonly role: ToField<'u8'>
-
-  private constructor(typeArgs: [], fields: RemoveRoleEventFields) {
-    this.$fullTypeName = composeSuiType(
-      RemoveRoleEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::RemoveRoleEvent`
-    this.$typeArgs = typeArgs
-
-    this.member = fields.member
-    this.role = fields.role
-  }
-
-  static reified(): RemoveRoleEventReified {
-    return {
-      typeName: RemoveRoleEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveRoleEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::RemoveRoleEvent`,
-      typeArgs: [] as [],
-      isPhantom: RemoveRoleEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RemoveRoleEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveRoleEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RemoveRoleEvent.fromBcs(data),
-      bcs: RemoveRoleEvent.bcs,
-      fromJSONField: (field: any) => RemoveRoleEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RemoveRoleEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RemoveRoleEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RemoveRoleEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RemoveRoleEvent.fetch(client, id),
-      new: (fields: RemoveRoleEventFields) => {
-        return new RemoveRoleEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RemoveRoleEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RemoveRoleEvent>> {
-    return phantom(RemoveRoleEvent.reified())
-  }
-  static get p() {
-    return RemoveRoleEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RemoveRoleEvent', {
-      member: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      role: bcs.u8(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RemoveRoleEvent {
-    return RemoveRoleEvent.reified().new({
-      member: decodeFromFields('address', fields.member),
-      role: decodeFromFields('u8', fields.role),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RemoveRoleEvent {
-    if (!isRemoveRoleEvent(item.type)) {
-      throw new Error('not a RemoveRoleEvent type')
-    }
-
-    return RemoveRoleEvent.reified().new({
-      member: decodeFromFieldsWithTypes('address', item.fields.member),
-      role: decodeFromFieldsWithTypes('u8', item.fields.role),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RemoveRoleEvent {
-    return RemoveRoleEvent.fromFields(RemoveRoleEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      member: this.member,
-      role: this.role,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RemoveRoleEvent {
-    return RemoveRoleEvent.reified().new({
-      member: decodeFromJSONField('address', field.member),
-      role: decodeFromJSONField('u8', field.role),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RemoveRoleEvent {
-    if (json.$typeName !== RemoveRoleEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RemoveRoleEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RemoveRoleEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRemoveRoleEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RemoveRoleEvent object`)
-    }
-    return RemoveRoleEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RemoveRoleEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRemoveRoleEvent(data.bcs.type)) {
-        throw new Error(`object at is not a RemoveRoleEvent object`)
-      }
-
-      return RemoveRoleEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RemoveRoleEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RemoveRoleEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RemoveRoleEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRemoveRoleEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RemoveRoleEvent object`)
-    }
-
-    return RemoveRoleEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RemoveMemberEvent =============================== */
-
-export function isRemoveMemberEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::RemoveMemberEvent`
-}
-
-export interface RemoveMemberEventFields {
-  member: ToField<'address'>
-}
-
-export type RemoveMemberEventReified = Reified<RemoveMemberEvent, RemoveMemberEventFields>
-
-export class RemoveMemberEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::RemoveMemberEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RemoveMemberEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::RemoveMemberEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = RemoveMemberEvent.$isPhantom
-
-  readonly member: ToField<'address'>
-
-  private constructor(typeArgs: [], fields: RemoveMemberEventFields) {
-    this.$fullTypeName = composeSuiType(
-      RemoveMemberEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::RemoveMemberEvent`
-    this.$typeArgs = typeArgs
-
-    this.member = fields.member
-  }
-
-  static reified(): RemoveMemberEventReified {
-    return {
-      typeName: RemoveMemberEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveMemberEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::RemoveMemberEvent`,
-      typeArgs: [] as [],
-      isPhantom: RemoveMemberEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RemoveMemberEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveMemberEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RemoveMemberEvent.fromBcs(data),
-      bcs: RemoveMemberEvent.bcs,
-      fromJSONField: (field: any) => RemoveMemberEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RemoveMemberEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RemoveMemberEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RemoveMemberEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RemoveMemberEvent.fetch(client, id),
-      new: (fields: RemoveMemberEventFields) => {
-        return new RemoveMemberEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RemoveMemberEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RemoveMemberEvent>> {
-    return phantom(RemoveMemberEvent.reified())
-  }
-  static get p() {
-    return RemoveMemberEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RemoveMemberEvent', {
-      member: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RemoveMemberEvent {
-    return RemoveMemberEvent.reified().new({ member: decodeFromFields('address', fields.member) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RemoveMemberEvent {
-    if (!isRemoveMemberEvent(item.type)) {
-      throw new Error('not a RemoveMemberEvent type')
-    }
-
-    return RemoveMemberEvent.reified().new({
-      member: decodeFromFieldsWithTypes('address', item.fields.member),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RemoveMemberEvent {
-    return RemoveMemberEvent.fromFields(RemoveMemberEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      member: this.member,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RemoveMemberEvent {
-    return RemoveMemberEvent.reified().new({ member: decodeFromJSONField('address', field.member) })
-  }
-
-  static fromJSON(json: Record<string, any>): RemoveMemberEvent {
-    if (json.$typeName !== RemoveMemberEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RemoveMemberEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RemoveMemberEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRemoveMemberEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RemoveMemberEvent object`)
-    }
-    return RemoveMemberEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RemoveMemberEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRemoveMemberEvent(data.bcs.type)) {
-        throw new Error(`object at is not a RemoveMemberEvent object`)
-      }
-
-      return RemoveMemberEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RemoveMemberEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RemoveMemberEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RemoveMemberEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRemoveMemberEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RemoveMemberEvent object`)
-    }
-
-    return RemoveMemberEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== SetPackageVersion =============================== */
-
-export function isSetPackageVersion(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::config::SetPackageVersion`
-}
-
-export interface SetPackageVersionFields {
-  newVersion: ToField<'u64'>
-  oldVersion: ToField<'u64'>
-}
-
-export type SetPackageVersionReified = Reified<SetPackageVersion, SetPackageVersionFields>
-
-export class SetPackageVersion implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::config::SetPackageVersion`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = SetPackageVersion.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::config::SetPackageVersion`
-  readonly $typeArgs: []
-  readonly $isPhantom = SetPackageVersion.$isPhantom
-
-  readonly newVersion: ToField<'u64'>
-  readonly oldVersion: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: SetPackageVersionFields) {
-    this.$fullTypeName = composeSuiType(
-      SetPackageVersion.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::config::SetPackageVersion`
-    this.$typeArgs = typeArgs
-
-    this.newVersion = fields.newVersion
-    this.oldVersion = fields.oldVersion
-  }
-
-  static reified(): SetPackageVersionReified {
-    return {
-      typeName: SetPackageVersion.$typeName,
-      fullTypeName: composeSuiType(
-        SetPackageVersion.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::config::SetPackageVersion`,
-      typeArgs: [] as [],
-      isPhantom: SetPackageVersion.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SetPackageVersion.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => SetPackageVersion.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SetPackageVersion.fromBcs(data),
-      bcs: SetPackageVersion.bcs,
-      fromJSONField: (field: any) => SetPackageVersion.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SetPackageVersion.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => SetPackageVersion.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => SetPackageVersion.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SetPackageVersion.fetch(client, id),
-      new: (fields: SetPackageVersionFields) => {
-        return new SetPackageVersion([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return SetPackageVersion.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<SetPackageVersion>> {
-    return phantom(SetPackageVersion.reified())
-  }
-  static get p() {
-    return SetPackageVersion.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('SetPackageVersion', {
-      new_version: bcs.u64(),
-      old_version: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): SetPackageVersion {
-    return SetPackageVersion.reified().new({
-      newVersion: decodeFromFields('u64', fields.new_version),
-      oldVersion: decodeFromFields('u64', fields.old_version),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): SetPackageVersion {
-    if (!isSetPackageVersion(item.type)) {
-      throw new Error('not a SetPackageVersion type')
-    }
-
-    return SetPackageVersion.reified().new({
-      newVersion: decodeFromFieldsWithTypes('u64', item.fields.new_version),
-      oldVersion: decodeFromFieldsWithTypes('u64', item.fields.old_version),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): SetPackageVersion {
-    return SetPackageVersion.fromFields(SetPackageVersion.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      newVersion: this.newVersion.toString(),
-      oldVersion: this.oldVersion.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): SetPackageVersion {
-    return SetPackageVersion.reified().new({
-      newVersion: decodeFromJSONField('u64', field.newVersion),
-      oldVersion: decodeFromJSONField('u64', field.oldVersion),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): SetPackageVersion {
-    if (json.$typeName !== SetPackageVersion.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return SetPackageVersion.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): SetPackageVersion {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSetPackageVersion(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a SetPackageVersion object`)
-    }
-    return SetPackageVersion.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): SetPackageVersion {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSetPackageVersion(data.bcs.type)) {
-        throw new Error(`object at is not a SetPackageVersion object`)
-      }
-
-      return SetPackageVersion.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return SetPackageVersion.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<SetPackageVersion> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SetPackageVersion object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSetPackageVersion(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a SetPackageVersion object`)
-    }
-
-    return SetPackageVersion.fromSuiObjectData(res.data)
   }
 }

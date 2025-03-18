@@ -2,31 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface CreateArgs {
-  sqrtPaX64: bigint | TransactionArgument
-  sqrtPbX64: bigint | TransactionArgument
-  l: bigint | TransactionArgument
-  cx: bigint | TransactionArgument
-  cy: bigint | TransactionArgument
-  dx: bigint | TransactionArgument
-  dy: bigint | TransactionArgument
-}
-
-export function create(tx: Transaction, args: CreateArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_model_clmm::create`,
-    arguments: [
-      pure(tx, args.sqrtPaX64, `u128`),
-      pure(tx, args.sqrtPbX64, `u128`),
-      pure(tx, args.l, `u128`),
-      pure(tx, args.cx, `u64`),
-      pure(tx, args.cy, `u64`),
-      pure(tx, args.dx, `u64`),
-      pure(tx, args.dy, `u64`),
-    ],
-  })
-}
-
 export interface AssetsX128Args {
   self: TransactionObjectInput
   pX128: bigint | TransactionArgument
@@ -123,24 +98,28 @@ export function calcMaxLiqFactorX64(tx: Transaction, args: CalcMaxLiqFactorX64Ar
   })
 }
 
-export function sqrtPaX64(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_model_clmm::sqrt_pa_x64`,
-    arguments: [obj(tx, self)],
-  })
+export interface CreateArgs {
+  sqrtPaX64: bigint | TransactionArgument
+  sqrtPbX64: bigint | TransactionArgument
+  l: bigint | TransactionArgument
+  cx: bigint | TransactionArgument
+  cy: bigint | TransactionArgument
+  dx: bigint | TransactionArgument
+  dy: bigint | TransactionArgument
 }
 
-export function sqrtPbX64(tx: Transaction, self: TransactionObjectInput) {
+export function create(tx: Transaction, args: CreateArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_model_clmm::sqrt_pb_x64`,
-    arguments: [obj(tx, self)],
-  })
-}
-
-export function l(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_model_clmm::l`,
-    arguments: [obj(tx, self)],
+    target: `${PUBLISHED_AT}::position_model_clmm::create`,
+    arguments: [
+      pure(tx, args.sqrtPaX64, `u128`),
+      pure(tx, args.sqrtPbX64, `u128`),
+      pure(tx, args.l, `u128`),
+      pure(tx, args.cx, `u64`),
+      pure(tx, args.cy, `u64`),
+      pure(tx, args.dx, `u64`),
+      pure(tx, args.dy, `u64`),
+    ],
   })
 }
 
@@ -158,6 +137,18 @@ export function cy(tx: Transaction, self: TransactionObjectInput) {
   })
 }
 
+export interface DebtX128Args {
+  self: TransactionObjectInput
+  pX128: bigint | TransactionArgument
+}
+
+export function debtX128(tx: Transaction, args: DebtX128Args) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_model_clmm::debt_x128`,
+    arguments: [obj(tx, args.self), pure(tx, args.pX128, `u256`)],
+  })
+}
+
 export function dx(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_model_clmm::dx`,
@@ -172,22 +163,17 @@ export function dy(tx: Transaction, self: TransactionObjectInput) {
   })
 }
 
-export interface DebtX128Args {
-  self: TransactionObjectInput
-  pX128: bigint | TransactionArgument
-}
-
-export function debtX128(tx: Transaction, args: DebtX128Args) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_model_clmm::debt_x128`,
-    arguments: [obj(tx, args.self), pure(tx, args.pX128, `u256`)],
-  })
-}
-
 export function isFullyDeleveraged(tx: Transaction, position: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_model_clmm::is_fully_deleveraged`,
     arguments: [obj(tx, position)],
+  })
+}
+
+export function l(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_model_clmm::l`,
+    arguments: [obj(tx, self)],
   })
 }
 
@@ -229,6 +215,20 @@ export function mulX64(tx: Transaction, args: MulX64Args) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_model_clmm::mul_x64`,
     arguments: [pure(tx, args.aX64, `u128`), pure(tx, args.bX64, `u128`)],
+  })
+}
+
+export function sqrtPaX64(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_model_clmm::sqrt_pa_x64`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function sqrtPbX64(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_model_clmm::sqrt_pb_x64`,
+    arguments: [obj(tx, self)],
   })
 }
 

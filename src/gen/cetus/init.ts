@@ -4,17 +4,17 @@ import * as router from './router/structs'
 import { StructClassLoader } from '../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
-  loader.register(expectSwap.SwapResult)
-  loader.register(expectSwap.SwapStepResult)
   loader.register(expectSwap.ExpectSwapResult)
   loader.register(expectSwap.ExpectSwapResultEvent)
-  loader.register(fetcherScript.FetchTicksResultEvent)
+  loader.register(expectSwap.SwapResult)
+  loader.register(expectSwap.SwapStepResult)
   loader.register(fetcherScript.CalculatedSwapResultEvent)
-  loader.register(fetcherScript.FetchPositionsEvent)
   loader.register(fetcherScript.FetchPoolsEvent)
-  loader.register(fetcherScript.FetchPositionRewardsEvent)
   loader.register(fetcherScript.FetchPositionFeesEvent)
   loader.register(fetcherScript.FetchPositionPointsEvent)
+  loader.register(fetcherScript.FetchPositionRewardsEvent)
+  loader.register(fetcherScript.FetchPositionsEvent)
+  loader.register(fetcherScript.FetchTicksResultEvent)
   loader.register(router.CalculatedRouterSwapResult)
   loader.register(router.CalculatedRouterSwapResultEvent)
 }

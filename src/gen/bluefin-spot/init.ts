@@ -7,8 +7,7 @@ import * as tick from './tick/structs'
 import { StructClassLoader } from '../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
-  loader.register(position.Position)
-  loader.register(position.PositionRewardInfo)
+  loader.register(config.GlobalConfig)
   loader.register(events.AdminCapTransferred)
   loader.register(events.AssetSwap)
   loader.register(events.FlashSwap)
@@ -33,14 +32,15 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(events.UpdatePoolRewardEmissionEvent)
   loader.register(events.UserFeeCollected)
   loader.register(events.UserRewardCollected)
-  loader.register(tick.TickInfo)
-  loader.register(tick.TickManager)
   loader.register(oracle.Observation)
   loader.register(oracle.ObservationManager)
-  loader.register(config.GlobalConfig)
   loader.register(pool.FlashSwapReceipt)
   loader.register(pool.Pool)
   loader.register(pool.PoolRewardInfo)
   loader.register(pool.SwapResult)
   loader.register(pool.SwapStepResult)
+  loader.register(position.Position)
+  loader.register(position.PositionRewardInfo)
+  loader.register(tick.TickInfo)
+  loader.register(tick.TickManager)
 }

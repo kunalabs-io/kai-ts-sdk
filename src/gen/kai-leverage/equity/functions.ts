@@ -3,82 +3,6 @@ import { GenericArg, generic, obj, option, pure } from '../../_framework/util'
 import { Url } from '../../sui/url/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function destroyZero(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::destroy_zero`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, shares)],
-  })
-}
-
-export interface JoinArgs {
-  self: TransactionObjectInput
-  other: TransactionObjectInput
-}
-
-export function join(tx: Transaction, typeArg: string, args: JoinArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::join`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), obj(tx, args.other)],
-  })
-}
-
-export interface SplitArgs {
-  share: TransactionObjectInput
-  amount: bigint | TransactionArgument
-}
-
-export function split(tx: Transaction, typeArg: string, args: SplitArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::split`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.share), pure(tx, args.amount, `u64`)],
-  })
-}
-
-export function withdrawAll(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::withdraw_all`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, shares)],
-  })
-}
-
-export function zero(tx: Transaction, typeArg: string) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::zero`,
-    typeArguments: [typeArg],
-    arguments: [],
-  })
-}
-
-export interface FromBalanceArgs {
-  treasury: TransactionObjectInput
-  balance: TransactionObjectInput
-}
-
-export function fromBalance(tx: Transaction, typeArg: string, args: FromBalanceArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::from_balance`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.treasury), obj(tx, args.balance)],
-  })
-}
-
-export interface IntoBalanceArgs {
-  share: TransactionObjectInput
-  treasury: TransactionObjectInput
-}
-
-export function intoBalance(tx: Transaction, typeArg: string, args: IntoBalanceArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::into_balance`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.share), obj(tx, args.treasury)],
-  })
-}
-
 export function borrowMutRegistry(
   tx: Transaction,
   typeArg: string,
@@ -258,14 +182,6 @@ export function decreaseValueX64(tx: Transaction, typeArg: string, args: Decreas
   })
 }
 
-export function valueX64(tx: Transaction, typeArg: string, share: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::value_x64`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, share)],
-  })
-}
-
 export function destroyEmptyRegistry(
   tx: Transaction,
   typeArg: string,
@@ -275,6 +191,27 @@ export function destroyEmptyRegistry(
     target: `${PUBLISHED_AT}::equity::destroy_empty_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
+  })
+}
+
+export function destroyZero(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::destroy_zero`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, shares)],
+  })
+}
+
+export interface FromBalanceArgs {
+  treasury: TransactionObjectInput
+  balance: TransactionObjectInput
+}
+
+export function fromBalance(tx: Transaction, typeArg: string, args: FromBalanceArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::from_balance`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.treasury), obj(tx, args.balance)],
   })
 }
 
@@ -338,6 +275,19 @@ export function increaseValueX64(tx: Transaction, typeArg: string, args: Increas
   })
 }
 
+export interface IntoBalanceArgs {
+  share: TransactionObjectInput
+  treasury: TransactionObjectInput
+}
+
+export function intoBalance(tx: Transaction, typeArg: string, args: IntoBalanceArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::into_balance`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.share), obj(tx, args.treasury)],
+  })
+}
+
 export interface IntoBalanceLossyArgs {
   share: TransactionObjectInput
   treasury: TransactionObjectInput
@@ -348,6 +298,19 @@ export function intoBalanceLossy(tx: Transaction, typeArg: string, args: IntoBal
     target: `${PUBLISHED_AT}::equity::into_balance_lossy`,
     typeArguments: [typeArg],
     arguments: [obj(tx, args.share), obj(tx, args.treasury)],
+  })
+}
+
+export interface JoinArgs {
+  self: TransactionObjectInput
+  other: TransactionObjectInput
+}
+
+export function join(tx: Transaction, typeArg: string, args: JoinArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::join`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.self), obj(tx, args.other)],
   })
 }
 
@@ -374,6 +337,19 @@ export function redeemX64(tx: Transaction, typeArg: string, args: RedeemX64Args)
     target: `${PUBLISHED_AT}::equity::redeem_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, args.registry), obj(tx, args.share)],
+  })
+}
+
+export interface SplitArgs {
+  share: TransactionObjectInput
+  amount: bigint | TransactionArgument
+}
+
+export function split(tx: Transaction, typeArg: string, args: SplitArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::split`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.share), pure(tx, args.amount, `u64`)],
   })
 }
 
@@ -407,5 +383,29 @@ export function underlyingValueX64(
     target: `${PUBLISHED_AT}::equity::underlying_value_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
+  })
+}
+
+export function valueX64(tx: Transaction, typeArg: string, share: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::value_x64`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, share)],
+  })
+}
+
+export function withdrawAll(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::withdraw_all`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, shares)],
+  })
+}
+
+export function zero(tx: Transaction, typeArg: string) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::equity::zero`,
+    typeArguments: [typeArg],
+    arguments: [],
   })
 }

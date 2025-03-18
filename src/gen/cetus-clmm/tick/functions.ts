@@ -3,44 +3,6 @@ import { obj, option, pure } from '../../_framework/util'
 import { Tick } from './structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function index(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::index`, arguments: [obj(tx, tick)] })
-}
-
-export interface NewArgs {
-  tickSpacing: number | TransactionArgument
-  seed: bigint | TransactionArgument
-}
-
-export function new_(tx: Transaction, args: NewArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::new`,
-    arguments: [pure(tx, args.tickSpacing, `u32`), pure(tx, args.seed, `u64`)],
-  })
-}
-
-export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::tick_spacing`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
-    arguments: [obj(tx, tick)],
-  })
-}
-
-export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
-}
-
-export function sqrtPrice(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::sqrt_price`, arguments: [obj(tx, tick)] })
-}
-
 export interface BorrowTickArgs {
   manager: TransactionObjectInput
   idx: TransactionObjectInput
@@ -174,6 +136,33 @@ export function getRewardsInRange(tx: Transaction, args: GetRewardsInRangeArgs) 
   })
 }
 
+export function index(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::index`, arguments: [obj(tx, tick)] })
+}
+
+export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
+    arguments: [obj(tx, tick)],
+  })
+}
+
+export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
+}
+
+export interface NewArgs {
+  tickSpacing: number | TransactionArgument
+  seed: bigint | TransactionArgument
+}
+
+export function new_(tx: Transaction, args: NewArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::new`,
+    arguments: [pure(tx, args.tickSpacing, `u32`), pure(tx, args.seed, `u64`)],
+  })
+}
+
 export function pointsGrowthOutside(tx: Transaction, tick: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::tick::points_growth_outside`,
@@ -188,6 +177,17 @@ export function rewardsGrowthOutside(tx: Transaction, tick: TransactionObjectInp
   })
 }
 
+export function sqrtPrice(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::sqrt_price`, arguments: [obj(tx, tick)] })
+}
+
 export function tickScore(tx: Transaction, tick: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick::tick_score`, arguments: [obj(tx, tick)] })
+}
+
+export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::tick_spacing`,
+    arguments: [obj(tx, manager)],
+  })
 }

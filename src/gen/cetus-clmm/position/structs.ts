@@ -24,6 +24,165 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== POSITION =============================== */
+
+export function isPOSITION(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position::POSITION`
+}
+
+export interface POSITIONFields {
+  dummyField: ToField<'bool'>
+}
+
+export type POSITIONReified = Reified<POSITION, POSITIONFields>
+
+export class POSITION implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position::POSITION`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = POSITION.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position::POSITION`
+  readonly $typeArgs: []
+  readonly $isPhantom = POSITION.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: POSITIONFields) {
+    this.$fullTypeName = composeSuiType(
+      POSITION.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position::POSITION`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): POSITIONReified {
+    return {
+      typeName: POSITION.$typeName,
+      fullTypeName: composeSuiType(
+        POSITION.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position::POSITION`,
+      typeArgs: [] as [],
+      isPhantom: POSITION.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => POSITION.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => POSITION.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => POSITION.fromBcs(data),
+      bcs: POSITION.bcs,
+      fromJSONField: (field: any) => POSITION.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => POSITION.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => POSITION.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => POSITION.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => POSITION.fetch(client, id),
+      new: (fields: POSITIONFields) => {
+        return new POSITION([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return POSITION.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<POSITION>> {
+    return phantom(POSITION.reified())
+  }
+  static get p() {
+    return POSITION.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('POSITION', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): POSITION {
+    return POSITION.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): POSITION {
+    if (!isPOSITION(item.type)) {
+      throw new Error('not a POSITION type')
+    }
+
+    return POSITION.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): POSITION {
+    return POSITION.fromFields(POSITION.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): POSITION {
+    return POSITION.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): POSITION {
+    if (json.$typeName !== POSITION.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return POSITION.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): POSITION {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPOSITION(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a POSITION object`)
+    }
+    return POSITION.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): POSITION {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPOSITION(data.bcs.type)) {
+        throw new Error(`object at is not a POSITION object`)
+      }
+
+      return POSITION.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return POSITION.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<POSITION> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching POSITION object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPOSITION(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a POSITION object`)
+    }
+
+    return POSITION.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== Position =============================== */
 
 export function isPosition(type: string): boolean {
@@ -264,165 +423,6 @@ export class Position implements StructClass {
     }
 
     return Position.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== POSITION =============================== */
-
-export function isPOSITION(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position::POSITION`
-}
-
-export interface POSITIONFields {
-  dummyField: ToField<'bool'>
-}
-
-export type POSITIONReified = Reified<POSITION, POSITIONFields>
-
-export class POSITION implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position::POSITION`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = POSITION.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::POSITION`
-  readonly $typeArgs: []
-  readonly $isPhantom = POSITION.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: POSITIONFields) {
-    this.$fullTypeName = composeSuiType(
-      POSITION.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::POSITION`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): POSITIONReified {
-    return {
-      typeName: POSITION.$typeName,
-      fullTypeName: composeSuiType(
-        POSITION.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::POSITION`,
-      typeArgs: [] as [],
-      isPhantom: POSITION.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => POSITION.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => POSITION.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => POSITION.fromBcs(data),
-      bcs: POSITION.bcs,
-      fromJSONField: (field: any) => POSITION.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => POSITION.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => POSITION.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => POSITION.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => POSITION.fetch(client, id),
-      new: (fields: POSITIONFields) => {
-        return new POSITION([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return POSITION.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<POSITION>> {
-    return phantom(POSITION.reified())
-  }
-  static get p() {
-    return POSITION.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('POSITION', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): POSITION {
-    return POSITION.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): POSITION {
-    if (!isPOSITION(item.type)) {
-      throw new Error('not a POSITION type')
-    }
-
-    return POSITION.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): POSITION {
-    return POSITION.fromFields(POSITION.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): POSITION {
-    return POSITION.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): POSITION {
-    if (json.$typeName !== POSITION.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return POSITION.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): POSITION {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPOSITION(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a POSITION object`)
-    }
-    return POSITION.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): POSITION {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPOSITION(data.bcs.type)) {
-        throw new Error(`object at is not a POSITION object`)
-      }
-
-      return POSITION.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return POSITION.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<POSITION> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching POSITION object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPOSITION(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a POSITION object`)
-    }
-
-    return POSITION.fromSuiObjectData(res.data)
   }
 }
 

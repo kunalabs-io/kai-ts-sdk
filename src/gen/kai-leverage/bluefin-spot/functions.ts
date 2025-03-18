@@ -3,132 +3,6 @@ import { obj, pure } from '../../_framework/util'
 import { Option } from '../../move-stdlib/option/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface CalcLiquidateColXArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  maxRepaymentAmtY: bigint | TransactionArgument
-}
-
-export function calcLiquidateColX(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CalcLiquidateColXArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::calc_liquidate_col_x`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      pure(tx, args.maxRepaymentAmtY, `u64`),
-    ],
-  })
-}
-
-export interface CalcLiquidateColYArgs {
-  position: TransactionObjectInput
-  config: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  maxRepaymentAmtX: bigint | TransactionArgument
-}
-
-export function calcLiquidateColY(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CalcLiquidateColYArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::calc_liquidate_col_y`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      pure(tx, args.maxRepaymentAmtX, `u64`),
-    ],
-  })
-}
-
-export interface OwnerTakeStashedRewardsArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  amount: bigint | TransactionArgument | TransactionArgument | null
-}
-
-export function ownerTakeStashedRewards(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: OwnerTakeStashedRewardsArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::owner_take_stashed_rewards`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      pure(tx, args.amount, `${Option.$typeName}<u64>`),
-    ],
-  })
-}
-
-export interface RepayDebtXArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  balance: TransactionObjectInput
-  supplyPool: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function repayDebtX(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RepayDebtXArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::repay_debt_x`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      obj(tx, args.balance),
-      obj(tx, args.supplyPool),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface RepayDebtYArgs {
-  position: TransactionObjectInput
-  cap: TransactionObjectInput
-  balance: TransactionObjectInput
-  supplyPool: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function repayDebtY(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RepayDebtYArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::repay_debt_y`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.cap),
-      obj(tx, args.balance),
-      obj(tx, args.supplyPool),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
 export interface AddLiquidityArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -158,32 +32,6 @@ export function addLiquidity(tx: Transaction, typeArgs: [string, string], args: 
       pure(tx, args.deltaL, `u128`),
       obj(tx, args.balanceX),
       obj(tx, args.balanceY),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface RemoveLiquidityArgs {
-  config: TransactionObjectInput
-  pool: TransactionObjectInput
-  lpPosition: TransactionObjectInput
-  deltaL: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function removeLiquidity(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: RemoveLiquidityArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::remove_liquidity`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.config),
-      obj(tx, args.pool),
-      obj(tx, args.lpPosition),
-      pure(tx, args.deltaL, `u128`),
       obj(tx, args.clock),
     ],
   })
@@ -257,6 +105,58 @@ export function calcDepositAmountsByLiquidity(
       obj(tx, args.tickA),
       obj(tx, args.tickB),
       pure(tx, args.deltaL, `u128`),
+    ],
+  })
+}
+
+export interface CalcLiquidateColXArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtY: bigint | TransactionArgument
+}
+
+export function calcLiquidateColX(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::calc_liquidate_col_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtY, `u64`),
+    ],
+  })
+}
+
+export interface CalcLiquidateColYArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtX: bigint | TransactionArgument
+}
+
+export function calcLiquidateColY(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::calc_liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtX, `u64`),
     ],
   })
 }
@@ -593,6 +493,28 @@ export function ownerCollectReward(
   })
 }
 
+export interface OwnerTakeStashedRewardsArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  amount: bigint | TransactionArgument | TransactionArgument | null
+}
+
+export function ownerTakeStashedRewards(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: OwnerTakeStashedRewardsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::owner_take_stashed_rewards`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      pure(tx, args.amount, `${Option.$typeName}<u64>`),
+    ],
+  })
+}
+
 export interface PositionModelArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -743,6 +665,84 @@ export function reduce(
       obj(tx, args.bluefinPool),
       obj(tx, args.bluefinGlobalConfig),
       pure(tx, args.factorX64, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RemoveLiquidityArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  lpPosition: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function removeLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveLiquidityArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::remove_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.lpPosition),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayDebtXArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  balance: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayDebtX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayDebtXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::repay_debt_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      obj(tx, args.balance),
+      obj(tx, args.supplyPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayDebtYArgs {
+  position: TransactionObjectInput
+  cap: TransactionObjectInput
+  balance: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayDebtY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayDebtYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::repay_debt_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.cap),
+      obj(tx, args.balance),
+      obj(tx, args.supplyPool),
       obj(tx, args.clock),
     ],
   })

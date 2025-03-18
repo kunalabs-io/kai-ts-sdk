@@ -2,17 +2,17 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function getValue(tx: Transaction, a: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::get_value`,
-    arguments: [obj(tx, a)],
-  })
-}
-
 export function fromU8(tx: Transaction, value: number | TransactionArgument) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_action::from_u8`,
     arguments: [pure(tx, value, `u8`)],
+  })
+}
+
+export function getValue(tx: Transaction, a: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance_action::get_value`,
+    arguments: [obj(tx, a)],
   })
 }
 

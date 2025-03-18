@@ -3,10 +3,6 @@ import { obj, pure } from '../../_framework/util'
 import { String } from '../../move-stdlib/string/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function name(tx: Transaction, partner: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::partner::name`, arguments: [obj(tx, partner)] })
-}
-
 export function balances(tx: Transaction, partner: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::partner::balances`,
@@ -72,6 +68,10 @@ export function endTime(tx: Transaction, partner: TransactionObjectInput) {
     target: `${PUBLISHED_AT}::partner::end_time`,
     arguments: [obj(tx, partner)],
   })
+}
+
+export function name(tx: Transaction, partner: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::partner::name`, arguments: [obj(tx, partner)] })
 }
 
 export interface ReceiveRefFeeArgs {

@@ -2,31 +2,25 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function feeRate(tx: Transaction, feeTier: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::config::fee_rate`, arguments: [obj(tx, feeTier)] })
-}
-
-export function tickSpacing(tx: Transaction, feeTier: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::tick_spacing`,
-    arguments: [obj(tx, feeTier)],
-  })
-}
-
-export interface GetFeeRateArgs {
-  tickSpacing: number | TransactionArgument
-  globalConfig: TransactionObjectInput
-}
-
-export function getFeeRate(tx: Transaction, args: GetFeeRateArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::get_fee_rate`,
-    arguments: [pure(tx, args.tickSpacing, `u32`), obj(tx, args.globalConfig)],
-  })
-}
-
 export function acl(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::config::acl`, arguments: [obj(tx, config)] })
+}
+
+export interface AddFeeTierArgs {
+  config: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+  feeRate: bigint | TransactionArgument
+}
+
+export function addFeeTier(tx: Transaction, args: AddFeeTierArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::add_fee_tier`,
+    arguments: [
+      obj(tx, args.config),
+      pure(tx, args.tickSpacing, `u32`),
+      pure(tx, args.feeRate, `u64`),
+    ],
+  })
 }
 
 export interface AddRoleArgs {
@@ -44,81 +38,6 @@ export function addRole(tx: Transaction, args: AddRoleArgs) {
       obj(tx, args.config),
       pure(tx, args.member, `address`),
       pure(tx, args.role, `u8`),
-    ],
-  })
-}
-
-export function getMembers(tx: Transaction, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::get_members`,
-    arguments: [obj(tx, config)],
-  })
-}
-
-export interface RemoveMemberArgs {
-  adminCap: TransactionObjectInput
-  config: TransactionObjectInput
-  member: string | TransactionArgument
-}
-
-export function removeMember(tx: Transaction, args: RemoveMemberArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::remove_member`,
-    arguments: [obj(tx, args.adminCap), obj(tx, args.config), pure(tx, args.member, `address`)],
-  })
-}
-
-export interface RemoveRoleArgs {
-  adminCap: TransactionObjectInput
-  config: TransactionObjectInput
-  member: string | TransactionArgument
-  role: number | TransactionArgument
-}
-
-export function removeRole(tx: Transaction, args: RemoveRoleArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::remove_role`,
-    arguments: [
-      obj(tx, args.adminCap),
-      obj(tx, args.config),
-      pure(tx, args.member, `address`),
-      pure(tx, args.role, `u8`),
-    ],
-  })
-}
-
-export interface SetRolesArgs {
-  adminCap: TransactionObjectInput
-  config: TransactionObjectInput
-  member: string | TransactionArgument
-  roles: bigint | TransactionArgument
-}
-
-export function setRoles(tx: Transaction, args: SetRolesArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::set_roles`,
-    arguments: [
-      obj(tx, args.adminCap),
-      obj(tx, args.config),
-      pure(tx, args.member, `address`),
-      pure(tx, args.roles, `u128`),
-    ],
-  })
-}
-
-export interface AddFeeTierArgs {
-  config: TransactionObjectInput
-  tickSpacing: number | TransactionArgument
-  feeRate: bigint | TransactionArgument
-}
-
-export function addFeeTier(tx: Transaction, args: AddFeeTierArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::add_fee_tier`,
-    arguments: [
-      obj(tx, args.config),
-      pure(tx, args.tickSpacing, `u32`),
-      pure(tx, args.feeRate, `u64`),
     ],
   })
 }
@@ -202,8 +121,31 @@ export function deleteFeeTier(tx: Transaction, args: DeleteFeeTierArgs) {
   })
 }
 
+export function feeRate(tx: Transaction, feeTier: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::config::fee_rate`, arguments: [obj(tx, feeTier)] })
+}
+
 export function feeTiers(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::config::fee_tiers`, arguments: [obj(tx, config)] })
+}
+
+export interface GetFeeRateArgs {
+  tickSpacing: number | TransactionArgument
+  globalConfig: TransactionObjectInput
+}
+
+export function getFeeRate(tx: Transaction, args: GetFeeRateArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::get_fee_rate`,
+    arguments: [pure(tx, args.tickSpacing, `u32`), obj(tx, args.globalConfig)],
+  })
+}
+
+export function getMembers(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::get_members`,
+    arguments: [obj(tx, config)],
+  })
 }
 
 export function getProtocolFeeRate(tx: Transaction, globalConfig: TransactionObjectInput) {
@@ -229,6 +171,64 @@ export function protocolFeeRate(tx: Transaction, config: TransactionObjectInput)
   return tx.moveCall({
     target: `${PUBLISHED_AT}::config::protocol_fee_rate`,
     arguments: [obj(tx, config)],
+  })
+}
+
+export interface RemoveMemberArgs {
+  adminCap: TransactionObjectInput
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+}
+
+export function removeMember(tx: Transaction, args: RemoveMemberArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::remove_member`,
+    arguments: [obj(tx, args.adminCap), obj(tx, args.config), pure(tx, args.member, `address`)],
+  })
+}
+
+export interface RemoveRoleArgs {
+  adminCap: TransactionObjectInput
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+  role: number | TransactionArgument
+}
+
+export function removeRole(tx: Transaction, args: RemoveRoleArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::remove_role`,
+    arguments: [
+      obj(tx, args.adminCap),
+      obj(tx, args.config),
+      pure(tx, args.member, `address`),
+      pure(tx, args.role, `u8`),
+    ],
+  })
+}
+
+export interface SetRolesArgs {
+  adminCap: TransactionObjectInput
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+  roles: bigint | TransactionArgument
+}
+
+export function setRoles(tx: Transaction, args: SetRolesArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::set_roles`,
+    arguments: [
+      obj(tx, args.adminCap),
+      obj(tx, args.config),
+      pure(tx, args.member, `address`),
+      pure(tx, args.roles, `u128`),
+    ],
+  })
+}
+
+export function tickSpacing(tx: Transaction, feeTier: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::tick_spacing`,
+    arguments: [obj(tx, feeTier)],
   })
 }
 

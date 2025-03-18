@@ -38,194 +38,6 @@ import { BcsType, bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== Rule =============================== */
-
-export function isRule(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::access::Rule`
-}
-
-export interface RuleFields {
-  actions: ToField<VecSet<TypeName>>
-  conditions: ToField<VecSet<TypeName>>
-  conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
-}
-
-export type RuleReified = Reified<Rule, RuleFields>
-
-export class Rule implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::access::Rule`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Rule.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::access::Rule`
-  readonly $typeArgs: []
-  readonly $isPhantom = Rule.$isPhantom
-
-  readonly actions: ToField<VecSet<TypeName>>
-  readonly conditions: ToField<VecSet<TypeName>>
-  readonly conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
-
-  private constructor(typeArgs: [], fields: RuleFields) {
-    this.$fullTypeName = composeSuiType(
-      Rule.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::access::Rule`
-    this.$typeArgs = typeArgs
-
-    this.actions = fields.actions
-    this.conditions = fields.conditions
-    this.conditionConfigs = fields.conditionConfigs
-  }
-
-  static reified(): RuleReified {
-    return {
-      typeName: Rule.$typeName,
-      fullTypeName: composeSuiType(Rule.$typeName, ...[]) as `${typeof PKG_V1}::access::Rule`,
-      typeArgs: [] as [],
-      isPhantom: Rule.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Rule.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Rule.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Rule.fromBcs(data),
-      bcs: Rule.bcs,
-      fromJSONField: (field: any) => Rule.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Rule.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Rule.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Rule.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Rule.fetch(client, id),
-      new: (fields: RuleFields) => {
-        return new Rule([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Rule.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Rule>> {
-    return phantom(Rule.reified())
-  }
-  static get p() {
-    return Rule.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Rule', {
-      actions: VecSet.bcs(TypeName.bcs),
-      conditions: VecSet.bcs(TypeName.bcs),
-      condition_configs: DynamicMap.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Rule {
-    return Rule.reified().new({
-      actions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.actions),
-      conditions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.conditions),
-      conditionConfigs: decodeFromFields(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        fields.condition_configs
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Rule {
-    if (!isRule(item.type)) {
-      throw new Error('not a Rule type')
-    }
-
-    return Rule.reified().new({
-      actions: decodeFromFieldsWithTypes(VecSet.reified(TypeName.reified()), item.fields.actions),
-      conditions: decodeFromFieldsWithTypes(
-        VecSet.reified(TypeName.reified()),
-        item.fields.conditions
-      ),
-      conditionConfigs: decodeFromFieldsWithTypes(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        item.fields.condition_configs
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Rule {
-    return Rule.fromFields(Rule.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      actions: this.actions.toJSONField(),
-      conditions: this.conditions.toJSONField(),
-      conditionConfigs: this.conditionConfigs.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Rule {
-    return Rule.reified().new({
-      actions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.actions),
-      conditions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.conditions),
-      conditionConfigs: decodeFromJSONField(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        field.conditionConfigs
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Rule {
-    if (json.$typeName !== Rule.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Rule.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Rule {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRule(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Rule object`)
-    }
-    return Rule.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Rule {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRule(data.bcs.type)) {
-        throw new Error(`object at is not a Rule object`)
-      }
-
-      return Rule.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Rule.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Rule> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Rule object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRule(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Rule object`)
-    }
-
-    return Rule.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== ActionRequest =============================== */
 
 export function isActionRequest(type: string): boolean {
@@ -1422,5 +1234,193 @@ export class Policy implements StructClass {
     }
 
     return Policy.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Rule =============================== */
+
+export function isRule(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::access::Rule`
+}
+
+export interface RuleFields {
+  actions: ToField<VecSet<TypeName>>
+  conditions: ToField<VecSet<TypeName>>
+  conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
+}
+
+export type RuleReified = Reified<Rule, RuleFields>
+
+export class Rule implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::access::Rule`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Rule.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::access::Rule`
+  readonly $typeArgs: []
+  readonly $isPhantom = Rule.$isPhantom
+
+  readonly actions: ToField<VecSet<TypeName>>
+  readonly conditions: ToField<VecSet<TypeName>>
+  readonly conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
+
+  private constructor(typeArgs: [], fields: RuleFields) {
+    this.$fullTypeName = composeSuiType(
+      Rule.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::access::Rule`
+    this.$typeArgs = typeArgs
+
+    this.actions = fields.actions
+    this.conditions = fields.conditions
+    this.conditionConfigs = fields.conditionConfigs
+  }
+
+  static reified(): RuleReified {
+    return {
+      typeName: Rule.$typeName,
+      fullTypeName: composeSuiType(Rule.$typeName, ...[]) as `${typeof PKG_V1}::access::Rule`,
+      typeArgs: [] as [],
+      isPhantom: Rule.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Rule.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Rule.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Rule.fromBcs(data),
+      bcs: Rule.bcs,
+      fromJSONField: (field: any) => Rule.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Rule.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Rule.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Rule.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Rule.fetch(client, id),
+      new: (fields: RuleFields) => {
+        return new Rule([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Rule.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Rule>> {
+    return phantom(Rule.reified())
+  }
+  static get p() {
+    return Rule.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Rule', {
+      actions: VecSet.bcs(TypeName.bcs),
+      conditions: VecSet.bcs(TypeName.bcs),
+      condition_configs: DynamicMap.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Rule {
+    return Rule.reified().new({
+      actions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.actions),
+      conditions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.conditions),
+      conditionConfigs: decodeFromFields(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        fields.condition_configs
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Rule {
+    if (!isRule(item.type)) {
+      throw new Error('not a Rule type')
+    }
+
+    return Rule.reified().new({
+      actions: decodeFromFieldsWithTypes(VecSet.reified(TypeName.reified()), item.fields.actions),
+      conditions: decodeFromFieldsWithTypes(
+        VecSet.reified(TypeName.reified()),
+        item.fields.conditions
+      ),
+      conditionConfigs: decodeFromFieldsWithTypes(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        item.fields.condition_configs
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Rule {
+    return Rule.fromFields(Rule.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      actions: this.actions.toJSONField(),
+      conditions: this.conditions.toJSONField(),
+      conditionConfigs: this.conditionConfigs.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Rule {
+    return Rule.reified().new({
+      actions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.actions),
+      conditions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.conditions),
+      conditionConfigs: decodeFromJSONField(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        field.conditionConfigs
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Rule {
+    if (json.$typeName !== Rule.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Rule.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Rule {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRule(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Rule object`)
+    }
+    return Rule.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Rule {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRule(data.bcs.type)) {
+        throw new Error(`object at is not a Rule object`)
+      }
+
+      return Rule.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Rule.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Rule> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Rule object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRule(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Rule object`)
+    }
+
+    return Rule.fromSuiObjectData(res.data)
   }
 }

@@ -4,66 +4,6 @@ import { String } from '../../move-stdlib/string/structs'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function index(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::index`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
-export function isEmpty(tx: Transaction, positionInfo: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::is_empty`,
-    arguments: [obj(tx, positionInfo)],
-  })
-}
-
-export function new_(tx: Transaction, tickSpacing: number | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::new`,
-    arguments: [pure(tx, tickSpacing, `u32`)],
-  })
-}
-
-export function name(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::name`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
-export function url(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::url`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
-export function description(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::description`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
-export function init(tx: Transaction, otw: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::position::init`, arguments: [obj(tx, otw)] })
-}
-
-export function liquidity(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::liquidity`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
-export function poolId(tx: Transaction, positionNft: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::position::pool_id`,
-    arguments: [obj(tx, positionNft)],
-  })
-}
-
 export interface BorrowPositionInfoArgs {
   manager: TransactionObjectInput
   positionId: string | TransactionArgument
@@ -89,6 +29,13 @@ export function checkPositionTickRange(tx: Transaction, args: CheckPositionTickR
   })
 }
 
+export function description(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::description`,
+    arguments: [obj(tx, positionNft)],
+  })
+}
+
 export interface FetchPositionsArgs {
   manager: TransactionObjectInput
   start: Array<string | TransactionArgument> | TransactionArgument
@@ -103,6 +50,13 @@ export function fetchPositions(tx: Transaction, args: FetchPositionsArgs) {
       pure(tx, args.start, `vector<${ID.$typeName}>`),
       pure(tx, args.limit, `u64`),
     ],
+  })
+}
+
+export function index(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::index`,
+    arguments: [obj(tx, positionNft)],
   })
 }
 
@@ -162,6 +116,10 @@ export function infoTickRange(tx: Transaction, info: TransactionObjectInput) {
   })
 }
 
+export function init(tx: Transaction, otw: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::position::init`, arguments: [obj(tx, otw)] })
+}
+
 export interface InitedRewardsCountArgs {
   manager: TransactionObjectInput
   positionId: string | TransactionArgument
@@ -174,6 +132,13 @@ export function initedRewardsCount(tx: Transaction, args: InitedRewardsCountArgs
   })
 }
 
+export function isEmpty(tx: Transaction, positionInfo: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::is_empty`,
+    arguments: [obj(tx, positionInfo)],
+  })
+}
+
 export interface IsPositionExistArgs {
   manager: TransactionObjectInput
   positionId: string | TransactionArgument
@@ -183,6 +148,34 @@ export function isPositionExist(tx: Transaction, args: IsPositionExistArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position::is_position_exist`,
     arguments: [obj(tx, args.manager), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
+export function liquidity(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::liquidity`,
+    arguments: [obj(tx, positionNft)],
+  })
+}
+
+export function name(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::name`,
+    arguments: [obj(tx, positionNft)],
+  })
+}
+
+export function new_(tx: Transaction, tickSpacing: number | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::new`,
+    arguments: [pure(tx, tickSpacing, `u32`)],
+  })
+}
+
+export function poolId(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::pool_id`,
+    arguments: [obj(tx, positionNft)],
   })
 }
 
@@ -238,6 +231,13 @@ export function setDisplay(tx: Transaction, args: SetDisplayArgs) {
 export function tickRange(tx: Transaction, positionNft: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position::tick_range`,
+    arguments: [obj(tx, positionNft)],
+  })
+}
+
+export function url(tx: Transaction, positionNft: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position::url`,
     arguments: [obj(tx, positionNft)],
   })
 }
