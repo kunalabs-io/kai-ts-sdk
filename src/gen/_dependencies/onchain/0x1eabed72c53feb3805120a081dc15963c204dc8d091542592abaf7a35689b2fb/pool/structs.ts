@@ -1659,6 +1659,620 @@ export class CollectRewardEvent implements StructClass {
   }
 }
 
+/* ============================== CollectRewardV2Event =============================== */
+
+export function isCollectRewardV2Event(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::CollectRewardV2Event`
+}
+
+export interface CollectRewardV2EventFields {
+  position: ToField<ID>
+  pool: ToField<ID>
+  rewarderType: ToField<TypeName>
+  amount: ToField<'u64'>
+}
+
+export type CollectRewardV2EventReified = Reified<CollectRewardV2Event, CollectRewardV2EventFields>
+
+export class CollectRewardV2Event implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::CollectRewardV2Event`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = CollectRewardV2Event.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::CollectRewardV2Event`
+  readonly $typeArgs: []
+  readonly $isPhantom = CollectRewardV2Event.$isPhantom
+
+  readonly position: ToField<ID>
+  readonly pool: ToField<ID>
+  readonly rewarderType: ToField<TypeName>
+  readonly amount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: CollectRewardV2EventFields) {
+    this.$fullTypeName = composeSuiType(
+      CollectRewardV2Event.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::CollectRewardV2Event`
+    this.$typeArgs = typeArgs
+
+    this.position = fields.position
+    this.pool = fields.pool
+    this.rewarderType = fields.rewarderType
+    this.amount = fields.amount
+  }
+
+  static reified(): CollectRewardV2EventReified {
+    return {
+      typeName: CollectRewardV2Event.$typeName,
+      fullTypeName: composeSuiType(
+        CollectRewardV2Event.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::CollectRewardV2Event`,
+      typeArgs: [] as [],
+      isPhantom: CollectRewardV2Event.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => CollectRewardV2Event.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        CollectRewardV2Event.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => CollectRewardV2Event.fromBcs(data),
+      bcs: CollectRewardV2Event.bcs,
+      fromJSONField: (field: any) => CollectRewardV2Event.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => CollectRewardV2Event.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        CollectRewardV2Event.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        CollectRewardV2Event.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => CollectRewardV2Event.fetch(client, id),
+      new: (fields: CollectRewardV2EventFields) => {
+        return new CollectRewardV2Event([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return CollectRewardV2Event.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<CollectRewardV2Event>> {
+    return phantom(CollectRewardV2Event.reified())
+  }
+  static get p() {
+    return CollectRewardV2Event.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('CollectRewardV2Event', {
+      position: ID.bcs,
+      pool: ID.bcs,
+      rewarder_type: TypeName.bcs,
+      amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): CollectRewardV2Event {
+    return CollectRewardV2Event.reified().new({
+      position: decodeFromFields(ID.reified(), fields.position),
+      pool: decodeFromFields(ID.reified(), fields.pool),
+      rewarderType: decodeFromFields(TypeName.reified(), fields.rewarder_type),
+      amount: decodeFromFields('u64', fields.amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): CollectRewardV2Event {
+    if (!isCollectRewardV2Event(item.type)) {
+      throw new Error('not a CollectRewardV2Event type')
+    }
+
+    return CollectRewardV2Event.reified().new({
+      position: decodeFromFieldsWithTypes(ID.reified(), item.fields.position),
+      pool: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool),
+      rewarderType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.rewarder_type),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): CollectRewardV2Event {
+    return CollectRewardV2Event.fromFields(CollectRewardV2Event.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      position: this.position,
+      pool: this.pool,
+      rewarderType: this.rewarderType.toJSONField(),
+      amount: this.amount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): CollectRewardV2Event {
+    return CollectRewardV2Event.reified().new({
+      position: decodeFromJSONField(ID.reified(), field.position),
+      pool: decodeFromJSONField(ID.reified(), field.pool),
+      rewarderType: decodeFromJSONField(TypeName.reified(), field.rewarderType),
+      amount: decodeFromJSONField('u64', field.amount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): CollectRewardV2Event {
+    if (json.$typeName !== CollectRewardV2Event.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return CollectRewardV2Event.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): CollectRewardV2Event {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isCollectRewardV2Event(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a CollectRewardV2Event object`
+      )
+    }
+    return CollectRewardV2Event.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): CollectRewardV2Event {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isCollectRewardV2Event(data.bcs.type)) {
+        throw new Error(`object at is not a CollectRewardV2Event object`)
+      }
+
+      return CollectRewardV2Event.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return CollectRewardV2Event.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<CollectRewardV2Event> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching CollectRewardV2Event object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isCollectRewardV2Event(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a CollectRewardV2Event object`)
+    }
+
+    return CollectRewardV2Event.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== FlashLoanEvent =============================== */
+
+export function isFlashLoanEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::FlashLoanEvent`
+}
+
+export interface FlashLoanEventFields {
+  pool: ToField<ID>
+  loanA: ToField<'bool'>
+  partner: ToField<ID>
+  amount: ToField<'u64'>
+  feeAmount: ToField<'u64'>
+  refAmount: ToField<'u64'>
+  vaultAAmount: ToField<'u64'>
+  vaultBAmount: ToField<'u64'>
+}
+
+export type FlashLoanEventReified = Reified<FlashLoanEvent, FlashLoanEventFields>
+
+export class FlashLoanEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::FlashLoanEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FlashLoanEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::FlashLoanEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = FlashLoanEvent.$isPhantom
+
+  readonly pool: ToField<ID>
+  readonly loanA: ToField<'bool'>
+  readonly partner: ToField<ID>
+  readonly amount: ToField<'u64'>
+  readonly feeAmount: ToField<'u64'>
+  readonly refAmount: ToField<'u64'>
+  readonly vaultAAmount: ToField<'u64'>
+  readonly vaultBAmount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: FlashLoanEventFields) {
+    this.$fullTypeName = composeSuiType(
+      FlashLoanEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::FlashLoanEvent`
+    this.$typeArgs = typeArgs
+
+    this.pool = fields.pool
+    this.loanA = fields.loanA
+    this.partner = fields.partner
+    this.amount = fields.amount
+    this.feeAmount = fields.feeAmount
+    this.refAmount = fields.refAmount
+    this.vaultAAmount = fields.vaultAAmount
+    this.vaultBAmount = fields.vaultBAmount
+  }
+
+  static reified(): FlashLoanEventReified {
+    return {
+      typeName: FlashLoanEvent.$typeName,
+      fullTypeName: composeSuiType(
+        FlashLoanEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::FlashLoanEvent`,
+      typeArgs: [] as [],
+      isPhantom: FlashLoanEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FlashLoanEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoanEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FlashLoanEvent.fromBcs(data),
+      bcs: FlashLoanEvent.bcs,
+      fromJSONField: (field: any) => FlashLoanEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FlashLoanEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FlashLoanEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FlashLoanEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FlashLoanEvent.fetch(client, id),
+      new: (fields: FlashLoanEventFields) => {
+        return new FlashLoanEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FlashLoanEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FlashLoanEvent>> {
+    return phantom(FlashLoanEvent.reified())
+  }
+  static get p() {
+    return FlashLoanEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FlashLoanEvent', {
+      pool: ID.bcs,
+      loan_a: bcs.bool(),
+      partner: ID.bcs,
+      amount: bcs.u64(),
+      fee_amount: bcs.u64(),
+      ref_amount: bcs.u64(),
+      vault_a_amount: bcs.u64(),
+      vault_b_amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FlashLoanEvent {
+    return FlashLoanEvent.reified().new({
+      pool: decodeFromFields(ID.reified(), fields.pool),
+      loanA: decodeFromFields('bool', fields.loan_a),
+      partner: decodeFromFields(ID.reified(), fields.partner),
+      amount: decodeFromFields('u64', fields.amount),
+      feeAmount: decodeFromFields('u64', fields.fee_amount),
+      refAmount: decodeFromFields('u64', fields.ref_amount),
+      vaultAAmount: decodeFromFields('u64', fields.vault_a_amount),
+      vaultBAmount: decodeFromFields('u64', fields.vault_b_amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FlashLoanEvent {
+    if (!isFlashLoanEvent(item.type)) {
+      throw new Error('not a FlashLoanEvent type')
+    }
+
+    return FlashLoanEvent.reified().new({
+      pool: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool),
+      loanA: decodeFromFieldsWithTypes('bool', item.fields.loan_a),
+      partner: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+      feeAmount: decodeFromFieldsWithTypes('u64', item.fields.fee_amount),
+      refAmount: decodeFromFieldsWithTypes('u64', item.fields.ref_amount),
+      vaultAAmount: decodeFromFieldsWithTypes('u64', item.fields.vault_a_amount),
+      vaultBAmount: decodeFromFieldsWithTypes('u64', item.fields.vault_b_amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FlashLoanEvent {
+    return FlashLoanEvent.fromFields(FlashLoanEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      pool: this.pool,
+      loanA: this.loanA,
+      partner: this.partner,
+      amount: this.amount.toString(),
+      feeAmount: this.feeAmount.toString(),
+      refAmount: this.refAmount.toString(),
+      vaultAAmount: this.vaultAAmount.toString(),
+      vaultBAmount: this.vaultBAmount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FlashLoanEvent {
+    return FlashLoanEvent.reified().new({
+      pool: decodeFromJSONField(ID.reified(), field.pool),
+      loanA: decodeFromJSONField('bool', field.loanA),
+      partner: decodeFromJSONField(ID.reified(), field.partner),
+      amount: decodeFromJSONField('u64', field.amount),
+      feeAmount: decodeFromJSONField('u64', field.feeAmount),
+      refAmount: decodeFromJSONField('u64', field.refAmount),
+      vaultAAmount: decodeFromJSONField('u64', field.vaultAAmount),
+      vaultBAmount: decodeFromJSONField('u64', field.vaultBAmount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FlashLoanEvent {
+    if (json.$typeName !== FlashLoanEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FlashLoanEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FlashLoanEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFlashLoanEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FlashLoanEvent object`)
+    }
+    return FlashLoanEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FlashLoanEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFlashLoanEvent(data.bcs.type)) {
+        throw new Error(`object at is not a FlashLoanEvent object`)
+      }
+
+      return FlashLoanEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FlashLoanEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FlashLoanEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FlashLoanEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashLoanEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FlashLoanEvent object`)
+    }
+
+    return FlashLoanEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== FlashLoanReceipt =============================== */
+
+export function isFlashLoanReceipt(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::FlashLoanReceipt`
+}
+
+export interface FlashLoanReceiptFields {
+  poolId: ToField<ID>
+  loanA: ToField<'bool'>
+  partnerId: ToField<ID>
+  amount: ToField<'u64'>
+  feeAmount: ToField<'u64'>
+  refFeeAmount: ToField<'u64'>
+}
+
+export type FlashLoanReceiptReified = Reified<FlashLoanReceipt, FlashLoanReceiptFields>
+
+export class FlashLoanReceipt implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::FlashLoanReceipt`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FlashLoanReceipt.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::FlashLoanReceipt`
+  readonly $typeArgs: []
+  readonly $isPhantom = FlashLoanReceipt.$isPhantom
+
+  readonly poolId: ToField<ID>
+  readonly loanA: ToField<'bool'>
+  readonly partnerId: ToField<ID>
+  readonly amount: ToField<'u64'>
+  readonly feeAmount: ToField<'u64'>
+  readonly refFeeAmount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: FlashLoanReceiptFields) {
+    this.$fullTypeName = composeSuiType(
+      FlashLoanReceipt.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::FlashLoanReceipt`
+    this.$typeArgs = typeArgs
+
+    this.poolId = fields.poolId
+    this.loanA = fields.loanA
+    this.partnerId = fields.partnerId
+    this.amount = fields.amount
+    this.feeAmount = fields.feeAmount
+    this.refFeeAmount = fields.refFeeAmount
+  }
+
+  static reified(): FlashLoanReceiptReified {
+    return {
+      typeName: FlashLoanReceipt.$typeName,
+      fullTypeName: composeSuiType(
+        FlashLoanReceipt.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::FlashLoanReceipt`,
+      typeArgs: [] as [],
+      isPhantom: FlashLoanReceipt.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FlashLoanReceipt.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoanReceipt.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FlashLoanReceipt.fromBcs(data),
+      bcs: FlashLoanReceipt.bcs,
+      fromJSONField: (field: any) => FlashLoanReceipt.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FlashLoanReceipt.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FlashLoanReceipt.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FlashLoanReceipt.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FlashLoanReceipt.fetch(client, id),
+      new: (fields: FlashLoanReceiptFields) => {
+        return new FlashLoanReceipt([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FlashLoanReceipt.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FlashLoanReceipt>> {
+    return phantom(FlashLoanReceipt.reified())
+  }
+  static get p() {
+    return FlashLoanReceipt.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FlashLoanReceipt', {
+      pool_id: ID.bcs,
+      loan_a: bcs.bool(),
+      partner_id: ID.bcs,
+      amount: bcs.u64(),
+      fee_amount: bcs.u64(),
+      ref_fee_amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FlashLoanReceipt {
+    return FlashLoanReceipt.reified().new({
+      poolId: decodeFromFields(ID.reified(), fields.pool_id),
+      loanA: decodeFromFields('bool', fields.loan_a),
+      partnerId: decodeFromFields(ID.reified(), fields.partner_id),
+      amount: decodeFromFields('u64', fields.amount),
+      feeAmount: decodeFromFields('u64', fields.fee_amount),
+      refFeeAmount: decodeFromFields('u64', fields.ref_fee_amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FlashLoanReceipt {
+    if (!isFlashLoanReceipt(item.type)) {
+      throw new Error('not a FlashLoanReceipt type')
+    }
+
+    return FlashLoanReceipt.reified().new({
+      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
+      loanA: decodeFromFieldsWithTypes('bool', item.fields.loan_a),
+      partnerId: decodeFromFieldsWithTypes(ID.reified(), item.fields.partner_id),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+      feeAmount: decodeFromFieldsWithTypes('u64', item.fields.fee_amount),
+      refFeeAmount: decodeFromFieldsWithTypes('u64', item.fields.ref_fee_amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FlashLoanReceipt {
+    return FlashLoanReceipt.fromFields(FlashLoanReceipt.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      poolId: this.poolId,
+      loanA: this.loanA,
+      partnerId: this.partnerId,
+      amount: this.amount.toString(),
+      feeAmount: this.feeAmount.toString(),
+      refFeeAmount: this.refFeeAmount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FlashLoanReceipt {
+    return FlashLoanReceipt.reified().new({
+      poolId: decodeFromJSONField(ID.reified(), field.poolId),
+      loanA: decodeFromJSONField('bool', field.loanA),
+      partnerId: decodeFromJSONField(ID.reified(), field.partnerId),
+      amount: decodeFromJSONField('u64', field.amount),
+      feeAmount: decodeFromJSONField('u64', field.feeAmount),
+      refFeeAmount: decodeFromJSONField('u64', field.refFeeAmount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FlashLoanReceipt {
+    if (json.$typeName !== FlashLoanReceipt.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FlashLoanReceipt.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FlashLoanReceipt {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFlashLoanReceipt(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FlashLoanReceipt object`)
+    }
+    return FlashLoanReceipt.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FlashLoanReceipt {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFlashLoanReceipt(data.bcs.type)) {
+        throw new Error(`object at is not a FlashLoanReceipt object`)
+      }
+
+      return FlashLoanReceipt.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FlashLoanReceipt.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FlashLoanReceipt> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FlashLoanReceipt object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashLoanReceipt(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FlashLoanReceipt object`)
+    }
+
+    return FlashLoanReceipt.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== FlashSwapReceipt =============================== */
 
 export function isFlashSwapReceipt(type: string): boolean {

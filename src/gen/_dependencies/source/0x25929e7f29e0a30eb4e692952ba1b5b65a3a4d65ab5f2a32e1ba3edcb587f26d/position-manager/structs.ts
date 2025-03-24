@@ -17,6 +17,180 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== Close =============================== */
+
+export function isClose(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position_manager::Close`
+}
+
+export interface CloseFields {
+  sender: ToField<'address'>
+  positionId: ToField<ID>
+}
+
+export type CloseReified = Reified<Close, CloseFields>
+
+export class Close implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position_manager::Close`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Close.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position_manager::Close`
+  readonly $typeArgs: []
+  readonly $isPhantom = Close.$isPhantom
+
+  readonly sender: ToField<'address'>
+  readonly positionId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: CloseFields) {
+    this.$fullTypeName = composeSuiType(
+      Close.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position_manager::Close`
+    this.$typeArgs = typeArgs
+
+    this.sender = fields.sender
+    this.positionId = fields.positionId
+  }
+
+  static reified(): CloseReified {
+    return {
+      typeName: Close.$typeName,
+      fullTypeName: composeSuiType(
+        Close.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position_manager::Close`,
+      typeArgs: [] as [],
+      isPhantom: Close.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Close.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Close.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Close.fromBcs(data),
+      bcs: Close.bcs,
+      fromJSONField: (field: any) => Close.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Close.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Close.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Close.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Close.fetch(client, id),
+      new: (fields: CloseFields) => {
+        return new Close([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Close.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Close>> {
+    return phantom(Close.reified())
+  }
+  static get p() {
+    return Close.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Close', {
+      sender: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      position_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Close {
+    return Close.reified().new({
+      sender: decodeFromFields('address', fields.sender),
+      positionId: decodeFromFields(ID.reified(), fields.position_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Close {
+    if (!isClose(item.type)) {
+      throw new Error('not a Close type')
+    }
+
+    return Close.reified().new({
+      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
+      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Close {
+    return Close.fromFields(Close.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      sender: this.sender,
+      positionId: this.positionId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Close {
+    return Close.reified().new({
+      sender: decodeFromJSONField('address', field.sender),
+      positionId: decodeFromJSONField(ID.reified(), field.positionId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Close {
+    if (json.$typeName !== Close.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Close.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Close {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isClose(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Close object`)
+    }
+    return Close.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Close {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isClose(data.bcs.type)) {
+        throw new Error(`object at is not a Close object`)
+      }
+
+      return Close.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Close.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Close> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Close object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isClose(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Close object`)
+    }
+
+    return Close.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== Collect =============================== */
 
 export function isCollect(type: string): boolean {
@@ -212,180 +386,6 @@ export class Collect implements StructClass {
     }
 
     return Collect.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Close =============================== */
-
-export function isClose(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position_manager::Close`
-}
-
-export interface CloseFields {
-  sender: ToField<'address'>
-  positionId: ToField<ID>
-}
-
-export type CloseReified = Reified<Close, CloseFields>
-
-export class Close implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position_manager::Close`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Close.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_manager::Close`
-  readonly $typeArgs: []
-  readonly $isPhantom = Close.$isPhantom
-
-  readonly sender: ToField<'address'>
-  readonly positionId: ToField<ID>
-
-  private constructor(typeArgs: [], fields: CloseFields) {
-    this.$fullTypeName = composeSuiType(
-      Close.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_manager::Close`
-    this.$typeArgs = typeArgs
-
-    this.sender = fields.sender
-    this.positionId = fields.positionId
-  }
-
-  static reified(): CloseReified {
-    return {
-      typeName: Close.$typeName,
-      fullTypeName: composeSuiType(
-        Close.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_manager::Close`,
-      typeArgs: [] as [],
-      isPhantom: Close.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Close.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Close.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Close.fromBcs(data),
-      bcs: Close.bcs,
-      fromJSONField: (field: any) => Close.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Close.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Close.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Close.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Close.fetch(client, id),
-      new: (fields: CloseFields) => {
-        return new Close([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Close.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Close>> {
-    return phantom(Close.reified())
-  }
-  static get p() {
-    return Close.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Close', {
-      sender: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      position_id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Close {
-    return Close.reified().new({
-      sender: decodeFromFields('address', fields.sender),
-      positionId: decodeFromFields(ID.reified(), fields.position_id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Close {
-    if (!isClose(item.type)) {
-      throw new Error('not a Close type')
-    }
-
-    return Close.reified().new({
-      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
-      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Close {
-    return Close.fromFields(Close.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      sender: this.sender,
-      positionId: this.positionId,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Close {
-    return Close.reified().new({
-      sender: decodeFromJSONField('address', field.sender),
-      positionId: decodeFromJSONField(ID.reified(), field.positionId),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Close {
-    if (json.$typeName !== Close.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Close.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Close {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isClose(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Close object`)
-    }
-    return Close.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Close {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isClose(data.bcs.type)) {
-        throw new Error(`object at is not a Close object`)
-      }
-
-      return Close.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Close.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Close> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Close object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isClose(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Close object`)
-    }
-
-    return Close.fromSuiObjectData(res.data)
   }
 }
 

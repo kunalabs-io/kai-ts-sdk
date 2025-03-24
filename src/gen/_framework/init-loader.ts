@@ -1,4 +1,5 @@
 import * as package_onchain_1 from '../_dependencies/onchain/0x1/init'
+import * as package_onchain_11ea791d82b5742cc8cab0bf7946035c97d9001d7c3803a93f119753da66f526 from '../_dependencies/onchain/0x11ea791d82b5742cc8cab0bf7946035c97d9001d7c3803a93f119753da66f526/init'
 import * as package_onchain_1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb from '../_dependencies/onchain/0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb/init'
 import * as package_onchain_2 from '../_dependencies/onchain/0x2/init'
 import * as package_onchain_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d from '../_dependencies/onchain/0x26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d/init'
@@ -6,6 +7,7 @@ import * as package_onchain_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d95
 import * as package_onchain_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa from '../_dependencies/onchain/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/init'
 import * as package_source_1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f from '../_dependencies/source/0x1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f/init'
 import * as package_source_1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6 from '../_dependencies/source/0x1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6/init'
+import * as package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d from '../_dependencies/source/0x25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d/init'
 import * as package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d from '../_dependencies/source/0x26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d/init'
 import * as package_source_375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068 from '../_dependencies/source/0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068/init'
 import * as package_source_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/init'
@@ -70,6 +72,9 @@ function registerClassesSource(loader: StructClassLoader) {
     loader
   )
   package_source_1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb.registerClasses(
+    loader
+  )
+  package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d.registerClasses(
     loader
   )
   package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d.registerClasses(
@@ -164,6 +169,9 @@ function registerClassesSource(loader: StructClassLoader) {
 function registerClassesOnchain(loader: StructClassLoader) {
   package_onchain_1.registerClasses(loader)
   package_onchain_2.registerClasses(loader)
+  package_onchain_11ea791d82b5742cc8cab0bf7946035c97d9001d7c3803a93f119753da66f526.registerClasses(
+    loader
+  )
   package_onchain_1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb.registerClasses(
     loader
   )

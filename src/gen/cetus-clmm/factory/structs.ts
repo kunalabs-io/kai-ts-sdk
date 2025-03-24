@@ -16,7 +16,9 @@ import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framewo
 import { String } from '../../move-stdlib/string/structs'
 import { TypeName } from '../../move-stdlib/type-name/structs'
 import { ID, UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
+import { Table } from '../../sui/table/structs'
+import { VecSet } from '../../sui/vec-set/structs'
+import { PKG_V1, PKG_V8 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -208,6 +210,203 @@ export class CreatePoolEvent implements StructClass {
   }
 }
 
+/* ============================== DenyCoinList =============================== */
+
+export function isDenyCoinList(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V8}::factory::DenyCoinList`
+}
+
+export interface DenyCoinListFields {
+  id: ToField<UID>
+  deniedList: ToField<Table<ToPhantom<TypeName>, 'bool'>>
+  allowedList: ToField<Table<ToPhantom<TypeName>, 'bool'>>
+}
+
+export type DenyCoinListReified = Reified<DenyCoinList, DenyCoinListFields>
+
+export class DenyCoinList implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V8}::factory::DenyCoinList`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = DenyCoinList.$typeName
+  readonly $fullTypeName: `${typeof PKG_V8}::factory::DenyCoinList`
+  readonly $typeArgs: []
+  readonly $isPhantom = DenyCoinList.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly deniedList: ToField<Table<ToPhantom<TypeName>, 'bool'>>
+  readonly allowedList: ToField<Table<ToPhantom<TypeName>, 'bool'>>
+
+  private constructor(typeArgs: [], fields: DenyCoinListFields) {
+    this.$fullTypeName = composeSuiType(
+      DenyCoinList.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V8}::factory::DenyCoinList`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.deniedList = fields.deniedList
+    this.allowedList = fields.allowedList
+  }
+
+  static reified(): DenyCoinListReified {
+    return {
+      typeName: DenyCoinList.$typeName,
+      fullTypeName: composeSuiType(
+        DenyCoinList.$typeName,
+        ...[]
+      ) as `${typeof PKG_V8}::factory::DenyCoinList`,
+      typeArgs: [] as [],
+      isPhantom: DenyCoinList.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => DenyCoinList.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DenyCoinList.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => DenyCoinList.fromBcs(data),
+      bcs: DenyCoinList.bcs,
+      fromJSONField: (field: any) => DenyCoinList.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => DenyCoinList.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => DenyCoinList.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => DenyCoinList.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => DenyCoinList.fetch(client, id),
+      new: (fields: DenyCoinListFields) => {
+        return new DenyCoinList([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return DenyCoinList.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<DenyCoinList>> {
+    return phantom(DenyCoinList.reified())
+  }
+  static get p() {
+    return DenyCoinList.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('DenyCoinList', {
+      id: UID.bcs,
+      denied_list: Table.bcs,
+      allowed_list: Table.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): DenyCoinList {
+    return DenyCoinList.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      deniedList: decodeFromFields(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        fields.denied_list
+      ),
+      allowedList: decodeFromFields(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        fields.allowed_list
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): DenyCoinList {
+    if (!isDenyCoinList(item.type)) {
+      throw new Error('not a DenyCoinList type')
+    }
+
+    return DenyCoinList.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      deniedList: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        item.fields.denied_list
+      ),
+      allowedList: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        item.fields.allowed_list
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): DenyCoinList {
+    return DenyCoinList.fromFields(DenyCoinList.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      deniedList: this.deniedList.toJSONField(),
+      allowedList: this.allowedList.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): DenyCoinList {
+    return DenyCoinList.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      deniedList: decodeFromJSONField(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        field.deniedList
+      ),
+      allowedList: decodeFromJSONField(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('bool')),
+        field.allowedList
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): DenyCoinList {
+    if (json.$typeName !== DenyCoinList.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return DenyCoinList.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): DenyCoinList {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isDenyCoinList(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a DenyCoinList object`)
+    }
+    return DenyCoinList.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): DenyCoinList {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isDenyCoinList(data.bcs.type)) {
+        throw new Error(`object at is not a DenyCoinList object`)
+      }
+
+      return DenyCoinList.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return DenyCoinList.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<DenyCoinList> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching DenyCoinList object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isDenyCoinList(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a DenyCoinList object`)
+    }
+
+    return DenyCoinList.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== InitFactoryEvent =============================== */
 
 export function isInitFactoryEvent(type: string): boolean {
@@ -368,6 +567,612 @@ export class InitFactoryEvent implements StructClass {
     }
 
     return InitFactoryEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PermissionPairManager =============================== */
+
+export function isPermissionPairManager(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V8}::factory::PermissionPairManager`
+}
+
+export interface PermissionPairManagerFields {
+  id: ToField<UID>
+  allowedPairConfig: ToField<Table<ToPhantom<TypeName>, ToPhantom<VecSet<'u32'>>>>
+  poolKeyToCap: ToField<Table<ToPhantom<ID>, ToPhantom<ID>>>
+  capToPoolKey: ToField<Table<ToPhantom<ID>, ToPhantom<Table<ToPhantom<ID>, ToPhantom<PoolKey>>>>>
+  coinTypeToCap: ToField<Table<ToPhantom<TypeName>, ToPhantom<ID>>>
+}
+
+export type PermissionPairManagerReified = Reified<
+  PermissionPairManager,
+  PermissionPairManagerFields
+>
+
+export class PermissionPairManager implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V8}::factory::PermissionPairManager`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PermissionPairManager.$typeName
+  readonly $fullTypeName: `${typeof PKG_V8}::factory::PermissionPairManager`
+  readonly $typeArgs: []
+  readonly $isPhantom = PermissionPairManager.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly allowedPairConfig: ToField<Table<ToPhantom<TypeName>, ToPhantom<VecSet<'u32'>>>>
+  readonly poolKeyToCap: ToField<Table<ToPhantom<ID>, ToPhantom<ID>>>
+  readonly capToPoolKey: ToField<
+    Table<ToPhantom<ID>, ToPhantom<Table<ToPhantom<ID>, ToPhantom<PoolKey>>>>
+  >
+  readonly coinTypeToCap: ToField<Table<ToPhantom<TypeName>, ToPhantom<ID>>>
+
+  private constructor(typeArgs: [], fields: PermissionPairManagerFields) {
+    this.$fullTypeName = composeSuiType(
+      PermissionPairManager.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V8}::factory::PermissionPairManager`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.allowedPairConfig = fields.allowedPairConfig
+    this.poolKeyToCap = fields.poolKeyToCap
+    this.capToPoolKey = fields.capToPoolKey
+    this.coinTypeToCap = fields.coinTypeToCap
+  }
+
+  static reified(): PermissionPairManagerReified {
+    return {
+      typeName: PermissionPairManager.$typeName,
+      fullTypeName: composeSuiType(
+        PermissionPairManager.$typeName,
+        ...[]
+      ) as `${typeof PKG_V8}::factory::PermissionPairManager`,
+      typeArgs: [] as [],
+      isPhantom: PermissionPairManager.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PermissionPairManager.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        PermissionPairManager.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PermissionPairManager.fromBcs(data),
+      bcs: PermissionPairManager.bcs,
+      fromJSONField: (field: any) => PermissionPairManager.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PermissionPairManager.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        PermissionPairManager.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        PermissionPairManager.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PermissionPairManager.fetch(client, id),
+      new: (fields: PermissionPairManagerFields) => {
+        return new PermissionPairManager([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PermissionPairManager.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PermissionPairManager>> {
+    return phantom(PermissionPairManager.reified())
+  }
+  static get p() {
+    return PermissionPairManager.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PermissionPairManager', {
+      id: UID.bcs,
+      allowed_pair_config: Table.bcs,
+      pool_key_to_cap: Table.bcs,
+      cap_to_pool_key: Table.bcs,
+      coin_type_to_cap: Table.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PermissionPairManager {
+    return PermissionPairManager.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      allowedPairConfig: decodeFromFields(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(VecSet.reified('u32'))),
+        fields.allowed_pair_config
+      ),
+      poolKeyToCap: decodeFromFields(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(ID.reified())),
+        fields.pool_key_to_cap
+      ),
+      capToPoolKey: decodeFromFields(
+        Table.reified(
+          reified.phantom(ID.reified()),
+          reified.phantom(
+            Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolKey.reified()))
+          )
+        ),
+        fields.cap_to_pool_key
+      ),
+      coinTypeToCap: decodeFromFields(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(ID.reified())),
+        fields.coin_type_to_cap
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PermissionPairManager {
+    if (!isPermissionPairManager(item.type)) {
+      throw new Error('not a PermissionPairManager type')
+    }
+
+    return PermissionPairManager.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      allowedPairConfig: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(VecSet.reified('u32'))),
+        item.fields.allowed_pair_config
+      ),
+      poolKeyToCap: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(ID.reified())),
+        item.fields.pool_key_to_cap
+      ),
+      capToPoolKey: decodeFromFieldsWithTypes(
+        Table.reified(
+          reified.phantom(ID.reified()),
+          reified.phantom(
+            Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolKey.reified()))
+          )
+        ),
+        item.fields.cap_to_pool_key
+      ),
+      coinTypeToCap: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(ID.reified())),
+        item.fields.coin_type_to_cap
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PermissionPairManager {
+    return PermissionPairManager.fromFields(PermissionPairManager.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      allowedPairConfig: this.allowedPairConfig.toJSONField(),
+      poolKeyToCap: this.poolKeyToCap.toJSONField(),
+      capToPoolKey: this.capToPoolKey.toJSONField(),
+      coinTypeToCap: this.coinTypeToCap.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PermissionPairManager {
+    return PermissionPairManager.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      allowedPairConfig: decodeFromJSONField(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(VecSet.reified('u32'))),
+        field.allowedPairConfig
+      ),
+      poolKeyToCap: decodeFromJSONField(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(ID.reified())),
+        field.poolKeyToCap
+      ),
+      capToPoolKey: decodeFromJSONField(
+        Table.reified(
+          reified.phantom(ID.reified()),
+          reified.phantom(
+            Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolKey.reified()))
+          )
+        ),
+        field.capToPoolKey
+      ),
+      coinTypeToCap: decodeFromJSONField(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom(ID.reified())),
+        field.coinTypeToCap
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PermissionPairManager {
+    if (json.$typeName !== PermissionPairManager.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PermissionPairManager.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PermissionPairManager {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPermissionPairManager(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a PermissionPairManager object`
+      )
+    }
+    return PermissionPairManager.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PermissionPairManager {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPermissionPairManager(data.bcs.type)) {
+        throw new Error(`object at is not a PermissionPairManager object`)
+      }
+
+      return PermissionPairManager.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PermissionPairManager.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PermissionPairManager> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PermissionPairManager object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPermissionPairManager(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PermissionPairManager object`)
+    }
+
+    return PermissionPairManager.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PoolCreationCap =============================== */
+
+export function isPoolCreationCap(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V8}::factory::PoolCreationCap`
+}
+
+export interface PoolCreationCapFields {
+  id: ToField<UID>
+  coinType: ToField<TypeName>
+}
+
+export type PoolCreationCapReified = Reified<PoolCreationCap, PoolCreationCapFields>
+
+export class PoolCreationCap implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V8}::factory::PoolCreationCap`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PoolCreationCap.$typeName
+  readonly $fullTypeName: `${typeof PKG_V8}::factory::PoolCreationCap`
+  readonly $typeArgs: []
+  readonly $isPhantom = PoolCreationCap.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly coinType: ToField<TypeName>
+
+  private constructor(typeArgs: [], fields: PoolCreationCapFields) {
+    this.$fullTypeName = composeSuiType(
+      PoolCreationCap.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V8}::factory::PoolCreationCap`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.coinType = fields.coinType
+  }
+
+  static reified(): PoolCreationCapReified {
+    return {
+      typeName: PoolCreationCap.$typeName,
+      fullTypeName: composeSuiType(
+        PoolCreationCap.$typeName,
+        ...[]
+      ) as `${typeof PKG_V8}::factory::PoolCreationCap`,
+      typeArgs: [] as [],
+      isPhantom: PoolCreationCap.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PoolCreationCap.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolCreationCap.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PoolCreationCap.fromBcs(data),
+      bcs: PoolCreationCap.bcs,
+      fromJSONField: (field: any) => PoolCreationCap.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PoolCreationCap.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PoolCreationCap.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PoolCreationCap.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PoolCreationCap.fetch(client, id),
+      new: (fields: PoolCreationCapFields) => {
+        return new PoolCreationCap([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PoolCreationCap.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PoolCreationCap>> {
+    return phantom(PoolCreationCap.reified())
+  }
+  static get p() {
+    return PoolCreationCap.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PoolCreationCap', {
+      id: UID.bcs,
+      coin_type: TypeName.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PoolCreationCap {
+    return PoolCreationCap.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      coinType: decodeFromFields(TypeName.reified(), fields.coin_type),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PoolCreationCap {
+    if (!isPoolCreationCap(item.type)) {
+      throw new Error('not a PoolCreationCap type')
+    }
+
+    return PoolCreationCap.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      coinType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PoolCreationCap {
+    return PoolCreationCap.fromFields(PoolCreationCap.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      coinType: this.coinType.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PoolCreationCap {
+    return PoolCreationCap.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      coinType: decodeFromJSONField(TypeName.reified(), field.coinType),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PoolCreationCap {
+    if (json.$typeName !== PoolCreationCap.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PoolCreationCap.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PoolCreationCap {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPoolCreationCap(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PoolCreationCap object`)
+    }
+    return PoolCreationCap.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PoolCreationCap {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPoolCreationCap(data.bcs.type)) {
+        throw new Error(`object at is not a PoolCreationCap object`)
+      }
+
+      return PoolCreationCap.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PoolCreationCap.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PoolCreationCap> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PoolCreationCap object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolCreationCap(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PoolCreationCap object`)
+    }
+
+    return PoolCreationCap.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PoolKey =============================== */
+
+export function isPoolKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V8}::factory::PoolKey`
+}
+
+export interface PoolKeyFields {
+  coinA: ToField<TypeName>
+  coinB: ToField<TypeName>
+  tickSpacing: ToField<'u32'>
+}
+
+export type PoolKeyReified = Reified<PoolKey, PoolKeyFields>
+
+export class PoolKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V8}::factory::PoolKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PoolKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V8}::factory::PoolKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = PoolKey.$isPhantom
+
+  readonly coinA: ToField<TypeName>
+  readonly coinB: ToField<TypeName>
+  readonly tickSpacing: ToField<'u32'>
+
+  private constructor(typeArgs: [], fields: PoolKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      PoolKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V8}::factory::PoolKey`
+    this.$typeArgs = typeArgs
+
+    this.coinA = fields.coinA
+    this.coinB = fields.coinB
+    this.tickSpacing = fields.tickSpacing
+  }
+
+  static reified(): PoolKeyReified {
+    return {
+      typeName: PoolKey.$typeName,
+      fullTypeName: composeSuiType(
+        PoolKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V8}::factory::PoolKey`,
+      typeArgs: [] as [],
+      isPhantom: PoolKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PoolKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PoolKey.fromBcs(data),
+      bcs: PoolKey.bcs,
+      fromJSONField: (field: any) => PoolKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PoolKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PoolKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PoolKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PoolKey.fetch(client, id),
+      new: (fields: PoolKeyFields) => {
+        return new PoolKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PoolKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PoolKey>> {
+    return phantom(PoolKey.reified())
+  }
+  static get p() {
+    return PoolKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PoolKey', {
+      coin_a: TypeName.bcs,
+      coin_b: TypeName.bcs,
+      tick_spacing: bcs.u32(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PoolKey {
+    return PoolKey.reified().new({
+      coinA: decodeFromFields(TypeName.reified(), fields.coin_a),
+      coinB: decodeFromFields(TypeName.reified(), fields.coin_b),
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PoolKey {
+    if (!isPoolKey(item.type)) {
+      throw new Error('not a PoolKey type')
+    }
+
+    return PoolKey.reified().new({
+      coinA: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_a),
+      coinB: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_b),
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PoolKey {
+    return PoolKey.fromFields(PoolKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      coinA: this.coinA.toJSONField(),
+      coinB: this.coinB.toJSONField(),
+      tickSpacing: this.tickSpacing,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PoolKey {
+    return PoolKey.reified().new({
+      coinA: decodeFromJSONField(TypeName.reified(), field.coinA),
+      coinB: decodeFromJSONField(TypeName.reified(), field.coinB),
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PoolKey {
+    if (json.$typeName !== PoolKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PoolKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PoolKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPoolKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PoolKey object`)
+    }
+    return PoolKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PoolKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPoolKey(data.bcs.type)) {
+        throw new Error(`object at is not a PoolKey object`)
+      }
+
+      return PoolKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PoolKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PoolKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PoolKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PoolKey object`)
+    }
+
+    return PoolKey.fromSuiObjectData(res.data)
   }
 }
 

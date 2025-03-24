@@ -478,6 +478,54 @@ export function fetchTicks(tx: Transaction, typeArgs: [string, string], args: Fe
   })
 }
 
+export interface FlashLoanArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  loanA: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+}
+
+export function flashLoan(tx: Transaction, typeArgs: [string, string], args: FlashLoanArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::flash_loan`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.loanA, `bool`),
+      pure(tx, args.amount, `u64`),
+    ],
+  })
+}
+
+export interface FlashLoanWithPartnerArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  partner: TransactionObjectInput
+  loanA: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function flashLoanWithPartner(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashLoanWithPartnerArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::flash_loan_with_partner`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.partner),
+      pure(tx, args.loanA, `bool`),
+      pure(tx, args.amount, `u64`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface FlashSwapArgs {
   config: TransactionObjectInput
   pool: TransactionObjectInput
@@ -943,6 +991,60 @@ export function repayAddLiquidity(
     arguments: [
       obj(tx, args.config),
       obj(tx, args.pool),
+      obj(tx, args.balanceA),
+      obj(tx, args.balanceB),
+      obj(tx, args.receipt),
+    ],
+  })
+}
+
+export interface RepayFlashLoanArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  balanceA: TransactionObjectInput
+  balanceB: TransactionObjectInput
+  receipt: TransactionObjectInput
+}
+
+export function repayFlashLoan(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RepayFlashLoanArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::repay_flash_loan`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.balanceA),
+      obj(tx, args.balanceB),
+      obj(tx, args.receipt),
+    ],
+  })
+}
+
+export interface RepayFlashLoanWithPartnerArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  partner: TransactionObjectInput
+  balanceA: TransactionObjectInput
+  balanceB: TransactionObjectInput
+  receipt: TransactionObjectInput
+}
+
+export function repayFlashLoanWithPartner(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RepayFlashLoanWithPartnerArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::repay_flash_loan_with_partner`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.partner),
       obj(tx, args.balanceA),
       obj(tx, args.balanceB),
       obj(tx, args.receipt),

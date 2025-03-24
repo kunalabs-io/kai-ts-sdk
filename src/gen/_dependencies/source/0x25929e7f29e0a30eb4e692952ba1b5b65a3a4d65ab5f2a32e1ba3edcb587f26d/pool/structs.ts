@@ -38,685 +38,6 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== Pool =============================== */
-
-export function isPool(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::pool::Pool` + '<')
-}
-
-export interface PoolFields<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument> {
-  id: ToField<UID>
-  coinTypeX: ToField<TypeName>
-  coinTypeY: ToField<TypeName>
-  sqrtPrice: ToField<'u128'>
-  tickIndex: ToField<I32>
-  observationIndex: ToField<'u64'>
-  observationCardinality: ToField<'u64'>
-  observationCardinalityNext: ToField<'u64'>
-  tickSpacing: ToField<'u32'>
-  maxLiquidityPerTick: ToField<'u128'>
-  protocolFeeRate: ToField<'u64'>
-  swapFeeRate: ToField<'u64'>
-  feeGrowthGlobalX: ToField<'u128'>
-  feeGrowthGlobalY: ToField<'u128'>
-  protocolFeeX: ToField<'u64'>
-  protocolFeeY: ToField<'u64'>
-  liquidity: ToField<'u128'>
-  ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
-  tickBitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
-  observations: ToField<Vector<Observation>>
-  locked: ToField<'bool'>
-  rewardInfos: ToField<Vector<PoolRewardInfo>>
-  reserveX: ToField<Balance<T0>>
-  reserveY: ToField<Balance<T1>>
-}
-
-export type PoolReified<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument> = Reified<
-  Pool<T0, T1>,
-  PoolFields<T0, T1>
->
-
-export class Pool<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument>
-  implements StructClass
-{
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::Pool`
-  static readonly $numTypeParams = 2
-  static readonly $isPhantom = [true, true] as const
-
-  readonly $typeName = Pool.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<T0>}, ${PhantomToTypeStr<T1>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>]
-  readonly $isPhantom = Pool.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly coinTypeX: ToField<TypeName>
-  readonly coinTypeY: ToField<TypeName>
-  readonly sqrtPrice: ToField<'u128'>
-  readonly tickIndex: ToField<I32>
-  readonly observationIndex: ToField<'u64'>
-  readonly observationCardinality: ToField<'u64'>
-  readonly observationCardinalityNext: ToField<'u64'>
-  readonly tickSpacing: ToField<'u32'>
-  readonly maxLiquidityPerTick: ToField<'u128'>
-  readonly protocolFeeRate: ToField<'u64'>
-  readonly swapFeeRate: ToField<'u64'>
-  readonly feeGrowthGlobalX: ToField<'u128'>
-  readonly feeGrowthGlobalY: ToField<'u128'>
-  readonly protocolFeeX: ToField<'u64'>
-  readonly protocolFeeY: ToField<'u64'>
-  readonly liquidity: ToField<'u128'>
-  readonly ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
-  readonly tickBitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
-  readonly observations: ToField<Vector<Observation>>
-  readonly locked: ToField<'bool'>
-  readonly rewardInfos: ToField<Vector<PoolRewardInfo>>
-  readonly reserveX: ToField<Balance<T0>>
-  readonly reserveY: ToField<Balance<T1>>
-
-  private constructor(
-    typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>],
-    fields: PoolFields<T0, T1>
-  ) {
-    this.$fullTypeName = composeSuiType(
-      Pool.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<T0>}, ${PhantomToTypeStr<T1>}>`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.coinTypeX = fields.coinTypeX
-    this.coinTypeY = fields.coinTypeY
-    this.sqrtPrice = fields.sqrtPrice
-    this.tickIndex = fields.tickIndex
-    this.observationIndex = fields.observationIndex
-    this.observationCardinality = fields.observationCardinality
-    this.observationCardinalityNext = fields.observationCardinalityNext
-    this.tickSpacing = fields.tickSpacing
-    this.maxLiquidityPerTick = fields.maxLiquidityPerTick
-    this.protocolFeeRate = fields.protocolFeeRate
-    this.swapFeeRate = fields.swapFeeRate
-    this.feeGrowthGlobalX = fields.feeGrowthGlobalX
-    this.feeGrowthGlobalY = fields.feeGrowthGlobalY
-    this.protocolFeeX = fields.protocolFeeX
-    this.protocolFeeY = fields.protocolFeeY
-    this.liquidity = fields.liquidity
-    this.ticks = fields.ticks
-    this.tickBitmap = fields.tickBitmap
-    this.observations = fields.observations
-    this.locked = fields.locked
-    this.rewardInfos = fields.rewardInfos
-    this.reserveX = fields.reserveX
-    this.reserveY = fields.reserveY
-  }
-
-  static reified<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(T0: T0, T1: T1): PoolReified<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    return {
-      typeName: Pool.$typeName,
-      fullTypeName: composeSuiType(
-        Pool.$typeName,
-        ...[extractType(T0), extractType(T1)]
-      ) as `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<T1>>}>`,
-      typeArgs: [extractType(T0), extractType(T1)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T0>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<T1>>,
-      ],
-      isPhantom: Pool.$isPhantom,
-      reifiedTypeArgs: [T0, T1],
-      fromFields: (fields: Record<string, any>) => Pool.fromFields([T0, T1], fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Pool.fromFieldsWithTypes([T0, T1], item),
-      fromBcs: (data: Uint8Array) => Pool.fromBcs([T0, T1], data),
-      bcs: Pool.bcs,
-      fromJSONField: (field: any) => Pool.fromJSONField([T0, T1], field),
-      fromJSON: (json: Record<string, any>) => Pool.fromJSON([T0, T1], json),
-      fromSuiParsedData: (content: SuiParsedData) => Pool.fromSuiParsedData([T0, T1], content),
-      fromSuiObjectData: (content: SuiObjectData) => Pool.fromSuiObjectData([T0, T1], content),
-      fetch: async (client: SuiClient, id: string) => Pool.fetch(client, [T0, T1], id),
-      new: (fields: PoolFields<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>) => {
-        return new Pool([extractType(T0), extractType(T1)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Pool.reified
-  }
-
-  static phantom<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    T0: T0,
-    T1: T1
-  ): PhantomReified<ToTypeStr<Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>>> {
-    return phantom(Pool.reified(T0, T1))
-  }
-  static get p() {
-    return Pool.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('Pool', {
-      id: UID.bcs,
-      coin_type_x: TypeName.bcs,
-      coin_type_y: TypeName.bcs,
-      sqrt_price: bcs.u128(),
-      tick_index: I32.bcs,
-      observation_index: bcs.u64(),
-      observation_cardinality: bcs.u64(),
-      observation_cardinality_next: bcs.u64(),
-      tick_spacing: bcs.u32(),
-      max_liquidity_per_tick: bcs.u128(),
-      protocol_fee_rate: bcs.u64(),
-      swap_fee_rate: bcs.u64(),
-      fee_growth_global_x: bcs.u128(),
-      fee_growth_global_y: bcs.u128(),
-      protocol_fee_x: bcs.u64(),
-      protocol_fee_y: bcs.u64(),
-      liquidity: bcs.u128(),
-      ticks: Table.bcs,
-      tick_bitmap: Table.bcs,
-      observations: bcs.vector(Observation.bcs),
-      locked: bcs.bool(),
-      reward_infos: bcs.vector(PoolRewardInfo.bcs),
-      reserve_x: Balance.bcs,
-      reserve_y: Balance.bcs,
-    })
-  }
-
-  static fromFields<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    fields: Record<string, any>
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    return Pool.reified(typeArgs[0], typeArgs[1]).new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      coinTypeX: decodeFromFields(TypeName.reified(), fields.coin_type_x),
-      coinTypeY: decodeFromFields(TypeName.reified(), fields.coin_type_y),
-      sqrtPrice: decodeFromFields('u128', fields.sqrt_price),
-      tickIndex: decodeFromFields(I32.reified(), fields.tick_index),
-      observationIndex: decodeFromFields('u64', fields.observation_index),
-      observationCardinality: decodeFromFields('u64', fields.observation_cardinality),
-      observationCardinalityNext: decodeFromFields('u64', fields.observation_cardinality_next),
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      maxLiquidityPerTick: decodeFromFields('u128', fields.max_liquidity_per_tick),
-      protocolFeeRate: decodeFromFields('u64', fields.protocol_fee_rate),
-      swapFeeRate: decodeFromFields('u64', fields.swap_fee_rate),
-      feeGrowthGlobalX: decodeFromFields('u128', fields.fee_growth_global_x),
-      feeGrowthGlobalY: decodeFromFields('u128', fields.fee_growth_global_y),
-      protocolFeeX: decodeFromFields('u64', fields.protocol_fee_x),
-      protocolFeeY: decodeFromFields('u64', fields.protocol_fee_y),
-      liquidity: decodeFromFields('u128', fields.liquidity),
-      ticks: decodeFromFields(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        fields.ticks
-      ),
-      tickBitmap: decodeFromFields(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        fields.tick_bitmap
-      ),
-      observations: decodeFromFields(reified.vector(Observation.reified()), fields.observations),
-      locked: decodeFromFields('bool', fields.locked),
-      rewardInfos: decodeFromFields(reified.vector(PoolRewardInfo.reified()), fields.reward_infos),
-      reserveX: decodeFromFields(Balance.reified(typeArgs[0]), fields.reserve_x),
-      reserveY: decodeFromFields(Balance.reified(typeArgs[1]), fields.reserve_y),
-    })
-  }
-
-  static fromFieldsWithTypes<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    item: FieldsWithTypes
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    if (!isPool(item.type)) {
-      throw new Error('not a Pool type')
-    }
-    assertFieldsWithTypesArgsMatch(item, typeArgs)
-
-    return Pool.reified(typeArgs[0], typeArgs[1]).new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      coinTypeX: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_x),
-      coinTypeY: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_y),
-      sqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.sqrt_price),
-      tickIndex: decodeFromFieldsWithTypes(I32.reified(), item.fields.tick_index),
-      observationIndex: decodeFromFieldsWithTypes('u64', item.fields.observation_index),
-      observationCardinality: decodeFromFieldsWithTypes('u64', item.fields.observation_cardinality),
-      observationCardinalityNext: decodeFromFieldsWithTypes(
-        'u64',
-        item.fields.observation_cardinality_next
-      ),
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-      maxLiquidityPerTick: decodeFromFieldsWithTypes('u128', item.fields.max_liquidity_per_tick),
-      protocolFeeRate: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_rate),
-      swapFeeRate: decodeFromFieldsWithTypes('u64', item.fields.swap_fee_rate),
-      feeGrowthGlobalX: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global_x),
-      feeGrowthGlobalY: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global_y),
-      protocolFeeX: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_x),
-      protocolFeeY: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_y),
-      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
-      ticks: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        item.fields.ticks
-      ),
-      tickBitmap: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        item.fields.tick_bitmap
-      ),
-      observations: decodeFromFieldsWithTypes(
-        reified.vector(Observation.reified()),
-        item.fields.observations
-      ),
-      locked: decodeFromFieldsWithTypes('bool', item.fields.locked),
-      rewardInfos: decodeFromFieldsWithTypes(
-        reified.vector(PoolRewardInfo.reified()),
-        item.fields.reward_infos
-      ),
-      reserveX: decodeFromFieldsWithTypes(Balance.reified(typeArgs[0]), item.fields.reserve_x),
-      reserveY: decodeFromFieldsWithTypes(Balance.reified(typeArgs[1]), item.fields.reserve_y),
-    })
-  }
-
-  static fromBcs<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    data: Uint8Array
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    return Pool.fromFields(typeArgs, Pool.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      coinTypeX: this.coinTypeX.toJSONField(),
-      coinTypeY: this.coinTypeY.toJSONField(),
-      sqrtPrice: this.sqrtPrice.toString(),
-      tickIndex: this.tickIndex.toJSONField(),
-      observationIndex: this.observationIndex.toString(),
-      observationCardinality: this.observationCardinality.toString(),
-      observationCardinalityNext: this.observationCardinalityNext.toString(),
-      tickSpacing: this.tickSpacing,
-      maxLiquidityPerTick: this.maxLiquidityPerTick.toString(),
-      protocolFeeRate: this.protocolFeeRate.toString(),
-      swapFeeRate: this.swapFeeRate.toString(),
-      feeGrowthGlobalX: this.feeGrowthGlobalX.toString(),
-      feeGrowthGlobalY: this.feeGrowthGlobalY.toString(),
-      protocolFeeX: this.protocolFeeX.toString(),
-      protocolFeeY: this.protocolFeeY.toString(),
-      liquidity: this.liquidity.toString(),
-      ticks: this.ticks.toJSONField(),
-      tickBitmap: this.tickBitmap.toJSONField(),
-      observations: fieldToJSON<Vector<Observation>>(
-        `vector<${Observation.$typeName}>`,
-        this.observations
-      ),
-      locked: this.locked,
-      rewardInfos: fieldToJSON<Vector<PoolRewardInfo>>(
-        `vector<${PoolRewardInfo.$typeName}>`,
-        this.rewardInfos
-      ),
-      reserveX: this.reserveX.toJSONField(),
-      reserveY: this.reserveY.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(typeArgs: [T0, T1], field: any): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    return Pool.reified(typeArgs[0], typeArgs[1]).new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      coinTypeX: decodeFromJSONField(TypeName.reified(), field.coinTypeX),
-      coinTypeY: decodeFromJSONField(TypeName.reified(), field.coinTypeY),
-      sqrtPrice: decodeFromJSONField('u128', field.sqrtPrice),
-      tickIndex: decodeFromJSONField(I32.reified(), field.tickIndex),
-      observationIndex: decodeFromJSONField('u64', field.observationIndex),
-      observationCardinality: decodeFromJSONField('u64', field.observationCardinality),
-      observationCardinalityNext: decodeFromJSONField('u64', field.observationCardinalityNext),
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      maxLiquidityPerTick: decodeFromJSONField('u128', field.maxLiquidityPerTick),
-      protocolFeeRate: decodeFromJSONField('u64', field.protocolFeeRate),
-      swapFeeRate: decodeFromJSONField('u64', field.swapFeeRate),
-      feeGrowthGlobalX: decodeFromJSONField('u128', field.feeGrowthGlobalX),
-      feeGrowthGlobalY: decodeFromJSONField('u128', field.feeGrowthGlobalY),
-      protocolFeeX: decodeFromJSONField('u64', field.protocolFeeX),
-      protocolFeeY: decodeFromJSONField('u64', field.protocolFeeY),
-      liquidity: decodeFromJSONField('u128', field.liquidity),
-      ticks: decodeFromJSONField(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        field.ticks
-      ),
-      tickBitmap: decodeFromJSONField(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        field.tickBitmap
-      ),
-      observations: decodeFromJSONField(reified.vector(Observation.reified()), field.observations),
-      locked: decodeFromJSONField('bool', field.locked),
-      rewardInfos: decodeFromJSONField(reified.vector(PoolRewardInfo.reified()), field.rewardInfos),
-      reserveX: decodeFromJSONField(Balance.reified(typeArgs[0]), field.reserveX),
-      reserveY: decodeFromJSONField(Balance.reified(typeArgs[1]), field.reserveY),
-    })
-  }
-
-  static fromJSON<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    json: Record<string, any>
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    if (json.$typeName !== Pool.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(Pool.$typeName, ...typeArgs.map(extractType)),
-      json.$typeArgs,
-      typeArgs
-    )
-
-    return Pool.fromJSONField(typeArgs, json)
-  }
-
-  static fromSuiParsedData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    content: SuiParsedData
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPool(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Pool object`)
-    }
-    return Pool.fromFieldsWithTypes(typeArgs, content)
-  }
-
-  static fromSuiObjectData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T0, T1],
-    data: SuiObjectData
-  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPool(data.bcs.type)) {
-        throw new Error(`object at is not a Pool object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 2) {
-        throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
-        )
-      }
-      for (let i = 0; i < 2; i++) {
-        const gotTypeArg = compressSuiType(gotTypeArgs[i])
-        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
-        if (gotTypeArg !== expectedTypeArg) {
-          throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-          )
-        }
-      }
-
-      return Pool.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Pool.fromSuiParsedData(typeArgs, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
-  >(
-    client: SuiClient,
-    typeArgs: [T0, T1],
-    id: string
-  ): Promise<Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Pool object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPool(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Pool object`)
-    }
-
-    return Pool.fromSuiObjectData(typeArgs, res.data)
-  }
-}
-
-/* ============================== PoolRewardInfo =============================== */
-
-export function isPoolRewardInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool::PoolRewardInfo`
-}
-
-export interface PoolRewardInfoFields {
-  rewardCoinType: ToField<TypeName>
-  lastUpdateTime: ToField<'u64'>
-  endedAtSeconds: ToField<'u64'>
-  totalReward: ToField<'u64'>
-  totalRewardAllocated: ToField<'u64'>
-  rewardPerSeconds: ToField<'u128'>
-  rewardGrowthGlobal: ToField<'u128'>
-}
-
-export type PoolRewardInfoReified = Reified<PoolRewardInfo, PoolRewardInfoFields>
-
-export class PoolRewardInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::PoolRewardInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PoolRewardInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::PoolRewardInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = PoolRewardInfo.$isPhantom
-
-  readonly rewardCoinType: ToField<TypeName>
-  readonly lastUpdateTime: ToField<'u64'>
-  readonly endedAtSeconds: ToField<'u64'>
-  readonly totalReward: ToField<'u64'>
-  readonly totalRewardAllocated: ToField<'u64'>
-  readonly rewardPerSeconds: ToField<'u128'>
-  readonly rewardGrowthGlobal: ToField<'u128'>
-
-  private constructor(typeArgs: [], fields: PoolRewardInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      PoolRewardInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::PoolRewardInfo`
-    this.$typeArgs = typeArgs
-
-    this.rewardCoinType = fields.rewardCoinType
-    this.lastUpdateTime = fields.lastUpdateTime
-    this.endedAtSeconds = fields.endedAtSeconds
-    this.totalReward = fields.totalReward
-    this.totalRewardAllocated = fields.totalRewardAllocated
-    this.rewardPerSeconds = fields.rewardPerSeconds
-    this.rewardGrowthGlobal = fields.rewardGrowthGlobal
-  }
-
-  static reified(): PoolRewardInfoReified {
-    return {
-      typeName: PoolRewardInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PoolRewardInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool::PoolRewardInfo`,
-      typeArgs: [] as [],
-      isPhantom: PoolRewardInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PoolRewardInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolRewardInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolRewardInfo.fromBcs(data),
-      bcs: PoolRewardInfo.bcs,
-      fromJSONField: (field: any) => PoolRewardInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PoolRewardInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PoolRewardInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PoolRewardInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PoolRewardInfo.fetch(client, id),
-      new: (fields: PoolRewardInfoFields) => {
-        return new PoolRewardInfo([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PoolRewardInfo.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PoolRewardInfo>> {
-    return phantom(PoolRewardInfo.reified())
-  }
-  static get p() {
-    return PoolRewardInfo.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PoolRewardInfo', {
-      reward_coin_type: TypeName.bcs,
-      last_update_time: bcs.u64(),
-      ended_at_seconds: bcs.u64(),
-      total_reward: bcs.u64(),
-      total_reward_allocated: bcs.u64(),
-      reward_per_seconds: bcs.u128(),
-      reward_growth_global: bcs.u128(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PoolRewardInfo {
-    return PoolRewardInfo.reified().new({
-      rewardCoinType: decodeFromFields(TypeName.reified(), fields.reward_coin_type),
-      lastUpdateTime: decodeFromFields('u64', fields.last_update_time),
-      endedAtSeconds: decodeFromFields('u64', fields.ended_at_seconds),
-      totalReward: decodeFromFields('u64', fields.total_reward),
-      totalRewardAllocated: decodeFromFields('u64', fields.total_reward_allocated),
-      rewardPerSeconds: decodeFromFields('u128', fields.reward_per_seconds),
-      rewardGrowthGlobal: decodeFromFields('u128', fields.reward_growth_global),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PoolRewardInfo {
-    if (!isPoolRewardInfo(item.type)) {
-      throw new Error('not a PoolRewardInfo type')
-    }
-
-    return PoolRewardInfo.reified().new({
-      rewardCoinType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_coin_type),
-      lastUpdateTime: decodeFromFieldsWithTypes('u64', item.fields.last_update_time),
-      endedAtSeconds: decodeFromFieldsWithTypes('u64', item.fields.ended_at_seconds),
-      totalReward: decodeFromFieldsWithTypes('u64', item.fields.total_reward),
-      totalRewardAllocated: decodeFromFieldsWithTypes('u64', item.fields.total_reward_allocated),
-      rewardPerSeconds: decodeFromFieldsWithTypes('u128', item.fields.reward_per_seconds),
-      rewardGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_global),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PoolRewardInfo {
-    return PoolRewardInfo.fromFields(PoolRewardInfo.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      rewardCoinType: this.rewardCoinType.toJSONField(),
-      lastUpdateTime: this.lastUpdateTime.toString(),
-      endedAtSeconds: this.endedAtSeconds.toString(),
-      totalReward: this.totalReward.toString(),
-      totalRewardAllocated: this.totalRewardAllocated.toString(),
-      rewardPerSeconds: this.rewardPerSeconds.toString(),
-      rewardGrowthGlobal: this.rewardGrowthGlobal.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PoolRewardInfo {
-    return PoolRewardInfo.reified().new({
-      rewardCoinType: decodeFromJSONField(TypeName.reified(), field.rewardCoinType),
-      lastUpdateTime: decodeFromJSONField('u64', field.lastUpdateTime),
-      endedAtSeconds: decodeFromJSONField('u64', field.endedAtSeconds),
-      totalReward: decodeFromJSONField('u64', field.totalReward),
-      totalRewardAllocated: decodeFromJSONField('u64', field.totalRewardAllocated),
-      rewardPerSeconds: decodeFromJSONField('u128', field.rewardPerSeconds),
-      rewardGrowthGlobal: decodeFromJSONField('u128', field.rewardGrowthGlobal),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PoolRewardInfo {
-    if (json.$typeName !== PoolRewardInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PoolRewardInfo.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PoolRewardInfo {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPoolRewardInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PoolRewardInfo object`)
-    }
-    return PoolRewardInfo.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PoolRewardInfo {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPoolRewardInfo(data.bcs.type)) {
-        throw new Error(`object at is not a PoolRewardInfo object`)
-      }
-
-      return PoolRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PoolRewardInfo.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PoolRewardInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PoolRewardInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolRewardInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PoolRewardInfo object`)
-    }
-
-    return PoolRewardInfo.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== Collect =============================== */
 
 export function isCollect(type: string): boolean {
@@ -2717,6 +2038,474 @@ export class Pay implements StructClass {
   }
 }
 
+/* ============================== Pool =============================== */
+
+export function isPool(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::pool::Pool` + '<')
+}
+
+export interface PoolFields<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument> {
+  id: ToField<UID>
+  coinTypeX: ToField<TypeName>
+  coinTypeY: ToField<TypeName>
+  sqrtPrice: ToField<'u128'>
+  tickIndex: ToField<I32>
+  observationIndex: ToField<'u64'>
+  observationCardinality: ToField<'u64'>
+  observationCardinalityNext: ToField<'u64'>
+  tickSpacing: ToField<'u32'>
+  maxLiquidityPerTick: ToField<'u128'>
+  protocolFeeRate: ToField<'u64'>
+  swapFeeRate: ToField<'u64'>
+  feeGrowthGlobalX: ToField<'u128'>
+  feeGrowthGlobalY: ToField<'u128'>
+  protocolFeeX: ToField<'u64'>
+  protocolFeeY: ToField<'u64'>
+  liquidity: ToField<'u128'>
+  ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
+  tickBitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
+  observations: ToField<Vector<Observation>>
+  locked: ToField<'bool'>
+  rewardInfos: ToField<Vector<PoolRewardInfo>>
+  reserveX: ToField<Balance<T0>>
+  reserveY: ToField<Balance<T1>>
+}
+
+export type PoolReified<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument> = Reified<
+  Pool<T0, T1>,
+  PoolFields<T0, T1>
+>
+
+export class Pool<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument>
+  implements StructClass
+{
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::Pool`
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [true, true] as const
+
+  readonly $typeName = Pool.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<T0>}, ${PhantomToTypeStr<T1>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>]
+  readonly $isPhantom = Pool.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly coinTypeX: ToField<TypeName>
+  readonly coinTypeY: ToField<TypeName>
+  readonly sqrtPrice: ToField<'u128'>
+  readonly tickIndex: ToField<I32>
+  readonly observationIndex: ToField<'u64'>
+  readonly observationCardinality: ToField<'u64'>
+  readonly observationCardinalityNext: ToField<'u64'>
+  readonly tickSpacing: ToField<'u32'>
+  readonly maxLiquidityPerTick: ToField<'u128'>
+  readonly protocolFeeRate: ToField<'u64'>
+  readonly swapFeeRate: ToField<'u64'>
+  readonly feeGrowthGlobalX: ToField<'u128'>
+  readonly feeGrowthGlobalY: ToField<'u128'>
+  readonly protocolFeeX: ToField<'u64'>
+  readonly protocolFeeY: ToField<'u64'>
+  readonly liquidity: ToField<'u128'>
+  readonly ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
+  readonly tickBitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
+  readonly observations: ToField<Vector<Observation>>
+  readonly locked: ToField<'bool'>
+  readonly rewardInfos: ToField<Vector<PoolRewardInfo>>
+  readonly reserveX: ToField<Balance<T0>>
+  readonly reserveY: ToField<Balance<T1>>
+
+  private constructor(
+    typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>],
+    fields: PoolFields<T0, T1>
+  ) {
+    this.$fullTypeName = composeSuiType(
+      Pool.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<T0>}, ${PhantomToTypeStr<T1>}>`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.coinTypeX = fields.coinTypeX
+    this.coinTypeY = fields.coinTypeY
+    this.sqrtPrice = fields.sqrtPrice
+    this.tickIndex = fields.tickIndex
+    this.observationIndex = fields.observationIndex
+    this.observationCardinality = fields.observationCardinality
+    this.observationCardinalityNext = fields.observationCardinalityNext
+    this.tickSpacing = fields.tickSpacing
+    this.maxLiquidityPerTick = fields.maxLiquidityPerTick
+    this.protocolFeeRate = fields.protocolFeeRate
+    this.swapFeeRate = fields.swapFeeRate
+    this.feeGrowthGlobalX = fields.feeGrowthGlobalX
+    this.feeGrowthGlobalY = fields.feeGrowthGlobalY
+    this.protocolFeeX = fields.protocolFeeX
+    this.protocolFeeY = fields.protocolFeeY
+    this.liquidity = fields.liquidity
+    this.ticks = fields.ticks
+    this.tickBitmap = fields.tickBitmap
+    this.observations = fields.observations
+    this.locked = fields.locked
+    this.rewardInfos = fields.rewardInfos
+    this.reserveX = fields.reserveX
+    this.reserveY = fields.reserveY
+  }
+
+  static reified<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(T0: T0, T1: T1): PoolReified<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    return {
+      typeName: Pool.$typeName,
+      fullTypeName: composeSuiType(
+        Pool.$typeName,
+        ...[extractType(T0), extractType(T1)]
+      ) as `${typeof PKG_V1}::pool::Pool<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<T1>>}>`,
+      typeArgs: [extractType(T0), extractType(T1)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<T0>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<T1>>,
+      ],
+      isPhantom: Pool.$isPhantom,
+      reifiedTypeArgs: [T0, T1],
+      fromFields: (fields: Record<string, any>) => Pool.fromFields([T0, T1], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Pool.fromFieldsWithTypes([T0, T1], item),
+      fromBcs: (data: Uint8Array) => Pool.fromBcs([T0, T1], data),
+      bcs: Pool.bcs,
+      fromJSONField: (field: any) => Pool.fromJSONField([T0, T1], field),
+      fromJSON: (json: Record<string, any>) => Pool.fromJSON([T0, T1], json),
+      fromSuiParsedData: (content: SuiParsedData) => Pool.fromSuiParsedData([T0, T1], content),
+      fromSuiObjectData: (content: SuiObjectData) => Pool.fromSuiObjectData([T0, T1], content),
+      fetch: async (client: SuiClient, id: string) => Pool.fetch(client, [T0, T1], id),
+      new: (fields: PoolFields<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>) => {
+        return new Pool([extractType(T0), extractType(T1)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Pool.reified
+  }
+
+  static phantom<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    T0: T0,
+    T1: T1
+  ): PhantomReified<ToTypeStr<Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>>> {
+    return phantom(Pool.reified(T0, T1))
+  }
+  static get p() {
+    return Pool.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('Pool', {
+      id: UID.bcs,
+      coin_type_x: TypeName.bcs,
+      coin_type_y: TypeName.bcs,
+      sqrt_price: bcs.u128(),
+      tick_index: I32.bcs,
+      observation_index: bcs.u64(),
+      observation_cardinality: bcs.u64(),
+      observation_cardinality_next: bcs.u64(),
+      tick_spacing: bcs.u32(),
+      max_liquidity_per_tick: bcs.u128(),
+      protocol_fee_rate: bcs.u64(),
+      swap_fee_rate: bcs.u64(),
+      fee_growth_global_x: bcs.u128(),
+      fee_growth_global_y: bcs.u128(),
+      protocol_fee_x: bcs.u64(),
+      protocol_fee_y: bcs.u64(),
+      liquidity: bcs.u128(),
+      ticks: Table.bcs,
+      tick_bitmap: Table.bcs,
+      observations: bcs.vector(Observation.bcs),
+      locked: bcs.bool(),
+      reward_infos: bcs.vector(PoolRewardInfo.bcs),
+      reserve_x: Balance.bcs,
+      reserve_y: Balance.bcs,
+    })
+  }
+
+  static fromFields<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    fields: Record<string, any>
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    return Pool.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      coinTypeX: decodeFromFields(TypeName.reified(), fields.coin_type_x),
+      coinTypeY: decodeFromFields(TypeName.reified(), fields.coin_type_y),
+      sqrtPrice: decodeFromFields('u128', fields.sqrt_price),
+      tickIndex: decodeFromFields(I32.reified(), fields.tick_index),
+      observationIndex: decodeFromFields('u64', fields.observation_index),
+      observationCardinality: decodeFromFields('u64', fields.observation_cardinality),
+      observationCardinalityNext: decodeFromFields('u64', fields.observation_cardinality_next),
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+      maxLiquidityPerTick: decodeFromFields('u128', fields.max_liquidity_per_tick),
+      protocolFeeRate: decodeFromFields('u64', fields.protocol_fee_rate),
+      swapFeeRate: decodeFromFields('u64', fields.swap_fee_rate),
+      feeGrowthGlobalX: decodeFromFields('u128', fields.fee_growth_global_x),
+      feeGrowthGlobalY: decodeFromFields('u128', fields.fee_growth_global_y),
+      protocolFeeX: decodeFromFields('u64', fields.protocol_fee_x),
+      protocolFeeY: decodeFromFields('u64', fields.protocol_fee_y),
+      liquidity: decodeFromFields('u128', fields.liquidity),
+      ticks: decodeFromFields(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        fields.ticks
+      ),
+      tickBitmap: decodeFromFields(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        fields.tick_bitmap
+      ),
+      observations: decodeFromFields(reified.vector(Observation.reified()), fields.observations),
+      locked: decodeFromFields('bool', fields.locked),
+      rewardInfos: decodeFromFields(reified.vector(PoolRewardInfo.reified()), fields.reward_infos),
+      reserveX: decodeFromFields(Balance.reified(typeArgs[0]), fields.reserve_x),
+      reserveY: decodeFromFields(Balance.reified(typeArgs[1]), fields.reserve_y),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    item: FieldsWithTypes
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    if (!isPool(item.type)) {
+      throw new Error('not a Pool type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return Pool.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      coinTypeX: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_x),
+      coinTypeY: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.coin_type_y),
+      sqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.sqrt_price),
+      tickIndex: decodeFromFieldsWithTypes(I32.reified(), item.fields.tick_index),
+      observationIndex: decodeFromFieldsWithTypes('u64', item.fields.observation_index),
+      observationCardinality: decodeFromFieldsWithTypes('u64', item.fields.observation_cardinality),
+      observationCardinalityNext: decodeFromFieldsWithTypes(
+        'u64',
+        item.fields.observation_cardinality_next
+      ),
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+      maxLiquidityPerTick: decodeFromFieldsWithTypes('u128', item.fields.max_liquidity_per_tick),
+      protocolFeeRate: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_rate),
+      swapFeeRate: decodeFromFieldsWithTypes('u64', item.fields.swap_fee_rate),
+      feeGrowthGlobalX: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global_x),
+      feeGrowthGlobalY: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_global_y),
+      protocolFeeX: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_x),
+      protocolFeeY: decodeFromFieldsWithTypes('u64', item.fields.protocol_fee_y),
+      liquidity: decodeFromFieldsWithTypes('u128', item.fields.liquidity),
+      ticks: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        item.fields.ticks
+      ),
+      tickBitmap: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        item.fields.tick_bitmap
+      ),
+      observations: decodeFromFieldsWithTypes(
+        reified.vector(Observation.reified()),
+        item.fields.observations
+      ),
+      locked: decodeFromFieldsWithTypes('bool', item.fields.locked),
+      rewardInfos: decodeFromFieldsWithTypes(
+        reified.vector(PoolRewardInfo.reified()),
+        item.fields.reward_infos
+      ),
+      reserveX: decodeFromFieldsWithTypes(Balance.reified(typeArgs[0]), item.fields.reserve_x),
+      reserveY: decodeFromFieldsWithTypes(Balance.reified(typeArgs[1]), item.fields.reserve_y),
+    })
+  }
+
+  static fromBcs<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    data: Uint8Array
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    return Pool.fromFields(typeArgs, Pool.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      coinTypeX: this.coinTypeX.toJSONField(),
+      coinTypeY: this.coinTypeY.toJSONField(),
+      sqrtPrice: this.sqrtPrice.toString(),
+      tickIndex: this.tickIndex.toJSONField(),
+      observationIndex: this.observationIndex.toString(),
+      observationCardinality: this.observationCardinality.toString(),
+      observationCardinalityNext: this.observationCardinalityNext.toString(),
+      tickSpacing: this.tickSpacing,
+      maxLiquidityPerTick: this.maxLiquidityPerTick.toString(),
+      protocolFeeRate: this.protocolFeeRate.toString(),
+      swapFeeRate: this.swapFeeRate.toString(),
+      feeGrowthGlobalX: this.feeGrowthGlobalX.toString(),
+      feeGrowthGlobalY: this.feeGrowthGlobalY.toString(),
+      protocolFeeX: this.protocolFeeX.toString(),
+      protocolFeeY: this.protocolFeeY.toString(),
+      liquidity: this.liquidity.toString(),
+      ticks: this.ticks.toJSONField(),
+      tickBitmap: this.tickBitmap.toJSONField(),
+      observations: fieldToJSON<Vector<Observation>>(
+        `vector<${Observation.$typeName}>`,
+        this.observations
+      ),
+      locked: this.locked,
+      rewardInfos: fieldToJSON<Vector<PoolRewardInfo>>(
+        `vector<${PoolRewardInfo.$typeName}>`,
+        this.rewardInfos
+      ),
+      reserveX: this.reserveX.toJSONField(),
+      reserveY: this.reserveY.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(typeArgs: [T0, T1], field: any): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    return Pool.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      coinTypeX: decodeFromJSONField(TypeName.reified(), field.coinTypeX),
+      coinTypeY: decodeFromJSONField(TypeName.reified(), field.coinTypeY),
+      sqrtPrice: decodeFromJSONField('u128', field.sqrtPrice),
+      tickIndex: decodeFromJSONField(I32.reified(), field.tickIndex),
+      observationIndex: decodeFromJSONField('u64', field.observationIndex),
+      observationCardinality: decodeFromJSONField('u64', field.observationCardinality),
+      observationCardinalityNext: decodeFromJSONField('u64', field.observationCardinalityNext),
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+      maxLiquidityPerTick: decodeFromJSONField('u128', field.maxLiquidityPerTick),
+      protocolFeeRate: decodeFromJSONField('u64', field.protocolFeeRate),
+      swapFeeRate: decodeFromJSONField('u64', field.swapFeeRate),
+      feeGrowthGlobalX: decodeFromJSONField('u128', field.feeGrowthGlobalX),
+      feeGrowthGlobalY: decodeFromJSONField('u128', field.feeGrowthGlobalY),
+      protocolFeeX: decodeFromJSONField('u64', field.protocolFeeX),
+      protocolFeeY: decodeFromJSONField('u64', field.protocolFeeY),
+      liquidity: decodeFromJSONField('u128', field.liquidity),
+      ticks: decodeFromJSONField(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        field.ticks
+      ),
+      tickBitmap: decodeFromJSONField(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        field.tickBitmap
+      ),
+      observations: decodeFromJSONField(reified.vector(Observation.reified()), field.observations),
+      locked: decodeFromJSONField('bool', field.locked),
+      rewardInfos: decodeFromJSONField(reified.vector(PoolRewardInfo.reified()), field.rewardInfos),
+      reserveX: decodeFromJSONField(Balance.reified(typeArgs[0]), field.reserveX),
+      reserveY: decodeFromJSONField(Balance.reified(typeArgs[1]), field.reserveY),
+    })
+  }
+
+  static fromJSON<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    json: Record<string, any>
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    if (json.$typeName !== Pool.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(Pool.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs
+    )
+
+    return Pool.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    content: SuiParsedData
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPool(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Pool object`)
+    }
+    return Pool.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T0, T1],
+    data: SuiObjectData
+  ): Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPool(data.bcs.type)) {
+        throw new Error(`object at is not a Pool object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+          )
+        }
+      }
+
+      return Pool.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Pool.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<
+    T0 extends PhantomReified<PhantomTypeArgument>,
+    T1 extends PhantomReified<PhantomTypeArgument>,
+  >(
+    client: SuiClient,
+    typeArgs: [T0, T1],
+    id: string
+  ): Promise<Pool<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Pool object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPool(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Pool object`)
+    }
+
+    return Pool.fromSuiObjectData(typeArgs, res.data)
+  }
+}
+
 /* ============================== PoolRewardCustodianDfKey =============================== */
 
 export function isPoolRewardCustodianDfKey(type: string): boolean {
@@ -2943,6 +2732,217 @@ export class PoolRewardCustodianDfKey<T0 extends PhantomTypeArgument> implements
     }
 
     return PoolRewardCustodianDfKey.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== PoolRewardInfo =============================== */
+
+export function isPoolRewardInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool::PoolRewardInfo`
+}
+
+export interface PoolRewardInfoFields {
+  rewardCoinType: ToField<TypeName>
+  lastUpdateTime: ToField<'u64'>
+  endedAtSeconds: ToField<'u64'>
+  totalReward: ToField<'u64'>
+  totalRewardAllocated: ToField<'u64'>
+  rewardPerSeconds: ToField<'u128'>
+  rewardGrowthGlobal: ToField<'u128'>
+}
+
+export type PoolRewardInfoReified = Reified<PoolRewardInfo, PoolRewardInfoFields>
+
+export class PoolRewardInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::PoolRewardInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PoolRewardInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::PoolRewardInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = PoolRewardInfo.$isPhantom
+
+  readonly rewardCoinType: ToField<TypeName>
+  readonly lastUpdateTime: ToField<'u64'>
+  readonly endedAtSeconds: ToField<'u64'>
+  readonly totalReward: ToField<'u64'>
+  readonly totalRewardAllocated: ToField<'u64'>
+  readonly rewardPerSeconds: ToField<'u128'>
+  readonly rewardGrowthGlobal: ToField<'u128'>
+
+  private constructor(typeArgs: [], fields: PoolRewardInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      PoolRewardInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::PoolRewardInfo`
+    this.$typeArgs = typeArgs
+
+    this.rewardCoinType = fields.rewardCoinType
+    this.lastUpdateTime = fields.lastUpdateTime
+    this.endedAtSeconds = fields.endedAtSeconds
+    this.totalReward = fields.totalReward
+    this.totalRewardAllocated = fields.totalRewardAllocated
+    this.rewardPerSeconds = fields.rewardPerSeconds
+    this.rewardGrowthGlobal = fields.rewardGrowthGlobal
+  }
+
+  static reified(): PoolRewardInfoReified {
+    return {
+      typeName: PoolRewardInfo.$typeName,
+      fullTypeName: composeSuiType(
+        PoolRewardInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool::PoolRewardInfo`,
+      typeArgs: [] as [],
+      isPhantom: PoolRewardInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PoolRewardInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolRewardInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PoolRewardInfo.fromBcs(data),
+      bcs: PoolRewardInfo.bcs,
+      fromJSONField: (field: any) => PoolRewardInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PoolRewardInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PoolRewardInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PoolRewardInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PoolRewardInfo.fetch(client, id),
+      new: (fields: PoolRewardInfoFields) => {
+        return new PoolRewardInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PoolRewardInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PoolRewardInfo>> {
+    return phantom(PoolRewardInfo.reified())
+  }
+  static get p() {
+    return PoolRewardInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PoolRewardInfo', {
+      reward_coin_type: TypeName.bcs,
+      last_update_time: bcs.u64(),
+      ended_at_seconds: bcs.u64(),
+      total_reward: bcs.u64(),
+      total_reward_allocated: bcs.u64(),
+      reward_per_seconds: bcs.u128(),
+      reward_growth_global: bcs.u128(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PoolRewardInfo {
+    return PoolRewardInfo.reified().new({
+      rewardCoinType: decodeFromFields(TypeName.reified(), fields.reward_coin_type),
+      lastUpdateTime: decodeFromFields('u64', fields.last_update_time),
+      endedAtSeconds: decodeFromFields('u64', fields.ended_at_seconds),
+      totalReward: decodeFromFields('u64', fields.total_reward),
+      totalRewardAllocated: decodeFromFields('u64', fields.total_reward_allocated),
+      rewardPerSeconds: decodeFromFields('u128', fields.reward_per_seconds),
+      rewardGrowthGlobal: decodeFromFields('u128', fields.reward_growth_global),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PoolRewardInfo {
+    if (!isPoolRewardInfo(item.type)) {
+      throw new Error('not a PoolRewardInfo type')
+    }
+
+    return PoolRewardInfo.reified().new({
+      rewardCoinType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_coin_type),
+      lastUpdateTime: decodeFromFieldsWithTypes('u64', item.fields.last_update_time),
+      endedAtSeconds: decodeFromFieldsWithTypes('u64', item.fields.ended_at_seconds),
+      totalReward: decodeFromFieldsWithTypes('u64', item.fields.total_reward),
+      totalRewardAllocated: decodeFromFieldsWithTypes('u64', item.fields.total_reward_allocated),
+      rewardPerSeconds: decodeFromFieldsWithTypes('u128', item.fields.reward_per_seconds),
+      rewardGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_global),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PoolRewardInfo {
+    return PoolRewardInfo.fromFields(PoolRewardInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      rewardCoinType: this.rewardCoinType.toJSONField(),
+      lastUpdateTime: this.lastUpdateTime.toString(),
+      endedAtSeconds: this.endedAtSeconds.toString(),
+      totalReward: this.totalReward.toString(),
+      totalRewardAllocated: this.totalRewardAllocated.toString(),
+      rewardPerSeconds: this.rewardPerSeconds.toString(),
+      rewardGrowthGlobal: this.rewardGrowthGlobal.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PoolRewardInfo {
+    return PoolRewardInfo.reified().new({
+      rewardCoinType: decodeFromJSONField(TypeName.reified(), field.rewardCoinType),
+      lastUpdateTime: decodeFromJSONField('u64', field.lastUpdateTime),
+      endedAtSeconds: decodeFromJSONField('u64', field.endedAtSeconds),
+      totalReward: decodeFromJSONField('u64', field.totalReward),
+      totalRewardAllocated: decodeFromJSONField('u64', field.totalRewardAllocated),
+      rewardPerSeconds: decodeFromJSONField('u128', field.rewardPerSeconds),
+      rewardGrowthGlobal: decodeFromJSONField('u128', field.rewardGrowthGlobal),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PoolRewardInfo {
+    if (json.$typeName !== PoolRewardInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PoolRewardInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PoolRewardInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPoolRewardInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PoolRewardInfo object`)
+    }
+    return PoolRewardInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PoolRewardInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPoolRewardInfo(data.bcs.type)) {
+        throw new Error(`object at is not a PoolRewardInfo object`)
+      }
+
+      return PoolRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PoolRewardInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PoolRewardInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PoolRewardInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolRewardInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PoolRewardInfo object`)
+    }
+
+    return PoolRewardInfo.fromSuiObjectData(res.data)
   }
 }
 

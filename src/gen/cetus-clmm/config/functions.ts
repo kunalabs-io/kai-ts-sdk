@@ -155,6 +155,18 @@ export function getProtocolFeeRate(tx: Transaction, globalConfig: TransactionObj
   })
 }
 
+export interface IsPoolManagerArgs {
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+}
+
+export function isPoolManager(tx: Transaction, args: IsPoolManagerArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::is_pool_manager`,
+    arguments: [obj(tx, args.config), pure(tx, args.member, `address`)],
+  })
+}
+
 export function maxFeeRate(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::config::max_fee_rate`, arguments: [] })
 }

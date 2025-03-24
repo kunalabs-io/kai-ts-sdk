@@ -19,6 +19,188 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== FeeRateEnabled =============================== */
+
+export function isFeeRateEnabled(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool_manager::FeeRateEnabled`
+}
+
+export interface FeeRateEnabledFields {
+  sender: ToField<'address'>
+  feeRate: ToField<'u64'>
+  tickSpacing: ToField<'u32'>
+}
+
+export type FeeRateEnabledReified = Reified<FeeRateEnabled, FeeRateEnabledFields>
+
+export class FeeRateEnabled implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool_manager::FeeRateEnabled`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FeeRateEnabled.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool_manager::FeeRateEnabled`
+  readonly $typeArgs: []
+  readonly $isPhantom = FeeRateEnabled.$isPhantom
+
+  readonly sender: ToField<'address'>
+  readonly feeRate: ToField<'u64'>
+  readonly tickSpacing: ToField<'u32'>
+
+  private constructor(typeArgs: [], fields: FeeRateEnabledFields) {
+    this.$fullTypeName = composeSuiType(
+      FeeRateEnabled.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool_manager::FeeRateEnabled`
+    this.$typeArgs = typeArgs
+
+    this.sender = fields.sender
+    this.feeRate = fields.feeRate
+    this.tickSpacing = fields.tickSpacing
+  }
+
+  static reified(): FeeRateEnabledReified {
+    return {
+      typeName: FeeRateEnabled.$typeName,
+      fullTypeName: composeSuiType(
+        FeeRateEnabled.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool_manager::FeeRateEnabled`,
+      typeArgs: [] as [],
+      isPhantom: FeeRateEnabled.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FeeRateEnabled.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FeeRateEnabled.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FeeRateEnabled.fromBcs(data),
+      bcs: FeeRateEnabled.bcs,
+      fromJSONField: (field: any) => FeeRateEnabled.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FeeRateEnabled.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FeeRateEnabled.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FeeRateEnabled.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FeeRateEnabled.fetch(client, id),
+      new: (fields: FeeRateEnabledFields) => {
+        return new FeeRateEnabled([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FeeRateEnabled.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FeeRateEnabled>> {
+    return phantom(FeeRateEnabled.reified())
+  }
+  static get p() {
+    return FeeRateEnabled.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FeeRateEnabled', {
+      sender: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      fee_rate: bcs.u64(),
+      tick_spacing: bcs.u32(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FeeRateEnabled {
+    return FeeRateEnabled.reified().new({
+      sender: decodeFromFields('address', fields.sender),
+      feeRate: decodeFromFields('u64', fields.fee_rate),
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FeeRateEnabled {
+    if (!isFeeRateEnabled(item.type)) {
+      throw new Error('not a FeeRateEnabled type')
+    }
+
+    return FeeRateEnabled.reified().new({
+      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
+      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FeeRateEnabled {
+    return FeeRateEnabled.fromFields(FeeRateEnabled.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      sender: this.sender,
+      feeRate: this.feeRate.toString(),
+      tickSpacing: this.tickSpacing,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FeeRateEnabled {
+    return FeeRateEnabled.reified().new({
+      sender: decodeFromJSONField('address', field.sender),
+      feeRate: decodeFromJSONField('u64', field.feeRate),
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FeeRateEnabled {
+    if (json.$typeName !== FeeRateEnabled.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FeeRateEnabled.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FeeRateEnabled {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFeeRateEnabled(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FeeRateEnabled object`)
+    }
+    return FeeRateEnabled.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FeeRateEnabled {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFeeRateEnabled(data.bcs.type)) {
+        throw new Error(`object at is not a FeeRateEnabled object`)
+      }
+
+      return FeeRateEnabled.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FeeRateEnabled.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FeeRateEnabled> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FeeRateEnabled object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFeeRateEnabled(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FeeRateEnabled object`)
+    }
+
+    return FeeRateEnabled.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== PoolCreated =============================== */
 
 export function isPoolCreated(type: string): boolean {
@@ -222,188 +404,6 @@ export class PoolCreated implements StructClass {
     }
 
     return PoolCreated.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== FeeRateEnabled =============================== */
-
-export function isFeeRateEnabled(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool_manager::FeeRateEnabled`
-}
-
-export interface FeeRateEnabledFields {
-  sender: ToField<'address'>
-  feeRate: ToField<'u64'>
-  tickSpacing: ToField<'u32'>
-}
-
-export type FeeRateEnabledReified = Reified<FeeRateEnabled, FeeRateEnabledFields>
-
-export class FeeRateEnabled implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool_manager::FeeRateEnabled`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = FeeRateEnabled.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool_manager::FeeRateEnabled`
-  readonly $typeArgs: []
-  readonly $isPhantom = FeeRateEnabled.$isPhantom
-
-  readonly sender: ToField<'address'>
-  readonly feeRate: ToField<'u64'>
-  readonly tickSpacing: ToField<'u32'>
-
-  private constructor(typeArgs: [], fields: FeeRateEnabledFields) {
-    this.$fullTypeName = composeSuiType(
-      FeeRateEnabled.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool_manager::FeeRateEnabled`
-    this.$typeArgs = typeArgs
-
-    this.sender = fields.sender
-    this.feeRate = fields.feeRate
-    this.tickSpacing = fields.tickSpacing
-  }
-
-  static reified(): FeeRateEnabledReified {
-    return {
-      typeName: FeeRateEnabled.$typeName,
-      fullTypeName: composeSuiType(
-        FeeRateEnabled.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool_manager::FeeRateEnabled`,
-      typeArgs: [] as [],
-      isPhantom: FeeRateEnabled.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FeeRateEnabled.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => FeeRateEnabled.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FeeRateEnabled.fromBcs(data),
-      bcs: FeeRateEnabled.bcs,
-      fromJSONField: (field: any) => FeeRateEnabled.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FeeRateEnabled.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => FeeRateEnabled.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => FeeRateEnabled.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FeeRateEnabled.fetch(client, id),
-      new: (fields: FeeRateEnabledFields) => {
-        return new FeeRateEnabled([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FeeRateEnabled.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<FeeRateEnabled>> {
-    return phantom(FeeRateEnabled.reified())
-  }
-  static get p() {
-    return FeeRateEnabled.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('FeeRateEnabled', {
-      sender: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      fee_rate: bcs.u64(),
-      tick_spacing: bcs.u32(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): FeeRateEnabled {
-    return FeeRateEnabled.reified().new({
-      sender: decodeFromFields('address', fields.sender),
-      feeRate: decodeFromFields('u64', fields.fee_rate),
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): FeeRateEnabled {
-    if (!isFeeRateEnabled(item.type)) {
-      throw new Error('not a FeeRateEnabled type')
-    }
-
-    return FeeRateEnabled.reified().new({
-      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
-      feeRate: decodeFromFieldsWithTypes('u64', item.fields.fee_rate),
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): FeeRateEnabled {
-    return FeeRateEnabled.fromFields(FeeRateEnabled.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      sender: this.sender,
-      feeRate: this.feeRate.toString(),
-      tickSpacing: this.tickSpacing,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): FeeRateEnabled {
-    return FeeRateEnabled.reified().new({
-      sender: decodeFromJSONField('address', field.sender),
-      feeRate: decodeFromJSONField('u64', field.feeRate),
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): FeeRateEnabled {
-    if (json.$typeName !== FeeRateEnabled.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return FeeRateEnabled.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): FeeRateEnabled {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFeeRateEnabled(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FeeRateEnabled object`)
-    }
-    return FeeRateEnabled.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): FeeRateEnabled {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFeeRateEnabled(data.bcs.type)) {
-        throw new Error(`object at is not a FeeRateEnabled object`)
-      }
-
-      return FeeRateEnabled.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FeeRateEnabled.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<FeeRateEnabled> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FeeRateEnabled object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFeeRateEnabled(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FeeRateEnabled object`)
-    }
-
-    return FeeRateEnabled.fromSuiObjectData(res.data)
   }
 }
 

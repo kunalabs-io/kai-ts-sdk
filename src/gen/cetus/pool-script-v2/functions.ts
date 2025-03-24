@@ -95,6 +95,32 @@ export function closePosition(
   })
 }
 
+export interface ClosePositionWithReturnArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function closePositionWithReturn(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ClosePositionWithReturnArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::close_position_with_return`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.bool, `bool`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface CollectFeeArgs {
   globalConfig: TransactionObjectInput
   pool: TransactionObjectInput
