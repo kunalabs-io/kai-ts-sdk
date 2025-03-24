@@ -231,6 +231,23 @@ export interface GetInterestRatesArgs<
   timestampMs?: number
 }
 
+export interface CalcEffectiveInterestRateArgs<
+  X extends PhantomTypeArgument,
+  Y extends PhantomTypeArgument,
+> {
+  /** The current pool price */
+  poolPrice: Price<X, Y>
+  /** The X supply pool data */
+  supplyPoolX: SupplyPool<X, PhantomTypeArgument>
+  /** The Y supply pool data */
+  supplyPoolY: SupplyPool<Y, PhantomTypeArgument>
+  /**
+   * Optional unix timestamp (ms) to simulate current supply pool state considering interest accrued since
+   * last supply pool update.
+   */
+  timestampMs?: number
+}
+
 export interface CalcReduceAmountsArgs<
   X extends PhantomTypeArgument,
   Y extends PhantomTypeArgument,
@@ -1086,6 +1103,44 @@ export class Position<
           .toString()
       ).div(10000),
     }
+  }
+
+  /**
+   * Calculates the weighted average interest rate across both debt positions.
+   * The rate is weighted by the value of each debt position.
+   * Returns 0 if there is no debt.
+   *
+   * @param args - Contains supplyPoolX, supplyPoolY, timestampMs and poolPrice for the calculation
+   * @returns The effective interest rate as a decimal (e.g. 0.05 = 5%)
+   */
+  calcEffectiveInterestRate(args: CalcEffectiveInterestRateArgs<X, Y>): number {
+    const dx = args.supplyPoolX.calcDebtByShares(
+      this.configInfo.lendFacilCap,
+      this.debtSharesX,
+      args.timestampMs
+    )
+    const dy = args.supplyPoolY.calcDebtByShares(
+      this.configInfo.lendFacilCap,
+      this.debtSharesY,
+      args.timestampMs
+    )
+    if (dx.int === 0n && dy.int === 0n) {
+      return 0
+    }
+
+    const ir = this.getInterestRates(args)
+
+    const dxValue = dx.toNumber() * args.poolPrice.human.toNumber()
+    const dyValue = dy.toNumber()
+
+    const interestValue = dxValue * ir.x.toNumber() + dyValue * ir.y.toNumber()
+    const debtValue = dxValue + dyValue
+
+    if (debtValue === 0) {
+      return 0
+    }
+
+    return interestValue / debtValue
   }
 
   /**
