@@ -467,7 +467,9 @@ export const VAULTS: VaultInfoMap = {
   }),
 }
 
-export function findVaultInfoById(id: string): VaultInfo<PhantomTypeArgument, PhantomTypeArgument> {
+export function findVaultInfoById(
+  id: string
+): VaultInfo<PhantomTypeArgument, PhantomTypeArgument> | undefined {
   const normalizedId = normalizeSuiObjectId(id)
   return Object.values(VAULTS).find(v => v.id === normalizedId) as VaultInfo<
     PhantomTypeArgument,
