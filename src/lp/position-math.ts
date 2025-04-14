@@ -196,6 +196,20 @@ export class PositionMath {
     return L.mul(sqrtP.sub(sqrtPa))
   }
 
+  static calcLiqFromAmountX(pa: Decimal, pb: Decimal, p: Decimal, amountX: Decimal) {
+    const sqrtP = Decimal.max(Decimal.min(p, pb), pa).sqrt()
+    const sqrtPb = pb.sqrt()
+
+    return amountX.mul(sqrtP.mul(sqrtPb)).div(sqrtPb.sub(sqrtP))
+  }
+
+  static calcLiqFromAmountY(pa: Decimal, pb: Decimal, p: Decimal, amountY: Decimal) {
+    const sqrtP = Decimal.max(Decimal.min(p, pb), pa).sqrt()
+    const sqrtPa = pa.sqrt()
+
+    return amountY.div(sqrtP.sub(sqrtPa))
+  }
+
   X(p: Decimal) {
     return PositionMath.X(this.pa, this.pb, p, this.L)
   }
