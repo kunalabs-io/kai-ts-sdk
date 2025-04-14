@@ -927,6 +927,30 @@ export const POSITION_CONFIG_INFOS: Array<
     isReversedPair: false,
     rewardCoins: [SUI, DEEP],
   }),
+  new PositionConfigInfo({
+    name: 'Bluefin DEEP/SUI',
+    configId: '0x3bcfc891da3c64c846cbba27238554fa5b123812b45a8c7f251e27bf7c1fa793',
+    poolObjectId: '0x1b06371d74082856a1be71760cf49f6a377d050eb57afd017f203e89b09c89a2',
+    lendFacilCap: '0x5a530999b7eacf75bfb592647b91da2da80f2722af80c83582be06cbaed238ef',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.DEEP as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: DEEPPioInfo,
+    pioInfoY: suiPioInfo,
+    positionReified: Position_.r(DEEP.p, SUI.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [BLUE, DEEP],
+  }),
 ]
 
 /**
