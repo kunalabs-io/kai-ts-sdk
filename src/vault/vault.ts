@@ -33,11 +33,13 @@ import {
   whUSDTe,
   yDEEP,
   ySUI,
-  ysuiUSDT,
-  yUSDC,
+  paused_ysuiUSDT,
+  paused_yUSDC,
   yUSDY,
   yWHUSDCe,
   yWHUSDTe,
+  ysuiUSDT,
+  yUSDC,
 } from '../coin-info'
 import { SUPPLY_POOL_STRATEGY_INFOS } from './kai-leverage-supply-pool-strategy'
 
@@ -398,11 +400,14 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
 
 export type VaultInfoMap = {
   SUI: VaultInfo<ToPhantomTypeArgument<typeof SUI.p>, ToPhantomTypeArgument<typeof ySUI.p>>
-  suiUSDT: VaultInfo<
+  paused_suiUSDT: VaultInfo<
     ToPhantomTypeArgument<typeof suiUSDT.p>,
-    ToPhantomTypeArgument<typeof ysuiUSDT.p>
+    ToPhantomTypeArgument<typeof paused_ysuiUSDT.p>
   >
-  USDC: VaultInfo<ToPhantomTypeArgument<typeof USDC.p>, ToPhantomTypeArgument<typeof yUSDC.p>>
+  paused_USDC: VaultInfo<
+    ToPhantomTypeArgument<typeof USDC.p>,
+    ToPhantomTypeArgument<typeof paused_yUSDC.p>
+  >
   wUSDC: VaultInfo<
     ToPhantomTypeArgument<typeof whUSDCe.p>,
     ToPhantomTypeArgument<typeof yWHUSDCe.p>
@@ -413,6 +418,11 @@ export type VaultInfoMap = {
   >
   USDY: VaultInfo<ToPhantomTypeArgument<typeof USDY.p>, ToPhantomTypeArgument<typeof yUSDY.p>>
   DEEP: VaultInfo<ToPhantomTypeArgument<typeof DEEP.p>, ToPhantomTypeArgument<typeof yDEEP.p>>
+  suiUSDT: VaultInfo<
+    ToPhantomTypeArgument<typeof suiUSDT.p>,
+    ToPhantomTypeArgument<typeof ysuiUSDT.p>
+  >
+  USDC: VaultInfo<ToPhantomTypeArgument<typeof USDC.p>, ToPhantomTypeArgument<typeof yUSDC.p>>
 }
 
 export const VAULTS: VaultInfoMap = {
@@ -423,19 +433,19 @@ export const VAULTS: VaultInfoMap = {
     capId: '0xaed5c591e1f09492e3e1cc53e426f937eb20b70497db9b7861bebfb4e72ada43',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.SUI],
   }),
-  suiUSDT: new VaultInfo({
+  paused_suiUSDT: new VaultInfo({
     T: suiUSDT,
-    YT: ysuiUSDT,
+    YT: paused_ysuiUSDT,
     id: '0x7a2e56773ad4d9bd4133c67ed0ae60187f00169b584a55c0204175897e41d166',
     capId: '0xa5d2b5a621949750625a9a15eeb809140dd009a8c4c40633a17af464d101c939',
-    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.suiUSDT],
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.paused_suiUSDT],
   }),
-  USDC: new VaultInfo({
+  paused_USDC: new VaultInfo({
     T: USDC,
-    YT: yUSDC,
+    YT: paused_yUSDC,
     id: '0x5663035df5f403ad5a015cc2a3264de30370650bc043c4dab4d0012ea5cb7671',
     capId: '0x00ca521183614612f6e4f4d4ef119da937e8e15d47b74be8ab2621db8f34c016',
-    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDC],
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.paused_USDC],
   }),
   wUSDC: new VaultInfo({
     T: whUSDCe,
@@ -464,6 +474,20 @@ export const VAULTS: VaultInfoMap = {
     id: '0x6e58792dccbaa1d1d708d9a847a7c5b3f90c7878d1b76fd79afa48d31063bca6',
     capId: '0x09e7e4bbf7e8142b8f961152bc0dd919dd30743274090d2866097957901291b0',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.DEEP],
+  }),
+  suiUSDT: new VaultInfo({
+    T: suiUSDT,
+    YT: ysuiUSDT,
+    id: '0xbfcab5f22e253be0768e2cc5e75e170c5266edf7b68c813af0d676e84285681c',
+    capId: '0xc6d6095dca076134ccdbe096c3dbbd7fc852734df1ed54323befac642883bdb6',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.suiUSDT],
+  }),
+  USDC: new VaultInfo({
+    T: USDC,
+    YT: yUSDC,
+    id: '0x3e8a6d1e29d2c86aed50d6055863b878a7dd382de22ea168177c80c1d7150061',
+    capId: '0xc9df4eb15095a6ace5d39430dc762e387e8842c907e78ea86445c51d62a0439d',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDC],
   }),
 }
 

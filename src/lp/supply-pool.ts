@@ -22,8 +22,8 @@ import {
   DEEP,
   klDEEP,
   klSui,
-  klSuiUSDT,
-  klUsdc,
+  paused_klSuiUSDT,
+  paused_klUsdc,
   klUSDY,
   klwhUSDCe,
   klwhUSDTe,
@@ -33,6 +33,8 @@ import {
   USDY,
   whUSDCe,
   whUSDTe,
+  klUSDC,
+  klSuiUSDT,
 } from '../coin-info'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
@@ -363,15 +365,15 @@ export const SUPPLY_POOL_INFOS = {
     T: SUI,
     ST: klSui,
   }),
-  USDC: new SupplyPoolInfo({
+  paused_USDC: new SupplyPoolInfo({
     id: '0x3bcadd850b776542b49be5d68d2e62b63f3c7543695c55a973d3364501b5c26c',
     T: USDC,
-    ST: klUsdc,
+    ST: paused_klUsdc,
   }),
-  suiUSDT: new SupplyPoolInfo({
+  paused_suiUSDT: new SupplyPoolInfo({
     id: '0xd03330033b6eda49e06d024240511736ffbad31278112cdd5c43c97be6d5535b',
     T: suiUSDT,
-    ST: klSuiUSDT,
+    ST: paused_klSuiUSDT,
   }),
   USDY: new SupplyPoolInfo({
     id: '0x23e210027526cf299898f6a470b435cb2afb5c2cb63990e0cad5568ad38beb79',
@@ -382,5 +384,15 @@ export const SUPPLY_POOL_INFOS = {
     id: '0x2d001b7f8c8a08f99a4a13fcbaff7feaeac8447741791a2bcd664611cf819ee2',
     T: DEEP,
     ST: klDEEP,
+  }),
+  USDC: new SupplyPoolInfo({
+    id: '0x36162005c3f6ac0875c5b13afe1298d9640234ef305ef8cb2e80cb17cf2bef14',
+    T: USDC,
+    ST: klUSDC,
+  }),
+  suiUSDT: new SupplyPoolInfo({
+    id: '0x366b4d73bd615c149bba8a8d6fbf69dabd0f55887f0bb6c3da5de12c566a614a',
+    T: suiUSDT,
+    ST: klSuiUSDT,
   }),
 }

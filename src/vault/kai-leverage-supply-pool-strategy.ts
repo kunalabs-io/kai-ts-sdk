@@ -75,12 +75,12 @@ export class KaiLeverageSupplyPoolStrategyInfo<
 }
 
 export const SUPPLY_POOL_STRATEGY_INFOS = {
-  USDC: new KaiLeverageSupplyPoolStrategyInfo({
+  paused_USDC: new KaiLeverageSupplyPoolStrategyInfo({
     name: 'Kai Leverage USDC Supply Pool Strategy',
     id: '0x5ac0bf02e51822853e18687745c56c3aa69c328e6a7a6b421e1db1c22ee0e854',
-    vault: VAULTS.USDC,
+    vault: VAULTS.paused_USDC,
     adminCapId: '0xdf6041af4a5b49b6ca89ad713a57e5bdac062943a5c60aecc2ebb0eb238f0dfa',
-    supplyPoolInfo: SUPPLY_POOL_INFOS.USDC,
+    supplyPoolInfo: SUPPLY_POOL_INFOS.paused_USDC,
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
@@ -111,12 +111,12 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
-  suiUSDT: new KaiLeverageSupplyPoolStrategyInfo({
+  paused_suiUSDT: new KaiLeverageSupplyPoolStrategyInfo({
     name: 'Kai Leverage suiUSDT Supply Pool Strategy',
     id: '0x092c8822985c26b96cfefa05cb6bbf061cce42f139d9518042ecd55adaa4ce53',
-    vault: VAULTS.suiUSDT,
+    vault: VAULTS.paused_suiUSDT,
     adminCapId: '0xfc266e9294dc98c0a3392a93c523bbb10e6a96e972d84df2c04b11e94dc02043',
-    supplyPoolInfo: SUPPLY_POOL_INFOS.suiUSDT,
+    supplyPoolInfo: SUPPLY_POOL_INFOS.paused_suiUSDT,
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
@@ -135,6 +135,24 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     vault: VAULTS.DEEP,
     adminCapId: '0xc7d3197ec316ade31b8d97971c648bc4ddb83055769d9daced6c48f87e7eb27a',
     supplyPoolInfo: SUPPLY_POOL_INFOS.DEEP,
+    policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+    ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+  }),
+  USDC: new KaiLeverageSupplyPoolStrategyInfo({
+    name: 'Kai Leverage USDC Supply Pool Strategy',
+    id: '0x4974f5d24f3e23fdeea98ff259446bd086e1e3a0d4aefc0c2f5d0e74919991f1',
+    vault: VAULTS.USDC,
+    adminCapId: '0xb8bed31b5a06cf96238814e14d8aa409ed850425234c6d8c38a2eb5e4ee6df48',
+    supplyPoolInfo: SUPPLY_POOL_INFOS.USDC,
+    policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+    ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+  }),
+  suiUSDT: new KaiLeverageSupplyPoolStrategyInfo({
+    name: 'Kai Leverage suiUSDT Supply Pool Strategy',
+    id: '0xb606452ef941a91dae4d6bf21c4e2ba82b309377570aea151d8ec62ec234f7b6',
+    vault: VAULTS.suiUSDT,
+    adminCapId: '0xef3360ea34d221906ee481809bc8b3c7bd6776ccbe16a20770172d60110ae387',
+    supplyPoolInfo: SUPPLY_POOL_INFOS.suiUSDT,
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),

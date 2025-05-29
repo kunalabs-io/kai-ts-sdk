@@ -14,7 +14,7 @@ import { SupplyPool, SupplyPoolInfo, SUPPLY_POOL_INFOS } from './supply-pool'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
 import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
 import { Position } from './position'
-import { SuiClient } from '@mysten/sui/client'
+import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { Pool as CetusPool, isPool as isCetusPool } from '../gen/cetus-clmm/pool/structs'
 import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin-spot/pool/structs'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
@@ -427,6 +427,16 @@ export class PositionConfig<
   }
 
   /**
+   * Creates a PositionConfig instance from its SuiObjectData
+   *
+   * @param data -  The SuiObjectData struct to create the PositionConfig instance from.
+   * @returns `PositionConfig`
+   */
+  static fromSuiObjectData(data: SuiObjectData) {
+    return PositionConfig.fromData(PositionConfig_.fromSuiObjectData(data))
+  }
+
+  /**
    * @returns `minLiqStartPriceDelta` as a decimal number
    */
   get minLiqStartPriceDelta(): Decimal {
@@ -764,7 +774,7 @@ export const POSITION_CONFIG_INFOS: Array<
     configId: '0xc64d5b0102b85b823d8f8ae5685ea1c153d1c18dcf13a4719798fdf591a9a1b9',
     poolObjectId: '0x6bd72983b0b5a77774af8c77567bb593b418ae3cd750a5926814fcd236409aaa',
     lendFacilCap: '0x085807ffff95935d311a714cdffa0d10ec7dc80e6bd393cee2b644f6aece5b01',
-    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -788,7 +798,7 @@ export const POSITION_CONFIG_INFOS: Array<
     configId: '0xd6a055c8143f2bb97fdcb34f91ac723708d71473e7dff670a9a2218cc91eab16',
     poolObjectId: '0xb8d7d9e66a60c239e7a60110efcf8de6c705580ed924d0dde141f4a0e2c90105',
     lendFacilCap: '0x590468991d9ed6993953e46dad98b9ec5b003ce99d213346b4349c12880547b2',
-    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -816,7 +826,7 @@ export const POSITION_CONFIG_INFOS: Array<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
-    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -836,11 +846,11 @@ export const POSITION_CONFIG_INFOS: Array<
     configId: '0x60161ddff3225cad16905d659d938007c3d6baa8f64e27fc6f503cee05d0feca',
     poolObjectId: '0x7df346f8ef98ad20869ff6d2fc7c43c00403a524987509091b39ce61dde00957',
     lendFacilCap: '0x3b8a017eaab8877a5869c489745b626946c3f5e269289ddfb846b4fa3308889a',
-    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
-    supplyPoolYInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.paused_suiUSDT as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -856,15 +866,15 @@ export const POSITION_CONFIG_INFOS: Array<
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
-    name: 'Bluefin suiUSDT/USDC',
+    name: 'Bluefin suiUSDT/USDC 0.01%',
     configId: '0x888fcd428659608b1adb45790f65dfbac4352150f67d6312f0c0a5f1f9b04692',
     poolObjectId: '0x0bd95d012d60190a6713ae51f2d833b24ae70c5fb07fcfb41db40f25549878b1',
     lendFacilCap: '0x7c8a25b51defa6a5802d2ec5ab2e8b5a4b605545c0e4d5285ee2cb6893804eb8',
-    supplyPoolXInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.paused_suiUSDT as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
-    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -884,7 +894,7 @@ export const POSITION_CONFIG_INFOS: Array<
     configId: '0x570b46aa3b355305d36e1921c6a5070c76b51e56859b0bde0b6bc0598a89381d',
     poolObjectId: '0xdcd762ad374686fa890fc4f3b9bbfe2a244e713d7bffbfbd1b9221cb290da2ed',
     lendFacilCap: '0xf4ea7f418929fba73b46f8a842a988470a93588c60e17f07a7a01cca05104ef3',
-    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.paused_USDC as SupplyPoolInfo<
       PhantomTypeArgument,
       PhantomTypeArgument
     >,
@@ -951,6 +961,78 @@ export const POSITION_CONFIG_INFOS: Array<
     isReversedPair: false,
     rewardCoins: [BLUE, DEEP],
   }),
+  new PositionConfigInfo({
+    name: 'Bluefin suiUSDT/USDC 0.01%',
+    configId: '0xf18480cd0b57e0e33542129868712660c27c0b8a60212f587fbe7fde1ba982ef',
+    poolObjectId: '0x0bd95d012d60190a6713ae51f2d833b24ae70c5fb07fcfb41db40f25549878b1',
+    lendFacilCap: '0x31717802305a5ad32d74f287ef4e95844f1945ab5e14e614665a4c2a5dbaff5e',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: suiUsdtPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(suiUSDT.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [BLUE, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin suiUSDT/USDC 0.001%',
+    configId: '0xb1eafb450f32c369e63a90f6609fd8c75f34f818594a67f1a1a1ba707811e767',
+    poolObjectId: '0x62af128423465822e5a0979ccad2b0b5ee50a58c6a2c8ea3dd7fda1cda3cfbe7',
+    lendFacilCap: '0x968fc192b48864825c6b5c3c363544bb55abdef234891135de4ebc5f818a7729',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: suiUsdtPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(suiUSDT.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [BLUE, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin SUI/USDC',
+    configId: '0x97d0b302207ebe0581a8c8b072fa302a41b8db2fa86baadd750fd1f2fc9cdf92',
+    poolObjectId: '0x3b585786b13af1d8ea067ab37101b6513a05d2f90cfe60e8b1d9e1b46a63c4fa',
+    lendFacilCap: '0x65e1f3a32a05c8d5ef8e32555d21f18214b1393d7007d6b502c8cc19157816bc',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: suiPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(SUI.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [stSUI, BLUE],
+  }),
 ]
 
 /**
@@ -959,14 +1041,21 @@ export const POSITION_CONFIG_INFOS: Array<
  * @param type - The position type
  * @returns `PositionConfigInfo`
  */
-export function findConfigInfoForPositionType(type: string) {
+export function findConfigInfoForPositionBcs(bcs: Uint8Array, type: string) {
   if (!isPosition(type)) {
     throw new Error(`${type} is not a Position type`)
   }
 
-  return POSITION_CONFIG_INFOS.find(info => {
+  const info = POSITION_CONFIG_INFOS.find(info => {
     return compressSuiType(type) === compressSuiType(info.positionReified.fullTypeName)
   })
+  if (!info) {
+    return undefined
+  }
+  const position = info.positionReified.fromBcs(bcs)
+  const configId = normalizeSuiObjectId(position.configId)
+
+  return POSITION_CONFIG_INFOS.find(info => normalizeSuiObjectId(info.configId) === configId)
 }
 
 export const ALL_POSITION_CONFIG_INFOS = POSITION_CONFIG_INFOS.reduce((acc, info) => {

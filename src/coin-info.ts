@@ -1,19 +1,6 @@
 import { Amount } from './amount'
-import { COIN as WHUSDCE } from './gen/wh-usd-ce/coin/structs'
-import { COIN as WHUSDTE } from './gen/wh-usd-te/coin/structs'
 import { extractType, phantom, PhantomReified, PhantomTypeArgument } from './gen/_framework/reified'
-import { KLWHUSDCE } from './gen/kai-leverage-supply-pool-init-whusdce/klwhusdce/structs'
-import { KLWHUSDTE } from './gen/kai-leverage-supply-pool-init-whusdte/klwhusdte/structs'
-import { SUI as SUI_ } from './gen/sui/sui/structs'
-import { KLSUI } from './gen/kai-leverage-supply-pool-init-sui/klsui/structs'
-import { KLUSDC } from './gen/kai-leverage-supply-pool-init-usdc/klusdc/structs'
-import { YWHUSDCE } from './gen/kai-single-asset-vault/ywhusdce/structs'
-import { YWHUSDTE } from './gen/kai-ywh-usd-te-ysui/ywhusdte/structs'
-import { YSUI } from './gen/kai-ywh-usd-te-ysui/ysui/structs'
-import { YUSDC } from './gen/kai-yusdc/yusdc/structs'
 import { compressSuiType } from './gen/_framework/util'
-import { KLSUIUSDT } from './gen/kai-leverage-supply-pool-init-sui-usdt/klsuiusdt/structs'
-import { KLUSDY } from './gen/kai-leverage-supply-pool-init-usdy/klusdy/structs'
 
 export interface CoinInfoConstructorArgs<T extends PhantomTypeArgument> {
   reified: PhantomReified<T>
@@ -52,7 +39,7 @@ export class CoinInfo<T extends PhantomTypeArgument> {
 }
 
 export const SUI = new CoinInfo({
-  reified: SUI_.p,
+  reified: phantom('0x2::sui::SUI'),
   decimals: 9,
   name: 'Sui',
   symbol: 'SUI',
@@ -63,7 +50,9 @@ export const SUI = new CoinInfo({
 })
 
 export const whUSDCe = new CoinInfo({
-  reified: WHUSDCE.p,
+  reified: phantom(
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN'
+  ),
   decimals: 6,
   name: 'Wormhole USDC',
   description: 'Wormhole Ethereum USDC',
@@ -74,7 +63,9 @@ export const whUSDCe = new CoinInfo({
 })
 
 export const whUSDTe = new CoinInfo({
-  reified: WHUSDTE.p,
+  reified: phantom(
+    '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN'
+  ),
   decimals: 6,
   name: 'Wormhole USDT',
   description: 'Wormhole Ethereum USDT',
@@ -85,7 +76,9 @@ export const whUSDTe = new CoinInfo({
 })
 
 export const klwhUSDCe = new CoinInfo({
-  reified: KLWHUSDCE.p,
+  reified: phantom(
+    '0x27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14::klwhusdce::KLWHUSDCE'
+  ),
   decimals: 6,
   name: 'Kai Leverage whUSDC.e',
   description: 'Kai Leverage whUSDC.e supply pool equity token',
@@ -94,7 +87,9 @@ export const klwhUSDCe = new CoinInfo({
 })
 
 export const klwhUSDTe = new CoinInfo({
-  reified: KLWHUSDTE.p,
+  reified: phantom(
+    '0x358b47a13abe067fe4054e414f4ee1d1524236cc60ffc716ec10931c5dbec795::klwhusdte::KLWHUSDTE'
+  ),
   decimals: 6,
   name: 'Kai Leverage whUSDT.e',
   description: 'Kai Leverage whUSDT.e supply pool equity token',
@@ -103,7 +98,9 @@ export const klwhUSDTe = new CoinInfo({
 })
 
 export const klSui = new CoinInfo({
-  reified: KLSUI.p,
+  reified: phantom(
+    '0x19163b40d52e67e20992f1b74c7376d30616ba966c8174e0990c58074d56eb8d::klsui::KLSUI'
+  ),
   decimals: 9,
   name: 'Kai Leverage Sui',
   description: 'Kai Leverage Sui',
@@ -111,8 +108,10 @@ export const klSui = new CoinInfo({
   displaySymbol: 'klSUI',
 })
 
-export const klUsdc = new CoinInfo({
-  reified: KLUSDC.p,
+export const paused_klUsdc = new CoinInfo({
+  reified: phantom(
+    '0xa47906ee2160b8d1d89591a2bb37ed71053bfb3ed1b39581f03358950a91ca79::klusdc::KLUSDC'
+  ),
   decimals: 6,
   name: 'Kai Leverage USDC',
   description: 'Kai Leverage USDC',
@@ -120,8 +119,10 @@ export const klUsdc = new CoinInfo({
   displaySymbol: 'klUSDC',
 })
 
-export const klSuiUSDT = new CoinInfo({
-  reified: KLSUIUSDT.p,
+export const paused_klSuiUSDT = new CoinInfo({
+  reified: phantom(
+    '0xfd3e54e465577273b7eb211212a01ca17418c667aec490eaf7fa5592bfd799f8::klsuiusdt::KLSUIUSDT'
+  ),
   decimals: 6,
   name: 'Kai Leverage suiUSDT',
   description: 'Kai Leverage suiUSDT',
@@ -130,7 +131,9 @@ export const klSuiUSDT = new CoinInfo({
 })
 
 export const klUSDY = new CoinInfo({
-  reified: KLUSDY.p,
+  reified: phantom(
+    '0xcc89168df227621ceab8f2309f134fef00606cc056b61c598a776847367b8e36::klusdy::KLUSDY'
+  ),
   decimals: 6,
   name: 'Kai Leverage USDY',
   description: 'Kai Leverage USDY',
@@ -162,6 +165,28 @@ export const CETUS = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b-cetus-CETUS.webp',
 })
 
+export const klUSDC = new CoinInfo({
+  reified: phantom(
+    '0x3f110dd8b324ce4c5df8b344b7d71bdd939083a9ea6f454161667dba872f99d6::klusdc::KLUSDC'
+  ),
+  decimals: 6,
+  name: 'Kai Leverage USDC',
+  description: 'Kai Leverage USDC',
+  symbol: 'klUSDC-2',
+  displaySymbol: 'klUSDC',
+})
+
+export const klSuiUSDT = new CoinInfo({
+  reified: phantom(
+    '0x36caf1b10c52057f0f34b42baf53cdb9171ad7ce74f1360a9f94acdcad727ae4::klsuiusdt::KLSUIUSDT'
+  ),
+  decimals: 6,
+  name: 'Kai Leverage suiUSDT',
+  description: 'Kai Leverage suiUSDT',
+  symbol: 'klSuiUSDT-2',
+  displaySymbol: 'klSuiUSDT',
+})
+
 export const USDC = new CoinInfo({
   reified: phantom(
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC'
@@ -177,7 +202,9 @@ export const USDC = new CoinInfo({
 })
 
 export const yWHUSDCe = new CoinInfo({
-  reified: YWHUSDCE.p,
+  reified: phantom(
+    '0x1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273::ywhusdce::YWHUSDCE'
+  ),
   decimals: 6,
   name: 'ywhUSDC.e',
   description: 'Kai whUSDC.e vault yield bearing token',
@@ -186,7 +213,9 @@ export const yWHUSDCe = new CoinInfo({
 })
 
 export const yWHUSDTe = new CoinInfo({
-  reified: YWHUSDTE.p,
+  reified: phantom(
+    '0xb8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613::ywhusdte::YWHUSDTE'
+  ),
   decimals: 6,
   name: 'ywhUSDT.e',
   description: 'Kai whUSDT.e vault yield bearing token',
@@ -195,7 +224,9 @@ export const yWHUSDTe = new CoinInfo({
 })
 
 export const ySUI = new CoinInfo({
-  reified: YSUI.p,
+  reified: phantom(
+    '0xb8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613::ysui::YSUI'
+  ),
   decimals: 9,
   name: 'ySUI',
   description: 'Kai SUI vault yield bearing token',
@@ -203,8 +234,10 @@ export const ySUI = new CoinInfo({
   displaySymbol: 'ySUI',
 })
 
-export const yUSDC = new CoinInfo({
-  reified: YUSDC.p,
+export const paused_yUSDC = new CoinInfo({
+  reified: phantom(
+    '0xa4184b1a5829e7cced8e51e8e385b16d02642634cd3e72a50d31cdf4a78bfd5c::yusdc::YUSDC'
+  ),
   decimals: 6,
   name: 'yUSDC',
   description: 'Kai USDC vault yield bearing token',
@@ -237,7 +270,7 @@ export const suiUSDT = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c-coin-COIN.webp',
 })
 
-export const ysuiUSDT = new CoinInfo({
+export const paused_ysuiUSDT = new CoinInfo({
   reified: phantom(
     '0xaa1365f35a163f785b2a660b97831298dc145a3bc71e993407a5991722974e70::ysuiusdt::YSUIUSDT'
   ),
@@ -268,6 +301,28 @@ export const yDEEP = new CoinInfo({
   description: 'Kai vault DEEP',
   symbol: 'yDEEP',
   displaySymbol: 'yDEEP',
+})
+
+export const yUSDC = new CoinInfo({
+  reified: phantom(
+    '0x7ea359636b36e7c027c2cd71adedaf19be658e1477d9e71368a0b3824a0a27ff::yusdc::YUSDC'
+  ),
+  decimals: 6,
+  name: 'yUSDC',
+  description: 'Kai USDC vault yield bearing token',
+  symbol: 'yUSDC',
+  displaySymbol: 'yUSDC',
+})
+
+export const ysuiUSDT = new CoinInfo({
+  reified: phantom(
+    '0x36bc697c1dba827a4bf7fa3bfc9f1b0953fe09b91c4b4c103efa0b086e03d923::ysuiusdt::YSUIUSDT'
+  ),
+  decimals: 6,
+  name: 'Kai vault suiUSDT',
+  description: 'Kai vault suiUSDT',
+  symbol: 'ysuiUSDT',
+  displaySymbol: 'ysuiUSDT',
 })
 
 export const stSUI = new CoinInfo({
@@ -315,15 +370,19 @@ export const COIN_INFOS = [
   klwhUSDCe,
   klwhUSDTe,
   klSui,
-  klUsdc,
+  paused_klUsdc,
+  paused_klSuiUSDT,
+  klUSDC,
   klSuiUSDT,
   CETUS,
   USDC,
   yWHUSDCe,
   yWHUSDTe,
   ySUI,
-  yUSDC,
+  paused_yUSDC,
+  paused_ysuiUSDT,
   ysuiUSDT,
+  yUSDC,
   BLUE,
   suiUSDT,
   stSUI,

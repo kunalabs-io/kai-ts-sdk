@@ -64,7 +64,7 @@ export class AfRouterAdapter implements Router {
       coinInType: args.inInfo.typeName,
       coinOutType: args.outInfo.typeName,
       coinInAmount: args.amountIn,
-      protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
+      // protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
     })
 
     const { tx, coinOutId } = await this.router.addTransactionForCompleteTradeRoute({
@@ -96,6 +96,7 @@ export class AfRouterAdapter implements Router {
       coinInType,
       coinOutType,
       coinInAmount: args.amountIn,
+      // protocolWhitelist: ['Aftermath', 'Bluefin', 'DeepBook', 'DeepBookV3'],
     })
 
     const spotPrice = new Decimal(route.spotPrice)
@@ -149,7 +150,7 @@ export class AfRouterAdapter implements Router {
       coinOutType: args.outInfo.typeName,
       coinOutAmount: args.amountOut,
       slippage: args.slippage,
-      protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
+      // protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
     })
     const coinIn = coin.split(args.tx, args.inInfo.typeName, {
       self: args.coinIn,

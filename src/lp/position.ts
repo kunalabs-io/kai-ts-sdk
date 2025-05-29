@@ -7,7 +7,7 @@ import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
 import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
 import { tickIndexToSqrtPriceX64 } from './tick-math'
 import {
-  findConfigInfoForPositionType,
+  findConfigInfoForPositionBcs,
   POSITION_CONFIG_INFOS,
   PositionConfig,
   PositionConfigInfo,
@@ -19,7 +19,7 @@ import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { COIN_INFO_MAP, CoinInfo } from '../coin-info'
 import Decimal from 'decimal.js'
 import { bluefinDecodeTick, cetusDecodeTick, ClmmPool } from './clmm-pool'
-import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
+import { fromBase64, normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import {
   Argument,
   coinWithBalance,
@@ -271,9 +271,9 @@ export interface CalcMarginLevelArgs<X extends PhantomTypeArgument, Y extends Ph
   /** The current pool price */
   currentPrice: Price<X, Y>
   /** The X supply pool data */
-  supplyPoolX: SupplyPool<X, Y>
+  supplyPoolX: SupplyPool<X, PhantomTypeArgument>
   /** The Y supply pool data */
-  supplyPoolY: SupplyPool<X, Y>
+  supplyPoolY: SupplyPool<Y, PhantomTypeArgument>
   /**
    * Optional unix timestamp (ms) to simulate current supply pool state considering interest accrued since
    * last supply pool update.
@@ -476,7 +476,7 @@ export class Position<
    * @returns A new Position instance.
    */
   static fromBcs(bcs: Uint8Array, type: string) {
-    const configInfo = findConfigInfoForPositionType(type)
+    const configInfo = findConfigInfoForPositionBcs(bcs, type)
     if (!configInfo) {
       throw new Error(`No PositionConfigInfo found for type ${type}.`)
     }
@@ -494,22 +494,26 @@ export class Position<
    * @returns A new Position instance.
    */
   static fromSuiObjectData(data: SuiObjectData) {
-    let type = undefined
+    let configInfo = undefined
     if (data.bcs && data.bcs.dataType === 'moveObject') {
-      type = data.bcs.type
+      configInfo = findConfigInfoForPositionBcs(fromBase64(data.bcs.bcsBytes), data.bcs.type)
+      if (!configInfo) {
+        throw new Error(`No PositionConfigInfo found for type ${data.bcs.type}.`)
+      }
     }
     if (data.content && data.content.dataType === 'moveObject') {
-      type = data.content.type
+      const configId = normalizeSuiObjectId(
+        (data.content.fields as unknown as { configId: string }).configId
+      )
+      configInfo = POSITION_CONFIG_INFOS.find(p => normalizeSuiObjectId(p.configId) === configId)
+      if (!configInfo) {
+        throw new Error(`No PositionConfigInfo found for type ${data.content.type}.`)
+      }
     }
-    if (!type) {
+    if (!configInfo) {
       throw new Error(
         `Not a Move object or 'bcs' and 'content' fields are missing from the data for ID ${data.objectId}. Include 'showBcs' or 'showContent' in the request.`
       )
-    }
-
-    const configInfo = findConfigInfoForPositionType(type)
-    if (!configInfo) {
-      throw new Error(`No PositionConfigInfo found for type ${type}.`)
     }
 
     return new Position({
