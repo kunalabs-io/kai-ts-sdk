@@ -286,6 +286,169 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
   }
 }
 
+/* ============================== RewardsPoolFeeKey =============================== */
+
+export function isRewardsPoolFeeKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V2}::rewards_pool::RewardsPoolFeeKey`
+}
+
+export interface RewardsPoolFeeKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type RewardsPoolFeeKeyReified = Reified<RewardsPoolFeeKey, RewardsPoolFeeKeyFields>
+
+export class RewardsPoolFeeKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V2}::rewards_pool::RewardsPoolFeeKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RewardsPoolFeeKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = RewardsPoolFeeKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: RewardsPoolFeeKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      RewardsPoolFeeKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): RewardsPoolFeeKeyReified {
+    return {
+      typeName: RewardsPoolFeeKey.$typeName,
+      fullTypeName: composeSuiType(
+        RewardsPoolFeeKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`,
+      typeArgs: [] as [],
+      isPhantom: RewardsPoolFeeKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RewardsPoolFeeKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RewardsPoolFeeKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RewardsPoolFeeKey.fromBcs(data),
+      bcs: RewardsPoolFeeKey.bcs,
+      fromJSONField: (field: any) => RewardsPoolFeeKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RewardsPoolFeeKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RewardsPoolFeeKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RewardsPoolFeeKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RewardsPoolFeeKey.fetch(client, id),
+      new: (fields: RewardsPoolFeeKeyFields) => {
+        return new RewardsPoolFeeKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RewardsPoolFeeKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RewardsPoolFeeKey>> {
+    return phantom(RewardsPoolFeeKey.reified())
+  }
+  static get p() {
+    return RewardsPoolFeeKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RewardsPoolFeeKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RewardsPoolFeeKey {
+    return RewardsPoolFeeKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RewardsPoolFeeKey {
+    if (!isRewardsPoolFeeKey(item.type)) {
+      throw new Error('not a RewardsPoolFeeKey type')
+    }
+
+    return RewardsPoolFeeKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RewardsPoolFeeKey {
+    return RewardsPoolFeeKey.fromFields(RewardsPoolFeeKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RewardsPoolFeeKey {
+    return RewardsPoolFeeKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RewardsPoolFeeKey {
+    if (json.$typeName !== RewardsPoolFeeKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RewardsPoolFeeKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RewardsPoolFeeKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRewardsPoolFeeKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RewardsPoolFeeKey object`)
+    }
+    return RewardsPoolFeeKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RewardsPoolFeeKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRewardsPoolFeeKey(data.bcs.type)) {
+        throw new Error(`object at is not a RewardsPoolFeeKey object`)
+      }
+
+      return RewardsPoolFeeKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RewardsPoolFeeKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RewardsPoolFeeKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RewardsPoolFeeKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewardsPoolFeeKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RewardsPoolFeeKey object`)
+    }
+
+    return RewardsPoolFeeKey.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== RewardsPoolFee =============================== */
 
 export function isRewardsPoolFee(type: string): boolean {
@@ -465,169 +628,6 @@ export class RewardsPoolFee implements StructClass {
     }
 
     return RewardsPoolFee.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RewardsPoolFeeKey =============================== */
-
-export function isRewardsPoolFeeKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V2}::rewards_pool::RewardsPoolFeeKey`
-}
-
-export interface RewardsPoolFeeKeyFields {
-  dummyField: ToField<'bool'>
-}
-
-export type RewardsPoolFeeKeyReified = Reified<RewardsPoolFeeKey, RewardsPoolFeeKeyFields>
-
-export class RewardsPoolFeeKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V2}::rewards_pool::RewardsPoolFeeKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RewardsPoolFeeKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = RewardsPoolFeeKey.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: RewardsPoolFeeKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      RewardsPoolFeeKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): RewardsPoolFeeKeyReified {
-    return {
-      typeName: RewardsPoolFeeKey.$typeName,
-      fullTypeName: composeSuiType(
-        RewardsPoolFeeKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V2}::rewards_pool::RewardsPoolFeeKey`,
-      typeArgs: [] as [],
-      isPhantom: RewardsPoolFeeKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RewardsPoolFeeKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RewardsPoolFeeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardsPoolFeeKey.fromBcs(data),
-      bcs: RewardsPoolFeeKey.bcs,
-      fromJSONField: (field: any) => RewardsPoolFeeKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RewardsPoolFeeKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RewardsPoolFeeKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RewardsPoolFeeKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewardsPoolFeeKey.fetch(client, id),
-      new: (fields: RewardsPoolFeeKeyFields) => {
-        return new RewardsPoolFeeKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RewardsPoolFeeKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RewardsPoolFeeKey>> {
-    return phantom(RewardsPoolFeeKey.reified())
-  }
-  static get p() {
-    return RewardsPoolFeeKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RewardsPoolFeeKey', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RewardsPoolFeeKey {
-    return RewardsPoolFeeKey.reified().new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RewardsPoolFeeKey {
-    if (!isRewardsPoolFeeKey(item.type)) {
-      throw new Error('not a RewardsPoolFeeKey type')
-    }
-
-    return RewardsPoolFeeKey.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RewardsPoolFeeKey {
-    return RewardsPoolFeeKey.fromFields(RewardsPoolFeeKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RewardsPoolFeeKey {
-    return RewardsPoolFeeKey.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RewardsPoolFeeKey {
-    if (json.$typeName !== RewardsPoolFeeKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RewardsPoolFeeKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RewardsPoolFeeKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRewardsPoolFeeKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RewardsPoolFeeKey object`)
-    }
-    return RewardsPoolFeeKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RewardsPoolFeeKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRewardsPoolFeeKey(data.bcs.type)) {
-        throw new Error(`object at is not a RewardsPoolFeeKey object`)
-      }
-
-      return RewardsPoolFeeKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RewardsPoolFeeKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RewardsPoolFeeKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RewardsPoolFeeKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewardsPoolFeeKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RewardsPoolFeeKey object`)
-    }
-
-    return RewardsPoolFeeKey.fromSuiObjectData(res.data)
   }
 }
 

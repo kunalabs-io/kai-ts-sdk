@@ -24,10 +24,12 @@ import {
   parseTypeName,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
+import { FlashSwapReceipt } from '../../bluefin-spot/pool/structs'
+import { Option } from '../../move-stdlib/option/structs'
 import { Balance } from '../../sui/balance/structs'
 import { ID } from '../../sui/object/structs'
 import { BatchSwapClaim } from '../batch-swap/structs'
-import { PKG_V5 } from '../index'
+import { PKG_V13, PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -363,5 +365,290 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     }
 
     return RebalanceReceipt.fromSuiObjectData(typeArgs, res.data)
+  }
+}
+
+/* ============================== WrappedFlashSwapReceipt =============================== */
+
+export function isWrappedFlashSwapReceipt(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V13}::bluefin_spot::WrappedFlashSwapReceipt` + '<')
+}
+
+export interface WrappedFlashSwapReceiptFields<
+  A extends PhantomTypeArgument,
+  B extends PhantomTypeArgument,
+> {
+  inner: ToField<Option<FlashSwapReceipt<A, B>>>
+}
+
+export type WrappedFlashSwapReceiptReified<
+  A extends PhantomTypeArgument,
+  B extends PhantomTypeArgument,
+> = Reified<WrappedFlashSwapReceipt<A, B>, WrappedFlashSwapReceiptFields<A, B>>
+
+export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends PhantomTypeArgument>
+  implements StructClass
+{
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V13}::bluefin_spot::WrappedFlashSwapReceipt`
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [true, true] as const
+
+  readonly $typeName = WrappedFlashSwapReceipt.$typeName
+  readonly $fullTypeName: `${typeof PKG_V13}::bluefin_spot::WrappedFlashSwapReceipt<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+  readonly $typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>]
+  readonly $isPhantom = WrappedFlashSwapReceipt.$isPhantom
+
+  readonly inner: ToField<Option<FlashSwapReceipt<A, B>>>
+
+  private constructor(
+    typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>],
+    fields: WrappedFlashSwapReceiptFields<A, B>
+  ) {
+    this.$fullTypeName = composeSuiType(
+      WrappedFlashSwapReceipt.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V13}::bluefin_spot::WrappedFlashSwapReceipt<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+    this.$typeArgs = typeArgs
+
+    this.inner = fields.inner
+  }
+
+  static reified<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    A: A,
+    B: B
+  ): WrappedFlashSwapReceiptReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    return {
+      typeName: WrappedFlashSwapReceipt.$typeName,
+      fullTypeName: composeSuiType(
+        WrappedFlashSwapReceipt.$typeName,
+        ...[extractType(A), extractType(B)]
+      ) as `${typeof PKG_V13}::bluefin_spot::WrappedFlashSwapReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<A>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
+      typeArgs: [extractType(A), extractType(B)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<A>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<B>>,
+      ],
+      isPhantom: WrappedFlashSwapReceipt.$isPhantom,
+      reifiedTypeArgs: [A, B],
+      fromFields: (fields: Record<string, any>) =>
+        WrappedFlashSwapReceipt.fromFields([A, B], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        WrappedFlashSwapReceipt.fromFieldsWithTypes([A, B], item),
+      fromBcs: (data: Uint8Array) => WrappedFlashSwapReceipt.fromBcs([A, B], data),
+      bcs: WrappedFlashSwapReceipt.bcs,
+      fromJSONField: (field: any) => WrappedFlashSwapReceipt.fromJSONField([A, B], field),
+      fromJSON: (json: Record<string, any>) => WrappedFlashSwapReceipt.fromJSON([A, B], json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        WrappedFlashSwapReceipt.fromSuiParsedData([A, B], content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        WrappedFlashSwapReceipt.fromSuiObjectData([A, B], content),
+      fetch: async (client: SuiClient, id: string) =>
+        WrappedFlashSwapReceipt.fetch(client, [A, B], id),
+      new: (
+        fields: WrappedFlashSwapReceiptFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>
+      ) => {
+        return new WrappedFlashSwapReceipt([extractType(A), extractType(B)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return WrappedFlashSwapReceipt.reified
+  }
+
+  static phantom<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    A: A,
+    B: B
+  ): PhantomReified<
+    ToTypeStr<WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>>
+  > {
+    return phantom(WrappedFlashSwapReceipt.reified(A, B))
+  }
+  static get p() {
+    return WrappedFlashSwapReceipt.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('WrappedFlashSwapReceipt', {
+      inner: Option.bcs(FlashSwapReceipt.bcs),
+    })
+  }
+
+  static fromFields<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    fields: Record<string, any>
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      inner: decodeFromFields(
+        Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
+        fields.inner
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    item: FieldsWithTypes
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (!isWrappedFlashSwapReceipt(item.type)) {
+      throw new Error('not a WrappedFlashSwapReceipt type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      inner: decodeFromFieldsWithTypes(
+        Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
+        item.fields.inner
+      ),
+    })
+  }
+
+  static fromBcs<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    data: Uint8Array
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    return WrappedFlashSwapReceipt.fromFields(typeArgs, WrappedFlashSwapReceipt.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      inner: fieldToJSON<Option<FlashSwapReceipt<A, B>>>(
+        `${Option.$typeName}<${FlashSwapReceipt.$typeName}<${this.$typeArgs[0]}, ${this.$typeArgs[1]}>>`,
+        this.inner
+      ),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    field: any
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      inner: decodeFromJSONField(
+        Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
+        field.inner
+      ),
+    })
+  }
+
+  static fromJSON<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    json: Record<string, any>
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (json.$typeName !== WrappedFlashSwapReceipt.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(WrappedFlashSwapReceipt.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs
+    )
+
+    return WrappedFlashSwapReceipt.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    content: SuiParsedData
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isWrappedFlashSwapReceipt(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a WrappedFlashSwapReceipt object`
+      )
+    }
+    return WrappedFlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    data: SuiObjectData
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isWrappedFlashSwapReceipt(data.bcs.type)) {
+        throw new Error(`object at is not a WrappedFlashSwapReceipt object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+          )
+        }
+      }
+
+      return WrappedFlashSwapReceipt.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return WrappedFlashSwapReceipt.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    client: SuiClient,
+    typeArgs: [A, B],
+    id: string
+  ): Promise<WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching WrappedFlashSwapReceipt object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isWrappedFlashSwapReceipt(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a WrappedFlashSwapReceipt object`)
+    }
+
+    return WrappedFlashSwapReceipt.fromSuiObjectData(typeArgs, res.data)
   }
 }

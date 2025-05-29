@@ -37,6 +37,165 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== X_ORACLE =============================== */
+
+export function isX_ORACLE(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::x_oracle::X_ORACLE`
+}
+
+export interface X_ORACLEFields {
+  dummyField: ToField<'bool'>
+}
+
+export type X_ORACLEReified = Reified<X_ORACLE, X_ORACLEFields>
+
+export class X_ORACLE implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::x_oracle::X_ORACLE`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = X_ORACLE.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::x_oracle::X_ORACLE`
+  readonly $typeArgs: []
+  readonly $isPhantom = X_ORACLE.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: X_ORACLEFields) {
+    this.$fullTypeName = composeSuiType(
+      X_ORACLE.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::x_oracle::X_ORACLE`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): X_ORACLEReified {
+    return {
+      typeName: X_ORACLE.$typeName,
+      fullTypeName: composeSuiType(
+        X_ORACLE.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::x_oracle::X_ORACLE`,
+      typeArgs: [] as [],
+      isPhantom: X_ORACLE.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => X_ORACLE.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => X_ORACLE.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => X_ORACLE.fromBcs(data),
+      bcs: X_ORACLE.bcs,
+      fromJSONField: (field: any) => X_ORACLE.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => X_ORACLE.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => X_ORACLE.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => X_ORACLE.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => X_ORACLE.fetch(client, id),
+      new: (fields: X_ORACLEFields) => {
+        return new X_ORACLE([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return X_ORACLE.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<X_ORACLE>> {
+    return phantom(X_ORACLE.reified())
+  }
+  static get p() {
+    return X_ORACLE.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('X_ORACLE', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): X_ORACLE {
+    return X_ORACLE.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): X_ORACLE {
+    if (!isX_ORACLE(item.type)) {
+      throw new Error('not a X_ORACLE type')
+    }
+
+    return X_ORACLE.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): X_ORACLE {
+    return X_ORACLE.fromFields(X_ORACLE.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): X_ORACLE {
+    return X_ORACLE.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): X_ORACLE {
+    if (json.$typeName !== X_ORACLE.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return X_ORACLE.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): X_ORACLE {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isX_ORACLE(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a X_ORACLE object`)
+    }
+    return X_ORACLE.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): X_ORACLE {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isX_ORACLE(data.bcs.type)) {
+        throw new Error(`object at is not a X_ORACLE object`)
+      }
+
+      return X_ORACLE.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return X_ORACLE.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<X_ORACLE> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching X_ORACLE object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isX_ORACLE(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a X_ORACLE object`)
+    }
+
+    return X_ORACLE.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== XOracle =============================== */
 
 export function isXOracle(type: string): boolean {
@@ -717,164 +876,5 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     }
 
     return XOraclePriceUpdateRequest.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== X_ORACLE =============================== */
-
-export function isX_ORACLE(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::x_oracle::X_ORACLE`
-}
-
-export interface X_ORACLEFields {
-  dummyField: ToField<'bool'>
-}
-
-export type X_ORACLEReified = Reified<X_ORACLE, X_ORACLEFields>
-
-export class X_ORACLE implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::x_oracle::X_ORACLE`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = X_ORACLE.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::x_oracle::X_ORACLE`
-  readonly $typeArgs: []
-  readonly $isPhantom = X_ORACLE.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: X_ORACLEFields) {
-    this.$fullTypeName = composeSuiType(
-      X_ORACLE.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::x_oracle::X_ORACLE`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): X_ORACLEReified {
-    return {
-      typeName: X_ORACLE.$typeName,
-      fullTypeName: composeSuiType(
-        X_ORACLE.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::x_oracle::X_ORACLE`,
-      typeArgs: [] as [],
-      isPhantom: X_ORACLE.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => X_ORACLE.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => X_ORACLE.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => X_ORACLE.fromBcs(data),
-      bcs: X_ORACLE.bcs,
-      fromJSONField: (field: any) => X_ORACLE.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => X_ORACLE.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => X_ORACLE.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => X_ORACLE.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => X_ORACLE.fetch(client, id),
-      new: (fields: X_ORACLEFields) => {
-        return new X_ORACLE([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return X_ORACLE.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<X_ORACLE>> {
-    return phantom(X_ORACLE.reified())
-  }
-  static get p() {
-    return X_ORACLE.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('X_ORACLE', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): X_ORACLE {
-    return X_ORACLE.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): X_ORACLE {
-    if (!isX_ORACLE(item.type)) {
-      throw new Error('not a X_ORACLE type')
-    }
-
-    return X_ORACLE.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): X_ORACLE {
-    return X_ORACLE.fromFields(X_ORACLE.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): X_ORACLE {
-    return X_ORACLE.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): X_ORACLE {
-    if (json.$typeName !== X_ORACLE.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return X_ORACLE.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): X_ORACLE {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isX_ORACLE(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a X_ORACLE object`)
-    }
-    return X_ORACLE.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): X_ORACLE {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isX_ORACLE(data.bcs.type)) {
-        throw new Error(`object at is not a X_ORACLE object`)
-      }
-
-      return X_ORACLE.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return X_ORACLE.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<X_ORACLE> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching X_ORACLE object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isX_ORACLE(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a X_ORACLE object`)
-    }
-
-    return X_ORACLE.fromSuiObjectData(res.data)
   }
 }

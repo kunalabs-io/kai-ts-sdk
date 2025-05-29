@@ -23,6 +23,203 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== TickManager =============================== */
+
+export function isTickManager(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::tick::TickManager`
+}
+
+export interface TickManagerFields {
+  tickSpacing: ToField<'u32'>
+  ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
+  bitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
+}
+
+export type TickManagerReified = Reified<TickManager, TickManagerFields>
+
+export class TickManager implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::tick::TickManager`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = TickManager.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::tick::TickManager`
+  readonly $typeArgs: []
+  readonly $isPhantom = TickManager.$isPhantom
+
+  readonly tickSpacing: ToField<'u32'>
+  readonly ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
+  readonly bitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
+
+  private constructor(typeArgs: [], fields: TickManagerFields) {
+    this.$fullTypeName = composeSuiType(
+      TickManager.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::tick::TickManager`
+    this.$typeArgs = typeArgs
+
+    this.tickSpacing = fields.tickSpacing
+    this.ticks = fields.ticks
+    this.bitmap = fields.bitmap
+  }
+
+  static reified(): TickManagerReified {
+    return {
+      typeName: TickManager.$typeName,
+      fullTypeName: composeSuiType(
+        TickManager.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::tick::TickManager`,
+      typeArgs: [] as [],
+      isPhantom: TickManager.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => TickManager.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => TickManager.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => TickManager.fromBcs(data),
+      bcs: TickManager.bcs,
+      fromJSONField: (field: any) => TickManager.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => TickManager.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => TickManager.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => TickManager.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => TickManager.fetch(client, id),
+      new: (fields: TickManagerFields) => {
+        return new TickManager([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return TickManager.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<TickManager>> {
+    return phantom(TickManager.reified())
+  }
+  static get p() {
+    return TickManager.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('TickManager', {
+      tick_spacing: bcs.u32(),
+      ticks: Table.bcs,
+      bitmap: Table.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): TickManager {
+    return TickManager.reified().new({
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+      ticks: decodeFromFields(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        fields.ticks
+      ),
+      bitmap: decodeFromFields(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        fields.bitmap
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): TickManager {
+    if (!isTickManager(item.type)) {
+      throw new Error('not a TickManager type')
+    }
+
+    return TickManager.reified().new({
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+      ticks: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        item.fields.ticks
+      ),
+      bitmap: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        item.fields.bitmap
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): TickManager {
+    return TickManager.fromFields(TickManager.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      tickSpacing: this.tickSpacing,
+      ticks: this.ticks.toJSONField(),
+      bitmap: this.bitmap.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): TickManager {
+    return TickManager.reified().new({
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+      ticks: decodeFromJSONField(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
+        field.ticks
+      ),
+      bitmap: decodeFromJSONField(
+        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
+        field.bitmap
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): TickManager {
+    if (json.$typeName !== TickManager.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return TickManager.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): TickManager {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isTickManager(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a TickManager object`)
+    }
+    return TickManager.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): TickManager {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isTickManager(data.bcs.type)) {
+        throw new Error(`object at is not a TickManager object`)
+      }
+
+      return TickManager.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return TickManager.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<TickManager> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching TickManager object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isTickManager(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a TickManager object`)
+    }
+
+    return TickManager.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== TickInfo =============================== */
 
 export function isTickInfo(type: string): boolean {
@@ -261,202 +458,5 @@ export class TickInfo implements StructClass {
     }
 
     return TickInfo.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== TickManager =============================== */
-
-export function isTickManager(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::tick::TickManager`
-}
-
-export interface TickManagerFields {
-  tickSpacing: ToField<'u32'>
-  ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
-  bitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
-}
-
-export type TickManagerReified = Reified<TickManager, TickManagerFields>
-
-export class TickManager implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::tick::TickManager`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = TickManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::tick::TickManager`
-  readonly $typeArgs: []
-  readonly $isPhantom = TickManager.$isPhantom
-
-  readonly tickSpacing: ToField<'u32'>
-  readonly ticks: ToField<Table<ToPhantom<I32>, ToPhantom<TickInfo>>>
-  readonly bitmap: ToField<Table<ToPhantom<I32>, 'u256'>>
-
-  private constructor(typeArgs: [], fields: TickManagerFields) {
-    this.$fullTypeName = composeSuiType(
-      TickManager.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::tick::TickManager`
-    this.$typeArgs = typeArgs
-
-    this.tickSpacing = fields.tickSpacing
-    this.ticks = fields.ticks
-    this.bitmap = fields.bitmap
-  }
-
-  static reified(): TickManagerReified {
-    return {
-      typeName: TickManager.$typeName,
-      fullTypeName: composeSuiType(
-        TickManager.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::tick::TickManager`,
-      typeArgs: [] as [],
-      isPhantom: TickManager.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => TickManager.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => TickManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TickManager.fromBcs(data),
-      bcs: TickManager.bcs,
-      fromJSONField: (field: any) => TickManager.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => TickManager.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => TickManager.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => TickManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => TickManager.fetch(client, id),
-      new: (fields: TickManagerFields) => {
-        return new TickManager([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return TickManager.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<TickManager>> {
-    return phantom(TickManager.reified())
-  }
-  static get p() {
-    return TickManager.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('TickManager', {
-      tick_spacing: bcs.u32(),
-      ticks: Table.bcs,
-      bitmap: Table.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): TickManager {
-    return TickManager.reified().new({
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      ticks: decodeFromFields(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        fields.ticks
-      ),
-      bitmap: decodeFromFields(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        fields.bitmap
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): TickManager {
-    if (!isTickManager(item.type)) {
-      throw new Error('not a TickManager type')
-    }
-
-    return TickManager.reified().new({
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-      ticks: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        item.fields.ticks
-      ),
-      bitmap: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        item.fields.bitmap
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): TickManager {
-    return TickManager.fromFields(TickManager.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      tickSpacing: this.tickSpacing,
-      ticks: this.ticks.toJSONField(),
-      bitmap: this.bitmap.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): TickManager {
-    return TickManager.reified().new({
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      ticks: decodeFromJSONField(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom(TickInfo.reified())),
-        field.ticks
-      ),
-      bitmap: decodeFromJSONField(
-        Table.reified(reified.phantom(I32.reified()), reified.phantom('u256')),
-        field.bitmap
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): TickManager {
-    if (json.$typeName !== TickManager.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return TickManager.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): TickManager {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isTickManager(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a TickManager object`)
-    }
-    return TickManager.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): TickManager {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isTickManager(data.bcs.type)) {
-        throw new Error(`object at is not a TickManager object`)
-      }
-
-      return TickManager.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return TickManager.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<TickManager> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TickManager object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTickManager(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a TickManager object`)
-    }
-
-    return TickManager.fromSuiObjectData(res.data)
   }
 }

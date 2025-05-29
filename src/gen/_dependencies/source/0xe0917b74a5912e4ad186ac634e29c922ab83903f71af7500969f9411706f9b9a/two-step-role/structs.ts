@@ -28,6 +28,243 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== TwoStepRole =============================== */
+
+export function isTwoStepRole(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::two_step_role::TwoStepRole` + '<')
+}
+
+export interface TwoStepRoleFields<T extends PhantomTypeArgument> {
+  activeAddress: ToField<'address'>
+  pendingAddress: ToField<Option<'address'>>
+}
+
+export type TwoStepRoleReified<T extends PhantomTypeArgument> = Reified<
+  TwoStepRole<T>,
+  TwoStepRoleFields<T>
+>
+
+export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::two_step_role::TwoStepRole`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
+
+  readonly $typeName = TwoStepRole.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
+  readonly $isPhantom = TwoStepRole.$isPhantom
+
+  readonly activeAddress: ToField<'address'>
+  readonly pendingAddress: ToField<Option<'address'>>
+
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TwoStepRoleFields<T>) {
+    this.$fullTypeName = composeSuiType(
+      TwoStepRole.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<T>}>`
+    this.$typeArgs = typeArgs
+
+    this.activeAddress = fields.activeAddress
+    this.pendingAddress = fields.pendingAddress
+  }
+
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): TwoStepRoleReified<ToPhantomTypeArgument<T>> {
+    return {
+      typeName: TwoStepRole.$typeName,
+      fullTypeName: composeSuiType(
+        TwoStepRole.$typeName,
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      isPhantom: TwoStepRole.$isPhantom,
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => TwoStepRole.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => TwoStepRole.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => TwoStepRole.fromBcs(T, data),
+      bcs: TwoStepRole.bcs,
+      fromJSONField: (field: any) => TwoStepRole.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => TwoStepRole.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => TwoStepRole.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => TwoStepRole.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => TwoStepRole.fetch(client, T, id),
+      new: (fields: TwoStepRoleFields<ToPhantomTypeArgument<T>>) => {
+        return new TwoStepRole([extractType(T)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return TwoStepRole.reified
+  }
+
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<TwoStepRole<ToPhantomTypeArgument<T>>>> {
+    return phantom(TwoStepRole.reified(T))
+  }
+  static get p() {
+    return TwoStepRole.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('TwoStepRole', {
+      active_address: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      pending_address: Option.bcs(
+        bcs.bytes(32).transform({
+          input: (val: string) => fromHEX(val),
+          output: (val: Uint8Array) => toHEX(val),
+        })
+      ),
+    })
+  }
+
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    fields: Record<string, any>
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    return TwoStepRole.reified(typeArg).new({
+      activeAddress: decodeFromFields('address', fields.active_address),
+      pendingAddress: decodeFromFields(Option.reified('address'), fields.pending_address),
+    })
+  }
+
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    item: FieldsWithTypes
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    if (!isTwoStepRole(item.type)) {
+      throw new Error('not a TwoStepRole type')
+    }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
+
+    return TwoStepRole.reified(typeArg).new({
+      activeAddress: decodeFromFieldsWithTypes('address', item.fields.active_address),
+      pendingAddress: decodeFromFieldsWithTypes(
+        Option.reified('address'),
+        item.fields.pending_address
+      ),
+    })
+  }
+
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: Uint8Array
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    return TwoStepRole.fromFields(typeArg, TwoStepRole.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      activeAddress: this.activeAddress,
+      pendingAddress: fieldToJSON<Option<'address'>>(
+        `${Option.$typeName}<address>`,
+        this.pendingAddress
+      ),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    field: any
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    return TwoStepRole.reified(typeArg).new({
+      activeAddress: decodeFromJSONField('address', field.activeAddress),
+      pendingAddress: decodeFromJSONField(Option.reified('address'), field.pendingAddress),
+    })
+  }
+
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    json: Record<string, any>
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== TwoStepRole.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(TwoStepRole.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
+
+    return TwoStepRole.fromJSONField(typeArg, json)
+  }
+
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    content: SuiParsedData
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isTwoStepRole(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a TwoStepRole object`)
+    }
+    return TwoStepRole.fromFieldsWithTypes(typeArg, content)
+  }
+
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: SuiObjectData
+  ): TwoStepRole<ToPhantomTypeArgument<T>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isTwoStepRole(data.bcs.type)) {
+        throw new Error(`object at is not a TwoStepRole object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return TwoStepRole.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return TwoStepRole.fromSuiParsedData(typeArg, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: T,
+    id: string
+  ): Promise<TwoStepRole<ToPhantomTypeArgument<T>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching TwoStepRole object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isTwoStepRole(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a TwoStepRole object`)
+    }
+
+    return TwoStepRole.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
 /* ============================== RoleTransferStarted =============================== */
 
 export function isRoleTransferStarted(type: string): boolean {
@@ -486,242 +723,5 @@ export class RoleTransferred<T extends PhantomTypeArgument> implements StructCla
     }
 
     return RoleTransferred.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== TwoStepRole =============================== */
-
-export function isTwoStepRole(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::two_step_role::TwoStepRole` + '<')
-}
-
-export interface TwoStepRoleFields<T extends PhantomTypeArgument> {
-  activeAddress: ToField<'address'>
-  pendingAddress: ToField<Option<'address'>>
-}
-
-export type TwoStepRoleReified<T extends PhantomTypeArgument> = Reified<
-  TwoStepRole<T>,
-  TwoStepRoleFields<T>
->
-
-export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::two_step_role::TwoStepRole`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = TwoStepRole.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<T>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TwoStepRole.$isPhantom
-
-  readonly activeAddress: ToField<'address'>
-  readonly pendingAddress: ToField<Option<'address'>>
-
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TwoStepRoleFields<T>) {
-    this.$fullTypeName = composeSuiType(
-      TwoStepRole.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<T>}>`
-    this.$typeArgs = typeArgs
-
-    this.activeAddress = fields.activeAddress
-    this.pendingAddress = fields.pendingAddress
-  }
-
-  static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): TwoStepRoleReified<ToPhantomTypeArgument<T>> {
-    return {
-      typeName: TwoStepRole.$typeName,
-      fullTypeName: composeSuiType(
-        TwoStepRole.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::two_step_role::TwoStepRole<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: TwoStepRole.$isPhantom,
-      reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => TwoStepRole.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => TwoStepRole.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => TwoStepRole.fromBcs(T, data),
-      bcs: TwoStepRole.bcs,
-      fromJSONField: (field: any) => TwoStepRole.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => TwoStepRole.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) => TwoStepRole.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) => TwoStepRole.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TwoStepRole.fetch(client, T, id),
-      new: (fields: TwoStepRoleFields<ToPhantomTypeArgument<T>>) => {
-        return new TwoStepRole([extractType(T)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return TwoStepRole.reified
-  }
-
-  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PhantomReified<ToTypeStr<TwoStepRole<ToPhantomTypeArgument<T>>>> {
-    return phantom(TwoStepRole.reified(T))
-  }
-  static get p() {
-    return TwoStepRole.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('TwoStepRole', {
-      active_address: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      pending_address: Option.bcs(
-        bcs.bytes(32).transform({
-          input: (val: string) => fromHEX(val),
-          output: (val: Uint8Array) => toHEX(val),
-        })
-      ),
-    })
-  }
-
-  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    fields: Record<string, any>
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    return TwoStepRole.reified(typeArg).new({
-      activeAddress: decodeFromFields('address', fields.active_address),
-      pendingAddress: decodeFromFields(Option.reified('address'), fields.pending_address),
-    })
-  }
-
-  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    item: FieldsWithTypes
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    if (!isTwoStepRole(item.type)) {
-      throw new Error('not a TwoStepRole type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return TwoStepRole.reified(typeArg).new({
-      activeAddress: decodeFromFieldsWithTypes('address', item.fields.active_address),
-      pendingAddress: decodeFromFieldsWithTypes(
-        Option.reified('address'),
-        item.fields.pending_address
-      ),
-    })
-  }
-
-  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: Uint8Array
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    return TwoStepRole.fromFields(typeArg, TwoStepRole.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      activeAddress: this.activeAddress,
-      pendingAddress: fieldToJSON<Option<'address'>>(
-        `${Option.$typeName}<address>`,
-        this.pendingAddress
-      ),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    field: any
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    return TwoStepRole.reified(typeArg).new({
-      activeAddress: decodeFromJSONField('address', field.activeAddress),
-      pendingAddress: decodeFromJSONField(Option.reified('address'), field.pendingAddress),
-    })
-  }
-
-  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    json: Record<string, any>
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== TwoStepRole.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(TwoStepRole.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return TwoStepRole.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    content: SuiParsedData
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isTwoStepRole(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a TwoStepRole object`)
-    }
-    return TwoStepRole.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: SuiObjectData
-  ): TwoStepRole<ToPhantomTypeArgument<T>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isTwoStepRole(data.bcs.type)) {
-        throw new Error(`object at is not a TwoStepRole object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return TwoStepRole.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return TwoStepRole.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: T,
-    id: string
-  ): Promise<TwoStepRole<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TwoStepRole object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTwoStepRole(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a TwoStepRole object`)
-    }
-
-    return TwoStepRole.fromSuiObjectData(typeArg, res.data)
   }
 }

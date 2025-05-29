@@ -26,20 +26,39 @@ export function calcMaxAddLiquidityAmounts(
   })
 }
 
-export interface CreateRebalanceReceiptArgs {
+export interface RebalanceAddLiquidityArgs {
   position: TransactionObjectInput
-  pool: TransactionObjectInput
+  config: TransactionObjectInput
+  receipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  bluefinPool: TransactionObjectInput
+  bluefinConfig: TransactionObjectInput
+  balanceX: TransactionObjectInput
+  balanceY: TransactionObjectInput
+  clock: TransactionObjectInput
 }
 
-export function createRebalanceReceipt(
+export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreateRebalanceReceiptArgs
+  args: RebalanceAddLiquidityArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::create_rebalance_receipt`,
+    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_add_liquidity`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.position), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.receipt),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.bluefinPool),
+      obj(tx, args.bluefinConfig),
+      obj(tx, args.balanceX),
+      obj(tx, args.balanceY),
+      obj(tx, args.clock),
+    ],
   })
 }
 
@@ -79,73 +98,20 @@ export function ownerAddLiquidity(
   })
 }
 
-export interface RebalanceAddLiquidityArgs {
+export interface CreateRebalanceReceiptArgs {
   position: TransactionObjectInput
-  config: TransactionObjectInput
-  receipt: TransactionObjectInput
-  priceInfo: TransactionObjectInput
-  debtInfo: TransactionObjectInput
-  bluefinPool: TransactionObjectInput
-  bluefinConfig: TransactionObjectInput
-  balanceX: TransactionObjectInput
-  balanceY: TransactionObjectInput
-  clock: TransactionObjectInput
+  pool: TransactionObjectInput
 }
 
-export function rebalanceAddLiquidity(
+export function createRebalanceReceipt(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RebalanceAddLiquidityArgs
+  args: CreateRebalanceReceiptArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_add_liquidity`,
+    target: `${PUBLISHED_AT}::bluefin_spot::create_rebalance_receipt`,
     typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.position),
-      obj(tx, args.config),
-      obj(tx, args.receipt),
-      obj(tx, args.priceInfo),
-      obj(tx, args.debtInfo),
-      obj(tx, args.bluefinPool),
-      obj(tx, args.bluefinConfig),
-      obj(tx, args.balanceX),
-      obj(tx, args.balanceY),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface RebalanceClaimBatchSwapToXArgs {
-  receipt: TransactionObjectInput
-  batchSwap: TransactionObjectInput
-}
-
-export function rebalanceClaimBatchSwapToX(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RebalanceClaimBatchSwapToXArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_claim_batch_swap_to_x`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
-  })
-}
-
-export interface RebalanceClaimBatchSwapToYArgs {
-  receipt: TransactionObjectInput
-  batchSwap: TransactionObjectInput
-}
-
-export function rebalanceClaimBatchSwapToY(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RebalanceClaimBatchSwapToYArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_claim_batch_swap_to_y`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
+    arguments: [obj(tx, args.position), obj(tx, args.pool)],
   })
 }
 
@@ -221,6 +187,40 @@ export function rebalanceCollectRewardForBatchSelling(
   })
 }
 
+export interface RebalanceClaimBatchSwapToXArgs {
+  receipt: TransactionObjectInput
+  batchSwap: TransactionObjectInput
+}
+
+export function rebalanceClaimBatchSwapToX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RebalanceClaimBatchSwapToXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_claim_batch_swap_to_x`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
+  })
+}
+
+export interface RebalanceClaimBatchSwapToYArgs {
+  receipt: TransactionObjectInput
+  batchSwap: TransactionObjectInput
+}
+
+export function rebalanceClaimBatchSwapToY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RebalanceClaimBatchSwapToYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::rebalance_claim_batch_swap_to_y`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
+  })
+}
+
 export interface RebalanceFinalizeAddLiquidityArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -251,6 +251,70 @@ export function rebalanceFinalizeAddLiquidity(
       obj(tx, args.bluefinConfig),
       obj(tx, args.receipt),
       obj(tx, args.clock),
+    ],
+  })
+}
+
+export function swapPayAmount(
+  tx: Transaction,
+  typeArgs: [string, string],
+  receipt: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::swap_pay_amount`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, receipt)],
+  })
+}
+
+export interface FlashSwapArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  a2B: boolean | TransactionArgument
+  byAmountIn: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+  sqrtPriceLimit: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function flashSwap(tx: Transaction, typeArgs: [string, string], args: FlashSwapArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::flash_swap`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.a2B, `bool`),
+      pure(tx, args.byAmountIn, `bool`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.sqrtPriceLimit, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayFlashSwapArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  balanceA: TransactionObjectInput
+  balanceB: TransactionObjectInput
+  receipt: TransactionObjectInput
+}
+
+export function repayFlashSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RepayFlashSwapArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::bluefin_spot::repay_flash_swap`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.balanceA),
+      obj(tx, args.balanceB),
+      obj(tx, args.receipt),
     ],
   })
 }

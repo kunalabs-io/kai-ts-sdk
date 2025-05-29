@@ -3,20 +3,6 @@ import { String } from '../../_dependencies/onchain/0x1/string/structs'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface ClaimRefFeeArgs {
-  globalConfig: TransactionObjectInput
-  partnerCap: TransactionObjectInput
-  partner: TransactionObjectInput
-}
-
-export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner_script::claim_ref_fee`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.globalConfig), obj(tx, args.partnerCap), obj(tx, args.partner)],
-  })
-}
-
 export interface CreatePartnerArgs {
   globalConfig: TransactionObjectInput
   partners: TransactionObjectInput
@@ -75,5 +61,19 @@ export function updatePartnerTimeRange(tx: Transaction, args: UpdatePartnerTimeR
       pure(tx, args.u642, `u64`),
       obj(tx, args.clock),
     ],
+  })
+}
+
+export interface ClaimRefFeeArgs {
+  globalConfig: TransactionObjectInput
+  partnerCap: TransactionObjectInput
+  partner: TransactionObjectInput
+}
+
+export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner_script::claim_ref_fee`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.globalConfig), obj(tx, args.partnerCap), obj(tx, args.partner)],
   })
 }

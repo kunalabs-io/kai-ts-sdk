@@ -2,16 +2,76 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function balanceOf(tx: Transaction, typeArg: string, vault: TransactionObjectInput) {
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::init`, arguments: [] })
+}
+
+export function new_(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::new`, arguments: [] })
+}
+
+export function rewarders(tx: Transaction, manager: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::balance_of`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, vault)],
+    target: `${PUBLISHED_AT}::rewarder::rewarders`,
+    arguments: [obj(tx, manager)],
   })
 }
 
-export function balances(tx: Transaction, vault: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::balances`, arguments: [obj(tx, vault)] })
+export function rewardsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::rewards_growth_global`,
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function pointsReleased(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::points_released`,
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function pointsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::points_growth_global`,
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function lastUpdateTime(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::last_update_time`,
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function rewardCoin(tx: Transaction, rewarder: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::reward_coin`,
+    arguments: [obj(tx, rewarder)],
+  })
+}
+
+export function emissionsPerSecond(tx: Transaction, rewarder: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::emissions_per_second`,
+    arguments: [obj(tx, rewarder)],
+  })
+}
+
+export function growthGlobal(tx: Transaction, rewarder: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::growth_global`,
+    arguments: [obj(tx, rewarder)],
+  })
+}
+
+export function rewarderIndex(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::rewarder_index`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, manager)],
+  })
 }
 
 export function borrowRewarder(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
@@ -56,74 +116,14 @@ export function emergentWithdraw(tx: Transaction, typeArg: string, args: Emergen
   })
 }
 
-export function emissionsPerSecond(tx: Transaction, rewarder: TransactionObjectInput) {
+export function balances(tx: Transaction, vault: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::balances`, arguments: [obj(tx, vault)] })
+}
+
+export function balanceOf(tx: Transaction, typeArg: string, vault: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::emissions_per_second`,
-    arguments: [obj(tx, rewarder)],
-  })
-}
-
-export function growthGlobal(tx: Transaction, rewarder: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::growth_global`,
-    arguments: [obj(tx, rewarder)],
-  })
-}
-
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::init`, arguments: [] })
-}
-
-export function lastUpdateTime(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::last_update_time`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::new`, arguments: [] })
-}
-
-export function pointsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::points_growth_global`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function pointsReleased(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::points_released`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function rewardCoin(tx: Transaction, rewarder: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::reward_coin`,
-    arguments: [obj(tx, rewarder)],
-  })
-}
-
-export function rewarderIndex(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewarder_index`,
+    target: `${PUBLISHED_AT}::rewarder::balance_of`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function rewarders(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewarders`,
-    arguments: [obj(tx, manager)],
-  })
-}
-
-export function rewardsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewards_growth_global`,
-    arguments: [obj(tx, manager)],
+    arguments: [obj(tx, vault)],
   })
 }

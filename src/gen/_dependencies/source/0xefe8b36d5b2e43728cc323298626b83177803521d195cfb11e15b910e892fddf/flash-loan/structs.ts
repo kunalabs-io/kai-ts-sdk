@@ -203,6 +203,188 @@ export class BorrowFlashLoanEvent implements StructClass {
   }
 }
 
+/* ============================== RepayFlashLoanEvent =============================== */
+
+export function isRepayFlashLoanEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::flash_loan::RepayFlashLoanEvent`
+}
+
+export interface RepayFlashLoanEventFields {
+  borrower: ToField<'address'>
+  asset: ToField<TypeName>
+  amount: ToField<'u64'>
+}
+
+export type RepayFlashLoanEventReified = Reified<RepayFlashLoanEvent, RepayFlashLoanEventFields>
+
+export class RepayFlashLoanEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::flash_loan::RepayFlashLoanEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RepayFlashLoanEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = RepayFlashLoanEvent.$isPhantom
+
+  readonly borrower: ToField<'address'>
+  readonly asset: ToField<TypeName>
+  readonly amount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: RepayFlashLoanEventFields) {
+    this.$fullTypeName = composeSuiType(
+      RepayFlashLoanEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`
+    this.$typeArgs = typeArgs
+
+    this.borrower = fields.borrower
+    this.asset = fields.asset
+    this.amount = fields.amount
+  }
+
+  static reified(): RepayFlashLoanEventReified {
+    return {
+      typeName: RepayFlashLoanEvent.$typeName,
+      fullTypeName: composeSuiType(
+        RepayFlashLoanEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`,
+      typeArgs: [] as [],
+      isPhantom: RepayFlashLoanEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RepayFlashLoanEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RepayFlashLoanEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RepayFlashLoanEvent.fromBcs(data),
+      bcs: RepayFlashLoanEvent.bcs,
+      fromJSONField: (field: any) => RepayFlashLoanEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RepayFlashLoanEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RepayFlashLoanEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RepayFlashLoanEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RepayFlashLoanEvent.fetch(client, id),
+      new: (fields: RepayFlashLoanEventFields) => {
+        return new RepayFlashLoanEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RepayFlashLoanEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RepayFlashLoanEvent>> {
+    return phantom(RepayFlashLoanEvent.reified())
+  }
+  static get p() {
+    return RepayFlashLoanEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RepayFlashLoanEvent', {
+      borrower: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      asset: TypeName.bcs,
+      amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RepayFlashLoanEvent {
+    return RepayFlashLoanEvent.reified().new({
+      borrower: decodeFromFields('address', fields.borrower),
+      asset: decodeFromFields(TypeName.reified(), fields.asset),
+      amount: decodeFromFields('u64', fields.amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RepayFlashLoanEvent {
+    if (!isRepayFlashLoanEvent(item.type)) {
+      throw new Error('not a RepayFlashLoanEvent type')
+    }
+
+    return RepayFlashLoanEvent.reified().new({
+      borrower: decodeFromFieldsWithTypes('address', item.fields.borrower),
+      asset: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.asset),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RepayFlashLoanEvent {
+    return RepayFlashLoanEvent.fromFields(RepayFlashLoanEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      borrower: this.borrower,
+      asset: this.asset.toJSONField(),
+      amount: this.amount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RepayFlashLoanEvent {
+    return RepayFlashLoanEvent.reified().new({
+      borrower: decodeFromJSONField('address', field.borrower),
+      asset: decodeFromJSONField(TypeName.reified(), field.asset),
+      amount: decodeFromJSONField('u64', field.amount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RepayFlashLoanEvent {
+    if (json.$typeName !== RepayFlashLoanEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RepayFlashLoanEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RepayFlashLoanEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRepayFlashLoanEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RepayFlashLoanEvent object`)
+    }
+    return RepayFlashLoanEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RepayFlashLoanEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRepayFlashLoanEvent(data.bcs.type)) {
+        throw new Error(`object at is not a RepayFlashLoanEvent object`)
+      }
+
+      return RepayFlashLoanEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RepayFlashLoanEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RepayFlashLoanEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RepayFlashLoanEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRepayFlashLoanEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RepayFlashLoanEvent object`)
+    }
+
+    return RepayFlashLoanEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== BorrowFlashLoanV2Event =============================== */
 
 export function isBorrowFlashLoanV2Event(type: string): boolean {
@@ -417,188 +599,6 @@ export class BorrowFlashLoanV2Event implements StructClass {
     }
 
     return BorrowFlashLoanV2Event.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RepayFlashLoanEvent =============================== */
-
-export function isRepayFlashLoanEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::flash_loan::RepayFlashLoanEvent`
-}
-
-export interface RepayFlashLoanEventFields {
-  borrower: ToField<'address'>
-  asset: ToField<TypeName>
-  amount: ToField<'u64'>
-}
-
-export type RepayFlashLoanEventReified = Reified<RepayFlashLoanEvent, RepayFlashLoanEventFields>
-
-export class RepayFlashLoanEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::flash_loan::RepayFlashLoanEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RepayFlashLoanEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = RepayFlashLoanEvent.$isPhantom
-
-  readonly borrower: ToField<'address'>
-  readonly asset: ToField<TypeName>
-  readonly amount: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: RepayFlashLoanEventFields) {
-    this.$fullTypeName = composeSuiType(
-      RepayFlashLoanEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`
-    this.$typeArgs = typeArgs
-
-    this.borrower = fields.borrower
-    this.asset = fields.asset
-    this.amount = fields.amount
-  }
-
-  static reified(): RepayFlashLoanEventReified {
-    return {
-      typeName: RepayFlashLoanEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RepayFlashLoanEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::flash_loan::RepayFlashLoanEvent`,
-      typeArgs: [] as [],
-      isPhantom: RepayFlashLoanEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RepayFlashLoanEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RepayFlashLoanEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RepayFlashLoanEvent.fromBcs(data),
-      bcs: RepayFlashLoanEvent.bcs,
-      fromJSONField: (field: any) => RepayFlashLoanEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RepayFlashLoanEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RepayFlashLoanEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RepayFlashLoanEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RepayFlashLoanEvent.fetch(client, id),
-      new: (fields: RepayFlashLoanEventFields) => {
-        return new RepayFlashLoanEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RepayFlashLoanEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RepayFlashLoanEvent>> {
-    return phantom(RepayFlashLoanEvent.reified())
-  }
-  static get p() {
-    return RepayFlashLoanEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RepayFlashLoanEvent', {
-      borrower: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      asset: TypeName.bcs,
-      amount: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RepayFlashLoanEvent {
-    return RepayFlashLoanEvent.reified().new({
-      borrower: decodeFromFields('address', fields.borrower),
-      asset: decodeFromFields(TypeName.reified(), fields.asset),
-      amount: decodeFromFields('u64', fields.amount),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RepayFlashLoanEvent {
-    if (!isRepayFlashLoanEvent(item.type)) {
-      throw new Error('not a RepayFlashLoanEvent type')
-    }
-
-    return RepayFlashLoanEvent.reified().new({
-      borrower: decodeFromFieldsWithTypes('address', item.fields.borrower),
-      asset: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.asset),
-      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RepayFlashLoanEvent {
-    return RepayFlashLoanEvent.fromFields(RepayFlashLoanEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      borrower: this.borrower,
-      asset: this.asset.toJSONField(),
-      amount: this.amount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RepayFlashLoanEvent {
-    return RepayFlashLoanEvent.reified().new({
-      borrower: decodeFromJSONField('address', field.borrower),
-      asset: decodeFromJSONField(TypeName.reified(), field.asset),
-      amount: decodeFromJSONField('u64', field.amount),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RepayFlashLoanEvent {
-    if (json.$typeName !== RepayFlashLoanEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RepayFlashLoanEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RepayFlashLoanEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRepayFlashLoanEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RepayFlashLoanEvent object`)
-    }
-    return RepayFlashLoanEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RepayFlashLoanEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRepayFlashLoanEvent(data.bcs.type)) {
-        throw new Error(`object at is not a RepayFlashLoanEvent object`)
-      }
-
-      return RepayFlashLoanEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RepayFlashLoanEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RepayFlashLoanEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RepayFlashLoanEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRepayFlashLoanEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RepayFlashLoanEvent object`)
-    }
-
-    return RepayFlashLoanEvent.fromSuiObjectData(res.data)
   }
 }
 

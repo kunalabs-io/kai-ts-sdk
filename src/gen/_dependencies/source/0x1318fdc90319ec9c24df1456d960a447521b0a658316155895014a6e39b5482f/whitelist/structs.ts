@@ -16,107 +16,110 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== AllowAllEvent =============================== */
+/* ============================== WhitelistKey =============================== */
 
-export function isAllowAllEvent(type: string): boolean {
+export function isWhitelistKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::whitelist::AllowAllEvent`
+  return type === `${PKG_V1}::whitelist::WhitelistKey`
 }
 
-export interface AllowAllEventFields {
-  id: ToField<ID>
+export interface WhitelistKeyFields {
+  address: ToField<'address'>
 }
 
-export type AllowAllEventReified = Reified<AllowAllEvent, AllowAllEventFields>
+export type WhitelistKeyReified = Reified<WhitelistKey, WhitelistKeyFields>
 
-export class AllowAllEvent implements StructClass {
+export class WhitelistKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::whitelist::AllowAllEvent`
+  static readonly $typeName = `${PKG_V1}::whitelist::WhitelistKey`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AllowAllEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::AllowAllEvent`
+  readonly $typeName = WhitelistKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::WhitelistKey`
   readonly $typeArgs: []
-  readonly $isPhantom = AllowAllEvent.$isPhantom
+  readonly $isPhantom = WhitelistKey.$isPhantom
 
-  readonly id: ToField<ID>
+  readonly address: ToField<'address'>
 
-  private constructor(typeArgs: [], fields: AllowAllEventFields) {
+  private constructor(typeArgs: [], fields: WhitelistKeyFields) {
     this.$fullTypeName = composeSuiType(
-      AllowAllEvent.$typeName,
+      WhitelistKey.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::whitelist::AllowAllEvent`
+    ) as `${typeof PKG_V1}::whitelist::WhitelistKey`
     this.$typeArgs = typeArgs
 
-    this.id = fields.id
+    this.address = fields.address
   }
 
-  static reified(): AllowAllEventReified {
+  static reified(): WhitelistKeyReified {
     return {
-      typeName: AllowAllEvent.$typeName,
+      typeName: WhitelistKey.$typeName,
       fullTypeName: composeSuiType(
-        AllowAllEvent.$typeName,
+        WhitelistKey.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::whitelist::AllowAllEvent`,
+      ) as `${typeof PKG_V1}::whitelist::WhitelistKey`,
       typeArgs: [] as [],
-      isPhantom: AllowAllEvent.$isPhantom,
+      isPhantom: WhitelistKey.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AllowAllEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AllowAllEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AllowAllEvent.fromBcs(data),
-      bcs: AllowAllEvent.bcs,
-      fromJSONField: (field: any) => AllowAllEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AllowAllEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AllowAllEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AllowAllEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AllowAllEvent.fetch(client, id),
-      new: (fields: AllowAllEventFields) => {
-        return new AllowAllEvent([], fields)
+      fromFields: (fields: Record<string, any>) => WhitelistKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WhitelistKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => WhitelistKey.fromBcs(data),
+      bcs: WhitelistKey.bcs,
+      fromJSONField: (field: any) => WhitelistKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => WhitelistKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => WhitelistKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => WhitelistKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => WhitelistKey.fetch(client, id),
+      new: (fields: WhitelistKeyFields) => {
+        return new WhitelistKey([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return AllowAllEvent.reified()
+    return WhitelistKey.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<AllowAllEvent>> {
-    return phantom(AllowAllEvent.reified())
+  static phantom(): PhantomReified<ToTypeStr<WhitelistKey>> {
+    return phantom(WhitelistKey.reified())
   }
   static get p() {
-    return AllowAllEvent.phantom()
+    return WhitelistKey.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('AllowAllEvent', {
-      id: ID.bcs,
+    return bcs.struct('WhitelistKey', {
+      address: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
     })
   }
 
-  static fromFields(fields: Record<string, any>): AllowAllEvent {
-    return AllowAllEvent.reified().new({ id: decodeFromFields(ID.reified(), fields.id) })
+  static fromFields(fields: Record<string, any>): WhitelistKey {
+    return WhitelistKey.reified().new({ address: decodeFromFields('address', fields.address) })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): AllowAllEvent {
-    if (!isAllowAllEvent(item.type)) {
-      throw new Error('not a AllowAllEvent type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): WhitelistKey {
+    if (!isWhitelistKey(item.type)) {
+      throw new Error('not a WhitelistKey type')
     }
 
-    return AllowAllEvent.reified().new({
-      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
+    return WhitelistKey.reified().new({
+      address: decodeFromFieldsWithTypes('address', item.fields.address),
     })
   }
 
-  static fromBcs(data: Uint8Array): AllowAllEvent {
-    return AllowAllEvent.fromFields(AllowAllEvent.bcs.parse(data))
+  static fromBcs(data: Uint8Array): WhitelistKey {
+    return WhitelistKey.fromFields(WhitelistKey.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      id: this.id,
+      address: this.address,
     }
   }
 
@@ -124,54 +127,54 @@ export class AllowAllEvent implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): AllowAllEvent {
-    return AllowAllEvent.reified().new({ id: decodeFromJSONField(ID.reified(), field.id) })
+  static fromJSONField(field: any): WhitelistKey {
+    return WhitelistKey.reified().new({ address: decodeFromJSONField('address', field.address) })
   }
 
-  static fromJSON(json: Record<string, any>): AllowAllEvent {
-    if (json.$typeName !== AllowAllEvent.$typeName) {
+  static fromJSON(json: Record<string, any>): WhitelistKey {
+    if (json.$typeName !== WhitelistKey.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return AllowAllEvent.fromJSONField(json)
+    return WhitelistKey.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): AllowAllEvent {
+  static fromSuiParsedData(content: SuiParsedData): WhitelistKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isAllowAllEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AllowAllEvent object`)
+    if (!isWhitelistKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a WhitelistKey object`)
     }
-    return AllowAllEvent.fromFieldsWithTypes(content)
+    return WhitelistKey.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): AllowAllEvent {
+  static fromSuiObjectData(data: SuiObjectData): WhitelistKey {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAllowAllEvent(data.bcs.type)) {
-        throw new Error(`object at is not a AllowAllEvent object`)
+      if (data.bcs.dataType !== 'moveObject' || !isWhitelistKey(data.bcs.type)) {
+        throw new Error(`object at is not a WhitelistKey object`)
       }
 
-      return AllowAllEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return WhitelistKey.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return AllowAllEvent.fromSuiParsedData(data.content)
+      return WhitelistKey.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AllowAllEvent> {
+  static async fetch(client: SuiClient, id: string): Promise<WhitelistKey> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching AllowAllEvent object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching WhitelistKey object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAllowAllEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AllowAllEvent object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isWhitelistKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a WhitelistKey object`)
     }
 
-    return AllowAllEvent.fromSuiObjectData(res.data)
+    return WhitelistKey.fromSuiObjectData(res.data)
   }
 }
 
@@ -334,165 +337,6 @@ export class AllowAllKey implements StructClass {
   }
 }
 
-/* ============================== RejectAllEvent =============================== */
-
-export function isRejectAllEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::whitelist::RejectAllEvent`
-}
-
-export interface RejectAllEventFields {
-  id: ToField<ID>
-}
-
-export type RejectAllEventReified = Reified<RejectAllEvent, RejectAllEventFields>
-
-export class RejectAllEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::whitelist::RejectAllEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RejectAllEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::RejectAllEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = RejectAllEvent.$isPhantom
-
-  readonly id: ToField<ID>
-
-  private constructor(typeArgs: [], fields: RejectAllEventFields) {
-    this.$fullTypeName = composeSuiType(
-      RejectAllEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::whitelist::RejectAllEvent`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-  }
-
-  static reified(): RejectAllEventReified {
-    return {
-      typeName: RejectAllEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RejectAllEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::whitelist::RejectAllEvent`,
-      typeArgs: [] as [],
-      isPhantom: RejectAllEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RejectAllEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RejectAllEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RejectAllEvent.fromBcs(data),
-      bcs: RejectAllEvent.bcs,
-      fromJSONField: (field: any) => RejectAllEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RejectAllEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RejectAllEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RejectAllEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RejectAllEvent.fetch(client, id),
-      new: (fields: RejectAllEventFields) => {
-        return new RejectAllEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RejectAllEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RejectAllEvent>> {
-    return phantom(RejectAllEvent.reified())
-  }
-  static get p() {
-    return RejectAllEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RejectAllEvent', {
-      id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RejectAllEvent {
-    return RejectAllEvent.reified().new({ id: decodeFromFields(ID.reified(), fields.id) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RejectAllEvent {
-    if (!isRejectAllEvent(item.type)) {
-      throw new Error('not a RejectAllEvent type')
-    }
-
-    return RejectAllEvent.reified().new({
-      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RejectAllEvent {
-    return RejectAllEvent.fromFields(RejectAllEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RejectAllEvent {
-    return RejectAllEvent.reified().new({ id: decodeFromJSONField(ID.reified(), field.id) })
-  }
-
-  static fromJSON(json: Record<string, any>): RejectAllEvent {
-    if (json.$typeName !== RejectAllEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RejectAllEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RejectAllEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRejectAllEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RejectAllEvent object`)
-    }
-    return RejectAllEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RejectAllEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRejectAllEvent(data.bcs.type)) {
-        throw new Error(`object at is not a RejectAllEvent object`)
-      }
-
-      return RejectAllEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RejectAllEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RejectAllEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RejectAllEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRejectAllEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RejectAllEvent object`)
-    }
-
-    return RejectAllEvent.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== RejectAllKey =============================== */
 
 export function isRejectAllKey(type: string): boolean {
@@ -649,182 +493,6 @@ export class RejectAllKey implements StructClass {
     }
 
     return RejectAllKey.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== SwitchToWhitelistModeEvent =============================== */
-
-export function isSwitchToWhitelistModeEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
-}
-
-export interface SwitchToWhitelistModeEventFields {
-  id: ToField<ID>
-}
-
-export type SwitchToWhitelistModeEventReified = Reified<
-  SwitchToWhitelistModeEvent,
-  SwitchToWhitelistModeEventFields
->
-
-export class SwitchToWhitelistModeEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = SwitchToWhitelistModeEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = SwitchToWhitelistModeEvent.$isPhantom
-
-  readonly id: ToField<ID>
-
-  private constructor(typeArgs: [], fields: SwitchToWhitelistModeEventFields) {
-    this.$fullTypeName = composeSuiType(
-      SwitchToWhitelistModeEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-  }
-
-  static reified(): SwitchToWhitelistModeEventReified {
-    return {
-      typeName: SwitchToWhitelistModeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SwitchToWhitelistModeEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`,
-      typeArgs: [] as [],
-      isPhantom: SwitchToWhitelistModeEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SwitchToWhitelistModeEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        SwitchToWhitelistModeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwitchToWhitelistModeEvent.fromBcs(data),
-      bcs: SwitchToWhitelistModeEvent.bcs,
-      fromJSONField: (field: any) => SwitchToWhitelistModeEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SwitchToWhitelistModeEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        SwitchToWhitelistModeEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        SwitchToWhitelistModeEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SwitchToWhitelistModeEvent.fetch(client, id),
-      new: (fields: SwitchToWhitelistModeEventFields) => {
-        return new SwitchToWhitelistModeEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return SwitchToWhitelistModeEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<SwitchToWhitelistModeEvent>> {
-    return phantom(SwitchToWhitelistModeEvent.reified())
-  }
-  static get p() {
-    return SwitchToWhitelistModeEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('SwitchToWhitelistModeEvent', {
-      id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): SwitchToWhitelistModeEvent {
-    return SwitchToWhitelistModeEvent.reified().new({
-      id: decodeFromFields(ID.reified(), fields.id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): SwitchToWhitelistModeEvent {
-    if (!isSwitchToWhitelistModeEvent(item.type)) {
-      throw new Error('not a SwitchToWhitelistModeEvent type')
-    }
-
-    return SwitchToWhitelistModeEvent.reified().new({
-      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): SwitchToWhitelistModeEvent {
-    return SwitchToWhitelistModeEvent.fromFields(SwitchToWhitelistModeEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): SwitchToWhitelistModeEvent {
-    return SwitchToWhitelistModeEvent.reified().new({
-      id: decodeFromJSONField(ID.reified(), field.id),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): SwitchToWhitelistModeEvent {
-    if (json.$typeName !== SwitchToWhitelistModeEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return SwitchToWhitelistModeEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): SwitchToWhitelistModeEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSwitchToWhitelistModeEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a SwitchToWhitelistModeEvent object`
-      )
-    }
-    return SwitchToWhitelistModeEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): SwitchToWhitelistModeEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSwitchToWhitelistModeEvent(data.bcs.type)) {
-        throw new Error(`object at is not a SwitchToWhitelistModeEvent object`)
-      }
-
-      return SwitchToWhitelistModeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return SwitchToWhitelistModeEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<SwitchToWhitelistModeEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching SwitchToWhitelistModeEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isSwitchToWhitelistModeEvent(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a SwitchToWhitelistModeEvent object`)
-    }
-
-    return SwitchToWhitelistModeEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -999,168 +667,6 @@ export class WhitelistAddEvent implements StructClass {
     }
 
     return WhitelistAddEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== WhitelistKey =============================== */
-
-export function isWhitelistKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::whitelist::WhitelistKey`
-}
-
-export interface WhitelistKeyFields {
-  address: ToField<'address'>
-}
-
-export type WhitelistKeyReified = Reified<WhitelistKey, WhitelistKeyFields>
-
-export class WhitelistKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::whitelist::WhitelistKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = WhitelistKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::WhitelistKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = WhitelistKey.$isPhantom
-
-  readonly address: ToField<'address'>
-
-  private constructor(typeArgs: [], fields: WhitelistKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      WhitelistKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::whitelist::WhitelistKey`
-    this.$typeArgs = typeArgs
-
-    this.address = fields.address
-  }
-
-  static reified(): WhitelistKeyReified {
-    return {
-      typeName: WhitelistKey.$typeName,
-      fullTypeName: composeSuiType(
-        WhitelistKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::whitelist::WhitelistKey`,
-      typeArgs: [] as [],
-      isPhantom: WhitelistKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => WhitelistKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => WhitelistKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WhitelistKey.fromBcs(data),
-      bcs: WhitelistKey.bcs,
-      fromJSONField: (field: any) => WhitelistKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => WhitelistKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => WhitelistKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => WhitelistKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => WhitelistKey.fetch(client, id),
-      new: (fields: WhitelistKeyFields) => {
-        return new WhitelistKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return WhitelistKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<WhitelistKey>> {
-    return phantom(WhitelistKey.reified())
-  }
-  static get p() {
-    return WhitelistKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('WhitelistKey', {
-      address: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): WhitelistKey {
-    return WhitelistKey.reified().new({ address: decodeFromFields('address', fields.address) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): WhitelistKey {
-    if (!isWhitelistKey(item.type)) {
-      throw new Error('not a WhitelistKey type')
-    }
-
-    return WhitelistKey.reified().new({
-      address: decodeFromFieldsWithTypes('address', item.fields.address),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): WhitelistKey {
-    return WhitelistKey.fromFields(WhitelistKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      address: this.address,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): WhitelistKey {
-    return WhitelistKey.reified().new({ address: decodeFromJSONField('address', field.address) })
-  }
-
-  static fromJSON(json: Record<string, any>): WhitelistKey {
-    if (json.$typeName !== WhitelistKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return WhitelistKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): WhitelistKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isWhitelistKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a WhitelistKey object`)
-    }
-    return WhitelistKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): WhitelistKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isWhitelistKey(data.bcs.type)) {
-        throw new Error(`object at is not a WhitelistKey object`)
-      }
-
-      return WhitelistKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return WhitelistKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<WhitelistKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching WhitelistKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWhitelistKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a WhitelistKey object`)
-    }
-
-    return WhitelistKey.fromSuiObjectData(res.data)
   }
 }
 
@@ -1340,5 +846,499 @@ export class WhitelistRemoveEvent implements StructClass {
     }
 
     return WhitelistRemoveEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== AllowAllEvent =============================== */
+
+export function isAllowAllEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::whitelist::AllowAllEvent`
+}
+
+export interface AllowAllEventFields {
+  id: ToField<ID>
+}
+
+export type AllowAllEventReified = Reified<AllowAllEvent, AllowAllEventFields>
+
+export class AllowAllEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::whitelist::AllowAllEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AllowAllEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::AllowAllEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = AllowAllEvent.$isPhantom
+
+  readonly id: ToField<ID>
+
+  private constructor(typeArgs: [], fields: AllowAllEventFields) {
+    this.$fullTypeName = composeSuiType(
+      AllowAllEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::whitelist::AllowAllEvent`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): AllowAllEventReified {
+    return {
+      typeName: AllowAllEvent.$typeName,
+      fullTypeName: composeSuiType(
+        AllowAllEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::whitelist::AllowAllEvent`,
+      typeArgs: [] as [],
+      isPhantom: AllowAllEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AllowAllEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AllowAllEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AllowAllEvent.fromBcs(data),
+      bcs: AllowAllEvent.bcs,
+      fromJSONField: (field: any) => AllowAllEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AllowAllEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AllowAllEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AllowAllEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AllowAllEvent.fetch(client, id),
+      new: (fields: AllowAllEventFields) => {
+        return new AllowAllEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AllowAllEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AllowAllEvent>> {
+    return phantom(AllowAllEvent.reified())
+  }
+  static get p() {
+    return AllowAllEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AllowAllEvent', {
+      id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AllowAllEvent {
+    return AllowAllEvent.reified().new({ id: decodeFromFields(ID.reified(), fields.id) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AllowAllEvent {
+    if (!isAllowAllEvent(item.type)) {
+      throw new Error('not a AllowAllEvent type')
+    }
+
+    return AllowAllEvent.reified().new({
+      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AllowAllEvent {
+    return AllowAllEvent.fromFields(AllowAllEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AllowAllEvent {
+    return AllowAllEvent.reified().new({ id: decodeFromJSONField(ID.reified(), field.id) })
+  }
+
+  static fromJSON(json: Record<string, any>): AllowAllEvent {
+    if (json.$typeName !== AllowAllEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AllowAllEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AllowAllEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAllowAllEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AllowAllEvent object`)
+    }
+    return AllowAllEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AllowAllEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAllowAllEvent(data.bcs.type)) {
+        throw new Error(`object at is not a AllowAllEvent object`)
+      }
+
+      return AllowAllEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AllowAllEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AllowAllEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AllowAllEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAllowAllEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AllowAllEvent object`)
+    }
+
+    return AllowAllEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== RejectAllEvent =============================== */
+
+export function isRejectAllEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::whitelist::RejectAllEvent`
+}
+
+export interface RejectAllEventFields {
+  id: ToField<ID>
+}
+
+export type RejectAllEventReified = Reified<RejectAllEvent, RejectAllEventFields>
+
+export class RejectAllEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::whitelist::RejectAllEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RejectAllEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::RejectAllEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = RejectAllEvent.$isPhantom
+
+  readonly id: ToField<ID>
+
+  private constructor(typeArgs: [], fields: RejectAllEventFields) {
+    this.$fullTypeName = composeSuiType(
+      RejectAllEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::whitelist::RejectAllEvent`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): RejectAllEventReified {
+    return {
+      typeName: RejectAllEvent.$typeName,
+      fullTypeName: composeSuiType(
+        RejectAllEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::whitelist::RejectAllEvent`,
+      typeArgs: [] as [],
+      isPhantom: RejectAllEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RejectAllEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RejectAllEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RejectAllEvent.fromBcs(data),
+      bcs: RejectAllEvent.bcs,
+      fromJSONField: (field: any) => RejectAllEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RejectAllEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RejectAllEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RejectAllEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RejectAllEvent.fetch(client, id),
+      new: (fields: RejectAllEventFields) => {
+        return new RejectAllEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RejectAllEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RejectAllEvent>> {
+    return phantom(RejectAllEvent.reified())
+  }
+  static get p() {
+    return RejectAllEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RejectAllEvent', {
+      id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RejectAllEvent {
+    return RejectAllEvent.reified().new({ id: decodeFromFields(ID.reified(), fields.id) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RejectAllEvent {
+    if (!isRejectAllEvent(item.type)) {
+      throw new Error('not a RejectAllEvent type')
+    }
+
+    return RejectAllEvent.reified().new({
+      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RejectAllEvent {
+    return RejectAllEvent.fromFields(RejectAllEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RejectAllEvent {
+    return RejectAllEvent.reified().new({ id: decodeFromJSONField(ID.reified(), field.id) })
+  }
+
+  static fromJSON(json: Record<string, any>): RejectAllEvent {
+    if (json.$typeName !== RejectAllEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RejectAllEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RejectAllEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRejectAllEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RejectAllEvent object`)
+    }
+    return RejectAllEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RejectAllEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRejectAllEvent(data.bcs.type)) {
+        throw new Error(`object at is not a RejectAllEvent object`)
+      }
+
+      return RejectAllEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RejectAllEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RejectAllEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RejectAllEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRejectAllEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RejectAllEvent object`)
+    }
+
+    return RejectAllEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== SwitchToWhitelistModeEvent =============================== */
+
+export function isSwitchToWhitelistModeEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
+}
+
+export interface SwitchToWhitelistModeEventFields {
+  id: ToField<ID>
+}
+
+export type SwitchToWhitelistModeEventReified = Reified<
+  SwitchToWhitelistModeEvent,
+  SwitchToWhitelistModeEventFields
+>
+
+export class SwitchToWhitelistModeEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = SwitchToWhitelistModeEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = SwitchToWhitelistModeEvent.$isPhantom
+
+  readonly id: ToField<ID>
+
+  private constructor(typeArgs: [], fields: SwitchToWhitelistModeEventFields) {
+    this.$fullTypeName = composeSuiType(
+      SwitchToWhitelistModeEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): SwitchToWhitelistModeEventReified {
+    return {
+      typeName: SwitchToWhitelistModeEvent.$typeName,
+      fullTypeName: composeSuiType(
+        SwitchToWhitelistModeEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::whitelist::SwitchToWhitelistModeEvent`,
+      typeArgs: [] as [],
+      isPhantom: SwitchToWhitelistModeEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => SwitchToWhitelistModeEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        SwitchToWhitelistModeEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SwitchToWhitelistModeEvent.fromBcs(data),
+      bcs: SwitchToWhitelistModeEvent.bcs,
+      fromJSONField: (field: any) => SwitchToWhitelistModeEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SwitchToWhitelistModeEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        SwitchToWhitelistModeEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        SwitchToWhitelistModeEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SwitchToWhitelistModeEvent.fetch(client, id),
+      new: (fields: SwitchToWhitelistModeEventFields) => {
+        return new SwitchToWhitelistModeEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return SwitchToWhitelistModeEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<SwitchToWhitelistModeEvent>> {
+    return phantom(SwitchToWhitelistModeEvent.reified())
+  }
+  static get p() {
+    return SwitchToWhitelistModeEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('SwitchToWhitelistModeEvent', {
+      id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): SwitchToWhitelistModeEvent {
+    return SwitchToWhitelistModeEvent.reified().new({
+      id: decodeFromFields(ID.reified(), fields.id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): SwitchToWhitelistModeEvent {
+    if (!isSwitchToWhitelistModeEvent(item.type)) {
+      throw new Error('not a SwitchToWhitelistModeEvent type')
+    }
+
+    return SwitchToWhitelistModeEvent.reified().new({
+      id: decodeFromFieldsWithTypes(ID.reified(), item.fields.id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): SwitchToWhitelistModeEvent {
+    return SwitchToWhitelistModeEvent.fromFields(SwitchToWhitelistModeEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): SwitchToWhitelistModeEvent {
+    return SwitchToWhitelistModeEvent.reified().new({
+      id: decodeFromJSONField(ID.reified(), field.id),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): SwitchToWhitelistModeEvent {
+    if (json.$typeName !== SwitchToWhitelistModeEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return SwitchToWhitelistModeEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): SwitchToWhitelistModeEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSwitchToWhitelistModeEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a SwitchToWhitelistModeEvent object`
+      )
+    }
+    return SwitchToWhitelistModeEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): SwitchToWhitelistModeEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSwitchToWhitelistModeEvent(data.bcs.type)) {
+        throw new Error(`object at is not a SwitchToWhitelistModeEvent object`)
+      }
+
+      return SwitchToWhitelistModeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return SwitchToWhitelistModeEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<SwitchToWhitelistModeEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching SwitchToWhitelistModeEvent object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isSwitchToWhitelistModeEvent(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a SwitchToWhitelistModeEvent object`)
+    }
+
+    return SwitchToWhitelistModeEvent.fromSuiObjectData(res.data)
   }
 }

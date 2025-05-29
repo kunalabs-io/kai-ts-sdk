@@ -9,30 +9,6 @@ export function bitwiseNot(tx: Transaction, x: bigint | TransactionArgument) {
   })
 }
 
-export interface DiffArgs {
-  x: bigint | TransactionArgument
-  y: bigint | TransactionArgument
-}
-
-export function diff(tx: Transaction, args: DiffArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u128::diff`,
-    arguments: [pure(tx, args.x, `u128`), pure(tx, args.y, `u128`)],
-  })
-}
-
-export interface DivideAndRoundUpArgs {
-  x: bigint | TransactionArgument
-  y: bigint | TransactionArgument
-}
-
-export function divideAndRoundUp(tx: Transaction, args: DivideAndRoundUpArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::u128::divide_and_round_up`,
-    arguments: [pure(tx, args.x, `u128`), pure(tx, args.y, `u128`)],
-  })
-}
-
 export interface MaxArgs {
   x: bigint | TransactionArgument
   y: bigint | TransactionArgument
@@ -57,6 +33,30 @@ export function min(tx: Transaction, args: MinArgs) {
   })
 }
 
+export interface DiffArgs {
+  x: bigint | TransactionArgument
+  y: bigint | TransactionArgument
+}
+
+export function diff(tx: Transaction, args: DiffArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u128::diff`,
+    arguments: [pure(tx, args.x, `u128`), pure(tx, args.y, `u128`)],
+  })
+}
+
+export interface DivideAndRoundUpArgs {
+  x: bigint | TransactionArgument
+  y: bigint | TransactionArgument
+}
+
+export function divideAndRoundUp(tx: Transaction, args: DivideAndRoundUpArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::u128::divide_and_round_up`,
+    arguments: [pure(tx, args.x, `u128`), pure(tx, args.y, `u128`)],
+  })
+}
+
 export interface PowArgs {
   base: bigint | TransactionArgument
   exponent: number | TransactionArgument
@@ -73,9 +73,9 @@ export function sqrt(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::u128::sqrt`, arguments: [pure(tx, x, `u128`)] })
 }
 
-export function toString(tx: Transaction, x: bigint | TransactionArgument) {
+export function tryAsU8(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::u128::to_string`,
+    target: `${PUBLISHED_AT}::u128::try_as_u8`,
     arguments: [pure(tx, x, `u128`)],
   })
 }
@@ -101,9 +101,9 @@ export function tryAsU64(tx: Transaction, x: bigint | TransactionArgument) {
   })
 }
 
-export function tryAsU8(tx: Transaction, x: bigint | TransactionArgument) {
+export function toString(tx: Transaction, x: bigint | TransactionArgument) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::u128::try_as_u8`,
+    target: `${PUBLISHED_AT}::u128::to_string`,
     arguments: [pure(tx, x, `u128`)],
   })
 }

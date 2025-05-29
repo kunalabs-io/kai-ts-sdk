@@ -27,6 +27,221 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== DebtShareBalance =============================== */
+
+export function isDebtShareBalance(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::debt::DebtShareBalance` + '<')
+}
+
+export interface DebtShareBalanceFields<T extends PhantomTypeArgument> {
+  valueX64: ToField<'u128'>
+}
+
+export type DebtShareBalanceReified<T extends PhantomTypeArgument> = Reified<
+  DebtShareBalance<T>,
+  DebtShareBalanceFields<T>
+>
+
+export class DebtShareBalance<T extends PhantomTypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::debt::DebtShareBalance`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
+
+  readonly $typeName = DebtShareBalance.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
+  readonly $isPhantom = DebtShareBalance.$isPhantom
+
+  readonly valueX64: ToField<'u128'>
+
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: DebtShareBalanceFields<T>) {
+    this.$fullTypeName = composeSuiType(
+      DebtShareBalance.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<T>}>`
+    this.$typeArgs = typeArgs
+
+    this.valueX64 = fields.valueX64
+  }
+
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): DebtShareBalanceReified<ToPhantomTypeArgument<T>> {
+    return {
+      typeName: DebtShareBalance.$typeName,
+      fullTypeName: composeSuiType(
+        DebtShareBalance.$typeName,
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      isPhantom: DebtShareBalance.$isPhantom,
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => DebtShareBalance.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DebtShareBalance.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => DebtShareBalance.fromBcs(T, data),
+      bcs: DebtShareBalance.bcs,
+      fromJSONField: (field: any) => DebtShareBalance.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => DebtShareBalance.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => DebtShareBalance.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => DebtShareBalance.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => DebtShareBalance.fetch(client, T, id),
+      new: (fields: DebtShareBalanceFields<ToPhantomTypeArgument<T>>) => {
+        return new DebtShareBalance([extractType(T)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return DebtShareBalance.reified
+  }
+
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<DebtShareBalance<ToPhantomTypeArgument<T>>>> {
+    return phantom(DebtShareBalance.reified(T))
+  }
+  static get p() {
+    return DebtShareBalance.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('DebtShareBalance', {
+      value_x64: bcs.u128(),
+    })
+  }
+
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    fields: Record<string, any>
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    return DebtShareBalance.reified(typeArg).new({
+      valueX64: decodeFromFields('u128', fields.value_x64),
+    })
+  }
+
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    item: FieldsWithTypes
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    if (!isDebtShareBalance(item.type)) {
+      throw new Error('not a DebtShareBalance type')
+    }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
+
+    return DebtShareBalance.reified(typeArg).new({
+      valueX64: decodeFromFieldsWithTypes('u128', item.fields.value_x64),
+    })
+  }
+
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: Uint8Array
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    return DebtShareBalance.fromFields(typeArg, DebtShareBalance.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      valueX64: this.valueX64.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    field: any
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    return DebtShareBalance.reified(typeArg).new({
+      valueX64: decodeFromJSONField('u128', field.valueX64),
+    })
+  }
+
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    json: Record<string, any>
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== DebtShareBalance.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(DebtShareBalance.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
+
+    return DebtShareBalance.fromJSONField(typeArg, json)
+  }
+
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    content: SuiParsedData
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isDebtShareBalance(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a DebtShareBalance object`)
+    }
+    return DebtShareBalance.fromFieldsWithTypes(typeArg, content)
+  }
+
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: SuiObjectData
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isDebtShareBalance(data.bcs.type)) {
+        throw new Error(`object at is not a DebtShareBalance object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return DebtShareBalance.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return DebtShareBalance.fromSuiParsedData(typeArg, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: T,
+    id: string
+  ): Promise<DebtShareBalance<ToPhantomTypeArgument<T>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching DebtShareBalance object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtShareBalance(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a DebtShareBalance object`)
+    }
+
+    return DebtShareBalance.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
 /* ============================== DebtRegistry =============================== */
 
 export function isDebtRegistry(type: string): boolean {
@@ -247,221 +462,6 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
     }
 
     return DebtRegistry.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== DebtShareBalance =============================== */
-
-export function isDebtShareBalance(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::debt::DebtShareBalance` + '<')
-}
-
-export interface DebtShareBalanceFields<T extends PhantomTypeArgument> {
-  valueX64: ToField<'u128'>
-}
-
-export type DebtShareBalanceReified<T extends PhantomTypeArgument> = Reified<
-  DebtShareBalance<T>,
-  DebtShareBalanceFields<T>
->
-
-export class DebtShareBalance<T extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::debt::DebtShareBalance`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = DebtShareBalance.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<T>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = DebtShareBalance.$isPhantom
-
-  readonly valueX64: ToField<'u128'>
-
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: DebtShareBalanceFields<T>) {
-    this.$fullTypeName = composeSuiType(
-      DebtShareBalance.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<T>}>`
-    this.$typeArgs = typeArgs
-
-    this.valueX64 = fields.valueX64
-  }
-
-  static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): DebtShareBalanceReified<ToPhantomTypeArgument<T>> {
-    return {
-      typeName: DebtShareBalance.$typeName,
-      fullTypeName: composeSuiType(
-        DebtShareBalance.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::debt::DebtShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: DebtShareBalance.$isPhantom,
-      reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => DebtShareBalance.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DebtShareBalance.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => DebtShareBalance.fromBcs(T, data),
-      bcs: DebtShareBalance.bcs,
-      fromJSONField: (field: any) => DebtShareBalance.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => DebtShareBalance.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) => DebtShareBalance.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) => DebtShareBalance.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => DebtShareBalance.fetch(client, T, id),
-      new: (fields: DebtShareBalanceFields<ToPhantomTypeArgument<T>>) => {
-        return new DebtShareBalance([extractType(T)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return DebtShareBalance.reified
-  }
-
-  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PhantomReified<ToTypeStr<DebtShareBalance<ToPhantomTypeArgument<T>>>> {
-    return phantom(DebtShareBalance.reified(T))
-  }
-  static get p() {
-    return DebtShareBalance.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('DebtShareBalance', {
-      value_x64: bcs.u128(),
-    })
-  }
-
-  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    fields: Record<string, any>
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    return DebtShareBalance.reified(typeArg).new({
-      valueX64: decodeFromFields('u128', fields.value_x64),
-    })
-  }
-
-  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    item: FieldsWithTypes
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    if (!isDebtShareBalance(item.type)) {
-      throw new Error('not a DebtShareBalance type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return DebtShareBalance.reified(typeArg).new({
-      valueX64: decodeFromFieldsWithTypes('u128', item.fields.value_x64),
-    })
-  }
-
-  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: Uint8Array
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    return DebtShareBalance.fromFields(typeArg, DebtShareBalance.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      valueX64: this.valueX64.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    field: any
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    return DebtShareBalance.reified(typeArg).new({
-      valueX64: decodeFromJSONField('u128', field.valueX64),
-    })
-  }
-
-  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    json: Record<string, any>
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== DebtShareBalance.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(DebtShareBalance.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return DebtShareBalance.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    content: SuiParsedData
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isDebtShareBalance(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a DebtShareBalance object`)
-    }
-    return DebtShareBalance.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: SuiObjectData
-  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isDebtShareBalance(data.bcs.type)) {
-        throw new Error(`object at is not a DebtShareBalance object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return DebtShareBalance.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return DebtShareBalance.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: T,
-    id: string
-  ): Promise<DebtShareBalance<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DebtShareBalance object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtShareBalance(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a DebtShareBalance object`)
-    }
-
-    return DebtShareBalance.fromSuiObjectData(typeArg, res.data)
   }
 }
 

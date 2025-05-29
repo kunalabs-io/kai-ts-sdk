@@ -33,102 +33,102 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== AConfigFees =============================== */
+/* ============================== ACreatePool =============================== */
 
-export function isAConfigFees(type: string): boolean {
+export function isACreatePool(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::AConfigFees`
+  return type === `${PKG_V1}::supply_pool::ACreatePool`
 }
 
-export interface AConfigFeesFields {
+export interface ACreatePoolFields {
   dummyField: ToField<'bool'>
 }
 
-export type AConfigFeesReified = Reified<AConfigFees, AConfigFeesFields>
+export type ACreatePoolReified = Reified<ACreatePool, ACreatePoolFields>
 
-export class AConfigFees implements StructClass {
+export class ACreatePool implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::AConfigFees`
+  static readonly $typeName = `${PKG_V1}::supply_pool::ACreatePool`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AConfigFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::AConfigFees`
+  readonly $typeName = ACreatePool.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ACreatePool`
   readonly $typeArgs: []
-  readonly $isPhantom = AConfigFees.$isPhantom
+  readonly $isPhantom = ACreatePool.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [], fields: AConfigFeesFields) {
+  private constructor(typeArgs: [], fields: ACreatePoolFields) {
     this.$fullTypeName = composeSuiType(
-      AConfigFees.$typeName,
+      ACreatePool.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::AConfigFees`
+    ) as `${typeof PKG_V1}::supply_pool::ACreatePool`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified(): AConfigFeesReified {
+  static reified(): ACreatePoolReified {
     return {
-      typeName: AConfigFees.$typeName,
+      typeName: ACreatePool.$typeName,
       fullTypeName: composeSuiType(
-        AConfigFees.$typeName,
+        ACreatePool.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::supply_pool::AConfigFees`,
+      ) as `${typeof PKG_V1}::supply_pool::ACreatePool`,
       typeArgs: [] as [],
-      isPhantom: AConfigFees.$isPhantom,
+      isPhantom: ACreatePool.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AConfigFees.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AConfigFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AConfigFees.fromBcs(data),
-      bcs: AConfigFees.bcs,
-      fromJSONField: (field: any) => AConfigFees.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AConfigFees.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AConfigFees.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AConfigFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AConfigFees.fetch(client, id),
-      new: (fields: AConfigFeesFields) => {
-        return new AConfigFees([], fields)
+      fromFields: (fields: Record<string, any>) => ACreatePool.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ACreatePool.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ACreatePool.fromBcs(data),
+      bcs: ACreatePool.bcs,
+      fromJSONField: (field: any) => ACreatePool.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ACreatePool.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ACreatePool.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ACreatePool.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ACreatePool.fetch(client, id),
+      new: (fields: ACreatePoolFields) => {
+        return new ACreatePool([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return AConfigFees.reified()
+    return ACreatePool.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<AConfigFees>> {
-    return phantom(AConfigFees.reified())
+  static phantom(): PhantomReified<ToTypeStr<ACreatePool>> {
+    return phantom(ACreatePool.reified())
   }
   static get p() {
-    return AConfigFees.phantom()
+    return ACreatePool.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('AConfigFees', {
+    return bcs.struct('ACreatePool', {
       dummy_field: bcs.bool(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): AConfigFees {
-    return AConfigFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  static fromFields(fields: Record<string, any>): ACreatePool {
+    return ACreatePool.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): AConfigFees {
-    if (!isAConfigFees(item.type)) {
-      throw new Error('not a AConfigFees type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): ACreatePool {
+    if (!isACreatePool(item.type)) {
+      throw new Error('not a ACreatePool type')
     }
 
-    return AConfigFees.reified().new({
+    return ACreatePool.reified().new({
       dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
     })
   }
 
-  static fromBcs(data: Uint8Array): AConfigFees {
-    return AConfigFees.fromFields(AConfigFees.bcs.parse(data))
+  static fromBcs(data: Uint8Array): ACreatePool {
+    return ACreatePool.fromFields(ACreatePool.bcs.parse(data))
   }
 
   toJSONField() {
@@ -141,54 +141,54 @@ export class AConfigFees implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): AConfigFees {
-    return AConfigFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  static fromJSONField(field: any): ACreatePool {
+    return ACreatePool.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
   }
 
-  static fromJSON(json: Record<string, any>): AConfigFees {
-    if (json.$typeName !== AConfigFees.$typeName) {
+  static fromJSON(json: Record<string, any>): ACreatePool {
+    if (json.$typeName !== ACreatePool.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return AConfigFees.fromJSONField(json)
+    return ACreatePool.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): AConfigFees {
+  static fromSuiParsedData(content: SuiParsedData): ACreatePool {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isAConfigFees(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AConfigFees object`)
+    if (!isACreatePool(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ACreatePool object`)
     }
-    return AConfigFees.fromFieldsWithTypes(content)
+    return ACreatePool.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): AConfigFees {
+  static fromSuiObjectData(data: SuiObjectData): ACreatePool {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAConfigFees(data.bcs.type)) {
-        throw new Error(`object at is not a AConfigFees object`)
+      if (data.bcs.dataType !== 'moveObject' || !isACreatePool(data.bcs.type)) {
+        throw new Error(`object at is not a ACreatePool object`)
       }
 
-      return AConfigFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ACreatePool.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return AConfigFees.fromSuiParsedData(data.content)
+      return ACreatePool.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AConfigFees> {
+  static async fetch(client: SuiClient, id: string): Promise<ACreatePool> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching AConfigFees object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching ACreatePool object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAConfigFees(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AConfigFees object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isACreatePool(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ACreatePool object`)
     }
 
-    return AConfigFees.fromSuiObjectData(res.data)
+    return ACreatePool.fromSuiObjectData(res.data)
   }
 }
 
@@ -355,102 +355,102 @@ export class AConfigLendFacil implements StructClass {
   }
 }
 
-/* ============================== ACreatePool =============================== */
+/* ============================== AConfigFees =============================== */
 
-export function isACreatePool(type: string): boolean {
+export function isAConfigFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::ACreatePool`
+  return type === `${PKG_V1}::supply_pool::AConfigFees`
 }
 
-export interface ACreatePoolFields {
+export interface AConfigFeesFields {
   dummyField: ToField<'bool'>
 }
 
-export type ACreatePoolReified = Reified<ACreatePool, ACreatePoolFields>
+export type AConfigFeesReified = Reified<AConfigFees, AConfigFeesFields>
 
-export class ACreatePool implements StructClass {
+export class AConfigFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::ACreatePool`
+  static readonly $typeName = `${PKG_V1}::supply_pool::AConfigFees`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ACreatePool.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ACreatePool`
+  readonly $typeName = AConfigFees.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::AConfigFees`
   readonly $typeArgs: []
-  readonly $isPhantom = ACreatePool.$isPhantom
+  readonly $isPhantom = AConfigFees.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [], fields: ACreatePoolFields) {
+  private constructor(typeArgs: [], fields: AConfigFeesFields) {
     this.$fullTypeName = composeSuiType(
-      ACreatePool.$typeName,
+      AConfigFees.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::ACreatePool`
+    ) as `${typeof PKG_V1}::supply_pool::AConfigFees`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified(): ACreatePoolReified {
+  static reified(): AConfigFeesReified {
     return {
-      typeName: ACreatePool.$typeName,
+      typeName: AConfigFees.$typeName,
       fullTypeName: composeSuiType(
-        ACreatePool.$typeName,
+        AConfigFees.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::supply_pool::ACreatePool`,
+      ) as `${typeof PKG_V1}::supply_pool::AConfigFees`,
       typeArgs: [] as [],
-      isPhantom: ACreatePool.$isPhantom,
+      isPhantom: AConfigFees.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ACreatePool.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ACreatePool.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACreatePool.fromBcs(data),
-      bcs: ACreatePool.bcs,
-      fromJSONField: (field: any) => ACreatePool.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ACreatePool.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ACreatePool.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ACreatePool.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ACreatePool.fetch(client, id),
-      new: (fields: ACreatePoolFields) => {
-        return new ACreatePool([], fields)
+      fromFields: (fields: Record<string, any>) => AConfigFees.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AConfigFees.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AConfigFees.fromBcs(data),
+      bcs: AConfigFees.bcs,
+      fromJSONField: (field: any) => AConfigFees.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AConfigFees.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AConfigFees.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AConfigFees.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AConfigFees.fetch(client, id),
+      new: (fields: AConfigFeesFields) => {
+        return new AConfigFees([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return ACreatePool.reified()
+    return AConfigFees.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<ACreatePool>> {
-    return phantom(ACreatePool.reified())
+  static phantom(): PhantomReified<ToTypeStr<AConfigFees>> {
+    return phantom(AConfigFees.reified())
   }
   static get p() {
-    return ACreatePool.phantom()
+    return AConfigFees.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('ACreatePool', {
+    return bcs.struct('AConfigFees', {
       dummy_field: bcs.bool(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): ACreatePool {
-    return ACreatePool.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  static fromFields(fields: Record<string, any>): AConfigFees {
+    return AConfigFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): ACreatePool {
-    if (!isACreatePool(item.type)) {
-      throw new Error('not a ACreatePool type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): AConfigFees {
+    if (!isAConfigFees(item.type)) {
+      throw new Error('not a AConfigFees type')
     }
 
-    return ACreatePool.reified().new({
+    return AConfigFees.reified().new({
       dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
     })
   }
 
-  static fromBcs(data: Uint8Array): ACreatePool {
-    return ACreatePool.fromFields(ACreatePool.bcs.parse(data))
+  static fromBcs(data: Uint8Array): AConfigFees {
+    return AConfigFees.fromFields(AConfigFees.bcs.parse(data))
   }
 
   toJSONField() {
@@ -463,54 +463,213 @@ export class ACreatePool implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): ACreatePool {
-    return ACreatePool.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  static fromJSONField(field: any): AConfigFees {
+    return AConfigFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
   }
 
-  static fromJSON(json: Record<string, any>): ACreatePool {
-    if (json.$typeName !== ACreatePool.$typeName) {
+  static fromJSON(json: Record<string, any>): AConfigFees {
+    if (json.$typeName !== AConfigFees.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return ACreatePool.fromJSONField(json)
+    return AConfigFees.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): ACreatePool {
+  static fromSuiParsedData(content: SuiParsedData): AConfigFees {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isACreatePool(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ACreatePool object`)
+    if (!isAConfigFees(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AConfigFees object`)
     }
-    return ACreatePool.fromFieldsWithTypes(content)
+    return AConfigFees.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): ACreatePool {
+  static fromSuiObjectData(data: SuiObjectData): AConfigFees {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isACreatePool(data.bcs.type)) {
-        throw new Error(`object at is not a ACreatePool object`)
+      if (data.bcs.dataType !== 'moveObject' || !isAConfigFees(data.bcs.type)) {
+        throw new Error(`object at is not a AConfigFees object`)
       }
 
-      return ACreatePool.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AConfigFees.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return ACreatePool.fromSuiParsedData(data.content)
+      return AConfigFees.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ACreatePool> {
+  static async fetch(client: SuiClient, id: string): Promise<AConfigFees> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching ACreatePool object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching AConfigFees object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isACreatePool(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ACreatePool object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAConfigFees(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AConfigFees object`)
     }
 
-    return ACreatePool.fromSuiObjectData(res.data)
+    return AConfigFees.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== ATakeFees =============================== */
+
+export function isATakeFees(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::supply_pool::ATakeFees`
+}
+
+export interface ATakeFeesFields {
+  dummyField: ToField<'bool'>
+}
+
+export type ATakeFeesReified = Reified<ATakeFees, ATakeFeesFields>
+
+export class ATakeFees implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::supply_pool::ATakeFees`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ATakeFees.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ATakeFees`
+  readonly $typeArgs: []
+  readonly $isPhantom = ATakeFees.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: ATakeFeesFields) {
+    this.$fullTypeName = composeSuiType(
+      ATakeFees.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::supply_pool::ATakeFees`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): ATakeFeesReified {
+    return {
+      typeName: ATakeFees.$typeName,
+      fullTypeName: composeSuiType(
+        ATakeFees.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::supply_pool::ATakeFees`,
+      typeArgs: [] as [],
+      isPhantom: ATakeFees.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ATakeFees.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ATakeFees.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ATakeFees.fromBcs(data),
+      bcs: ATakeFees.bcs,
+      fromJSONField: (field: any) => ATakeFees.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ATakeFees.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ATakeFees.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ATakeFees.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ATakeFees.fetch(client, id),
+      new: (fields: ATakeFeesFields) => {
+        return new ATakeFees([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ATakeFees.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ATakeFees>> {
+    return phantom(ATakeFees.reified())
+  }
+  static get p() {
+    return ATakeFees.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ATakeFees', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ATakeFees {
+    return ATakeFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ATakeFees {
+    if (!isATakeFees(item.type)) {
+      throw new Error('not a ATakeFees type')
+    }
+
+    return ATakeFees.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ATakeFees {
+    return ATakeFees.fromFields(ATakeFees.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ATakeFees {
+    return ATakeFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): ATakeFees {
+    if (json.$typeName !== ATakeFees.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ATakeFees.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ATakeFees {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isATakeFees(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ATakeFees object`)
+    }
+    return ATakeFees.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ATakeFees {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isATakeFees(data.bcs.type)) {
+        throw new Error(`object at is not a ATakeFees object`)
+      }
+
+      return ATakeFees.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ATakeFees.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ATakeFees> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ATakeFees object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isATakeFees(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ATakeFees object`)
+    }
+
+    return ATakeFees.fromSuiObjectData(res.data)
   }
 }
 
@@ -832,107 +991,123 @@ export class AMigrate implements StructClass {
   }
 }
 
-/* ============================== ATakeFees =============================== */
+/* ============================== SupplyInfo =============================== */
 
-export function isATakeFees(type: string): boolean {
+export function isSupplyInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::ATakeFees`
+  return type === `${PKG_V1}::supply_pool::SupplyInfo`
 }
 
-export interface ATakeFeesFields {
-  dummyField: ToField<'bool'>
+export interface SupplyInfoFields {
+  supplyPoolId: ToField<ID>
+  deposited: ToField<'u64'>
+  shareBalance: ToField<'u64'>
 }
 
-export type ATakeFeesReified = Reified<ATakeFees, ATakeFeesFields>
+export type SupplyInfoReified = Reified<SupplyInfo, SupplyInfoFields>
 
-export class ATakeFees implements StructClass {
+export class SupplyInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::ATakeFees`
+  static readonly $typeName = `${PKG_V1}::supply_pool::SupplyInfo`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ATakeFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ATakeFees`
+  readonly $typeName = SupplyInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::SupplyInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = ATakeFees.$isPhantom
+  readonly $isPhantom = SupplyInfo.$isPhantom
 
-  readonly dummyField: ToField<'bool'>
+  readonly supplyPoolId: ToField<ID>
+  readonly deposited: ToField<'u64'>
+  readonly shareBalance: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: ATakeFeesFields) {
+  private constructor(typeArgs: [], fields: SupplyInfoFields) {
     this.$fullTypeName = composeSuiType(
-      ATakeFees.$typeName,
+      SupplyInfo.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::ATakeFees`
+    ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`
     this.$typeArgs = typeArgs
 
-    this.dummyField = fields.dummyField
+    this.supplyPoolId = fields.supplyPoolId
+    this.deposited = fields.deposited
+    this.shareBalance = fields.shareBalance
   }
 
-  static reified(): ATakeFeesReified {
+  static reified(): SupplyInfoReified {
     return {
-      typeName: ATakeFees.$typeName,
+      typeName: SupplyInfo.$typeName,
       fullTypeName: composeSuiType(
-        ATakeFees.$typeName,
+        SupplyInfo.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::supply_pool::ATakeFees`,
+      ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`,
       typeArgs: [] as [],
-      isPhantom: ATakeFees.$isPhantom,
+      isPhantom: SupplyInfo.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ATakeFees.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ATakeFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ATakeFees.fromBcs(data),
-      bcs: ATakeFees.bcs,
-      fromJSONField: (field: any) => ATakeFees.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ATakeFees.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ATakeFees.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ATakeFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ATakeFees.fetch(client, id),
-      new: (fields: ATakeFeesFields) => {
-        return new ATakeFees([], fields)
+      fromFields: (fields: Record<string, any>) => SupplyInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SupplyInfo.fromBcs(data),
+      bcs: SupplyInfo.bcs,
+      fromJSONField: (field: any) => SupplyInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SupplyInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => SupplyInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => SupplyInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SupplyInfo.fetch(client, id),
+      new: (fields: SupplyInfoFields) => {
+        return new SupplyInfo([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return ATakeFees.reified()
+    return SupplyInfo.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<ATakeFees>> {
-    return phantom(ATakeFees.reified())
+  static phantom(): PhantomReified<ToTypeStr<SupplyInfo>> {
+    return phantom(SupplyInfo.reified())
   }
   static get p() {
-    return ATakeFees.phantom()
+    return SupplyInfo.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('ATakeFees', {
-      dummy_field: bcs.bool(),
+    return bcs.struct('SupplyInfo', {
+      supply_pool_id: ID.bcs,
+      deposited: bcs.u64(),
+      share_balance: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): ATakeFees {
-    return ATakeFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  static fromFields(fields: Record<string, any>): SupplyInfo {
+    return SupplyInfo.reified().new({
+      supplyPoolId: decodeFromFields(ID.reified(), fields.supply_pool_id),
+      deposited: decodeFromFields('u64', fields.deposited),
+      shareBalance: decodeFromFields('u64', fields.share_balance),
+    })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): ATakeFees {
-    if (!isATakeFees(item.type)) {
-      throw new Error('not a ATakeFees type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): SupplyInfo {
+    if (!isSupplyInfo(item.type)) {
+      throw new Error('not a SupplyInfo type')
     }
 
-    return ATakeFees.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    return SupplyInfo.reified().new({
+      supplyPoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.supply_pool_id),
+      deposited: decodeFromFieldsWithTypes('u64', item.fields.deposited),
+      shareBalance: decodeFromFieldsWithTypes('u64', item.fields.share_balance),
     })
   }
 
-  static fromBcs(data: Uint8Array): ATakeFees {
-    return ATakeFees.fromFields(ATakeFees.bcs.parse(data))
+  static fromBcs(data: Uint8Array): SupplyInfo {
+    return SupplyInfo.fromFields(SupplyInfo.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      dummyField: this.dummyField,
+      supplyPoolId: this.supplyPoolId,
+      deposited: this.deposited.toString(),
+      shareBalance: this.shareBalance.toString(),
     }
   }
 
@@ -940,174 +1115,178 @@ export class ATakeFees implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): ATakeFees {
-    return ATakeFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  static fromJSONField(field: any): SupplyInfo {
+    return SupplyInfo.reified().new({
+      supplyPoolId: decodeFromJSONField(ID.reified(), field.supplyPoolId),
+      deposited: decodeFromJSONField('u64', field.deposited),
+      shareBalance: decodeFromJSONField('u64', field.shareBalance),
+    })
   }
 
-  static fromJSON(json: Record<string, any>): ATakeFees {
-    if (json.$typeName !== ATakeFees.$typeName) {
+  static fromJSON(json: Record<string, any>): SupplyInfo {
+    if (json.$typeName !== SupplyInfo.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return ATakeFees.fromJSONField(json)
+    return SupplyInfo.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): ATakeFees {
+  static fromSuiParsedData(content: SuiParsedData): SupplyInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isATakeFees(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ATakeFees object`)
+    if (!isSupplyInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a SupplyInfo object`)
     }
-    return ATakeFees.fromFieldsWithTypes(content)
+    return SupplyInfo.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): ATakeFees {
+  static fromSuiObjectData(data: SuiObjectData): SupplyInfo {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isATakeFees(data.bcs.type)) {
-        throw new Error(`object at is not a ATakeFees object`)
+      if (data.bcs.dataType !== 'moveObject' || !isSupplyInfo(data.bcs.type)) {
+        throw new Error(`object at is not a SupplyInfo object`)
       }
 
-      return ATakeFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return SupplyInfo.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return ATakeFees.fromSuiParsedData(data.content)
+      return SupplyInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ATakeFees> {
+  static async fetch(client: SuiClient, id: string): Promise<SupplyInfo> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching ATakeFees object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching SupplyInfo object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isATakeFees(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ATakeFees object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSupplyInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a SupplyInfo object`)
     }
 
-    return ATakeFees.fromSuiObjectData(res.data)
+    return SupplyInfo.fromSuiObjectData(res.data)
   }
 }
 
-/* ============================== FacilDebtBag =============================== */
+/* ============================== WithdrawInfo =============================== */
 
-export function isFacilDebtBag(type: string): boolean {
+export function isWithdrawInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::FacilDebtBag`
+  return type === `${PKG_V1}::supply_pool::WithdrawInfo`
 }
 
-export interface FacilDebtBagFields {
-  id: ToField<UID>
-  facilId: ToField<ID>
-  inner: ToField<DebtBag>
+export interface WithdrawInfoFields {
+  supplyPoolId: ToField<ID>
+  shareBalance: ToField<'u64'>
+  withdrawn: ToField<'u64'>
 }
 
-export type FacilDebtBagReified = Reified<FacilDebtBag, FacilDebtBagFields>
+export type WithdrawInfoReified = Reified<WithdrawInfo, WithdrawInfoFields>
 
-export class FacilDebtBag implements StructClass {
+export class WithdrawInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtBag`
+  static readonly $typeName = `${PKG_V1}::supply_pool::WithdrawInfo`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FacilDebtBag.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+  readonly $typeName = WithdrawInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::WithdrawInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = FacilDebtBag.$isPhantom
+  readonly $isPhantom = WithdrawInfo.$isPhantom
 
-  readonly id: ToField<UID>
-  readonly facilId: ToField<ID>
-  readonly inner: ToField<DebtBag>
+  readonly supplyPoolId: ToField<ID>
+  readonly shareBalance: ToField<'u64'>
+  readonly withdrawn: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: FacilDebtBagFields) {
+  private constructor(typeArgs: [], fields: WithdrawInfoFields) {
     this.$fullTypeName = composeSuiType(
-      FacilDebtBag.$typeName,
+      WithdrawInfo.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+    ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`
     this.$typeArgs = typeArgs
 
-    this.id = fields.id
-    this.facilId = fields.facilId
-    this.inner = fields.inner
+    this.supplyPoolId = fields.supplyPoolId
+    this.shareBalance = fields.shareBalance
+    this.withdrawn = fields.withdrawn
   }
 
-  static reified(): FacilDebtBagReified {
+  static reified(): WithdrawInfoReified {
     return {
-      typeName: FacilDebtBag.$typeName,
+      typeName: WithdrawInfo.$typeName,
       fullTypeName: composeSuiType(
-        FacilDebtBag.$typeName,
+        WithdrawInfo.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`,
+      ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`,
       typeArgs: [] as [],
-      isPhantom: FacilDebtBag.$isPhantom,
+      isPhantom: WithdrawInfo.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FacilDebtBag.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtBag.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FacilDebtBag.fromBcs(data),
-      bcs: FacilDebtBag.bcs,
-      fromJSONField: (field: any) => FacilDebtBag.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FacilDebtBag.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => FacilDebtBag.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => FacilDebtBag.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FacilDebtBag.fetch(client, id),
-      new: (fields: FacilDebtBagFields) => {
-        return new FacilDebtBag([], fields)
+      fromFields: (fields: Record<string, any>) => WithdrawInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => WithdrawInfo.fromBcs(data),
+      bcs: WithdrawInfo.bcs,
+      fromJSONField: (field: any) => WithdrawInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => WithdrawInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => WithdrawInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => WithdrawInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => WithdrawInfo.fetch(client, id),
+      new: (fields: WithdrawInfoFields) => {
+        return new WithdrawInfo([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return FacilDebtBag.reified()
+    return WithdrawInfo.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<FacilDebtBag>> {
-    return phantom(FacilDebtBag.reified())
+  static phantom(): PhantomReified<ToTypeStr<WithdrawInfo>> {
+    return phantom(WithdrawInfo.reified())
   }
   static get p() {
-    return FacilDebtBag.phantom()
+    return WithdrawInfo.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('FacilDebtBag', {
-      id: UID.bcs,
-      facil_id: ID.bcs,
-      inner: DebtBag.bcs,
+    return bcs.struct('WithdrawInfo', {
+      supply_pool_id: ID.bcs,
+      share_balance: bcs.u64(),
+      withdrawn: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): FacilDebtBag {
-    return FacilDebtBag.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      facilId: decodeFromFields(ID.reified(), fields.facil_id),
-      inner: decodeFromFields(DebtBag.reified(), fields.inner),
+  static fromFields(fields: Record<string, any>): WithdrawInfo {
+    return WithdrawInfo.reified().new({
+      supplyPoolId: decodeFromFields(ID.reified(), fields.supply_pool_id),
+      shareBalance: decodeFromFields('u64', fields.share_balance),
+      withdrawn: decodeFromFields('u64', fields.withdrawn),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): FacilDebtBag {
-    if (!isFacilDebtBag(item.type)) {
-      throw new Error('not a FacilDebtBag type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): WithdrawInfo {
+    if (!isWithdrawInfo(item.type)) {
+      throw new Error('not a WithdrawInfo type')
     }
 
-    return FacilDebtBag.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      facilId: decodeFromFieldsWithTypes(ID.reified(), item.fields.facil_id),
-      inner: decodeFromFieldsWithTypes(DebtBag.reified(), item.fields.inner),
+    return WithdrawInfo.reified().new({
+      supplyPoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.supply_pool_id),
+      shareBalance: decodeFromFieldsWithTypes('u64', item.fields.share_balance),
+      withdrawn: decodeFromFieldsWithTypes('u64', item.fields.withdrawn),
     })
   }
 
-  static fromBcs(data: Uint8Array): FacilDebtBag {
-    return FacilDebtBag.fromFields(FacilDebtBag.bcs.parse(data))
+  static fromBcs(data: Uint8Array): WithdrawInfo {
+    return WithdrawInfo.fromFields(WithdrawInfo.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      id: this.id,
-      facilId: this.facilId,
-      inner: this.inner.toJSONField(),
+      supplyPoolId: this.supplyPoolId,
+      shareBalance: this.shareBalance.toString(),
+      withdrawn: this.withdrawn.toString(),
     }
   }
 
@@ -1115,281 +1294,58 @@ export class FacilDebtBag implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): FacilDebtBag {
-    return FacilDebtBag.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      facilId: decodeFromJSONField(ID.reified(), field.facilId),
-      inner: decodeFromJSONField(DebtBag.reified(), field.inner),
+  static fromJSONField(field: any): WithdrawInfo {
+    return WithdrawInfo.reified().new({
+      supplyPoolId: decodeFromJSONField(ID.reified(), field.supplyPoolId),
+      shareBalance: decodeFromJSONField('u64', field.shareBalance),
+      withdrawn: decodeFromJSONField('u64', field.withdrawn),
     })
   }
 
-  static fromJSON(json: Record<string, any>): FacilDebtBag {
-    if (json.$typeName !== FacilDebtBag.$typeName) {
+  static fromJSON(json: Record<string, any>): WithdrawInfo {
+    if (json.$typeName !== WithdrawInfo.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return FacilDebtBag.fromJSONField(json)
+    return WithdrawInfo.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): FacilDebtBag {
+  static fromSuiParsedData(content: SuiParsedData): WithdrawInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isFacilDebtBag(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FacilDebtBag object`)
+    if (!isWithdrawInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawInfo object`)
     }
-    return FacilDebtBag.fromFieldsWithTypes(content)
+    return WithdrawInfo.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): FacilDebtBag {
+  static fromSuiObjectData(data: SuiObjectData): WithdrawInfo {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFacilDebtBag(data.bcs.type)) {
-        throw new Error(`object at is not a FacilDebtBag object`)
+      if (data.bcs.dataType !== 'moveObject' || !isWithdrawInfo(data.bcs.type)) {
+        throw new Error(`object at is not a WithdrawInfo object`)
       }
 
-      return FacilDebtBag.fromBcs(fromB64(data.bcs.bcsBytes))
+      return WithdrawInfo.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return FacilDebtBag.fromSuiParsedData(data.content)
+      return WithdrawInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FacilDebtBag> {
+  static async fetch(client: SuiClient, id: string): Promise<WithdrawInfo> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching FacilDebtBag object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching WithdrawInfo object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtBag(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FacilDebtBag object`)
-    }
-
-    return FacilDebtBag.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== FacilDebtShare =============================== */
-
-export function isFacilDebtShare(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::supply_pool::FacilDebtShare` + '<')
-}
-
-export interface FacilDebtShareFields<ST extends PhantomTypeArgument> {
-  facilId: ToField<ID>
-  inner: ToField<DebtShareBalance<ST>>
-}
-
-export type FacilDebtShareReified<ST extends PhantomTypeArgument> = Reified<
-  FacilDebtShare<ST>,
-  FacilDebtShareFields<ST>
->
-
-export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtShare`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = FacilDebtShare.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
-  readonly $typeArgs: [PhantomToTypeStr<ST>]
-  readonly $isPhantom = FacilDebtShare.$isPhantom
-
-  readonly facilId: ToField<ID>
-  readonly inner: ToField<DebtShareBalance<ST>>
-
-  private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: FacilDebtShareFields<ST>) {
-    this.$fullTypeName = composeSuiType(
-      FacilDebtShare.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
-    this.$typeArgs = typeArgs
-
-    this.facilId = fields.facilId
-    this.inner = fields.inner
-  }
-
-  static reified<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
-  ): FacilDebtShareReified<ToPhantomTypeArgument<ST>> {
-    return {
-      typeName: FacilDebtShare.$typeName,
-      fullTypeName: composeSuiType(
-        FacilDebtShare.$typeName,
-        ...[extractType(ST)]
-      ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
-      typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
-      isPhantom: FacilDebtShare.$isPhantom,
-      reifiedTypeArgs: [ST],
-      fromFields: (fields: Record<string, any>) => FacilDebtShare.fromFields(ST, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtShare.fromFieldsWithTypes(ST, item),
-      fromBcs: (data: Uint8Array) => FacilDebtShare.fromBcs(ST, data),
-      bcs: FacilDebtShare.bcs,
-      fromJSONField: (field: any) => FacilDebtShare.fromJSONField(ST, field),
-      fromJSON: (json: Record<string, any>) => FacilDebtShare.fromJSON(ST, json),
-      fromSuiParsedData: (content: SuiParsedData) => FacilDebtShare.fromSuiParsedData(ST, content),
-      fromSuiObjectData: (content: SuiObjectData) => FacilDebtShare.fromSuiObjectData(ST, content),
-      fetch: async (client: SuiClient, id: string) => FacilDebtShare.fetch(client, ST, id),
-      new: (fields: FacilDebtShareFields<ToPhantomTypeArgument<ST>>) => {
-        return new FacilDebtShare([extractType(ST)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FacilDebtShare.reified
-  }
-
-  static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
-  ): PhantomReified<ToTypeStr<FacilDebtShare<ToPhantomTypeArgument<ST>>>> {
-    return phantom(FacilDebtShare.reified(ST))
-  }
-  static get p() {
-    return FacilDebtShare.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('FacilDebtShare', {
-      facil_id: ID.bcs,
-      inner: DebtShareBalance.bcs,
-    })
-  }
-
-  static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    fields: Record<string, any>
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    return FacilDebtShare.reified(typeArg).new({
-      facilId: decodeFromFields(ID.reified(), fields.facil_id),
-      inner: decodeFromFields(DebtShareBalance.reified(typeArg), fields.inner),
-    })
-  }
-
-  static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    item: FieldsWithTypes
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    if (!isFacilDebtShare(item.type)) {
-      throw new Error('not a FacilDebtShare type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return FacilDebtShare.reified(typeArg).new({
-      facilId: decodeFromFieldsWithTypes(ID.reified(), item.fields.facil_id),
-      inner: decodeFromFieldsWithTypes(DebtShareBalance.reified(typeArg), item.fields.inner),
-    })
-  }
-
-  static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    data: Uint8Array
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    return FacilDebtShare.fromFields(typeArg, FacilDebtShare.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      facilId: this.facilId,
-      inner: this.inner.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    field: any
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    return FacilDebtShare.reified(typeArg).new({
-      facilId: decodeFromJSONField(ID.reified(), field.facilId),
-      inner: decodeFromJSONField(DebtShareBalance.reified(typeArg), field.inner),
-    })
-  }
-
-  static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    json: Record<string, any>
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    if (json.$typeName !== FacilDebtShare.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(FacilDebtShare.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return FacilDebtShare.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    content: SuiParsedData
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFacilDebtShare(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FacilDebtShare object`)
-    }
-    return FacilDebtShare.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: ST,
-    data: SuiObjectData
-  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFacilDebtShare(data.bcs.type)) {
-        throw new Error(`object at is not a FacilDebtShare object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return FacilDebtShare.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FacilDebtShare.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: ST,
-    id: string
-  ): Promise<FacilDebtShare<ToPhantomTypeArgument<ST>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FacilDebtShare object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtShare(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FacilDebtShare object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a WithdrawInfo object`)
     }
 
-    return FacilDebtShare.fromSuiObjectData(typeArg, res.data)
+    return WithdrawInfo.fromSuiObjectData(res.data)
   }
 }
 
@@ -1797,123 +1753,133 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
   }
 }
 
-/* ============================== SupplyInfo =============================== */
+/* ============================== FacilDebtShare =============================== */
 
-export function isSupplyInfo(type: string): boolean {
+export function isFacilDebtShare(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::SupplyInfo`
+  return type.startsWith(`${PKG_V1}::supply_pool::FacilDebtShare` + '<')
 }
 
-export interface SupplyInfoFields {
-  supplyPoolId: ToField<ID>
-  deposited: ToField<'u64'>
-  shareBalance: ToField<'u64'>
+export interface FacilDebtShareFields<ST extends PhantomTypeArgument> {
+  facilId: ToField<ID>
+  inner: ToField<DebtShareBalance<ST>>
 }
 
-export type SupplyInfoReified = Reified<SupplyInfo, SupplyInfoFields>
+export type FacilDebtShareReified<ST extends PhantomTypeArgument> = Reified<
+  FacilDebtShare<ST>,
+  FacilDebtShareFields<ST>
+>
 
-export class SupplyInfo implements StructClass {
+export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::SupplyInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
+  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtShare`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
 
-  readonly $typeName = SupplyInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::SupplyInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = SupplyInfo.$isPhantom
+  readonly $typeName = FacilDebtShare.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
+  readonly $typeArgs: [PhantomToTypeStr<ST>]
+  readonly $isPhantom = FacilDebtShare.$isPhantom
 
-  readonly supplyPoolId: ToField<ID>
-  readonly deposited: ToField<'u64'>
-  readonly shareBalance: ToField<'u64'>
+  readonly facilId: ToField<ID>
+  readonly inner: ToField<DebtShareBalance<ST>>
 
-  private constructor(typeArgs: [], fields: SupplyInfoFields) {
+  private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: FacilDebtShareFields<ST>) {
     this.$fullTypeName = composeSuiType(
-      SupplyInfo.$typeName,
+      FacilDebtShare.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`
+    ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
     this.$typeArgs = typeArgs
 
-    this.supplyPoolId = fields.supplyPoolId
-    this.deposited = fields.deposited
-    this.shareBalance = fields.shareBalance
+    this.facilId = fields.facilId
+    this.inner = fields.inner
   }
 
-  static reified(): SupplyInfoReified {
+  static reified<ST extends PhantomReified<PhantomTypeArgument>>(
+    ST: ST
+  ): FacilDebtShareReified<ToPhantomTypeArgument<ST>> {
     return {
-      typeName: SupplyInfo.$typeName,
+      typeName: FacilDebtShare.$typeName,
       fullTypeName: composeSuiType(
-        SupplyInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`,
-      typeArgs: [] as [],
-      isPhantom: SupplyInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SupplyInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SupplyInfo.fromBcs(data),
-      bcs: SupplyInfo.bcs,
-      fromJSONField: (field: any) => SupplyInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SupplyInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => SupplyInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => SupplyInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SupplyInfo.fetch(client, id),
-      new: (fields: SupplyInfoFields) => {
-        return new SupplyInfo([], fields)
+        FacilDebtShare.$typeName,
+        ...[extractType(ST)]
+      ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+      typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
+      isPhantom: FacilDebtShare.$isPhantom,
+      reifiedTypeArgs: [ST],
+      fromFields: (fields: Record<string, any>) => FacilDebtShare.fromFields(ST, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtShare.fromFieldsWithTypes(ST, item),
+      fromBcs: (data: Uint8Array) => FacilDebtShare.fromBcs(ST, data),
+      bcs: FacilDebtShare.bcs,
+      fromJSONField: (field: any) => FacilDebtShare.fromJSONField(ST, field),
+      fromJSON: (json: Record<string, any>) => FacilDebtShare.fromJSON(ST, json),
+      fromSuiParsedData: (content: SuiParsedData) => FacilDebtShare.fromSuiParsedData(ST, content),
+      fromSuiObjectData: (content: SuiObjectData) => FacilDebtShare.fromSuiObjectData(ST, content),
+      fetch: async (client: SuiClient, id: string) => FacilDebtShare.fetch(client, ST, id),
+      new: (fields: FacilDebtShareFields<ToPhantomTypeArgument<ST>>) => {
+        return new FacilDebtShare([extractType(ST)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return SupplyInfo.reified()
+    return FacilDebtShare.reified
   }
 
-  static phantom(): PhantomReified<ToTypeStr<SupplyInfo>> {
-    return phantom(SupplyInfo.reified())
+  static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
+    ST: ST
+  ): PhantomReified<ToTypeStr<FacilDebtShare<ToPhantomTypeArgument<ST>>>> {
+    return phantom(FacilDebtShare.reified(ST))
   }
   static get p() {
-    return SupplyInfo.phantom()
+    return FacilDebtShare.phantom
   }
 
   static get bcs() {
-    return bcs.struct('SupplyInfo', {
-      supply_pool_id: ID.bcs,
-      deposited: bcs.u64(),
-      share_balance: bcs.u64(),
+    return bcs.struct('FacilDebtShare', {
+      facil_id: ID.bcs,
+      inner: DebtShareBalance.bcs,
     })
   }
 
-  static fromFields(fields: Record<string, any>): SupplyInfo {
-    return SupplyInfo.reified().new({
-      supplyPoolId: decodeFromFields(ID.reified(), fields.supply_pool_id),
-      deposited: decodeFromFields('u64', fields.deposited),
-      shareBalance: decodeFromFields('u64', fields.share_balance),
+  static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    fields: Record<string, any>
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
+    return FacilDebtShare.reified(typeArg).new({
+      facilId: decodeFromFields(ID.reified(), fields.facil_id),
+      inner: decodeFromFields(DebtShareBalance.reified(typeArg), fields.inner),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): SupplyInfo {
-    if (!isSupplyInfo(item.type)) {
-      throw new Error('not a SupplyInfo type')
+  static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    item: FieldsWithTypes
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
+    if (!isFacilDebtShare(item.type)) {
+      throw new Error('not a FacilDebtShare type')
     }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return SupplyInfo.reified().new({
-      supplyPoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.supply_pool_id),
-      deposited: decodeFromFieldsWithTypes('u64', item.fields.deposited),
-      shareBalance: decodeFromFieldsWithTypes('u64', item.fields.share_balance),
+    return FacilDebtShare.reified(typeArg).new({
+      facilId: decodeFromFieldsWithTypes(ID.reified(), item.fields.facil_id),
+      inner: decodeFromFieldsWithTypes(DebtShareBalance.reified(typeArg), item.fields.inner),
     })
   }
 
-  static fromBcs(data: Uint8Array): SupplyInfo {
-    return SupplyInfo.fromFields(SupplyInfo.bcs.parse(data))
+  static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    data: Uint8Array
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
+    return FacilDebtShare.fromFields(typeArg, FacilDebtShare.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      supplyPoolId: this.supplyPoolId,
-      deposited: this.deposited.toString(),
-      shareBalance: this.shareBalance.toString(),
+      facilId: this.facilId,
+      inner: this.inner.toJSONField(),
     }
   }
 
@@ -1921,58 +1887,271 @@ export class SupplyInfo implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): SupplyInfo {
-    return SupplyInfo.reified().new({
-      supplyPoolId: decodeFromJSONField(ID.reified(), field.supplyPoolId),
-      deposited: decodeFromJSONField('u64', field.deposited),
-      shareBalance: decodeFromJSONField('u64', field.shareBalance),
+  static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    field: any
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
+    return FacilDebtShare.reified(typeArg).new({
+      facilId: decodeFromJSONField(ID.reified(), field.facilId),
+      inner: decodeFromJSONField(DebtShareBalance.reified(typeArg), field.inner),
     })
   }
 
-  static fromJSON(json: Record<string, any>): SupplyInfo {
-    if (json.$typeName !== SupplyInfo.$typeName) {
+  static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    json: Record<string, any>
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
+    if (json.$typeName !== FacilDebtShare.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(FacilDebtShare.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
 
-    return SupplyInfo.fromJSONField(json)
+    return FacilDebtShare.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): SupplyInfo {
+  static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    content: SuiParsedData
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isSupplyInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a SupplyInfo object`)
+    if (!isFacilDebtShare(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FacilDebtShare object`)
     }
-    return SupplyInfo.fromFieldsWithTypes(content)
+    return FacilDebtShare.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): SupplyInfo {
+  static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    data: SuiObjectData
+  ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSupplyInfo(data.bcs.type)) {
-        throw new Error(`object at is not a SupplyInfo object`)
+      if (data.bcs.dataType !== 'moveObject' || !isFacilDebtShare(data.bcs.type)) {
+        throw new Error(`object at is not a FacilDebtShare object`)
       }
 
-      return SupplyInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return FacilDebtShare.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return SupplyInfo.fromSuiParsedData(data.content)
+      return FacilDebtShare.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<SupplyInfo> {
+  static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: ST,
+    id: string
+  ): Promise<FacilDebtShare<ToPhantomTypeArgument<ST>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching SupplyInfo object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching FacilDebtShare object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSupplyInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a SupplyInfo object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtShare(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FacilDebtShare object`)
     }
 
-    return SupplyInfo.fromSuiObjectData(res.data)
+    return FacilDebtShare.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== FacilDebtBag =============================== */
+
+export function isFacilDebtBag(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::supply_pool::FacilDebtBag`
+}
+
+export interface FacilDebtBagFields {
+  id: ToField<UID>
+  facilId: ToField<ID>
+  inner: ToField<DebtBag>
+}
+
+export type FacilDebtBagReified = Reified<FacilDebtBag, FacilDebtBagFields>
+
+export class FacilDebtBag implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtBag`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FacilDebtBag.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+  readonly $typeArgs: []
+  readonly $isPhantom = FacilDebtBag.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly facilId: ToField<ID>
+  readonly inner: ToField<DebtBag>
+
+  private constructor(typeArgs: [], fields: FacilDebtBagFields) {
+    this.$fullTypeName = composeSuiType(
+      FacilDebtBag.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.facilId = fields.facilId
+    this.inner = fields.inner
+  }
+
+  static reified(): FacilDebtBagReified {
+    return {
+      typeName: FacilDebtBag.$typeName,
+      fullTypeName: composeSuiType(
+        FacilDebtBag.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`,
+      typeArgs: [] as [],
+      isPhantom: FacilDebtBag.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FacilDebtBag.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtBag.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FacilDebtBag.fromBcs(data),
+      bcs: FacilDebtBag.bcs,
+      fromJSONField: (field: any) => FacilDebtBag.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FacilDebtBag.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FacilDebtBag.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FacilDebtBag.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FacilDebtBag.fetch(client, id),
+      new: (fields: FacilDebtBagFields) => {
+        return new FacilDebtBag([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FacilDebtBag.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FacilDebtBag>> {
+    return phantom(FacilDebtBag.reified())
+  }
+  static get p() {
+    return FacilDebtBag.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FacilDebtBag', {
+      id: UID.bcs,
+      facil_id: ID.bcs,
+      inner: DebtBag.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FacilDebtBag {
+    return FacilDebtBag.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      facilId: decodeFromFields(ID.reified(), fields.facil_id),
+      inner: decodeFromFields(DebtBag.reified(), fields.inner),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FacilDebtBag {
+    if (!isFacilDebtBag(item.type)) {
+      throw new Error('not a FacilDebtBag type')
+    }
+
+    return FacilDebtBag.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      facilId: decodeFromFieldsWithTypes(ID.reified(), item.fields.facil_id),
+      inner: decodeFromFieldsWithTypes(DebtBag.reified(), item.fields.inner),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FacilDebtBag {
+    return FacilDebtBag.fromFields(FacilDebtBag.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      facilId: this.facilId,
+      inner: this.inner.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FacilDebtBag {
+    return FacilDebtBag.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      facilId: decodeFromJSONField(ID.reified(), field.facilId),
+      inner: decodeFromJSONField(DebtBag.reified(), field.inner),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FacilDebtBag {
+    if (json.$typeName !== FacilDebtBag.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FacilDebtBag.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FacilDebtBag {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFacilDebtBag(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FacilDebtBag object`)
+    }
+    return FacilDebtBag.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FacilDebtBag {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFacilDebtBag(data.bcs.type)) {
+        throw new Error(`object at is not a FacilDebtBag object`)
+      }
+
+      return FacilDebtBag.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FacilDebtBag.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FacilDebtBag> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FacilDebtBag object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtBag(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FacilDebtBag object`)
+    }
+
+    return FacilDebtBag.fromSuiObjectData(res.data)
   }
 }
 
@@ -2315,184 +2494,5 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     }
 
     return SupplyPool.fromSuiObjectData(typeArgs, res.data)
-  }
-}
-
-/* ============================== WithdrawInfo =============================== */
-
-export function isWithdrawInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::WithdrawInfo`
-}
-
-export interface WithdrawInfoFields {
-  supplyPoolId: ToField<ID>
-  shareBalance: ToField<'u64'>
-  withdrawn: ToField<'u64'>
-}
-
-export type WithdrawInfoReified = Reified<WithdrawInfo, WithdrawInfoFields>
-
-export class WithdrawInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::supply_pool::WithdrawInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = WithdrawInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::WithdrawInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = WithdrawInfo.$isPhantom
-
-  readonly supplyPoolId: ToField<ID>
-  readonly shareBalance: ToField<'u64'>
-  readonly withdrawn: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: WithdrawInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      WithdrawInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`
-    this.$typeArgs = typeArgs
-
-    this.supplyPoolId = fields.supplyPoolId
-    this.shareBalance = fields.shareBalance
-    this.withdrawn = fields.withdrawn
-  }
-
-  static reified(): WithdrawInfoReified {
-    return {
-      typeName: WithdrawInfo.$typeName,
-      fullTypeName: composeSuiType(
-        WithdrawInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`,
-      typeArgs: [] as [],
-      isPhantom: WithdrawInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => WithdrawInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WithdrawInfo.fromBcs(data),
-      bcs: WithdrawInfo.bcs,
-      fromJSONField: (field: any) => WithdrawInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => WithdrawInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => WithdrawInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => WithdrawInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => WithdrawInfo.fetch(client, id),
-      new: (fields: WithdrawInfoFields) => {
-        return new WithdrawInfo([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return WithdrawInfo.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<WithdrawInfo>> {
-    return phantom(WithdrawInfo.reified())
-  }
-  static get p() {
-    return WithdrawInfo.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('WithdrawInfo', {
-      supply_pool_id: ID.bcs,
-      share_balance: bcs.u64(),
-      withdrawn: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): WithdrawInfo {
-    return WithdrawInfo.reified().new({
-      supplyPoolId: decodeFromFields(ID.reified(), fields.supply_pool_id),
-      shareBalance: decodeFromFields('u64', fields.share_balance),
-      withdrawn: decodeFromFields('u64', fields.withdrawn),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): WithdrawInfo {
-    if (!isWithdrawInfo(item.type)) {
-      throw new Error('not a WithdrawInfo type')
-    }
-
-    return WithdrawInfo.reified().new({
-      supplyPoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.supply_pool_id),
-      shareBalance: decodeFromFieldsWithTypes('u64', item.fields.share_balance),
-      withdrawn: decodeFromFieldsWithTypes('u64', item.fields.withdrawn),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): WithdrawInfo {
-    return WithdrawInfo.fromFields(WithdrawInfo.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      supplyPoolId: this.supplyPoolId,
-      shareBalance: this.shareBalance.toString(),
-      withdrawn: this.withdrawn.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): WithdrawInfo {
-    return WithdrawInfo.reified().new({
-      supplyPoolId: decodeFromJSONField(ID.reified(), field.supplyPoolId),
-      shareBalance: decodeFromJSONField('u64', field.shareBalance),
-      withdrawn: decodeFromJSONField('u64', field.withdrawn),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): WithdrawInfo {
-    if (json.$typeName !== WithdrawInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return WithdrawInfo.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): WithdrawInfo {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isWithdrawInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawInfo object`)
-    }
-    return WithdrawInfo.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): WithdrawInfo {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isWithdrawInfo(data.bcs.type)) {
-        throw new Error(`object at is not a WithdrawInfo object`)
-      }
-
-      return WithdrawInfo.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return WithdrawInfo.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<WithdrawInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching WithdrawInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a WithdrawInfo object`)
-    }
-
-    return WithdrawInfo.fromSuiObjectData(res.data)
   }
 }

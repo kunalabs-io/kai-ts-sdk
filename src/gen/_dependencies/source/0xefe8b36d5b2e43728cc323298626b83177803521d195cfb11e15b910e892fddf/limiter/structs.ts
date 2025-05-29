@@ -218,6 +218,753 @@ export class Limiter implements StructClass {
   }
 }
 
+/* ============================== Limiters =============================== */
+
+export function isLimiters(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::limiter::Limiters`
+}
+
+export interface LimitersFields {
+  dummyField: ToField<'bool'>
+}
+
+export type LimitersReified = Reified<Limiters, LimitersFields>
+
+export class Limiters implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::limiter::Limiters`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Limiters.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::limiter::Limiters`
+  readonly $typeArgs: []
+  readonly $isPhantom = Limiters.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: LimitersFields) {
+    this.$fullTypeName = composeSuiType(
+      Limiters.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::limiter::Limiters`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): LimitersReified {
+    return {
+      typeName: Limiters.$typeName,
+      fullTypeName: composeSuiType(
+        Limiters.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::limiter::Limiters`,
+      typeArgs: [] as [],
+      isPhantom: Limiters.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Limiters.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Limiters.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Limiters.fromBcs(data),
+      bcs: Limiters.bcs,
+      fromJSONField: (field: any) => Limiters.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Limiters.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Limiters.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Limiters.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Limiters.fetch(client, id),
+      new: (fields: LimitersFields) => {
+        return new Limiters([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Limiters.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Limiters>> {
+    return phantom(Limiters.reified())
+  }
+  static get p() {
+    return Limiters.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Limiters', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Limiters {
+    return Limiters.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Limiters {
+    if (!isLimiters(item.type)) {
+      throw new Error('not a Limiters type')
+    }
+
+    return Limiters.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Limiters {
+    return Limiters.fromFields(Limiters.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Limiters {
+    return Limiters.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): Limiters {
+    if (json.$typeName !== Limiters.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Limiters.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Limiters {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isLimiters(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Limiters object`)
+    }
+    return Limiters.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Limiters {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isLimiters(data.bcs.type)) {
+        throw new Error(`object at is not a Limiters object`)
+      }
+
+      return Limiters.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Limiters.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Limiters> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Limiters object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isLimiters(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Limiters object`)
+    }
+
+    return Limiters.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Segment =============================== */
+
+export function isSegment(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::limiter::Segment`
+}
+
+export interface SegmentFields {
+  index: ToField<'u64'>
+  value: ToField<'u64'>
+}
+
+export type SegmentReified = Reified<Segment, SegmentFields>
+
+export class Segment implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::limiter::Segment`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Segment.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::limiter::Segment`
+  readonly $typeArgs: []
+  readonly $isPhantom = Segment.$isPhantom
+
+  readonly index: ToField<'u64'>
+  readonly value: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: SegmentFields) {
+    this.$fullTypeName = composeSuiType(
+      Segment.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::limiter::Segment`
+    this.$typeArgs = typeArgs
+
+    this.index = fields.index
+    this.value = fields.value
+  }
+
+  static reified(): SegmentReified {
+    return {
+      typeName: Segment.$typeName,
+      fullTypeName: composeSuiType(
+        Segment.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::limiter::Segment`,
+      typeArgs: [] as [],
+      isPhantom: Segment.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Segment.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Segment.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Segment.fromBcs(data),
+      bcs: Segment.bcs,
+      fromJSONField: (field: any) => Segment.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Segment.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Segment.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Segment.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Segment.fetch(client, id),
+      new: (fields: SegmentFields) => {
+        return new Segment([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Segment.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Segment>> {
+    return phantom(Segment.reified())
+  }
+  static get p() {
+    return Segment.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Segment', {
+      index: bcs.u64(),
+      value: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Segment {
+    return Segment.reified().new({
+      index: decodeFromFields('u64', fields.index),
+      value: decodeFromFields('u64', fields.value),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Segment {
+    if (!isSegment(item.type)) {
+      throw new Error('not a Segment type')
+    }
+
+    return Segment.reified().new({
+      index: decodeFromFieldsWithTypes('u64', item.fields.index),
+      value: decodeFromFieldsWithTypes('u64', item.fields.value),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Segment {
+    return Segment.fromFields(Segment.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      index: this.index.toString(),
+      value: this.value.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Segment {
+    return Segment.reified().new({
+      index: decodeFromJSONField('u64', field.index),
+      value: decodeFromJSONField('u64', field.value),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Segment {
+    if (json.$typeName !== Segment.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Segment.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Segment {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSegment(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Segment object`)
+    }
+    return Segment.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Segment {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSegment(data.bcs.type)) {
+        throw new Error(`object at is not a Segment object`)
+      }
+
+      return Segment.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Segment.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Segment> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Segment object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSegment(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Segment object`)
+    }
+
+    return Segment.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== LimiterUpdateLimitChangeCreatedEvent =============================== */
+
+export function isLimiterUpdateLimitChangeCreatedEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
+}
+
+export interface LimiterUpdateLimitChangeCreatedEventFields {
+  changes: ToField<LimiterUpdateLimitChange>
+  currentEpoch: ToField<'u64'>
+  delayEpoches: ToField<'u64'>
+  effectiveEpoches: ToField<'u64'>
+}
+
+export type LimiterUpdateLimitChangeCreatedEventReified = Reified<
+  LimiterUpdateLimitChangeCreatedEvent,
+  LimiterUpdateLimitChangeCreatedEventFields
+>
+
+export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = LimiterUpdateLimitChangeCreatedEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = LimiterUpdateLimitChangeCreatedEvent.$isPhantom
+
+  readonly changes: ToField<LimiterUpdateLimitChange>
+  readonly currentEpoch: ToField<'u64'>
+  readonly delayEpoches: ToField<'u64'>
+  readonly effectiveEpoches: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: LimiterUpdateLimitChangeCreatedEventFields) {
+    this.$fullTypeName = composeSuiType(
+      LimiterUpdateLimitChangeCreatedEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
+    this.$typeArgs = typeArgs
+
+    this.changes = fields.changes
+    this.currentEpoch = fields.currentEpoch
+    this.delayEpoches = fields.delayEpoches
+    this.effectiveEpoches = fields.effectiveEpoches
+  }
+
+  static reified(): LimiterUpdateLimitChangeCreatedEventReified {
+    return {
+      typeName: LimiterUpdateLimitChangeCreatedEvent.$typeName,
+      fullTypeName: composeSuiType(
+        LimiterUpdateLimitChangeCreatedEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`,
+      typeArgs: [] as [],
+      isPhantom: LimiterUpdateLimitChangeCreatedEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => LimiterUpdateLimitChangeCreatedEvent.fromBcs(data),
+      bcs: LimiterUpdateLimitChangeCreatedEvent.bcs,
+      fromJSONField: (field: any) => LimiterUpdateLimitChangeCreatedEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChangeCreatedEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        LimiterUpdateLimitChangeCreatedEvent.fetch(client, id),
+      new: (fields: LimiterUpdateLimitChangeCreatedEventFields) => {
+        return new LimiterUpdateLimitChangeCreatedEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return LimiterUpdateLimitChangeCreatedEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<LimiterUpdateLimitChangeCreatedEvent>> {
+    return phantom(LimiterUpdateLimitChangeCreatedEvent.reified())
+  }
+  static get p() {
+    return LimiterUpdateLimitChangeCreatedEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('LimiterUpdateLimitChangeCreatedEvent', {
+      changes: LimiterUpdateLimitChange.bcs,
+      current_epoch: bcs.u64(),
+      delay_epoches: bcs.u64(),
+      effective_epoches: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): LimiterUpdateLimitChangeCreatedEvent {
+    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
+      changes: decodeFromFields(LimiterUpdateLimitChange.reified(), fields.changes),
+      currentEpoch: decodeFromFields('u64', fields.current_epoch),
+      delayEpoches: decodeFromFields('u64', fields.delay_epoches),
+      effectiveEpoches: decodeFromFields('u64', fields.effective_epoches),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): LimiterUpdateLimitChangeCreatedEvent {
+    if (!isLimiterUpdateLimitChangeCreatedEvent(item.type)) {
+      throw new Error('not a LimiterUpdateLimitChangeCreatedEvent type')
+    }
+
+    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
+      changes: decodeFromFieldsWithTypes(LimiterUpdateLimitChange.reified(), item.fields.changes),
+      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
+      delayEpoches: decodeFromFieldsWithTypes('u64', item.fields.delay_epoches),
+      effectiveEpoches: decodeFromFieldsWithTypes('u64', item.fields.effective_epoches),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): LimiterUpdateLimitChangeCreatedEvent {
+    return LimiterUpdateLimitChangeCreatedEvent.fromFields(
+      LimiterUpdateLimitChangeCreatedEvent.bcs.parse(data)
+    )
+  }
+
+  toJSONField() {
+    return {
+      changes: this.changes.toJSONField(),
+      currentEpoch: this.currentEpoch.toString(),
+      delayEpoches: this.delayEpoches.toString(),
+      effectiveEpoches: this.effectiveEpoches.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): LimiterUpdateLimitChangeCreatedEvent {
+    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
+      changes: decodeFromJSONField(LimiterUpdateLimitChange.reified(), field.changes),
+      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
+      delayEpoches: decodeFromJSONField('u64', field.delayEpoches),
+      effectiveEpoches: decodeFromJSONField('u64', field.effectiveEpoches),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): LimiterUpdateLimitChangeCreatedEvent {
+    if (json.$typeName !== LimiterUpdateLimitChangeCreatedEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return LimiterUpdateLimitChangeCreatedEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): LimiterUpdateLimitChangeCreatedEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isLimiterUpdateLimitChangeCreatedEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a LimiterUpdateLimitChangeCreatedEvent object`
+      )
+    }
+    return LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): LimiterUpdateLimitChangeCreatedEvent {
+    if (data.bcs) {
+      if (
+        data.bcs.dataType !== 'moveObject' ||
+        !isLimiterUpdateLimitChangeCreatedEvent(data.bcs.type)
+      ) {
+        throw new Error(`object at is not a LimiterUpdateLimitChangeCreatedEvent object`)
+      }
+
+      return LimiterUpdateLimitChangeCreatedEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return LimiterUpdateLimitChangeCreatedEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<LimiterUpdateLimitChangeCreatedEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching LimiterUpdateLimitChangeCreatedEvent object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isLimiterUpdateLimitChangeCreatedEvent(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a LimiterUpdateLimitChangeCreatedEvent object`)
+    }
+
+    return LimiterUpdateLimitChangeCreatedEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== LimiterUpdateParamsChangeCreatedEvent =============================== */
+
+export function isLimiterUpdateParamsChangeCreatedEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
+}
+
+export interface LimiterUpdateParamsChangeCreatedEventFields {
+  changes: ToField<LimiterUpdateParamsChange>
+  currentEpoch: ToField<'u64'>
+  delayEpoches: ToField<'u64'>
+  effectiveEpoches: ToField<'u64'>
+}
+
+export type LimiterUpdateParamsChangeCreatedEventReified = Reified<
+  LimiterUpdateParamsChangeCreatedEvent,
+  LimiterUpdateParamsChangeCreatedEventFields
+>
+
+export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = LimiterUpdateParamsChangeCreatedEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = LimiterUpdateParamsChangeCreatedEvent.$isPhantom
+
+  readonly changes: ToField<LimiterUpdateParamsChange>
+  readonly currentEpoch: ToField<'u64'>
+  readonly delayEpoches: ToField<'u64'>
+  readonly effectiveEpoches: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: LimiterUpdateParamsChangeCreatedEventFields) {
+    this.$fullTypeName = composeSuiType(
+      LimiterUpdateParamsChangeCreatedEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
+    this.$typeArgs = typeArgs
+
+    this.changes = fields.changes
+    this.currentEpoch = fields.currentEpoch
+    this.delayEpoches = fields.delayEpoches
+    this.effectiveEpoches = fields.effectiveEpoches
+  }
+
+  static reified(): LimiterUpdateParamsChangeCreatedEventReified {
+    return {
+      typeName: LimiterUpdateParamsChangeCreatedEvent.$typeName,
+      fullTypeName: composeSuiType(
+        LimiterUpdateParamsChangeCreatedEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`,
+      typeArgs: [] as [],
+      isPhantom: LimiterUpdateParamsChangeCreatedEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => LimiterUpdateParamsChangeCreatedEvent.fromBcs(data),
+      bcs: LimiterUpdateParamsChangeCreatedEvent.bcs,
+      fromJSONField: (field: any) => LimiterUpdateParamsChangeCreatedEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChangeCreatedEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        LimiterUpdateParamsChangeCreatedEvent.fetch(client, id),
+      new: (fields: LimiterUpdateParamsChangeCreatedEventFields) => {
+        return new LimiterUpdateParamsChangeCreatedEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return LimiterUpdateParamsChangeCreatedEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<LimiterUpdateParamsChangeCreatedEvent>> {
+    return phantom(LimiterUpdateParamsChangeCreatedEvent.reified())
+  }
+  static get p() {
+    return LimiterUpdateParamsChangeCreatedEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('LimiterUpdateParamsChangeCreatedEvent', {
+      changes: LimiterUpdateParamsChange.bcs,
+      current_epoch: bcs.u64(),
+      delay_epoches: bcs.u64(),
+      effective_epoches: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): LimiterUpdateParamsChangeCreatedEvent {
+    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
+      changes: decodeFromFields(LimiterUpdateParamsChange.reified(), fields.changes),
+      currentEpoch: decodeFromFields('u64', fields.current_epoch),
+      delayEpoches: decodeFromFields('u64', fields.delay_epoches),
+      effectiveEpoches: decodeFromFields('u64', fields.effective_epoches),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): LimiterUpdateParamsChangeCreatedEvent {
+    if (!isLimiterUpdateParamsChangeCreatedEvent(item.type)) {
+      throw new Error('not a LimiterUpdateParamsChangeCreatedEvent type')
+    }
+
+    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
+      changes: decodeFromFieldsWithTypes(LimiterUpdateParamsChange.reified(), item.fields.changes),
+      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
+      delayEpoches: decodeFromFieldsWithTypes('u64', item.fields.delay_epoches),
+      effectiveEpoches: decodeFromFieldsWithTypes('u64', item.fields.effective_epoches),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): LimiterUpdateParamsChangeCreatedEvent {
+    return LimiterUpdateParamsChangeCreatedEvent.fromFields(
+      LimiterUpdateParamsChangeCreatedEvent.bcs.parse(data)
+    )
+  }
+
+  toJSONField() {
+    return {
+      changes: this.changes.toJSONField(),
+      currentEpoch: this.currentEpoch.toString(),
+      delayEpoches: this.delayEpoches.toString(),
+      effectiveEpoches: this.effectiveEpoches.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): LimiterUpdateParamsChangeCreatedEvent {
+    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
+      changes: decodeFromJSONField(LimiterUpdateParamsChange.reified(), field.changes),
+      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
+      delayEpoches: decodeFromJSONField('u64', field.delayEpoches),
+      effectiveEpoches: decodeFromJSONField('u64', field.effectiveEpoches),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): LimiterUpdateParamsChangeCreatedEvent {
+    if (json.$typeName !== LimiterUpdateParamsChangeCreatedEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return LimiterUpdateParamsChangeCreatedEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): LimiterUpdateParamsChangeCreatedEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isLimiterUpdateParamsChangeCreatedEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a LimiterUpdateParamsChangeCreatedEvent object`
+      )
+    }
+    return LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): LimiterUpdateParamsChangeCreatedEvent {
+    if (data.bcs) {
+      if (
+        data.bcs.dataType !== 'moveObject' ||
+        !isLimiterUpdateParamsChangeCreatedEvent(data.bcs.type)
+      ) {
+        throw new Error(`object at is not a LimiterUpdateParamsChangeCreatedEvent object`)
+      }
+
+      return LimiterUpdateParamsChangeCreatedEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return LimiterUpdateParamsChangeCreatedEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(
+    client: SuiClient,
+    id: string
+  ): Promise<LimiterUpdateParamsChangeCreatedEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching LimiterUpdateParamsChangeCreatedEvent object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isLimiterUpdateParamsChangeCreatedEvent(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a LimiterUpdateParamsChangeCreatedEvent object`)
+    }
+
+    return LimiterUpdateParamsChangeCreatedEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== LimiterLimitChangeAppliedEvent =============================== */
 
 export function isLimiterLimitChangeAppliedEvent(type: string): boolean {
@@ -776,213 +1523,6 @@ export class LimiterUpdateLimitChange implements StructClass {
   }
 }
 
-/* ============================== LimiterUpdateLimitChangeCreatedEvent =============================== */
-
-export function isLimiterUpdateLimitChangeCreatedEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
-}
-
-export interface LimiterUpdateLimitChangeCreatedEventFields {
-  changes: ToField<LimiterUpdateLimitChange>
-  currentEpoch: ToField<'u64'>
-  delayEpoches: ToField<'u64'>
-  effectiveEpoches: ToField<'u64'>
-}
-
-export type LimiterUpdateLimitChangeCreatedEventReified = Reified<
-  LimiterUpdateLimitChangeCreatedEvent,
-  LimiterUpdateLimitChangeCreatedEventFields
->
-
-export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = LimiterUpdateLimitChangeCreatedEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = LimiterUpdateLimitChangeCreatedEvent.$isPhantom
-
-  readonly changes: ToField<LimiterUpdateLimitChange>
-  readonly currentEpoch: ToField<'u64'>
-  readonly delayEpoches: ToField<'u64'>
-  readonly effectiveEpoches: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: LimiterUpdateLimitChangeCreatedEventFields) {
-    this.$fullTypeName = composeSuiType(
-      LimiterUpdateLimitChangeCreatedEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`
-    this.$typeArgs = typeArgs
-
-    this.changes = fields.changes
-    this.currentEpoch = fields.currentEpoch
-    this.delayEpoches = fields.delayEpoches
-    this.effectiveEpoches = fields.effectiveEpoches
-  }
-
-  static reified(): LimiterUpdateLimitChangeCreatedEventReified {
-    return {
-      typeName: LimiterUpdateLimitChangeCreatedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateLimitChangeCreatedEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::limiter::LimiterUpdateLimitChangeCreatedEvent`,
-      typeArgs: [] as [],
-      isPhantom: LimiterUpdateLimitChangeCreatedEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) =>
-        LimiterUpdateLimitChangeCreatedEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateLimitChangeCreatedEvent.fromBcs(data),
-      bcs: LimiterUpdateLimitChangeCreatedEvent.bcs,
-      fromJSONField: (field: any) => LimiterUpdateLimitChangeCreatedEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChangeCreatedEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        LimiterUpdateLimitChangeCreatedEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        LimiterUpdateLimitChangeCreatedEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
-        LimiterUpdateLimitChangeCreatedEvent.fetch(client, id),
-      new: (fields: LimiterUpdateLimitChangeCreatedEventFields) => {
-        return new LimiterUpdateLimitChangeCreatedEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return LimiterUpdateLimitChangeCreatedEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<LimiterUpdateLimitChangeCreatedEvent>> {
-    return phantom(LimiterUpdateLimitChangeCreatedEvent.reified())
-  }
-  static get p() {
-    return LimiterUpdateLimitChangeCreatedEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('LimiterUpdateLimitChangeCreatedEvent', {
-      changes: LimiterUpdateLimitChange.bcs,
-      current_epoch: bcs.u64(),
-      delay_epoches: bcs.u64(),
-      effective_epoches: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): LimiterUpdateLimitChangeCreatedEvent {
-    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
-      changes: decodeFromFields(LimiterUpdateLimitChange.reified(), fields.changes),
-      currentEpoch: decodeFromFields('u64', fields.current_epoch),
-      delayEpoches: decodeFromFields('u64', fields.delay_epoches),
-      effectiveEpoches: decodeFromFields('u64', fields.effective_epoches),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): LimiterUpdateLimitChangeCreatedEvent {
-    if (!isLimiterUpdateLimitChangeCreatedEvent(item.type)) {
-      throw new Error('not a LimiterUpdateLimitChangeCreatedEvent type')
-    }
-
-    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
-      changes: decodeFromFieldsWithTypes(LimiterUpdateLimitChange.reified(), item.fields.changes),
-      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
-      delayEpoches: decodeFromFieldsWithTypes('u64', item.fields.delay_epoches),
-      effectiveEpoches: decodeFromFieldsWithTypes('u64', item.fields.effective_epoches),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): LimiterUpdateLimitChangeCreatedEvent {
-    return LimiterUpdateLimitChangeCreatedEvent.fromFields(
-      LimiterUpdateLimitChangeCreatedEvent.bcs.parse(data)
-    )
-  }
-
-  toJSONField() {
-    return {
-      changes: this.changes.toJSONField(),
-      currentEpoch: this.currentEpoch.toString(),
-      delayEpoches: this.delayEpoches.toString(),
-      effectiveEpoches: this.effectiveEpoches.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): LimiterUpdateLimitChangeCreatedEvent {
-    return LimiterUpdateLimitChangeCreatedEvent.reified().new({
-      changes: decodeFromJSONField(LimiterUpdateLimitChange.reified(), field.changes),
-      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
-      delayEpoches: decodeFromJSONField('u64', field.delayEpoches),
-      effectiveEpoches: decodeFromJSONField('u64', field.effectiveEpoches),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): LimiterUpdateLimitChangeCreatedEvent {
-    if (json.$typeName !== LimiterUpdateLimitChangeCreatedEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return LimiterUpdateLimitChangeCreatedEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): LimiterUpdateLimitChangeCreatedEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isLimiterUpdateLimitChangeCreatedEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a LimiterUpdateLimitChangeCreatedEvent object`
-      )
-    }
-    return LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): LimiterUpdateLimitChangeCreatedEvent {
-    if (data.bcs) {
-      if (
-        data.bcs.dataType !== 'moveObject' ||
-        !isLimiterUpdateLimitChangeCreatedEvent(data.bcs.type)
-      ) {
-        throw new Error(`object at is not a LimiterUpdateLimitChangeCreatedEvent object`)
-      }
-
-      return LimiterUpdateLimitChangeCreatedEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return LimiterUpdateLimitChangeCreatedEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<LimiterUpdateLimitChangeCreatedEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching LimiterUpdateLimitChangeCreatedEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isLimiterUpdateLimitChangeCreatedEvent(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a LimiterUpdateLimitChangeCreatedEvent object`)
-    }
-
-    return LimiterUpdateLimitChangeCreatedEvent.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== LimiterUpdateParamsChange =============================== */
 
 export function isLimiterUpdateParamsChange(type: string): boolean {
@@ -1175,545 +1715,5 @@ export class LimiterUpdateParamsChange implements StructClass {
     }
 
     return LimiterUpdateParamsChange.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== LimiterUpdateParamsChangeCreatedEvent =============================== */
-
-export function isLimiterUpdateParamsChangeCreatedEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
-}
-
-export interface LimiterUpdateParamsChangeCreatedEventFields {
-  changes: ToField<LimiterUpdateParamsChange>
-  currentEpoch: ToField<'u64'>
-  delayEpoches: ToField<'u64'>
-  effectiveEpoches: ToField<'u64'>
-}
-
-export type LimiterUpdateParamsChangeCreatedEventReified = Reified<
-  LimiterUpdateParamsChangeCreatedEvent,
-  LimiterUpdateParamsChangeCreatedEventFields
->
-
-export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = LimiterUpdateParamsChangeCreatedEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = LimiterUpdateParamsChangeCreatedEvent.$isPhantom
-
-  readonly changes: ToField<LimiterUpdateParamsChange>
-  readonly currentEpoch: ToField<'u64'>
-  readonly delayEpoches: ToField<'u64'>
-  readonly effectiveEpoches: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: LimiterUpdateParamsChangeCreatedEventFields) {
-    this.$fullTypeName = composeSuiType(
-      LimiterUpdateParamsChangeCreatedEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`
-    this.$typeArgs = typeArgs
-
-    this.changes = fields.changes
-    this.currentEpoch = fields.currentEpoch
-    this.delayEpoches = fields.delayEpoches
-    this.effectiveEpoches = fields.effectiveEpoches
-  }
-
-  static reified(): LimiterUpdateParamsChangeCreatedEventReified {
-    return {
-      typeName: LimiterUpdateParamsChangeCreatedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateParamsChangeCreatedEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::limiter::LimiterUpdateParamsChangeCreatedEvent`,
-      typeArgs: [] as [],
-      isPhantom: LimiterUpdateParamsChangeCreatedEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) =>
-        LimiterUpdateParamsChangeCreatedEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateParamsChangeCreatedEvent.fromBcs(data),
-      bcs: LimiterUpdateParamsChangeCreatedEvent.bcs,
-      fromJSONField: (field: any) => LimiterUpdateParamsChangeCreatedEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChangeCreatedEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        LimiterUpdateParamsChangeCreatedEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        LimiterUpdateParamsChangeCreatedEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
-        LimiterUpdateParamsChangeCreatedEvent.fetch(client, id),
-      new: (fields: LimiterUpdateParamsChangeCreatedEventFields) => {
-        return new LimiterUpdateParamsChangeCreatedEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return LimiterUpdateParamsChangeCreatedEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<LimiterUpdateParamsChangeCreatedEvent>> {
-    return phantom(LimiterUpdateParamsChangeCreatedEvent.reified())
-  }
-  static get p() {
-    return LimiterUpdateParamsChangeCreatedEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('LimiterUpdateParamsChangeCreatedEvent', {
-      changes: LimiterUpdateParamsChange.bcs,
-      current_epoch: bcs.u64(),
-      delay_epoches: bcs.u64(),
-      effective_epoches: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): LimiterUpdateParamsChangeCreatedEvent {
-    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
-      changes: decodeFromFields(LimiterUpdateParamsChange.reified(), fields.changes),
-      currentEpoch: decodeFromFields('u64', fields.current_epoch),
-      delayEpoches: decodeFromFields('u64', fields.delay_epoches),
-      effectiveEpoches: decodeFromFields('u64', fields.effective_epoches),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): LimiterUpdateParamsChangeCreatedEvent {
-    if (!isLimiterUpdateParamsChangeCreatedEvent(item.type)) {
-      throw new Error('not a LimiterUpdateParamsChangeCreatedEvent type')
-    }
-
-    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
-      changes: decodeFromFieldsWithTypes(LimiterUpdateParamsChange.reified(), item.fields.changes),
-      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
-      delayEpoches: decodeFromFieldsWithTypes('u64', item.fields.delay_epoches),
-      effectiveEpoches: decodeFromFieldsWithTypes('u64', item.fields.effective_epoches),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): LimiterUpdateParamsChangeCreatedEvent {
-    return LimiterUpdateParamsChangeCreatedEvent.fromFields(
-      LimiterUpdateParamsChangeCreatedEvent.bcs.parse(data)
-    )
-  }
-
-  toJSONField() {
-    return {
-      changes: this.changes.toJSONField(),
-      currentEpoch: this.currentEpoch.toString(),
-      delayEpoches: this.delayEpoches.toString(),
-      effectiveEpoches: this.effectiveEpoches.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): LimiterUpdateParamsChangeCreatedEvent {
-    return LimiterUpdateParamsChangeCreatedEvent.reified().new({
-      changes: decodeFromJSONField(LimiterUpdateParamsChange.reified(), field.changes),
-      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
-      delayEpoches: decodeFromJSONField('u64', field.delayEpoches),
-      effectiveEpoches: decodeFromJSONField('u64', field.effectiveEpoches),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): LimiterUpdateParamsChangeCreatedEvent {
-    if (json.$typeName !== LimiterUpdateParamsChangeCreatedEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return LimiterUpdateParamsChangeCreatedEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): LimiterUpdateParamsChangeCreatedEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isLimiterUpdateParamsChangeCreatedEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a LimiterUpdateParamsChangeCreatedEvent object`
-      )
-    }
-    return LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): LimiterUpdateParamsChangeCreatedEvent {
-    if (data.bcs) {
-      if (
-        data.bcs.dataType !== 'moveObject' ||
-        !isLimiterUpdateParamsChangeCreatedEvent(data.bcs.type)
-      ) {
-        throw new Error(`object at is not a LimiterUpdateParamsChangeCreatedEvent object`)
-      }
-
-      return LimiterUpdateParamsChangeCreatedEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return LimiterUpdateParamsChangeCreatedEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(
-    client: SuiClient,
-    id: string
-  ): Promise<LimiterUpdateParamsChangeCreatedEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching LimiterUpdateParamsChangeCreatedEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isLimiterUpdateParamsChangeCreatedEvent(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a LimiterUpdateParamsChangeCreatedEvent object`)
-    }
-
-    return LimiterUpdateParamsChangeCreatedEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Limiters =============================== */
-
-export function isLimiters(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::limiter::Limiters`
-}
-
-export interface LimitersFields {
-  dummyField: ToField<'bool'>
-}
-
-export type LimitersReified = Reified<Limiters, LimitersFields>
-
-export class Limiters implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::limiter::Limiters`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Limiters.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::limiter::Limiters`
-  readonly $typeArgs: []
-  readonly $isPhantom = Limiters.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: LimitersFields) {
-    this.$fullTypeName = composeSuiType(
-      Limiters.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::limiter::Limiters`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): LimitersReified {
-    return {
-      typeName: Limiters.$typeName,
-      fullTypeName: composeSuiType(
-        Limiters.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::limiter::Limiters`,
-      typeArgs: [] as [],
-      isPhantom: Limiters.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Limiters.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Limiters.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Limiters.fromBcs(data),
-      bcs: Limiters.bcs,
-      fromJSONField: (field: any) => Limiters.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Limiters.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Limiters.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Limiters.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Limiters.fetch(client, id),
-      new: (fields: LimitersFields) => {
-        return new Limiters([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Limiters.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Limiters>> {
-    return phantom(Limiters.reified())
-  }
-  static get p() {
-    return Limiters.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Limiters', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Limiters {
-    return Limiters.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Limiters {
-    if (!isLimiters(item.type)) {
-      throw new Error('not a Limiters type')
-    }
-
-    return Limiters.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Limiters {
-    return Limiters.fromFields(Limiters.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Limiters {
-    return Limiters.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): Limiters {
-    if (json.$typeName !== Limiters.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Limiters.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Limiters {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isLimiters(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Limiters object`)
-    }
-    return Limiters.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Limiters {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isLimiters(data.bcs.type)) {
-        throw new Error(`object at is not a Limiters object`)
-      }
-
-      return Limiters.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Limiters.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Limiters> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Limiters object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLimiters(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Limiters object`)
-    }
-
-    return Limiters.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Segment =============================== */
-
-export function isSegment(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::limiter::Segment`
-}
-
-export interface SegmentFields {
-  index: ToField<'u64'>
-  value: ToField<'u64'>
-}
-
-export type SegmentReified = Reified<Segment, SegmentFields>
-
-export class Segment implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::limiter::Segment`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Segment.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::limiter::Segment`
-  readonly $typeArgs: []
-  readonly $isPhantom = Segment.$isPhantom
-
-  readonly index: ToField<'u64'>
-  readonly value: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: SegmentFields) {
-    this.$fullTypeName = composeSuiType(
-      Segment.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::limiter::Segment`
-    this.$typeArgs = typeArgs
-
-    this.index = fields.index
-    this.value = fields.value
-  }
-
-  static reified(): SegmentReified {
-    return {
-      typeName: Segment.$typeName,
-      fullTypeName: composeSuiType(
-        Segment.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::limiter::Segment`,
-      typeArgs: [] as [],
-      isPhantom: Segment.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Segment.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Segment.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Segment.fromBcs(data),
-      bcs: Segment.bcs,
-      fromJSONField: (field: any) => Segment.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Segment.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Segment.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Segment.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Segment.fetch(client, id),
-      new: (fields: SegmentFields) => {
-        return new Segment([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Segment.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Segment>> {
-    return phantom(Segment.reified())
-  }
-  static get p() {
-    return Segment.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Segment', {
-      index: bcs.u64(),
-      value: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Segment {
-    return Segment.reified().new({
-      index: decodeFromFields('u64', fields.index),
-      value: decodeFromFields('u64', fields.value),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Segment {
-    if (!isSegment(item.type)) {
-      throw new Error('not a Segment type')
-    }
-
-    return Segment.reified().new({
-      index: decodeFromFieldsWithTypes('u64', item.fields.index),
-      value: decodeFromFieldsWithTypes('u64', item.fields.value),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Segment {
-    return Segment.fromFields(Segment.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      index: this.index.toString(),
-      value: this.value.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Segment {
-    return Segment.reified().new({
-      index: decodeFromJSONField('u64', field.index),
-      value: decodeFromJSONField('u64', field.value),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Segment {
-    if (json.$typeName !== Segment.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Segment.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Segment {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSegment(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Segment object`)
-    }
-    return Segment.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Segment {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSegment(data.bcs.type)) {
-        throw new Error(`object at is not a Segment object`)
-      }
-
-      return Segment.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Segment.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Segment> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Segment object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSegment(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Segment object`)
-    }
-
-    return Segment.fromSuiObjectData(res.data)
   }
 }

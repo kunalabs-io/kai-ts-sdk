@@ -192,6 +192,191 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
   }
 }
 
+/* ============================== CoinDecimalsRegistry =============================== */
+
+export function isCoinDecimalsRegistry(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
+}
+
+export interface CoinDecimalsRegistryFields {
+  id: ToField<UID>
+  table: ToField<Table<ToPhantom<TypeName>, 'u8'>>
+}
+
+export type CoinDecimalsRegistryReified = Reified<CoinDecimalsRegistry, CoinDecimalsRegistryFields>
+
+export class CoinDecimalsRegistry implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = CoinDecimalsRegistry.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
+  readonly $typeArgs: []
+  readonly $isPhantom = CoinDecimalsRegistry.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly table: ToField<Table<ToPhantom<TypeName>, 'u8'>>
+
+  private constructor(typeArgs: [], fields: CoinDecimalsRegistryFields) {
+    this.$fullTypeName = composeSuiType(
+      CoinDecimalsRegistry.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.table = fields.table
+  }
+
+  static reified(): CoinDecimalsRegistryReified {
+    return {
+      typeName: CoinDecimalsRegistry.$typeName,
+      fullTypeName: composeSuiType(
+        CoinDecimalsRegistry.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`,
+      typeArgs: [] as [],
+      isPhantom: CoinDecimalsRegistry.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => CoinDecimalsRegistry.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        CoinDecimalsRegistry.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => CoinDecimalsRegistry.fromBcs(data),
+      bcs: CoinDecimalsRegistry.bcs,
+      fromJSONField: (field: any) => CoinDecimalsRegistry.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => CoinDecimalsRegistry.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        CoinDecimalsRegistry.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        CoinDecimalsRegistry.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => CoinDecimalsRegistry.fetch(client, id),
+      new: (fields: CoinDecimalsRegistryFields) => {
+        return new CoinDecimalsRegistry([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return CoinDecimalsRegistry.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<CoinDecimalsRegistry>> {
+    return phantom(CoinDecimalsRegistry.reified())
+  }
+  static get p() {
+    return CoinDecimalsRegistry.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('CoinDecimalsRegistry', {
+      id: UID.bcs,
+      table: Table.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): CoinDecimalsRegistry {
+    return CoinDecimalsRegistry.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      table: decodeFromFields(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
+        fields.table
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): CoinDecimalsRegistry {
+    if (!isCoinDecimalsRegistry(item.type)) {
+      throw new Error('not a CoinDecimalsRegistry type')
+    }
+
+    return CoinDecimalsRegistry.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      table: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
+        item.fields.table
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): CoinDecimalsRegistry {
+    return CoinDecimalsRegistry.fromFields(CoinDecimalsRegistry.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      table: this.table.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): CoinDecimalsRegistry {
+    return CoinDecimalsRegistry.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      table: decodeFromJSONField(
+        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
+        field.table
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): CoinDecimalsRegistry {
+    if (json.$typeName !== CoinDecimalsRegistry.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return CoinDecimalsRegistry.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): CoinDecimalsRegistry {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isCoinDecimalsRegistry(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a CoinDecimalsRegistry object`
+      )
+    }
+    return CoinDecimalsRegistry.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): CoinDecimalsRegistry {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isCoinDecimalsRegistry(data.bcs.type)) {
+        throw new Error(`object at is not a CoinDecimalsRegistry object`)
+      }
+
+      return CoinDecimalsRegistry.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return CoinDecimalsRegistry.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<CoinDecimalsRegistry> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching CoinDecimalsRegistry object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isCoinDecimalsRegistry(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a CoinDecimalsRegistry object`)
+    }
+
+    return CoinDecimalsRegistry.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== CoinDecimalsRegistered =============================== */
 
 export function isCoinDecimalsRegistered(type: string): boolean {
@@ -379,190 +564,5 @@ export class CoinDecimalsRegistered implements StructClass {
     }
 
     return CoinDecimalsRegistered.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== CoinDecimalsRegistry =============================== */
-
-export function isCoinDecimalsRegistry(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
-}
-
-export interface CoinDecimalsRegistryFields {
-  id: ToField<UID>
-  table: ToField<Table<ToPhantom<TypeName>, 'u8'>>
-}
-
-export type CoinDecimalsRegistryReified = Reified<CoinDecimalsRegistry, CoinDecimalsRegistryFields>
-
-export class CoinDecimalsRegistry implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = CoinDecimalsRegistry.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
-  readonly $typeArgs: []
-  readonly $isPhantom = CoinDecimalsRegistry.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly table: ToField<Table<ToPhantom<TypeName>, 'u8'>>
-
-  private constructor(typeArgs: [], fields: CoinDecimalsRegistryFields) {
-    this.$fullTypeName = composeSuiType(
-      CoinDecimalsRegistry.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.table = fields.table
-  }
-
-  static reified(): CoinDecimalsRegistryReified {
-    return {
-      typeName: CoinDecimalsRegistry.$typeName,
-      fullTypeName: composeSuiType(
-        CoinDecimalsRegistry.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::coin_decimals_registry::CoinDecimalsRegistry`,
-      typeArgs: [] as [],
-      isPhantom: CoinDecimalsRegistry.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => CoinDecimalsRegistry.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        CoinDecimalsRegistry.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CoinDecimalsRegistry.fromBcs(data),
-      bcs: CoinDecimalsRegistry.bcs,
-      fromJSONField: (field: any) => CoinDecimalsRegistry.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => CoinDecimalsRegistry.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        CoinDecimalsRegistry.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        CoinDecimalsRegistry.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CoinDecimalsRegistry.fetch(client, id),
-      new: (fields: CoinDecimalsRegistryFields) => {
-        return new CoinDecimalsRegistry([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return CoinDecimalsRegistry.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<CoinDecimalsRegistry>> {
-    return phantom(CoinDecimalsRegistry.reified())
-  }
-  static get p() {
-    return CoinDecimalsRegistry.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('CoinDecimalsRegistry', {
-      id: UID.bcs,
-      table: Table.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): CoinDecimalsRegistry {
-    return CoinDecimalsRegistry.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      table: decodeFromFields(
-        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
-        fields.table
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): CoinDecimalsRegistry {
-    if (!isCoinDecimalsRegistry(item.type)) {
-      throw new Error('not a CoinDecimalsRegistry type')
-    }
-
-    return CoinDecimalsRegistry.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      table: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
-        item.fields.table
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): CoinDecimalsRegistry {
-    return CoinDecimalsRegistry.fromFields(CoinDecimalsRegistry.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      table: this.table.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): CoinDecimalsRegistry {
-    return CoinDecimalsRegistry.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      table: decodeFromJSONField(
-        Table.reified(reified.phantom(TypeName.reified()), reified.phantom('u8')),
-        field.table
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): CoinDecimalsRegistry {
-    if (json.$typeName !== CoinDecimalsRegistry.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return CoinDecimalsRegistry.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): CoinDecimalsRegistry {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isCoinDecimalsRegistry(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a CoinDecimalsRegistry object`
-      )
-    }
-    return CoinDecimalsRegistry.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): CoinDecimalsRegistry {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isCoinDecimalsRegistry(data.bcs.type)) {
-        throw new Error(`object at is not a CoinDecimalsRegistry object`)
-      }
-
-      return CoinDecimalsRegistry.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return CoinDecimalsRegistry.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<CoinDecimalsRegistry> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching CoinDecimalsRegistry object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCoinDecimalsRegistry(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a CoinDecimalsRegistry object`)
-    }
-
-    return CoinDecimalsRegistry.fromSuiObjectData(res.data)
   }
 }

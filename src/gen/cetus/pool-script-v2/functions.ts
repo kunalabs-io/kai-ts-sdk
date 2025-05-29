@@ -3,198 +3,6 @@ import { String } from '../../_dependencies/onchain/0x1/string/structs'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface AddLiquidityArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function addLiquidity(tx: Transaction, typeArgs: [string, string], args: AddLiquidityArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::add_liquidity`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface AddLiquidityByFixCoinArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  bool: boolean | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function addLiquidityByFixCoin(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: AddLiquidityByFixCoinArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::add_liquidity_by_fix_coin`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.bool, `bool`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface ClosePositionArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function closePosition(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: ClosePositionArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::close_position`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface ClosePositionWithReturnArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  bool: boolean | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function closePositionWithReturn(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: ClosePositionWithReturnArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::close_position_with_return`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      pure(tx, args.bool, `bool`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface CollectFeeArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-}
-
-export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::collect_fee`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-    ],
-  })
-}
-
-export interface CollectProtocolFeeArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-}
-
-export function collectProtocolFee(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: CollectProtocolFeeArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::collect_protocol_fee`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-    ],
-  })
-}
-
-export interface CollectRewardArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  rewarderGlobalVault: TransactionObjectInput
-  coin: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function collectReward(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: CollectRewardArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::collect_reward`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      obj(tx, args.rewarderGlobalVault),
-      obj(tx, args.coin),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
 export interface CreatePoolArgs {
   globalConfig: TransactionObjectInput
   pools: TransactionObjectInput
@@ -258,23 +66,6 @@ export function createPoolWithLiquidity(
       pure(tx, args.bool, `bool`),
       obj(tx, args.clock),
     ],
-  })
-}
-
-export interface InitializeRewarderArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-}
-
-export function initializeRewarder(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: InitializeRewarderArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::initialize_rewarder`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
   })
 }
 
@@ -370,16 +161,67 @@ export function openPositionWithLiquidityByFixCoin(
   })
 }
 
-export interface PausePoolArgs {
+export interface AddLiquidityArgs {
   globalConfig: TransactionObjectInput
   pool: TransactionObjectInput
+  position: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
 }
 
-export function pausePool(tx: Transaction, typeArgs: [string, string], args: PausePoolArgs) {
+export function addLiquidity(tx: Transaction, typeArgs: [string, string], args: AddLiquidityArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::pause_pool`,
+    target: `${PUBLISHED_AT}::pool_script_v2::add_liquidity`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface AddLiquidityByFixCoinArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  bool: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function addLiquidityByFixCoin(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddLiquidityByFixCoinArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::add_liquidity_by_fix_coin`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.bool, `bool`),
+      obj(tx, args.clock),
+    ],
   })
 }
 
@@ -409,6 +251,375 @@ export function removeLiquidity(
       pure(tx, args.u641, `u64`),
       pure(tx, args.u642, `u64`),
       obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface ClosePositionArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function closePosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ClosePositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::close_position`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CollectFeeArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+}
+
+export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::collect_fee`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+    ],
+  })
+}
+
+export interface ClosePositionWithReturnArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function closePositionWithReturn(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ClosePositionWithReturnArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::close_position_with_return`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.bool, `bool`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CollectRewardArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  rewarderGlobalVault: TransactionObjectInput
+  coin: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function collectReward(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: CollectRewardArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::collect_reward`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      obj(tx, args.rewarderGlobalVault),
+      obj(tx, args.coin),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CollectProtocolFeeArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+}
+
+export function collectProtocolFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CollectProtocolFeeArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::collect_protocol_fee`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+    ],
+  })
+}
+
+export interface SwapA2bArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function swapA2b(tx: Transaction, typeArgs: [string, string], args: SwapA2bArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::swap_a2b`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.bool, `bool`),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface SwapB2aArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function swapB2a(tx: Transaction, typeArgs: [string, string], args: SwapB2aArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::swap_b2a`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.bool, `bool`),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface SwapA2bWithPartnerArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  partner: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function swapA2bWithPartner(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SwapA2bWithPartnerArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::swap_a2b_with_partner`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.partner),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.bool, `bool`),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface SwapB2aWithPartnerArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  partner: TransactionObjectInput
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  bool: boolean | TransactionArgument
+  u641: bigint | TransactionArgument
+  u642: bigint | TransactionArgument
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function swapB2aWithPartner(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SwapB2aWithPartnerArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::swap_b2a_with_partner`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.partner),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.bool, `bool`),
+      pure(tx, args.u641, `u64`),
+      pure(tx, args.u642, `u64`),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface UpdateFeeRateArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  u64: bigint | TransactionArgument
+}
+
+export function updateFeeRate(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdateFeeRateArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::update_fee_rate`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool), pure(tx, args.u64, `u64`)],
+  })
+}
+
+export interface InitializeRewarderArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+}
+
+export function initializeRewarder(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: InitializeRewarderArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::initialize_rewarder`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
+  })
+}
+
+export interface UpdateRewarderEmissionArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  rewarderGlobalVault: TransactionObjectInput
+  u128: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function updateRewarderEmission(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: UpdateRewarderEmissionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::update_rewarder_emission`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      obj(tx, args.rewarderGlobalVault),
+      pure(tx, args.u128, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface PausePoolArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+}
+
+export function pausePool(tx: Transaction, typeArgs: [string, string], args: PausePoolArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::pause_pool`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
+  })
+}
+
+export interface UnpausePoolArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+}
+
+export function unpausePool(tx: Transaction, typeArgs: [string, string], args: UnpausePoolArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::unpause_pool`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
+  })
+}
+
+export interface UpdatePositionUrlArgs {
+  globalConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  string: string | TransactionArgument
+}
+
+export function updatePositionUrl(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdatePositionUrlArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_script_v2::update_position_url`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.globalConfig),
+      obj(tx, args.pool),
+      pure(tx, args.string, `${String.$typeName}`),
     ],
   })
 }
@@ -503,138 +714,6 @@ export function swap(tx: Transaction, typeArgs: [string, string], args: SwapArgs
   })
 }
 
-export interface SwapA2bArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  bool: boolean | TransactionArgument
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function swapA2b(tx: Transaction, typeArgs: [string, string], args: SwapA2bArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::swap_a2b`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.bool, `bool`),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface SwapA2bWithPartnerArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  partner: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  bool: boolean | TransactionArgument
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function swapA2bWithPartner(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: SwapA2bWithPartnerArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::swap_a2b_with_partner`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.partner),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.bool, `bool`),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface SwapB2aArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  bool: boolean | TransactionArgument
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function swapB2a(tx: Transaction, typeArgs: [string, string], args: SwapB2aArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::swap_b2a`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.bool, `bool`),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface SwapB2aWithPartnerArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  partner: TransactionObjectInput
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  bool: boolean | TransactionArgument
-  u641: bigint | TransactionArgument
-  u642: bigint | TransactionArgument
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function swapB2aWithPartner(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: SwapB2aWithPartnerArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::swap_b2a_with_partner`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.partner),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.bool, `bool`),
-      pure(tx, args.u641, `u64`),
-      pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
 export interface SwapWithPartnerArgs {
   globalConfig: TransactionObjectInput
   pool: TransactionObjectInput
@@ -667,85 +746,6 @@ export function swapWithPartner(
       pure(tx, args.bool2, `bool`),
       pure(tx, args.u641, `u64`),
       pure(tx, args.u642, `u64`),
-      pure(tx, args.u128, `u128`),
-      obj(tx, args.clock),
-    ],
-  })
-}
-
-export interface UnpausePoolArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-}
-
-export function unpausePool(tx: Transaction, typeArgs: [string, string], args: UnpausePoolArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::unpause_pool`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool)],
-  })
-}
-
-export interface UpdateFeeRateArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  u64: bigint | TransactionArgument
-}
-
-export function updateFeeRate(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: UpdateFeeRateArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::update_fee_rate`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.globalConfig), obj(tx, args.pool), pure(tx, args.u64, `u64`)],
-  })
-}
-
-export interface UpdatePositionUrlArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  string: string | TransactionArgument
-}
-
-export function updatePositionUrl(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: UpdatePositionUrlArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::update_position_url`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      pure(tx, args.string, `${String.$typeName}`),
-    ],
-  })
-}
-
-export interface UpdateRewarderEmissionArgs {
-  globalConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  rewarderGlobalVault: TransactionObjectInput
-  u128: bigint | TransactionArgument
-  clock: TransactionObjectInput
-}
-
-export function updateRewarderEmission(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: UpdateRewarderEmissionArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_script_v2::update_rewarder_emission`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.globalConfig),
-      obj(tx, args.pool),
-      obj(tx, args.rewarderGlobalVault),
       pure(tx, args.u128, `u128`),
       obj(tx, args.clock),
     ],

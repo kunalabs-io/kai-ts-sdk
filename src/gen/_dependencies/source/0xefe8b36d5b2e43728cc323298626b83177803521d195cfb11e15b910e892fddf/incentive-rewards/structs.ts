@@ -17,6 +17,167 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== RewardFactors =============================== */
+
+export function isRewardFactors(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::incentive_rewards::RewardFactors`
+}
+
+export interface RewardFactorsFields {
+  dummyField: ToField<'bool'>
+}
+
+export type RewardFactorsReified = Reified<RewardFactors, RewardFactorsFields>
+
+export class RewardFactors implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::incentive_rewards::RewardFactors`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RewardFactors.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::incentive_rewards::RewardFactors`
+  readonly $typeArgs: []
+  readonly $isPhantom = RewardFactors.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: RewardFactorsFields) {
+    this.$fullTypeName = composeSuiType(
+      RewardFactors.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::incentive_rewards::RewardFactors`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): RewardFactorsReified {
+    return {
+      typeName: RewardFactors.$typeName,
+      fullTypeName: composeSuiType(
+        RewardFactors.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::incentive_rewards::RewardFactors`,
+      typeArgs: [] as [],
+      isPhantom: RewardFactors.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RewardFactors.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RewardFactors.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RewardFactors.fromBcs(data),
+      bcs: RewardFactors.bcs,
+      fromJSONField: (field: any) => RewardFactors.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RewardFactors.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RewardFactors.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RewardFactors.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RewardFactors.fetch(client, id),
+      new: (fields: RewardFactorsFields) => {
+        return new RewardFactors([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RewardFactors.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RewardFactors>> {
+    return phantom(RewardFactors.reified())
+  }
+  static get p() {
+    return RewardFactors.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RewardFactors', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RewardFactors {
+    return RewardFactors.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RewardFactors {
+    if (!isRewardFactors(item.type)) {
+      throw new Error('not a RewardFactors type')
+    }
+
+    return RewardFactors.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RewardFactors {
+    return RewardFactors.fromFields(RewardFactors.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RewardFactors {
+    return RewardFactors.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RewardFactors {
+    if (json.$typeName !== RewardFactors.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RewardFactors.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RewardFactors {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRewardFactors(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RewardFactors object`)
+    }
+    return RewardFactors.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RewardFactors {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRewardFactors(data.bcs.type)) {
+        throw new Error(`object at is not a RewardFactors object`)
+      }
+
+      return RewardFactors.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RewardFactors.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RewardFactors> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RewardFactors object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewardFactors(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RewardFactors object`)
+    }
+
+    return RewardFactors.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== RewardFactor =============================== */
 
 export function isRewardFactor(type: string): boolean {
@@ -185,166 +346,5 @@ export class RewardFactor implements StructClass {
     }
 
     return RewardFactor.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== RewardFactors =============================== */
-
-export function isRewardFactors(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::incentive_rewards::RewardFactors`
-}
-
-export interface RewardFactorsFields {
-  dummyField: ToField<'bool'>
-}
-
-export type RewardFactorsReified = Reified<RewardFactors, RewardFactorsFields>
-
-export class RewardFactors implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::incentive_rewards::RewardFactors`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RewardFactors.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::incentive_rewards::RewardFactors`
-  readonly $typeArgs: []
-  readonly $isPhantom = RewardFactors.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: RewardFactorsFields) {
-    this.$fullTypeName = composeSuiType(
-      RewardFactors.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::incentive_rewards::RewardFactors`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): RewardFactorsReified {
-    return {
-      typeName: RewardFactors.$typeName,
-      fullTypeName: composeSuiType(
-        RewardFactors.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::incentive_rewards::RewardFactors`,
-      typeArgs: [] as [],
-      isPhantom: RewardFactors.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RewardFactors.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RewardFactors.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardFactors.fromBcs(data),
-      bcs: RewardFactors.bcs,
-      fromJSONField: (field: any) => RewardFactors.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RewardFactors.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RewardFactors.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RewardFactors.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewardFactors.fetch(client, id),
-      new: (fields: RewardFactorsFields) => {
-        return new RewardFactors([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RewardFactors.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RewardFactors>> {
-    return phantom(RewardFactors.reified())
-  }
-  static get p() {
-    return RewardFactors.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RewardFactors', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RewardFactors {
-    return RewardFactors.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RewardFactors {
-    if (!isRewardFactors(item.type)) {
-      throw new Error('not a RewardFactors type')
-    }
-
-    return RewardFactors.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RewardFactors {
-    return RewardFactors.fromFields(RewardFactors.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RewardFactors {
-    return RewardFactors.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RewardFactors {
-    if (json.$typeName !== RewardFactors.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RewardFactors.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RewardFactors {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRewardFactors(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RewardFactors object`)
-    }
-    return RewardFactors.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RewardFactors {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRewardFactors(data.bcs.type)) {
-        throw new Error(`object at is not a RewardFactors object`)
-      }
-
-      return RewardFactors.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RewardFactors.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RewardFactors> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RewardFactors object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewardFactors(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RewardFactors object`)
-    }
-
-    return RewardFactors.fromSuiObjectData(res.data)
   }
 }

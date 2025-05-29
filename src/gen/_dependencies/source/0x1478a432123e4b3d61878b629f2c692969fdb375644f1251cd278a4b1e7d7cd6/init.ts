@@ -5,11 +5,11 @@ import { StructClassLoader } from '../../../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
   loader.register(priceFeed.PriceFeed)
+  loader.register(priceUpdatePolicy.PriceUpdateRequest)
   loader.register(priceUpdatePolicy.PriceUpdatePolicy)
   loader.register(priceUpdatePolicy.PriceUpdatePolicyCap)
-  loader.register(priceUpdatePolicy.PriceUpdateRequest)
+  loader.register(xOracle.X_ORACLE)
   loader.register(xOracle.XOracle)
   loader.register(xOracle.XOraclePolicyCap)
   loader.register(xOracle.XOraclePriceUpdateRequest)
-  loader.register(xOracle.X_ORACLE)
 }

@@ -2,6 +2,14 @@ import { PUBLISHED_AT } from '..'
 import { GenericArg, generic, obj } from '../../_framework/util'
 import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function new_(tx: Transaction, typeArg: string) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::set::new`,
+    typeArguments: [typeArg],
+    arguments: [],
+  })
+}
+
 export interface AddArgs {
   set: TransactionObjectInput
   t0: GenericArg
@@ -25,14 +33,6 @@ export function contains(tx: Transaction, typeArg: string, args: ContainsArgs) {
     target: `${PUBLISHED_AT}::set::contains`,
     typeArguments: [typeArg],
     arguments: [obj(tx, args.set), generic(tx, `${typeArg}`, args.t0)],
-  })
-}
-
-export function new_(tx: Transaction, typeArg: string) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::new`,
-    typeArguments: [typeArg],
-    arguments: [],
   })
 }
 

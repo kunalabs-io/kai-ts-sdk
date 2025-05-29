@@ -2,76 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface ClosePositionArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-  destination: string | TransactionArgument
-}
-
-export function closePosition(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: ClosePositionArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::gateway::close_position`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-      pure(tx, args.destination, `address`),
-    ],
-  })
-}
-
-export interface CollectFeeArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-}
-
-export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::gateway::collect_fee`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-    ],
-  })
-}
-
-export interface CollectRewardArgs {
-  clock: TransactionObjectInput
-  protocolConfig: TransactionObjectInput
-  pool: TransactionObjectInput
-  position: TransactionObjectInput
-}
-
-export function collectReward(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: CollectRewardArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::gateway::collect_reward`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.clock),
-      obj(tx, args.protocolConfig),
-      obj(tx, args.pool),
-      obj(tx, args.position),
-    ],
-  })
-}
-
 export interface CreatePoolV2Args {
   clock: TransactionObjectInput
   protocolConfig: TransactionObjectInput
@@ -218,6 +148,32 @@ export function removeLiquidity(
   })
 }
 
+export interface ClosePositionArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+  destination: string | TransactionArgument
+}
+
+export function closePosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ClosePositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::gateway::close_position`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+      pure(tx, args.destination, `address`),
+    ],
+  })
+}
+
 export interface SwapAssetsArgs {
   clock: TransactionObjectInput
   protocolConfig: TransactionObjectInput
@@ -246,6 +202,50 @@ export function swapAssets(tx: Transaction, typeArgs: [string, string], args: Sw
       pure(tx, args.amount, `u64`),
       pure(tx, args.amountLimit, `u64`),
       pure(tx, args.sqrtPriceMaxLimit, `u128`),
+    ],
+  })
+}
+
+export interface CollectFeeArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+}
+
+export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::gateway::collect_fee`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
+    ],
+  })
+}
+
+export interface CollectRewardArgs {
+  clock: TransactionObjectInput
+  protocolConfig: TransactionObjectInput
+  pool: TransactionObjectInput
+  position: TransactionObjectInput
+}
+
+export function collectReward(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: CollectRewardArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::gateway::collect_reward`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.clock),
+      obj(tx, args.protocolConfig),
+      obj(tx, args.pool),
+      obj(tx, args.position),
     ],
   })
 }

@@ -21,123 +21,133 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== DepositEvent =============================== */
+/* ============================== RewarderManager =============================== */
 
-export function isDepositEvent(type: string): boolean {
+export function isRewarderManager(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::DepositEvent`
+  return type === `${PKG_V1}::rewarder::RewarderManager`
 }
 
-export interface DepositEventFields {
-  rewardType: ToField<TypeName>
-  depositAmount: ToField<'u64'>
-  afterAmount: ToField<'u64'>
+export interface RewarderManagerFields {
+  rewarders: ToField<Vector<Rewarder>>
+  pointsReleased: ToField<'u128'>
+  pointsGrowthGlobal: ToField<'u128'>
+  lastUpdatedTime: ToField<'u64'>
 }
 
-export type DepositEventReified = Reified<DepositEvent, DepositEventFields>
+export type RewarderManagerReified = Reified<RewarderManager, RewarderManagerFields>
 
-export class DepositEvent implements StructClass {
+export class RewarderManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::DepositEvent`
+  static readonly $typeName = `${PKG_V1}::rewarder::RewarderManager`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DepositEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::DepositEvent`
+  readonly $typeName = RewarderManager.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::RewarderManager`
   readonly $typeArgs: []
-  readonly $isPhantom = DepositEvent.$isPhantom
+  readonly $isPhantom = RewarderManager.$isPhantom
 
-  readonly rewardType: ToField<TypeName>
-  readonly depositAmount: ToField<'u64'>
-  readonly afterAmount: ToField<'u64'>
+  readonly rewarders: ToField<Vector<Rewarder>>
+  readonly pointsReleased: ToField<'u128'>
+  readonly pointsGrowthGlobal: ToField<'u128'>
+  readonly lastUpdatedTime: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: DepositEventFields) {
+  private constructor(typeArgs: [], fields: RewarderManagerFields) {
     this.$fullTypeName = composeSuiType(
-      DepositEvent.$typeName,
+      RewarderManager.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::DepositEvent`
+    ) as `${typeof PKG_V1}::rewarder::RewarderManager`
     this.$typeArgs = typeArgs
 
-    this.rewardType = fields.rewardType
-    this.depositAmount = fields.depositAmount
-    this.afterAmount = fields.afterAmount
+    this.rewarders = fields.rewarders
+    this.pointsReleased = fields.pointsReleased
+    this.pointsGrowthGlobal = fields.pointsGrowthGlobal
+    this.lastUpdatedTime = fields.lastUpdatedTime
   }
 
-  static reified(): DepositEventReified {
+  static reified(): RewarderManagerReified {
     return {
-      typeName: DepositEvent.$typeName,
+      typeName: RewarderManager.$typeName,
       fullTypeName: composeSuiType(
-        DepositEvent.$typeName,
+        RewarderManager.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::rewarder::DepositEvent`,
+      ) as `${typeof PKG_V1}::rewarder::RewarderManager`,
       typeArgs: [] as [],
-      isPhantom: DepositEvent.$isPhantom,
+      isPhantom: RewarderManager.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => DepositEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DepositEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DepositEvent.fromBcs(data),
-      bcs: DepositEvent.bcs,
-      fromJSONField: (field: any) => DepositEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => DepositEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DepositEvent.fetch(client, id),
-      new: (fields: DepositEventFields) => {
-        return new DepositEvent([], fields)
+      fromFields: (fields: Record<string, any>) => RewarderManager.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RewarderManager.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RewarderManager.fromBcs(data),
+      bcs: RewarderManager.bcs,
+      fromJSONField: (field: any) => RewarderManager.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RewarderManager.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RewarderManager.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RewarderManager.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RewarderManager.fetch(client, id),
+      new: (fields: RewarderManagerFields) => {
+        return new RewarderManager([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return DepositEvent.reified()
+    return RewarderManager.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<DepositEvent>> {
-    return phantom(DepositEvent.reified())
+  static phantom(): PhantomReified<ToTypeStr<RewarderManager>> {
+    return phantom(RewarderManager.reified())
   }
   static get p() {
-    return DepositEvent.phantom()
+    return RewarderManager.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('DepositEvent', {
-      reward_type: TypeName.bcs,
-      deposit_amount: bcs.u64(),
-      after_amount: bcs.u64(),
+    return bcs.struct('RewarderManager', {
+      rewarders: bcs.vector(Rewarder.bcs),
+      points_released: bcs.u128(),
+      points_growth_global: bcs.u128(),
+      last_updated_time: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): DepositEvent {
-    return DepositEvent.reified().new({
-      rewardType: decodeFromFields(TypeName.reified(), fields.reward_type),
-      depositAmount: decodeFromFields('u64', fields.deposit_amount),
-      afterAmount: decodeFromFields('u64', fields.after_amount),
+  static fromFields(fields: Record<string, any>): RewarderManager {
+    return RewarderManager.reified().new({
+      rewarders: decodeFromFields(reified.vector(Rewarder.reified()), fields.rewarders),
+      pointsReleased: decodeFromFields('u128', fields.points_released),
+      pointsGrowthGlobal: decodeFromFields('u128', fields.points_growth_global),
+      lastUpdatedTime: decodeFromFields('u64', fields.last_updated_time),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): DepositEvent {
-    if (!isDepositEvent(item.type)) {
-      throw new Error('not a DepositEvent type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): RewarderManager {
+    if (!isRewarderManager(item.type)) {
+      throw new Error('not a RewarderManager type')
     }
 
-    return DepositEvent.reified().new({
-      rewardType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_type),
-      depositAmount: decodeFromFieldsWithTypes('u64', item.fields.deposit_amount),
-      afterAmount: decodeFromFieldsWithTypes('u64', item.fields.after_amount),
+    return RewarderManager.reified().new({
+      rewarders: decodeFromFieldsWithTypes(
+        reified.vector(Rewarder.reified()),
+        item.fields.rewarders
+      ),
+      pointsReleased: decodeFromFieldsWithTypes('u128', item.fields.points_released),
+      pointsGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.points_growth_global),
+      lastUpdatedTime: decodeFromFieldsWithTypes('u64', item.fields.last_updated_time),
     })
   }
 
-  static fromBcs(data: Uint8Array): DepositEvent {
-    return DepositEvent.fromFields(DepositEvent.bcs.parse(data))
+  static fromBcs(data: Uint8Array): RewarderManager {
+    return RewarderManager.fromFields(RewarderManager.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      rewardType: this.rewardType.toJSONField(),
-      depositAmount: this.depositAmount.toString(),
-      afterAmount: this.afterAmount.toString(),
+      rewarders: fieldToJSON<Vector<Rewarder>>(`vector<${Rewarder.$typeName}>`, this.rewarders),
+      pointsReleased: this.pointsReleased.toString(),
+      pointsGrowthGlobal: this.pointsGrowthGlobal.toString(),
+      lastUpdatedTime: this.lastUpdatedTime.toString(),
     }
   }
 
@@ -145,245 +155,59 @@ export class DepositEvent implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): DepositEvent {
-    return DepositEvent.reified().new({
-      rewardType: decodeFromJSONField(TypeName.reified(), field.rewardType),
-      depositAmount: decodeFromJSONField('u64', field.depositAmount),
-      afterAmount: decodeFromJSONField('u64', field.afterAmount),
+  static fromJSONField(field: any): RewarderManager {
+    return RewarderManager.reified().new({
+      rewarders: decodeFromJSONField(reified.vector(Rewarder.reified()), field.rewarders),
+      pointsReleased: decodeFromJSONField('u128', field.pointsReleased),
+      pointsGrowthGlobal: decodeFromJSONField('u128', field.pointsGrowthGlobal),
+      lastUpdatedTime: decodeFromJSONField('u64', field.lastUpdatedTime),
     })
   }
 
-  static fromJSON(json: Record<string, any>): DepositEvent {
-    if (json.$typeName !== DepositEvent.$typeName) {
+  static fromJSON(json: Record<string, any>): RewarderManager {
+    if (json.$typeName !== RewarderManager.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return DepositEvent.fromJSONField(json)
+    return RewarderManager.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): DepositEvent {
+  static fromSuiParsedData(content: SuiParsedData): RewarderManager {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isDepositEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a DepositEvent object`)
+    if (!isRewarderManager(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RewarderManager object`)
     }
-    return DepositEvent.fromFieldsWithTypes(content)
+    return RewarderManager.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): DepositEvent {
+  static fromSuiObjectData(data: SuiObjectData): RewarderManager {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isDepositEvent(data.bcs.type)) {
-        throw new Error(`object at is not a DepositEvent object`)
+      if (data.bcs.dataType !== 'moveObject' || !isRewarderManager(data.bcs.type)) {
+        throw new Error(`object at is not a RewarderManager object`)
       }
 
-      return DepositEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RewarderManager.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return DepositEvent.fromSuiParsedData(data.content)
+      return RewarderManager.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DepositEvent> {
+  static async fetch(client: SuiClient, id: string): Promise<RewarderManager> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching DepositEvent object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching RewarderManager object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDepositEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a DepositEvent object`)
-    }
-
-    return DepositEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== EmergentWithdrawEvent =============================== */
-
-export function isEmergentWithdrawEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::EmergentWithdrawEvent`
-}
-
-export interface EmergentWithdrawEventFields {
-  rewardType: ToField<TypeName>
-  withdrawAmount: ToField<'u64'>
-  afterAmount: ToField<'u64'>
-}
-
-export type EmergentWithdrawEventReified = Reified<
-  EmergentWithdrawEvent,
-  EmergentWithdrawEventFields
->
-
-export class EmergentWithdrawEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::rewarder::EmergentWithdrawEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = EmergentWithdrawEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = EmergentWithdrawEvent.$isPhantom
-
-  readonly rewardType: ToField<TypeName>
-  readonly withdrawAmount: ToField<'u64'>
-  readonly afterAmount: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: EmergentWithdrawEventFields) {
-    this.$fullTypeName = composeSuiType(
-      EmergentWithdrawEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
-    this.$typeArgs = typeArgs
-
-    this.rewardType = fields.rewardType
-    this.withdrawAmount = fields.withdrawAmount
-    this.afterAmount = fields.afterAmount
-  }
-
-  static reified(): EmergentWithdrawEventReified {
-    return {
-      typeName: EmergentWithdrawEvent.$typeName,
-      fullTypeName: composeSuiType(
-        EmergentWithdrawEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`,
-      typeArgs: [] as [],
-      isPhantom: EmergentWithdrawEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => EmergentWithdrawEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        EmergentWithdrawEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmergentWithdrawEvent.fromBcs(data),
-      bcs: EmergentWithdrawEvent.bcs,
-      fromJSONField: (field: any) => EmergentWithdrawEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => EmergentWithdrawEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        EmergentWithdrawEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        EmergentWithdrawEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => EmergentWithdrawEvent.fetch(client, id),
-      new: (fields: EmergentWithdrawEventFields) => {
-        return new EmergentWithdrawEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return EmergentWithdrawEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<EmergentWithdrawEvent>> {
-    return phantom(EmergentWithdrawEvent.reified())
-  }
-  static get p() {
-    return EmergentWithdrawEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('EmergentWithdrawEvent', {
-      reward_type: TypeName.bcs,
-      withdraw_amount: bcs.u64(),
-      after_amount: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): EmergentWithdrawEvent {
-    return EmergentWithdrawEvent.reified().new({
-      rewardType: decodeFromFields(TypeName.reified(), fields.reward_type),
-      withdrawAmount: decodeFromFields('u64', fields.withdraw_amount),
-      afterAmount: decodeFromFields('u64', fields.after_amount),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): EmergentWithdrawEvent {
-    if (!isEmergentWithdrawEvent(item.type)) {
-      throw new Error('not a EmergentWithdrawEvent type')
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarderManager(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RewarderManager object`)
     }
 
-    return EmergentWithdrawEvent.reified().new({
-      rewardType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_type),
-      withdrawAmount: decodeFromFieldsWithTypes('u64', item.fields.withdraw_amount),
-      afterAmount: decodeFromFieldsWithTypes('u64', item.fields.after_amount),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): EmergentWithdrawEvent {
-    return EmergentWithdrawEvent.fromFields(EmergentWithdrawEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      rewardType: this.rewardType.toJSONField(),
-      withdrawAmount: this.withdrawAmount.toString(),
-      afterAmount: this.afterAmount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): EmergentWithdrawEvent {
-    return EmergentWithdrawEvent.reified().new({
-      rewardType: decodeFromJSONField(TypeName.reified(), field.rewardType),
-      withdrawAmount: decodeFromJSONField('u64', field.withdrawAmount),
-      afterAmount: decodeFromJSONField('u64', field.afterAmount),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): EmergentWithdrawEvent {
-    if (json.$typeName !== EmergentWithdrawEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return EmergentWithdrawEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): EmergentWithdrawEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isEmergentWithdrawEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a EmergentWithdrawEvent object`
-      )
-    }
-    return EmergentWithdrawEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): EmergentWithdrawEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isEmergentWithdrawEvent(data.bcs.type)) {
-        throw new Error(`object at is not a EmergentWithdrawEvent object`)
-      }
-
-      return EmergentWithdrawEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return EmergentWithdrawEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<EmergentWithdrawEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EmergentWithdrawEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmergentWithdrawEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a EmergentWithdrawEvent object`)
-    }
-
-    return EmergentWithdrawEvent.fromSuiObjectData(res.data)
+    return RewarderManager.fromSuiObjectData(res.data)
   }
 }
 
@@ -900,133 +724,123 @@ export class RewarderInitEvent implements StructClass {
   }
 }
 
-/* ============================== RewarderManager =============================== */
+/* ============================== DepositEvent =============================== */
 
-export function isRewarderManager(type: string): boolean {
+export function isDepositEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::RewarderManager`
+  return type === `${PKG_V1}::rewarder::DepositEvent`
 }
 
-export interface RewarderManagerFields {
-  rewarders: ToField<Vector<Rewarder>>
-  pointsReleased: ToField<'u128'>
-  pointsGrowthGlobal: ToField<'u128'>
-  lastUpdatedTime: ToField<'u64'>
+export interface DepositEventFields {
+  rewardType: ToField<TypeName>
+  depositAmount: ToField<'u64'>
+  afterAmount: ToField<'u64'>
 }
 
-export type RewarderManagerReified = Reified<RewarderManager, RewarderManagerFields>
+export type DepositEventReified = Reified<DepositEvent, DepositEventFields>
 
-export class RewarderManager implements StructClass {
+export class DepositEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::RewarderManager`
+  static readonly $typeName = `${PKG_V1}::rewarder::DepositEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RewarderManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::RewarderManager`
+  readonly $typeName = DepositEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::DepositEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = RewarderManager.$isPhantom
+  readonly $isPhantom = DepositEvent.$isPhantom
 
-  readonly rewarders: ToField<Vector<Rewarder>>
-  readonly pointsReleased: ToField<'u128'>
-  readonly pointsGrowthGlobal: ToField<'u128'>
-  readonly lastUpdatedTime: ToField<'u64'>
+  readonly rewardType: ToField<TypeName>
+  readonly depositAmount: ToField<'u64'>
+  readonly afterAmount: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: RewarderManagerFields) {
+  private constructor(typeArgs: [], fields: DepositEventFields) {
     this.$fullTypeName = composeSuiType(
-      RewarderManager.$typeName,
+      DepositEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::RewarderManager`
+    ) as `${typeof PKG_V1}::rewarder::DepositEvent`
     this.$typeArgs = typeArgs
 
-    this.rewarders = fields.rewarders
-    this.pointsReleased = fields.pointsReleased
-    this.pointsGrowthGlobal = fields.pointsGrowthGlobal
-    this.lastUpdatedTime = fields.lastUpdatedTime
+    this.rewardType = fields.rewardType
+    this.depositAmount = fields.depositAmount
+    this.afterAmount = fields.afterAmount
   }
 
-  static reified(): RewarderManagerReified {
+  static reified(): DepositEventReified {
     return {
-      typeName: RewarderManager.$typeName,
+      typeName: DepositEvent.$typeName,
       fullTypeName: composeSuiType(
-        RewarderManager.$typeName,
+        DepositEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::rewarder::RewarderManager`,
+      ) as `${typeof PKG_V1}::rewarder::DepositEvent`,
       typeArgs: [] as [],
-      isPhantom: RewarderManager.$isPhantom,
+      isPhantom: DepositEvent.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RewarderManager.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RewarderManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewarderManager.fromBcs(data),
-      bcs: RewarderManager.bcs,
-      fromJSONField: (field: any) => RewarderManager.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RewarderManager.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RewarderManager.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RewarderManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewarderManager.fetch(client, id),
-      new: (fields: RewarderManagerFields) => {
-        return new RewarderManager([], fields)
+      fromFields: (fields: Record<string, any>) => DepositEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DepositEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => DepositEvent.fromBcs(data),
+      bcs: DepositEvent.bcs,
+      fromJSONField: (field: any) => DepositEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => DepositEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => DepositEvent.fetch(client, id),
+      new: (fields: DepositEventFields) => {
+        return new DepositEvent([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return RewarderManager.reified()
+    return DepositEvent.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<RewarderManager>> {
-    return phantom(RewarderManager.reified())
+  static phantom(): PhantomReified<ToTypeStr<DepositEvent>> {
+    return phantom(DepositEvent.reified())
   }
   static get p() {
-    return RewarderManager.phantom()
+    return DepositEvent.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('RewarderManager', {
-      rewarders: bcs.vector(Rewarder.bcs),
-      points_released: bcs.u128(),
-      points_growth_global: bcs.u128(),
-      last_updated_time: bcs.u64(),
+    return bcs.struct('DepositEvent', {
+      reward_type: TypeName.bcs,
+      deposit_amount: bcs.u64(),
+      after_amount: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): RewarderManager {
-    return RewarderManager.reified().new({
-      rewarders: decodeFromFields(reified.vector(Rewarder.reified()), fields.rewarders),
-      pointsReleased: decodeFromFields('u128', fields.points_released),
-      pointsGrowthGlobal: decodeFromFields('u128', fields.points_growth_global),
-      lastUpdatedTime: decodeFromFields('u64', fields.last_updated_time),
+  static fromFields(fields: Record<string, any>): DepositEvent {
+    return DepositEvent.reified().new({
+      rewardType: decodeFromFields(TypeName.reified(), fields.reward_type),
+      depositAmount: decodeFromFields('u64', fields.deposit_amount),
+      afterAmount: decodeFromFields('u64', fields.after_amount),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): RewarderManager {
-    if (!isRewarderManager(item.type)) {
-      throw new Error('not a RewarderManager type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): DepositEvent {
+    if (!isDepositEvent(item.type)) {
+      throw new Error('not a DepositEvent type')
     }
 
-    return RewarderManager.reified().new({
-      rewarders: decodeFromFieldsWithTypes(
-        reified.vector(Rewarder.reified()),
-        item.fields.rewarders
-      ),
-      pointsReleased: decodeFromFieldsWithTypes('u128', item.fields.points_released),
-      pointsGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.points_growth_global),
-      lastUpdatedTime: decodeFromFieldsWithTypes('u64', item.fields.last_updated_time),
+    return DepositEvent.reified().new({
+      rewardType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_type),
+      depositAmount: decodeFromFieldsWithTypes('u64', item.fields.deposit_amount),
+      afterAmount: decodeFromFieldsWithTypes('u64', item.fields.after_amount),
     })
   }
 
-  static fromBcs(data: Uint8Array): RewarderManager {
-    return RewarderManager.fromFields(RewarderManager.bcs.parse(data))
+  static fromBcs(data: Uint8Array): DepositEvent {
+    return DepositEvent.fromFields(DepositEvent.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      rewarders: fieldToJSON<Vector<Rewarder>>(`vector<${Rewarder.$typeName}>`, this.rewarders),
-      pointsReleased: this.pointsReleased.toString(),
-      pointsGrowthGlobal: this.pointsGrowthGlobal.toString(),
-      lastUpdatedTime: this.lastUpdatedTime.toString(),
+      rewardType: this.rewardType.toJSONField(),
+      depositAmount: this.depositAmount.toString(),
+      afterAmount: this.afterAmount.toString(),
     }
   }
 
@@ -1034,58 +848,244 @@ export class RewarderManager implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): RewarderManager {
-    return RewarderManager.reified().new({
-      rewarders: decodeFromJSONField(reified.vector(Rewarder.reified()), field.rewarders),
-      pointsReleased: decodeFromJSONField('u128', field.pointsReleased),
-      pointsGrowthGlobal: decodeFromJSONField('u128', field.pointsGrowthGlobal),
-      lastUpdatedTime: decodeFromJSONField('u64', field.lastUpdatedTime),
+  static fromJSONField(field: any): DepositEvent {
+    return DepositEvent.reified().new({
+      rewardType: decodeFromJSONField(TypeName.reified(), field.rewardType),
+      depositAmount: decodeFromJSONField('u64', field.depositAmount),
+      afterAmount: decodeFromJSONField('u64', field.afterAmount),
     })
   }
 
-  static fromJSON(json: Record<string, any>): RewarderManager {
-    if (json.$typeName !== RewarderManager.$typeName) {
+  static fromJSON(json: Record<string, any>): DepositEvent {
+    if (json.$typeName !== DepositEvent.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return RewarderManager.fromJSONField(json)
+    return DepositEvent.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): RewarderManager {
+  static fromSuiParsedData(content: SuiParsedData): DepositEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isRewarderManager(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RewarderManager object`)
+    if (!isDepositEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a DepositEvent object`)
     }
-    return RewarderManager.fromFieldsWithTypes(content)
+    return DepositEvent.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): RewarderManager {
+  static fromSuiObjectData(data: SuiObjectData): DepositEvent {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRewarderManager(data.bcs.type)) {
-        throw new Error(`object at is not a RewarderManager object`)
+      if (data.bcs.dataType !== 'moveObject' || !isDepositEvent(data.bcs.type)) {
+        throw new Error(`object at is not a DepositEvent object`)
       }
 
-      return RewarderManager.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DepositEvent.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return RewarderManager.fromSuiParsedData(data.content)
+      return DepositEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RewarderManager> {
+  static async fetch(client: SuiClient, id: string): Promise<DepositEvent> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching RewarderManager object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching DepositEvent object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarderManager(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RewarderManager object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isDepositEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a DepositEvent object`)
     }
 
-    return RewarderManager.fromSuiObjectData(res.data)
+    return DepositEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== EmergentWithdrawEvent =============================== */
+
+export function isEmergentWithdrawEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::rewarder::EmergentWithdrawEvent`
+}
+
+export interface EmergentWithdrawEventFields {
+  rewardType: ToField<TypeName>
+  withdrawAmount: ToField<'u64'>
+  afterAmount: ToField<'u64'>
+}
+
+export type EmergentWithdrawEventReified = Reified<
+  EmergentWithdrawEvent,
+  EmergentWithdrawEventFields
+>
+
+export class EmergentWithdrawEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::rewarder::EmergentWithdrawEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = EmergentWithdrawEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = EmergentWithdrawEvent.$isPhantom
+
+  readonly rewardType: ToField<TypeName>
+  readonly withdrawAmount: ToField<'u64'>
+  readonly afterAmount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: EmergentWithdrawEventFields) {
+    this.$fullTypeName = composeSuiType(
+      EmergentWithdrawEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
+    this.$typeArgs = typeArgs
+
+    this.rewardType = fields.rewardType
+    this.withdrawAmount = fields.withdrawAmount
+    this.afterAmount = fields.afterAmount
+  }
+
+  static reified(): EmergentWithdrawEventReified {
+    return {
+      typeName: EmergentWithdrawEvent.$typeName,
+      fullTypeName: composeSuiType(
+        EmergentWithdrawEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`,
+      typeArgs: [] as [],
+      isPhantom: EmergentWithdrawEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => EmergentWithdrawEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        EmergentWithdrawEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => EmergentWithdrawEvent.fromBcs(data),
+      bcs: EmergentWithdrawEvent.bcs,
+      fromJSONField: (field: any) => EmergentWithdrawEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => EmergentWithdrawEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        EmergentWithdrawEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        EmergentWithdrawEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => EmergentWithdrawEvent.fetch(client, id),
+      new: (fields: EmergentWithdrawEventFields) => {
+        return new EmergentWithdrawEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return EmergentWithdrawEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<EmergentWithdrawEvent>> {
+    return phantom(EmergentWithdrawEvent.reified())
+  }
+  static get p() {
+    return EmergentWithdrawEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('EmergentWithdrawEvent', {
+      reward_type: TypeName.bcs,
+      withdraw_amount: bcs.u64(),
+      after_amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): EmergentWithdrawEvent {
+    return EmergentWithdrawEvent.reified().new({
+      rewardType: decodeFromFields(TypeName.reified(), fields.reward_type),
+      withdrawAmount: decodeFromFields('u64', fields.withdraw_amount),
+      afterAmount: decodeFromFields('u64', fields.after_amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): EmergentWithdrawEvent {
+    if (!isEmergentWithdrawEvent(item.type)) {
+      throw new Error('not a EmergentWithdrawEvent type')
+    }
+
+    return EmergentWithdrawEvent.reified().new({
+      rewardType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.reward_type),
+      withdrawAmount: decodeFromFieldsWithTypes('u64', item.fields.withdraw_amount),
+      afterAmount: decodeFromFieldsWithTypes('u64', item.fields.after_amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): EmergentWithdrawEvent {
+    return EmergentWithdrawEvent.fromFields(EmergentWithdrawEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      rewardType: this.rewardType.toJSONField(),
+      withdrawAmount: this.withdrawAmount.toString(),
+      afterAmount: this.afterAmount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): EmergentWithdrawEvent {
+    return EmergentWithdrawEvent.reified().new({
+      rewardType: decodeFromJSONField(TypeName.reified(), field.rewardType),
+      withdrawAmount: decodeFromJSONField('u64', field.withdrawAmount),
+      afterAmount: decodeFromJSONField('u64', field.afterAmount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): EmergentWithdrawEvent {
+    if (json.$typeName !== EmergentWithdrawEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return EmergentWithdrawEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): EmergentWithdrawEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isEmergentWithdrawEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a EmergentWithdrawEvent object`
+      )
+    }
+    return EmergentWithdrawEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): EmergentWithdrawEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isEmergentWithdrawEvent(data.bcs.type)) {
+        throw new Error(`object at is not a EmergentWithdrawEvent object`)
+      }
+
+      return EmergentWithdrawEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return EmergentWithdrawEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<EmergentWithdrawEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching EmergentWithdrawEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmergentWithdrawEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a EmergentWithdrawEvent object`)
+    }
+
+    return EmergentWithdrawEvent.fromSuiObjectData(res.data)
   }
 }

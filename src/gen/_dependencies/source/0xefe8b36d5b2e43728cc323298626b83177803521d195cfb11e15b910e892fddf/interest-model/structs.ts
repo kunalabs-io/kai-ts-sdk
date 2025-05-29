@@ -275,177 +275,6 @@ export class InterestModel implements StructClass {
   }
 }
 
-/* ============================== InterestModelAdded =============================== */
-
-export function isInterestModelAdded(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::interest_model::InterestModelAdded`
-}
-
-export interface InterestModelAddedFields {
-  interestModel: ToField<InterestModel>
-  currentEpoch: ToField<'u64'>
-}
-
-export type InterestModelAddedReified = Reified<InterestModelAdded, InterestModelAddedFields>
-
-export class InterestModelAdded implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::interest_model::InterestModelAdded`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = InterestModelAdded.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::interest_model::InterestModelAdded`
-  readonly $typeArgs: []
-  readonly $isPhantom = InterestModelAdded.$isPhantom
-
-  readonly interestModel: ToField<InterestModel>
-  readonly currentEpoch: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: InterestModelAddedFields) {
-    this.$fullTypeName = composeSuiType(
-      InterestModelAdded.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::interest_model::InterestModelAdded`
-    this.$typeArgs = typeArgs
-
-    this.interestModel = fields.interestModel
-    this.currentEpoch = fields.currentEpoch
-  }
-
-  static reified(): InterestModelAddedReified {
-    return {
-      typeName: InterestModelAdded.$typeName,
-      fullTypeName: composeSuiType(
-        InterestModelAdded.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::interest_model::InterestModelAdded`,
-      typeArgs: [] as [],
-      isPhantom: InterestModelAdded.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => InterestModelAdded.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => InterestModelAdded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InterestModelAdded.fromBcs(data),
-      bcs: InterestModelAdded.bcs,
-      fromJSONField: (field: any) => InterestModelAdded.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => InterestModelAdded.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => InterestModelAdded.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => InterestModelAdded.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => InterestModelAdded.fetch(client, id),
-      new: (fields: InterestModelAddedFields) => {
-        return new InterestModelAdded([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return InterestModelAdded.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<InterestModelAdded>> {
-    return phantom(InterestModelAdded.reified())
-  }
-  static get p() {
-    return InterestModelAdded.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('InterestModelAdded', {
-      interest_model: InterestModel.bcs,
-      current_epoch: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): InterestModelAdded {
-    return InterestModelAdded.reified().new({
-      interestModel: decodeFromFields(InterestModel.reified(), fields.interest_model),
-      currentEpoch: decodeFromFields('u64', fields.current_epoch),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): InterestModelAdded {
-    if (!isInterestModelAdded(item.type)) {
-      throw new Error('not a InterestModelAdded type')
-    }
-
-    return InterestModelAdded.reified().new({
-      interestModel: decodeFromFieldsWithTypes(InterestModel.reified(), item.fields.interest_model),
-      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): InterestModelAdded {
-    return InterestModelAdded.fromFields(InterestModelAdded.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      interestModel: this.interestModel.toJSONField(),
-      currentEpoch: this.currentEpoch.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): InterestModelAdded {
-    return InterestModelAdded.reified().new({
-      interestModel: decodeFromJSONField(InterestModel.reified(), field.interestModel),
-      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): InterestModelAdded {
-    if (json.$typeName !== InterestModelAdded.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return InterestModelAdded.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): InterestModelAdded {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isInterestModelAdded(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a InterestModelAdded object`)
-    }
-    return InterestModelAdded.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): InterestModelAdded {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isInterestModelAdded(data.bcs.type)) {
-        throw new Error(`object at is not a InterestModelAdded object`)
-      }
-
-      return InterestModelAdded.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return InterestModelAdded.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<InterestModelAdded> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching InterestModelAdded object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isInterestModelAdded(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a InterestModelAdded object`)
-    }
-
-    return InterestModelAdded.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== InterestModelChangeCreated =============================== */
 
 export function isInterestModelChangeCreated(type: string): boolean {
@@ -643,6 +472,177 @@ export class InterestModelChangeCreated implements StructClass {
     }
 
     return InterestModelChangeCreated.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== InterestModelAdded =============================== */
+
+export function isInterestModelAdded(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::interest_model::InterestModelAdded`
+}
+
+export interface InterestModelAddedFields {
+  interestModel: ToField<InterestModel>
+  currentEpoch: ToField<'u64'>
+}
+
+export type InterestModelAddedReified = Reified<InterestModelAdded, InterestModelAddedFields>
+
+export class InterestModelAdded implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::interest_model::InterestModelAdded`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = InterestModelAdded.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::interest_model::InterestModelAdded`
+  readonly $typeArgs: []
+  readonly $isPhantom = InterestModelAdded.$isPhantom
+
+  readonly interestModel: ToField<InterestModel>
+  readonly currentEpoch: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: InterestModelAddedFields) {
+    this.$fullTypeName = composeSuiType(
+      InterestModelAdded.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::interest_model::InterestModelAdded`
+    this.$typeArgs = typeArgs
+
+    this.interestModel = fields.interestModel
+    this.currentEpoch = fields.currentEpoch
+  }
+
+  static reified(): InterestModelAddedReified {
+    return {
+      typeName: InterestModelAdded.$typeName,
+      fullTypeName: composeSuiType(
+        InterestModelAdded.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::interest_model::InterestModelAdded`,
+      typeArgs: [] as [],
+      isPhantom: InterestModelAdded.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => InterestModelAdded.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => InterestModelAdded.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => InterestModelAdded.fromBcs(data),
+      bcs: InterestModelAdded.bcs,
+      fromJSONField: (field: any) => InterestModelAdded.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => InterestModelAdded.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => InterestModelAdded.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => InterestModelAdded.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => InterestModelAdded.fetch(client, id),
+      new: (fields: InterestModelAddedFields) => {
+        return new InterestModelAdded([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return InterestModelAdded.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<InterestModelAdded>> {
+    return phantom(InterestModelAdded.reified())
+  }
+  static get p() {
+    return InterestModelAdded.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('InterestModelAdded', {
+      interest_model: InterestModel.bcs,
+      current_epoch: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): InterestModelAdded {
+    return InterestModelAdded.reified().new({
+      interestModel: decodeFromFields(InterestModel.reified(), fields.interest_model),
+      currentEpoch: decodeFromFields('u64', fields.current_epoch),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): InterestModelAdded {
+    if (!isInterestModelAdded(item.type)) {
+      throw new Error('not a InterestModelAdded type')
+    }
+
+    return InterestModelAdded.reified().new({
+      interestModel: decodeFromFieldsWithTypes(InterestModel.reified(), item.fields.interest_model),
+      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): InterestModelAdded {
+    return InterestModelAdded.fromFields(InterestModelAdded.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      interestModel: this.interestModel.toJSONField(),
+      currentEpoch: this.currentEpoch.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): InterestModelAdded {
+    return InterestModelAdded.reified().new({
+      interestModel: decodeFromJSONField(InterestModel.reified(), field.interestModel),
+      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): InterestModelAdded {
+    if (json.$typeName !== InterestModelAdded.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return InterestModelAdded.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): InterestModelAdded {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isInterestModelAdded(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a InterestModelAdded object`)
+    }
+    return InterestModelAdded.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): InterestModelAdded {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isInterestModelAdded(data.bcs.type)) {
+        throw new Error(`object at is not a InterestModelAdded object`)
+      }
+
+      return InterestModelAdded.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return InterestModelAdded.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<InterestModelAdded> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching InterestModelAdded object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isInterestModelAdded(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a InterestModelAdded object`)
+    }
+
+    return InterestModelAdded.fromSuiObjectData(res.data)
   }
 }
 

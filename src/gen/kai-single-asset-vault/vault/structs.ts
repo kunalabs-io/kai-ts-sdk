@@ -35,217 +35,6 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== AdminCap =============================== */
-
-export function isAdminCap(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::vault::AdminCap` + '<')
-}
-
-export interface AdminCapFields<YT extends PhantomTypeArgument> {
-  id: ToField<UID>
-}
-
-export type AdminCapReified<YT extends PhantomTypeArgument> = Reified<
-  AdminCap<YT>,
-  AdminCapFields<YT>
->
-
-export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::vault::AdminCap`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = AdminCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<YT>}>`
-  readonly $typeArgs: [PhantomToTypeStr<YT>]
-  readonly $isPhantom = AdminCap.$isPhantom
-
-  readonly id: ToField<UID>
-
-  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: AdminCapFields<YT>) {
-    this.$fullTypeName = composeSuiType(
-      AdminCap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<YT>}>`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-  }
-
-  static reified<YT extends PhantomReified<PhantomTypeArgument>>(
-    YT: YT
-  ): AdminCapReified<ToPhantomTypeArgument<YT>> {
-    return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[extractType(YT)]
-      ) as `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
-      isPhantom: AdminCap.$isPhantom,
-      reifiedTypeArgs: [YT],
-      fromFields: (fields: Record<string, any>) => AdminCap.fromFields(YT, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(YT, item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(YT, data),
-      bcs: AdminCap.bcs,
-      fromJSONField: (field: any) => AdminCap.fromJSONField(YT, field),
-      fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(YT, json),
-      fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(YT, content),
-      fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(YT, content),
-      fetch: async (client: SuiClient, id: string) => AdminCap.fetch(client, YT, id),
-      new: (fields: AdminCapFields<ToPhantomTypeArgument<YT>>) => {
-        return new AdminCap([extractType(YT)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AdminCap.reified
-  }
-
-  static phantom<YT extends PhantomReified<PhantomTypeArgument>>(
-    YT: YT
-  ): PhantomReified<ToTypeStr<AdminCap<ToPhantomTypeArgument<YT>>>> {
-    return phantom(AdminCap.reified(YT))
-  }
-  static get p() {
-    return AdminCap.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('AdminCap', {
-      id: UID.bcs,
-    })
-  }
-
-  static fromFields<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    fields: Record<string, any>
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    return AdminCap.reified(typeArg).new({ id: decodeFromFields(UID.reified(), fields.id) })
-  }
-
-  static fromFieldsWithTypes<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    item: FieldsWithTypes
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    if (!isAdminCap(item.type)) {
-      throw new Error('not a AdminCap type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return AdminCap.reified(typeArg).new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-    })
-  }
-
-  static fromBcs<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    data: Uint8Array
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    return AdminCap.fromFields(typeArg, AdminCap.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    field: any
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    return AdminCap.reified(typeArg).new({ id: decodeFromJSONField(UID.reified(), field.id) })
-  }
-
-  static fromJSON<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    json: Record<string, any>
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    if (json.$typeName !== AdminCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(AdminCap.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return AdminCap.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    content: SuiParsedData
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAdminCap(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AdminCap object`)
-    }
-    return AdminCap.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    data: SuiObjectData
-  ): AdminCap<ToPhantomTypeArgument<YT>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
-        throw new Error(`object at is not a AdminCap object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return AdminCap.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AdminCap.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: YT,
-    id: string
-  ): Promise<AdminCap<ToPhantomTypeArgument<YT>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AdminCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAdminCap(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AdminCap object`)
-    }
-
-    return AdminCap.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
 /* ============================== DepositEvent =============================== */
 
 export function isDepositEvent(type: string): boolean {
@@ -469,112 +258,133 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
   }
 }
 
-/* ============================== RebalanceAmounts =============================== */
+/* ============================== WithdrawEvent =============================== */
 
-export function isRebalanceAmounts(type: string): boolean {
+export function isWithdrawEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::vault::RebalanceAmounts`
+  return type.startsWith(`${PKG_V4}::vault::WithdrawEvent` + '<')
 }
 
-export interface RebalanceAmountsFields {
-  inner: ToField<VecMap<ID, RebalanceInfo>>
+export interface WithdrawEventFields<YT extends PhantomTypeArgument> {
+  amount: ToField<'u64'>
+  lpBurned: ToField<'u64'>
 }
 
-export type RebalanceAmountsReified = Reified<RebalanceAmounts, RebalanceAmountsFields>
+export type WithdrawEventReified<YT extends PhantomTypeArgument> = Reified<
+  WithdrawEvent<YT>,
+  WithdrawEventFields<YT>
+>
 
-export class RebalanceAmounts implements StructClass {
+export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::vault::RebalanceAmounts`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
+  static readonly $typeName = `${PKG_V4}::vault::WithdrawEvent`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
 
-  readonly $typeName = RebalanceAmounts.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::RebalanceAmounts`
-  readonly $typeArgs: []
-  readonly $isPhantom = RebalanceAmounts.$isPhantom
+  readonly $typeName = WithdrawEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<YT>}>`
+  readonly $typeArgs: [PhantomToTypeStr<YT>]
+  readonly $isPhantom = WithdrawEvent.$isPhantom
 
-  readonly inner: ToField<VecMap<ID, RebalanceInfo>>
+  readonly amount: ToField<'u64'>
+  readonly lpBurned: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: RebalanceAmountsFields) {
+  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: WithdrawEventFields<YT>) {
     this.$fullTypeName = composeSuiType(
-      RebalanceAmounts.$typeName,
+      WithdrawEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::vault::RebalanceAmounts`
+    ) as `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<YT>}>`
     this.$typeArgs = typeArgs
 
-    this.inner = fields.inner
+    this.amount = fields.amount
+    this.lpBurned = fields.lpBurned
   }
 
-  static reified(): RebalanceAmountsReified {
+  static reified<YT extends PhantomReified<PhantomTypeArgument>>(
+    YT: YT
+  ): WithdrawEventReified<ToPhantomTypeArgument<YT>> {
     return {
-      typeName: RebalanceAmounts.$typeName,
+      typeName: WithdrawEvent.$typeName,
       fullTypeName: composeSuiType(
-        RebalanceAmounts.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::vault::RebalanceAmounts`,
-      typeArgs: [] as [],
-      isPhantom: RebalanceAmounts.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RebalanceAmounts.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceAmounts.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RebalanceAmounts.fromBcs(data),
-      bcs: RebalanceAmounts.bcs,
-      fromJSONField: (field: any) => RebalanceAmounts.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RebalanceAmounts.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RebalanceAmounts.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RebalanceAmounts.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RebalanceAmounts.fetch(client, id),
-      new: (fields: RebalanceAmountsFields) => {
-        return new RebalanceAmounts([], fields)
+        WithdrawEvent.$typeName,
+        ...[extractType(YT)]
+      ) as `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
+      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      isPhantom: WithdrawEvent.$isPhantom,
+      reifiedTypeArgs: [YT],
+      fromFields: (fields: Record<string, any>) => WithdrawEvent.fromFields(YT, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawEvent.fromFieldsWithTypes(YT, item),
+      fromBcs: (data: Uint8Array) => WithdrawEvent.fromBcs(YT, data),
+      bcs: WithdrawEvent.bcs,
+      fromJSONField: (field: any) => WithdrawEvent.fromJSONField(YT, field),
+      fromJSON: (json: Record<string, any>) => WithdrawEvent.fromJSON(YT, json),
+      fromSuiParsedData: (content: SuiParsedData) => WithdrawEvent.fromSuiParsedData(YT, content),
+      fromSuiObjectData: (content: SuiObjectData) => WithdrawEvent.fromSuiObjectData(YT, content),
+      fetch: async (client: SuiClient, id: string) => WithdrawEvent.fetch(client, YT, id),
+      new: (fields: WithdrawEventFields<ToPhantomTypeArgument<YT>>) => {
+        return new WithdrawEvent([extractType(YT)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return RebalanceAmounts.reified()
+    return WithdrawEvent.reified
   }
 
-  static phantom(): PhantomReified<ToTypeStr<RebalanceAmounts>> {
-    return phantom(RebalanceAmounts.reified())
+  static phantom<YT extends PhantomReified<PhantomTypeArgument>>(
+    YT: YT
+  ): PhantomReified<ToTypeStr<WithdrawEvent<ToPhantomTypeArgument<YT>>>> {
+    return phantom(WithdrawEvent.reified(YT))
   }
   static get p() {
-    return RebalanceAmounts.phantom()
+    return WithdrawEvent.phantom
   }
 
   static get bcs() {
-    return bcs.struct('RebalanceAmounts', {
-      inner: VecMap.bcs(ID.bcs, RebalanceInfo.bcs),
+    return bcs.struct('WithdrawEvent', {
+      amount: bcs.u64(),
+      lp_burned: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): RebalanceAmounts {
-    return RebalanceAmounts.reified().new({
-      inner: decodeFromFields(VecMap.reified(ID.reified(), RebalanceInfo.reified()), fields.inner),
+  static fromFields<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    fields: Record<string, any>
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    return WithdrawEvent.reified(typeArg).new({
+      amount: decodeFromFields('u64', fields.amount),
+      lpBurned: decodeFromFields('u64', fields.lp_burned),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceAmounts {
-    if (!isRebalanceAmounts(item.type)) {
-      throw new Error('not a RebalanceAmounts type')
+  static fromFieldsWithTypes<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    item: FieldsWithTypes
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    if (!isWithdrawEvent(item.type)) {
+      throw new Error('not a WithdrawEvent type')
     }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return RebalanceAmounts.reified().new({
-      inner: decodeFromFieldsWithTypes(
-        VecMap.reified(ID.reified(), RebalanceInfo.reified()),
-        item.fields.inner
-      ),
+    return WithdrawEvent.reified(typeArg).new({
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+      lpBurned: decodeFromFieldsWithTypes('u64', item.fields.lp_burned),
     })
   }
 
-  static fromBcs(data: Uint8Array): RebalanceAmounts {
-    return RebalanceAmounts.fromFields(RebalanceAmounts.bcs.parse(data))
+  static fromBcs<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    data: Uint8Array
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    return WithdrawEvent.fromFields(typeArg, WithdrawEvent.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      inner: this.inner.toJSONField(),
+      amount: this.amount.toString(),
+      lpBurned: this.lpBurned.toString(),
     }
   }
 
@@ -582,172 +392,232 @@ export class RebalanceAmounts implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): RebalanceAmounts {
-    return RebalanceAmounts.reified().new({
-      inner: decodeFromJSONField(
-        VecMap.reified(ID.reified(), RebalanceInfo.reified()),
-        field.inner
-      ),
+  static fromJSONField<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    field: any
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    return WithdrawEvent.reified(typeArg).new({
+      amount: decodeFromJSONField('u64', field.amount),
+      lpBurned: decodeFromJSONField('u64', field.lpBurned),
     })
   }
 
-  static fromJSON(json: Record<string, any>): RebalanceAmounts {
-    if (json.$typeName !== RebalanceAmounts.$typeName) {
+  static fromJSON<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    json: Record<string, any>
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    if (json.$typeName !== WithdrawEvent.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(WithdrawEvent.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
 
-    return RebalanceAmounts.fromJSONField(json)
+    return WithdrawEvent.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): RebalanceAmounts {
+  static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    content: SuiParsedData
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isRebalanceAmounts(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceAmounts object`)
+    if (!isWithdrawEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawEvent object`)
     }
-    return RebalanceAmounts.fromFieldsWithTypes(content)
+    return WithdrawEvent.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): RebalanceAmounts {
+  static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    data: SuiObjectData
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRebalanceAmounts(data.bcs.type)) {
-        throw new Error(`object at is not a RebalanceAmounts object`)
+      if (data.bcs.dataType !== 'moveObject' || !isWithdrawEvent(data.bcs.type)) {
+        throw new Error(`object at is not a WithdrawEvent object`)
       }
 
-      return RebalanceAmounts.fromBcs(fromB64(data.bcs.bcsBytes))
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return WithdrawEvent.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return RebalanceAmounts.fromSuiParsedData(data.content)
+      return WithdrawEvent.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RebalanceAmounts> {
+  static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: YT,
+    id: string
+  ): Promise<WithdrawEvent<ToPhantomTypeArgument<YT>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching RebalanceAmounts object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching WithdrawEvent object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceAmounts(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RebalanceAmounts object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a WithdrawEvent object`)
     }
 
-    return RebalanceAmounts.fromSuiObjectData(res.data)
+    return WithdrawEvent.fromSuiObjectData(typeArg, res.data)
   }
 }
 
-/* ============================== RebalanceInfo =============================== */
+/* ============================== StrategyProfitEvent =============================== */
 
-export function isRebalanceInfo(type: string): boolean {
+export function isStrategyProfitEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::vault::RebalanceInfo`
+  return type.startsWith(`${PKG_V4}::vault::StrategyProfitEvent` + '<')
 }
 
-export interface RebalanceInfoFields {
-  toRepay: ToField<'u64'>
-  canBorrow: ToField<'u64'>
+export interface StrategyProfitEventFields<YT extends PhantomTypeArgument> {
+  strategyId: ToField<ID>
+  profit: ToField<'u64'>
+  feeAmtYt: ToField<'u64'>
 }
 
-export type RebalanceInfoReified = Reified<RebalanceInfo, RebalanceInfoFields>
+export type StrategyProfitEventReified<YT extends PhantomTypeArgument> = Reified<
+  StrategyProfitEvent<YT>,
+  StrategyProfitEventFields<YT>
+>
 
-export class RebalanceInfo implements StructClass {
+export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::vault::RebalanceInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
+  static readonly $typeName = `${PKG_V4}::vault::StrategyProfitEvent`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
 
-  readonly $typeName = RebalanceInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::RebalanceInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = RebalanceInfo.$isPhantom
+  readonly $typeName = StrategyProfitEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<YT>}>`
+  readonly $typeArgs: [PhantomToTypeStr<YT>]
+  readonly $isPhantom = StrategyProfitEvent.$isPhantom
 
-  readonly toRepay: ToField<'u64'>
-  readonly canBorrow: ToField<'u64'>
+  readonly strategyId: ToField<ID>
+  readonly profit: ToField<'u64'>
+  readonly feeAmtYt: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: RebalanceInfoFields) {
+  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: StrategyProfitEventFields<YT>) {
     this.$fullTypeName = composeSuiType(
-      RebalanceInfo.$typeName,
+      StrategyProfitEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::vault::RebalanceInfo`
+    ) as `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<YT>}>`
     this.$typeArgs = typeArgs
 
-    this.toRepay = fields.toRepay
-    this.canBorrow = fields.canBorrow
+    this.strategyId = fields.strategyId
+    this.profit = fields.profit
+    this.feeAmtYt = fields.feeAmtYt
   }
 
-  static reified(): RebalanceInfoReified {
+  static reified<YT extends PhantomReified<PhantomTypeArgument>>(
+    YT: YT
+  ): StrategyProfitEventReified<ToPhantomTypeArgument<YT>> {
     return {
-      typeName: RebalanceInfo.$typeName,
+      typeName: StrategyProfitEvent.$typeName,
       fullTypeName: composeSuiType(
-        RebalanceInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::vault::RebalanceInfo`,
-      typeArgs: [] as [],
-      isPhantom: RebalanceInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RebalanceInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RebalanceInfo.fromBcs(data),
-      bcs: RebalanceInfo.bcs,
-      fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RebalanceInfo.fetch(client, id),
-      new: (fields: RebalanceInfoFields) => {
-        return new RebalanceInfo([], fields)
+        StrategyProfitEvent.$typeName,
+        ...[extractType(YT)]
+      ) as `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
+      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      isPhantom: StrategyProfitEvent.$isPhantom,
+      reifiedTypeArgs: [YT],
+      fromFields: (fields: Record<string, any>) => StrategyProfitEvent.fromFields(YT, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        StrategyProfitEvent.fromFieldsWithTypes(YT, item),
+      fromBcs: (data: Uint8Array) => StrategyProfitEvent.fromBcs(YT, data),
+      bcs: StrategyProfitEvent.bcs,
+      fromJSONField: (field: any) => StrategyProfitEvent.fromJSONField(YT, field),
+      fromJSON: (json: Record<string, any>) => StrategyProfitEvent.fromJSON(YT, json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        StrategyProfitEvent.fromSuiParsedData(YT, content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        StrategyProfitEvent.fromSuiObjectData(YT, content),
+      fetch: async (client: SuiClient, id: string) => StrategyProfitEvent.fetch(client, YT, id),
+      new: (fields: StrategyProfitEventFields<ToPhantomTypeArgument<YT>>) => {
+        return new StrategyProfitEvent([extractType(YT)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return RebalanceInfo.reified()
+    return StrategyProfitEvent.reified
   }
 
-  static phantom(): PhantomReified<ToTypeStr<RebalanceInfo>> {
-    return phantom(RebalanceInfo.reified())
+  static phantom<YT extends PhantomReified<PhantomTypeArgument>>(
+    YT: YT
+  ): PhantomReified<ToTypeStr<StrategyProfitEvent<ToPhantomTypeArgument<YT>>>> {
+    return phantom(StrategyProfitEvent.reified(YT))
   }
   static get p() {
-    return RebalanceInfo.phantom()
+    return StrategyProfitEvent.phantom
   }
 
   static get bcs() {
-    return bcs.struct('RebalanceInfo', {
-      to_repay: bcs.u64(),
-      can_borrow: bcs.u64(),
+    return bcs.struct('StrategyProfitEvent', {
+      strategy_id: ID.bcs,
+      profit: bcs.u64(),
+      fee_amt_yt: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): RebalanceInfo {
-    return RebalanceInfo.reified().new({
-      toRepay: decodeFromFields('u64', fields.to_repay),
-      canBorrow: decodeFromFields('u64', fields.can_borrow),
+  static fromFields<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    fields: Record<string, any>
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    return StrategyProfitEvent.reified(typeArg).new({
+      strategyId: decodeFromFields(ID.reified(), fields.strategy_id),
+      profit: decodeFromFields('u64', fields.profit),
+      feeAmtYt: decodeFromFields('u64', fields.fee_amt_yt),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceInfo {
-    if (!isRebalanceInfo(item.type)) {
-      throw new Error('not a RebalanceInfo type')
+  static fromFieldsWithTypes<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    item: FieldsWithTypes
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    if (!isStrategyProfitEvent(item.type)) {
+      throw new Error('not a StrategyProfitEvent type')
     }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return RebalanceInfo.reified().new({
-      toRepay: decodeFromFieldsWithTypes('u64', item.fields.to_repay),
-      canBorrow: decodeFromFieldsWithTypes('u64', item.fields.can_borrow),
+    return StrategyProfitEvent.reified(typeArg).new({
+      strategyId: decodeFromFieldsWithTypes(ID.reified(), item.fields.strategy_id),
+      profit: decodeFromFieldsWithTypes('u64', item.fields.profit),
+      feeAmtYt: decodeFromFieldsWithTypes('u64', item.fields.fee_amt_yt),
     })
   }
 
-  static fromBcs(data: Uint8Array): RebalanceInfo {
-    return RebalanceInfo.fromFields(RebalanceInfo.bcs.parse(data))
+  static fromBcs<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    data: Uint8Array
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    return StrategyProfitEvent.fromFields(typeArg, StrategyProfitEvent.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      toRepay: this.toRepay.toString(),
-      canBorrow: this.canBorrow.toString(),
+      strategyId: this.strategyId,
+      profit: this.profit.toString(),
+      feeAmtYt: this.feeAmtYt.toString(),
     }
   }
 
@@ -755,57 +625,93 @@ export class RebalanceInfo implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): RebalanceInfo {
-    return RebalanceInfo.reified().new({
-      toRepay: decodeFromJSONField('u64', field.toRepay),
-      canBorrow: decodeFromJSONField('u64', field.canBorrow),
+  static fromJSONField<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    field: any
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    return StrategyProfitEvent.reified(typeArg).new({
+      strategyId: decodeFromJSONField(ID.reified(), field.strategyId),
+      profit: decodeFromJSONField('u64', field.profit),
+      feeAmtYt: decodeFromJSONField('u64', field.feeAmtYt),
     })
   }
 
-  static fromJSON(json: Record<string, any>): RebalanceInfo {
-    if (json.$typeName !== RebalanceInfo.$typeName) {
+  static fromJSON<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    json: Record<string, any>
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    if (json.$typeName !== StrategyProfitEvent.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(StrategyProfitEvent.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
 
-    return RebalanceInfo.fromJSONField(json)
+    return StrategyProfitEvent.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
+  static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    content: SuiParsedData
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isRebalanceInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceInfo object`)
+    if (!isStrategyProfitEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a StrategyProfitEvent object`)
     }
-    return RebalanceInfo.fromFieldsWithTypes(content)
+    return StrategyProfitEvent.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
+  static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    data: SuiObjectData
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
-        throw new Error(`object at is not a RebalanceInfo object`)
+      if (data.bcs.dataType !== 'moveObject' || !isStrategyProfitEvent(data.bcs.type)) {
+        throw new Error(`object at is not a StrategyProfitEvent object`)
       }
 
-      return RebalanceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return StrategyProfitEvent.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return RebalanceInfo.fromSuiParsedData(data.content)
+      return StrategyProfitEvent.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RebalanceInfo> {
+  static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: YT,
+    id: string
+  ): Promise<StrategyProfitEvent<ToPhantomTypeArgument<YT>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching RebalanceInfo object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching StrategyProfitEvent object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RebalanceInfo object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isStrategyProfitEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a StrategyProfitEvent object`)
     }
 
-    return RebalanceInfo.fromSuiObjectData(res.data)
+    return StrategyProfitEvent.fromSuiObjectData(typeArg, res.data)
   }
 }
 
@@ -1043,143 +949,124 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
   }
 }
 
-/* ============================== StrategyProfitEvent =============================== */
+/* ============================== AdminCap =============================== */
 
-export function isStrategyProfitEvent(type: string): boolean {
+export function isAdminCap(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V4}::vault::StrategyProfitEvent` + '<')
+  return type.startsWith(`${PKG_V1}::vault::AdminCap` + '<')
 }
 
-export interface StrategyProfitEventFields<YT extends PhantomTypeArgument> {
-  strategyId: ToField<ID>
-  profit: ToField<'u64'>
-  feeAmtYt: ToField<'u64'>
+export interface AdminCapFields<YT extends PhantomTypeArgument> {
+  id: ToField<UID>
 }
 
-export type StrategyProfitEventReified<YT extends PhantomTypeArgument> = Reified<
-  StrategyProfitEvent<YT>,
-  StrategyProfitEventFields<YT>
+export type AdminCapReified<YT extends PhantomTypeArgument> = Reified<
+  AdminCap<YT>,
+  AdminCapFields<YT>
 >
 
-export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements StructClass {
+export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V4}::vault::StrategyProfitEvent`
+  static readonly $typeName = `${PKG_V1}::vault::AdminCap`
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = StrategyProfitEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<YT>}>`
+  readonly $typeName = AdminCap.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<YT>}>`
   readonly $typeArgs: [PhantomToTypeStr<YT>]
-  readonly $isPhantom = StrategyProfitEvent.$isPhantom
+  readonly $isPhantom = AdminCap.$isPhantom
 
-  readonly strategyId: ToField<ID>
-  readonly profit: ToField<'u64'>
-  readonly feeAmtYt: ToField<'u64'>
+  readonly id: ToField<UID>
 
-  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: StrategyProfitEventFields<YT>) {
+  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: AdminCapFields<YT>) {
     this.$fullTypeName = composeSuiType(
-      StrategyProfitEvent.$typeName,
+      AdminCap.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<YT>}>`
+    ) as `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<YT>}>`
     this.$typeArgs = typeArgs
 
-    this.strategyId = fields.strategyId
-    this.profit = fields.profit
-    this.feeAmtYt = fields.feeAmtYt
+    this.id = fields.id
   }
 
   static reified<YT extends PhantomReified<PhantomTypeArgument>>(
     YT: YT
-  ): StrategyProfitEventReified<ToPhantomTypeArgument<YT>> {
+  ): AdminCapReified<ToPhantomTypeArgument<YT>> {
     return {
-      typeName: StrategyProfitEvent.$typeName,
+      typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(
-        StrategyProfitEvent.$typeName,
+        AdminCap.$typeName,
         ...[extractType(YT)]
-      ) as `${typeof PKG_V4}::vault::StrategyProfitEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
+      ) as `${typeof PKG_V1}::vault::AdminCap<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
       typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
-      isPhantom: StrategyProfitEvent.$isPhantom,
+      isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [YT],
-      fromFields: (fields: Record<string, any>) => StrategyProfitEvent.fromFields(YT, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        StrategyProfitEvent.fromFieldsWithTypes(YT, item),
-      fromBcs: (data: Uint8Array) => StrategyProfitEvent.fromBcs(YT, data),
-      bcs: StrategyProfitEvent.bcs,
-      fromJSONField: (field: any) => StrategyProfitEvent.fromJSONField(YT, field),
-      fromJSON: (json: Record<string, any>) => StrategyProfitEvent.fromJSON(YT, json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        StrategyProfitEvent.fromSuiParsedData(YT, content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        StrategyProfitEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SuiClient, id: string) => StrategyProfitEvent.fetch(client, YT, id),
-      new: (fields: StrategyProfitEventFields<ToPhantomTypeArgument<YT>>) => {
-        return new StrategyProfitEvent([extractType(YT)], fields)
+      fromFields: (fields: Record<string, any>) => AdminCap.fromFields(YT, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(YT, item),
+      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(YT, data),
+      bcs: AdminCap.bcs,
+      fromJSONField: (field: any) => AdminCap.fromJSONField(YT, field),
+      fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(YT, json),
+      fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(YT, content),
+      fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(YT, content),
+      fetch: async (client: SuiClient, id: string) => AdminCap.fetch(client, YT, id),
+      new: (fields: AdminCapFields<ToPhantomTypeArgument<YT>>) => {
+        return new AdminCap([extractType(YT)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return StrategyProfitEvent.reified
+    return AdminCap.reified
   }
 
   static phantom<YT extends PhantomReified<PhantomTypeArgument>>(
     YT: YT
-  ): PhantomReified<ToTypeStr<StrategyProfitEvent<ToPhantomTypeArgument<YT>>>> {
-    return phantom(StrategyProfitEvent.reified(YT))
+  ): PhantomReified<ToTypeStr<AdminCap<ToPhantomTypeArgument<YT>>>> {
+    return phantom(AdminCap.reified(YT))
   }
   static get p() {
-    return StrategyProfitEvent.phantom
+    return AdminCap.phantom
   }
 
   static get bcs() {
-    return bcs.struct('StrategyProfitEvent', {
-      strategy_id: ID.bcs,
-      profit: bcs.u64(),
-      fee_amt_yt: bcs.u64(),
+    return bcs.struct('AdminCap', {
+      id: UID.bcs,
     })
   }
 
   static fromFields<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     fields: Record<string, any>
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
-    return StrategyProfitEvent.reified(typeArg).new({
-      strategyId: decodeFromFields(ID.reified(), fields.strategy_id),
-      profit: decodeFromFields('u64', fields.profit),
-      feeAmtYt: decodeFromFields('u64', fields.fee_amt_yt),
-    })
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    return AdminCap.reified(typeArg).new({ id: decodeFromFields(UID.reified(), fields.id) })
   }
 
   static fromFieldsWithTypes<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     item: FieldsWithTypes
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
-    if (!isStrategyProfitEvent(item.type)) {
-      throw new Error('not a StrategyProfitEvent type')
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    if (!isAdminCap(item.type)) {
+      throw new Error('not a AdminCap type')
     }
     assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return StrategyProfitEvent.reified(typeArg).new({
-      strategyId: decodeFromFieldsWithTypes(ID.reified(), item.fields.strategy_id),
-      profit: decodeFromFieldsWithTypes('u64', item.fields.profit),
-      feeAmtYt: decodeFromFieldsWithTypes('u64', item.fields.fee_amt_yt),
+    return AdminCap.reified(typeArg).new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
     })
   }
 
   static fromBcs<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: Uint8Array
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
-    return StrategyProfitEvent.fromFields(typeArg, StrategyProfitEvent.bcs.parse(data))
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    return AdminCap.fromFields(typeArg, AdminCap.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      strategyId: this.strategyId,
-      profit: this.profit.toString(),
-      feeAmtYt: this.feeAmtYt.toString(),
+      id: this.id,
     }
   }
 
@@ -1190,50 +1077,46 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
   static fromJSONField<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     field: any
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
-    return StrategyProfitEvent.reified(typeArg).new({
-      strategyId: decodeFromJSONField(ID.reified(), field.strategyId),
-      profit: decodeFromJSONField('u64', field.profit),
-      feeAmtYt: decodeFromJSONField('u64', field.feeAmtYt),
-    })
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    return AdminCap.reified(typeArg).new({ id: decodeFromJSONField(UID.reified(), field.id) })
   }
 
   static fromJSON<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     json: Record<string, any>
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
-    if (json.$typeName !== StrategyProfitEvent.$typeName) {
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    if (json.$typeName !== AdminCap.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(StrategyProfitEvent.$typeName, extractType(typeArg)),
+      composeSuiType(AdminCap.$typeName, extractType(typeArg)),
       json.$typeArgs,
       [typeArg]
     )
 
-    return StrategyProfitEvent.fromJSONField(typeArg, json)
+    return AdminCap.fromJSONField(typeArg, json)
   }
 
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isStrategyProfitEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a StrategyProfitEvent object`)
+    if (!isAdminCap(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AdminCap object`)
     }
-    return StrategyProfitEvent.fromFieldsWithTypes(typeArg, content)
+    return AdminCap.fromFieldsWithTypes(typeArg, content)
   }
 
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData
-  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isStrategyProfitEvent(data.bcs.type)) {
-        throw new Error(`object at is not a StrategyProfitEvent object`)
+      if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
+        throw new Error(`object at is not a AdminCap object`)
       }
 
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
@@ -1250,10 +1133,10 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
         )
       }
 
-      return StrategyProfitEvent.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return AdminCap.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return StrategyProfitEvent.fromSuiParsedData(typeArg, data.content)
+      return AdminCap.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
@@ -1264,16 +1147,175 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
     client: SuiClient,
     typeArg: YT,
     id: string
-  ): Promise<StrategyProfitEvent<ToPhantomTypeArgument<YT>>> {
+  ): Promise<AdminCap<ToPhantomTypeArgument<YT>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching StrategyProfitEvent object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching AdminCap object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isStrategyProfitEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a StrategyProfitEvent object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAdminCap(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AdminCap object`)
     }
 
-    return StrategyProfitEvent.fromSuiObjectData(typeArg, res.data)
+    return AdminCap.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== VaultAccess =============================== */
+
+export function isVaultAccess(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::vault::VaultAccess`
+}
+
+export interface VaultAccessFields {
+  id: ToField<UID>
+}
+
+export type VaultAccessReified = Reified<VaultAccess, VaultAccessFields>
+
+export class VaultAccess implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::vault::VaultAccess`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = VaultAccess.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::VaultAccess`
+  readonly $typeArgs: []
+  readonly $isPhantom = VaultAccess.$isPhantom
+
+  readonly id: ToField<UID>
+
+  private constructor(typeArgs: [], fields: VaultAccessFields) {
+    this.$fullTypeName = composeSuiType(
+      VaultAccess.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::vault::VaultAccess`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): VaultAccessReified {
+    return {
+      typeName: VaultAccess.$typeName,
+      fullTypeName: composeSuiType(
+        VaultAccess.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::vault::VaultAccess`,
+      typeArgs: [] as [],
+      isPhantom: VaultAccess.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => VaultAccess.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => VaultAccess.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => VaultAccess.fromBcs(data),
+      bcs: VaultAccess.bcs,
+      fromJSONField: (field: any) => VaultAccess.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => VaultAccess.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => VaultAccess.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => VaultAccess.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => VaultAccess.fetch(client, id),
+      new: (fields: VaultAccessFields) => {
+        return new VaultAccess([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return VaultAccess.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<VaultAccess>> {
+    return phantom(VaultAccess.reified())
+  }
+  static get p() {
+    return VaultAccess.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('VaultAccess', {
+      id: UID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): VaultAccess {
+    return VaultAccess.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): VaultAccess {
+    if (!isVaultAccess(item.type)) {
+      throw new Error('not a VaultAccess type')
+    }
+
+    return VaultAccess.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): VaultAccess {
+    return VaultAccess.fromFields(VaultAccess.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): VaultAccess {
+    return VaultAccess.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+  }
+
+  static fromJSON(json: Record<string, any>): VaultAccess {
+    if (json.$typeName !== VaultAccess.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return VaultAccess.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): VaultAccess {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isVaultAccess(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a VaultAccess object`)
+    }
+    return VaultAccess.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): VaultAccess {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isVaultAccess(data.bcs.type)) {
+        throw new Error(`object at is not a VaultAccess object`)
+      }
+
+      return VaultAccess.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return VaultAccess.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<VaultAccess> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching VaultAccess object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isVaultAccess(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a VaultAccess object`)
+    }
+
+    return VaultAccess.fromSuiObjectData(res.data)
   }
 }
 
@@ -1559,185 +1601,6 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
   }
 }
 
-/* ============================== StrategyState =============================== */
-
-export function isStrategyState(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::vault::StrategyState`
-}
-
-export interface StrategyStateFields {
-  borrowed: ToField<'u64'>
-  targetAllocWeightBps: ToField<'u64'>
-  maxBorrow: ToField<Option<'u64'>>
-}
-
-export type StrategyStateReified = Reified<StrategyState, StrategyStateFields>
-
-export class StrategyState implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::vault::StrategyState`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = StrategyState.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::StrategyState`
-  readonly $typeArgs: []
-  readonly $isPhantom = StrategyState.$isPhantom
-
-  readonly borrowed: ToField<'u64'>
-  readonly targetAllocWeightBps: ToField<'u64'>
-  readonly maxBorrow: ToField<Option<'u64'>>
-
-  private constructor(typeArgs: [], fields: StrategyStateFields) {
-    this.$fullTypeName = composeSuiType(
-      StrategyState.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::vault::StrategyState`
-    this.$typeArgs = typeArgs
-
-    this.borrowed = fields.borrowed
-    this.targetAllocWeightBps = fields.targetAllocWeightBps
-    this.maxBorrow = fields.maxBorrow
-  }
-
-  static reified(): StrategyStateReified {
-    return {
-      typeName: StrategyState.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyState.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::vault::StrategyState`,
-      typeArgs: [] as [],
-      isPhantom: StrategyState.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => StrategyState.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => StrategyState.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StrategyState.fromBcs(data),
-      bcs: StrategyState.bcs,
-      fromJSONField: (field: any) => StrategyState.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => StrategyState.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => StrategyState.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => StrategyState.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => StrategyState.fetch(client, id),
-      new: (fields: StrategyStateFields) => {
-        return new StrategyState([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return StrategyState.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<StrategyState>> {
-    return phantom(StrategyState.reified())
-  }
-  static get p() {
-    return StrategyState.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('StrategyState', {
-      borrowed: bcs.u64(),
-      target_alloc_weight_bps: bcs.u64(),
-      max_borrow: Option.bcs(bcs.u64()),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): StrategyState {
-    return StrategyState.reified().new({
-      borrowed: decodeFromFields('u64', fields.borrowed),
-      targetAllocWeightBps: decodeFromFields('u64', fields.target_alloc_weight_bps),
-      maxBorrow: decodeFromFields(Option.reified('u64'), fields.max_borrow),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): StrategyState {
-    if (!isStrategyState(item.type)) {
-      throw new Error('not a StrategyState type')
-    }
-
-    return StrategyState.reified().new({
-      borrowed: decodeFromFieldsWithTypes('u64', item.fields.borrowed),
-      targetAllocWeightBps: decodeFromFieldsWithTypes('u64', item.fields.target_alloc_weight_bps),
-      maxBorrow: decodeFromFieldsWithTypes(Option.reified('u64'), item.fields.max_borrow),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): StrategyState {
-    return StrategyState.fromFields(StrategyState.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      borrowed: this.borrowed.toString(),
-      targetAllocWeightBps: this.targetAllocWeightBps.toString(),
-      maxBorrow: fieldToJSON<Option<'u64'>>(`${Option.$typeName}<u64>`, this.maxBorrow),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): StrategyState {
-    return StrategyState.reified().new({
-      borrowed: decodeFromJSONField('u64', field.borrowed),
-      targetAllocWeightBps: decodeFromJSONField('u64', field.targetAllocWeightBps),
-      maxBorrow: decodeFromJSONField(Option.reified('u64'), field.maxBorrow),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): StrategyState {
-    if (json.$typeName !== StrategyState.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return StrategyState.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): StrategyState {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isStrategyState(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a StrategyState object`)
-    }
-    return StrategyState.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): StrategyState {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isStrategyState(data.bcs.type)) {
-        throw new Error(`object at is not a StrategyState object`)
-      }
-
-      return StrategyState.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return StrategyState.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<StrategyState> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching StrategyState object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isStrategyState(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a StrategyState object`)
-    }
-
-    return StrategyState.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== StrategyWithdrawInfo =============================== */
 
 export function isStrategyWithdrawInfo(type: string): boolean {
@@ -1974,6 +1837,815 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
     }
 
     return StrategyWithdrawInfo.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== WithdrawTicket =============================== */
+
+export function isWithdrawTicket(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::vault::WithdrawTicket` + '<')
+}
+
+export interface WithdrawTicketFields<
+  T extends PhantomTypeArgument,
+  YT extends PhantomTypeArgument,
+> {
+  toWithdrawFromFreeBalance: ToField<'u64'>
+  strategyInfos: ToField<VecMap<ID, StrategyWithdrawInfo<T>>>
+  lpToBurn: ToField<Balance<YT>>
+}
+
+export type WithdrawTicketReified<
+  T extends PhantomTypeArgument,
+  YT extends PhantomTypeArgument,
+> = Reified<WithdrawTicket<T, YT>, WithdrawTicketFields<T, YT>>
+
+export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTypeArgument>
+  implements StructClass
+{
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::vault::WithdrawTicket`
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [true, true] as const
+
+  readonly $typeName = WithdrawTicket.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<YT>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<YT>]
+  readonly $isPhantom = WithdrawTicket.$isPhantom
+
+  readonly toWithdrawFromFreeBalance: ToField<'u64'>
+  readonly strategyInfos: ToField<VecMap<ID, StrategyWithdrawInfo<T>>>
+  readonly lpToBurn: ToField<Balance<YT>>
+
+  private constructor(
+    typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<YT>],
+    fields: WithdrawTicketFields<T, YT>
+  ) {
+    this.$fullTypeName = composeSuiType(
+      WithdrawTicket.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<YT>}>`
+    this.$typeArgs = typeArgs
+
+    this.toWithdrawFromFreeBalance = fields.toWithdrawFromFreeBalance
+    this.strategyInfos = fields.strategyInfos
+    this.lpToBurn = fields.lpToBurn
+  }
+
+  static reified<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(T: T, YT: YT): WithdrawTicketReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    return {
+      typeName: WithdrawTicket.$typeName,
+      fullTypeName: composeSuiType(
+        WithdrawTicket.$typeName,
+        ...[extractType(T), extractType(YT)]
+      ) as `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
+      typeArgs: [extractType(T), extractType(YT)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
+      ],
+      isPhantom: WithdrawTicket.$isPhantom,
+      reifiedTypeArgs: [T, YT],
+      fromFields: (fields: Record<string, any>) => WithdrawTicket.fromFields([T, YT], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        WithdrawTicket.fromFieldsWithTypes([T, YT], item),
+      fromBcs: (data: Uint8Array) => WithdrawTicket.fromBcs([T, YT], data),
+      bcs: WithdrawTicket.bcs,
+      fromJSONField: (field: any) => WithdrawTicket.fromJSONField([T, YT], field),
+      fromJSON: (json: Record<string, any>) => WithdrawTicket.fromJSON([T, YT], json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        WithdrawTicket.fromSuiParsedData([T, YT], content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        WithdrawTicket.fromSuiObjectData([T, YT], content),
+      fetch: async (client: SuiClient, id: string) => WithdrawTicket.fetch(client, [T, YT], id),
+      new: (fields: WithdrawTicketFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>) => {
+        return new WithdrawTicket([extractType(T), extractType(YT)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return WithdrawTicket.reified
+  }
+
+  static phantom<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    T: T,
+    YT: YT
+  ): PhantomReified<
+    ToTypeStr<WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>>
+  > {
+    return phantom(WithdrawTicket.reified(T, YT))
+  }
+  static get p() {
+    return WithdrawTicket.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('WithdrawTicket', {
+      to_withdraw_from_free_balance: bcs.u64(),
+      strategy_infos: VecMap.bcs(ID.bcs, StrategyWithdrawInfo.bcs),
+      lp_to_burn: Balance.bcs,
+    })
+  }
+
+  static fromFields<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    fields: Record<string, any>
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
+      toWithdrawFromFreeBalance: decodeFromFields('u64', fields.to_withdraw_from_free_balance),
+      strategyInfos: decodeFromFields(
+        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
+        fields.strategy_infos
+      ),
+      lpToBurn: decodeFromFields(Balance.reified(typeArgs[1]), fields.lp_to_burn),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    item: FieldsWithTypes
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (!isWithdrawTicket(item.type)) {
+      throw new Error('not a WithdrawTicket type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
+      toWithdrawFromFreeBalance: decodeFromFieldsWithTypes(
+        'u64',
+        item.fields.to_withdraw_from_free_balance
+      ),
+      strategyInfos: decodeFromFieldsWithTypes(
+        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
+        item.fields.strategy_infos
+      ),
+      lpToBurn: decodeFromFieldsWithTypes(Balance.reified(typeArgs[1]), item.fields.lp_to_burn),
+    })
+  }
+
+  static fromBcs<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    data: Uint8Array
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    return WithdrawTicket.fromFields(typeArgs, WithdrawTicket.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      toWithdrawFromFreeBalance: this.toWithdrawFromFreeBalance.toString(),
+      strategyInfos: this.strategyInfos.toJSONField(),
+      lpToBurn: this.lpToBurn.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    field: any
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
+      toWithdrawFromFreeBalance: decodeFromJSONField('u64', field.toWithdrawFromFreeBalance),
+      strategyInfos: decodeFromJSONField(
+        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
+        field.strategyInfos
+      ),
+      lpToBurn: decodeFromJSONField(Balance.reified(typeArgs[1]), field.lpToBurn),
+    })
+  }
+
+  static fromJSON<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    json: Record<string, any>
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (json.$typeName !== WithdrawTicket.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(WithdrawTicket.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs
+    )
+
+    return WithdrawTicket.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    content: SuiParsedData
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isWithdrawTicket(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawTicket object`)
+    }
+    return WithdrawTicket.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    data: SuiObjectData
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isWithdrawTicket(data.bcs.type)) {
+        throw new Error(`object at is not a WithdrawTicket object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+          )
+        }
+      }
+
+      return WithdrawTicket.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return WithdrawTicket.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    client: SuiClient,
+    typeArgs: [T, YT],
+    id: string
+  ): Promise<WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching WithdrawTicket object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawTicket(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a WithdrawTicket object`)
+    }
+
+    return WithdrawTicket.fromSuiObjectData(typeArgs, res.data)
+  }
+}
+
+/* ============================== RebalanceInfo =============================== */
+
+export function isRebalanceInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::vault::RebalanceInfo`
+}
+
+export interface RebalanceInfoFields {
+  toRepay: ToField<'u64'>
+  canBorrow: ToField<'u64'>
+}
+
+export type RebalanceInfoReified = Reified<RebalanceInfo, RebalanceInfoFields>
+
+export class RebalanceInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::vault::RebalanceInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RebalanceInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::RebalanceInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = RebalanceInfo.$isPhantom
+
+  readonly toRepay: ToField<'u64'>
+  readonly canBorrow: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: RebalanceInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      RebalanceInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::vault::RebalanceInfo`
+    this.$typeArgs = typeArgs
+
+    this.toRepay = fields.toRepay
+    this.canBorrow = fields.canBorrow
+  }
+
+  static reified(): RebalanceInfoReified {
+    return {
+      typeName: RebalanceInfo.$typeName,
+      fullTypeName: composeSuiType(
+        RebalanceInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::vault::RebalanceInfo`,
+      typeArgs: [] as [],
+      isPhantom: RebalanceInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RebalanceInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RebalanceInfo.fromBcs(data),
+      bcs: RebalanceInfo.bcs,
+      fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RebalanceInfo.fetch(client, id),
+      new: (fields: RebalanceInfoFields) => {
+        return new RebalanceInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RebalanceInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RebalanceInfo>> {
+    return phantom(RebalanceInfo.reified())
+  }
+  static get p() {
+    return RebalanceInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RebalanceInfo', {
+      to_repay: bcs.u64(),
+      can_borrow: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RebalanceInfo {
+    return RebalanceInfo.reified().new({
+      toRepay: decodeFromFields('u64', fields.to_repay),
+      canBorrow: decodeFromFields('u64', fields.can_borrow),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceInfo {
+    if (!isRebalanceInfo(item.type)) {
+      throw new Error('not a RebalanceInfo type')
+    }
+
+    return RebalanceInfo.reified().new({
+      toRepay: decodeFromFieldsWithTypes('u64', item.fields.to_repay),
+      canBorrow: decodeFromFieldsWithTypes('u64', item.fields.can_borrow),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RebalanceInfo {
+    return RebalanceInfo.fromFields(RebalanceInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      toRepay: this.toRepay.toString(),
+      canBorrow: this.canBorrow.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RebalanceInfo {
+    return RebalanceInfo.reified().new({
+      toRepay: decodeFromJSONField('u64', field.toRepay),
+      canBorrow: decodeFromJSONField('u64', field.canBorrow),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RebalanceInfo {
+    if (json.$typeName !== RebalanceInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RebalanceInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRebalanceInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceInfo object`)
+    }
+    return RebalanceInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
+        throw new Error(`object at is not a RebalanceInfo object`)
+      }
+
+      return RebalanceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RebalanceInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RebalanceInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RebalanceInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RebalanceInfo object`)
+    }
+
+    return RebalanceInfo.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== RebalanceAmounts =============================== */
+
+export function isRebalanceAmounts(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::vault::RebalanceAmounts`
+}
+
+export interface RebalanceAmountsFields {
+  inner: ToField<VecMap<ID, RebalanceInfo>>
+}
+
+export type RebalanceAmountsReified = Reified<RebalanceAmounts, RebalanceAmountsFields>
+
+export class RebalanceAmounts implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::vault::RebalanceAmounts`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RebalanceAmounts.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::RebalanceAmounts`
+  readonly $typeArgs: []
+  readonly $isPhantom = RebalanceAmounts.$isPhantom
+
+  readonly inner: ToField<VecMap<ID, RebalanceInfo>>
+
+  private constructor(typeArgs: [], fields: RebalanceAmountsFields) {
+    this.$fullTypeName = composeSuiType(
+      RebalanceAmounts.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::vault::RebalanceAmounts`
+    this.$typeArgs = typeArgs
+
+    this.inner = fields.inner
+  }
+
+  static reified(): RebalanceAmountsReified {
+    return {
+      typeName: RebalanceAmounts.$typeName,
+      fullTypeName: composeSuiType(
+        RebalanceAmounts.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::vault::RebalanceAmounts`,
+      typeArgs: [] as [],
+      isPhantom: RebalanceAmounts.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RebalanceAmounts.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceAmounts.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RebalanceAmounts.fromBcs(data),
+      bcs: RebalanceAmounts.bcs,
+      fromJSONField: (field: any) => RebalanceAmounts.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RebalanceAmounts.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RebalanceAmounts.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RebalanceAmounts.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RebalanceAmounts.fetch(client, id),
+      new: (fields: RebalanceAmountsFields) => {
+        return new RebalanceAmounts([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RebalanceAmounts.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RebalanceAmounts>> {
+    return phantom(RebalanceAmounts.reified())
+  }
+  static get p() {
+    return RebalanceAmounts.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RebalanceAmounts', {
+      inner: VecMap.bcs(ID.bcs, RebalanceInfo.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RebalanceAmounts {
+    return RebalanceAmounts.reified().new({
+      inner: decodeFromFields(VecMap.reified(ID.reified(), RebalanceInfo.reified()), fields.inner),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RebalanceAmounts {
+    if (!isRebalanceAmounts(item.type)) {
+      throw new Error('not a RebalanceAmounts type')
+    }
+
+    return RebalanceAmounts.reified().new({
+      inner: decodeFromFieldsWithTypes(
+        VecMap.reified(ID.reified(), RebalanceInfo.reified()),
+        item.fields.inner
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RebalanceAmounts {
+    return RebalanceAmounts.fromFields(RebalanceAmounts.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      inner: this.inner.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RebalanceAmounts {
+    return RebalanceAmounts.reified().new({
+      inner: decodeFromJSONField(
+        VecMap.reified(ID.reified(), RebalanceInfo.reified()),
+        field.inner
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): RebalanceAmounts {
+    if (json.$typeName !== RebalanceAmounts.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RebalanceAmounts.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RebalanceAmounts {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRebalanceAmounts(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RebalanceAmounts object`)
+    }
+    return RebalanceAmounts.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RebalanceAmounts {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRebalanceAmounts(data.bcs.type)) {
+        throw new Error(`object at is not a RebalanceAmounts object`)
+      }
+
+      return RebalanceAmounts.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RebalanceAmounts.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RebalanceAmounts> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RebalanceAmounts object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceAmounts(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RebalanceAmounts object`)
+    }
+
+    return RebalanceAmounts.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== StrategyState =============================== */
+
+export function isStrategyState(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::vault::StrategyState`
+}
+
+export interface StrategyStateFields {
+  borrowed: ToField<'u64'>
+  targetAllocWeightBps: ToField<'u64'>
+  maxBorrow: ToField<Option<'u64'>>
+}
+
+export type StrategyStateReified = Reified<StrategyState, StrategyStateFields>
+
+export class StrategyState implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::vault::StrategyState`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = StrategyState.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::vault::StrategyState`
+  readonly $typeArgs: []
+  readonly $isPhantom = StrategyState.$isPhantom
+
+  readonly borrowed: ToField<'u64'>
+  readonly targetAllocWeightBps: ToField<'u64'>
+  readonly maxBorrow: ToField<Option<'u64'>>
+
+  private constructor(typeArgs: [], fields: StrategyStateFields) {
+    this.$fullTypeName = composeSuiType(
+      StrategyState.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::vault::StrategyState`
+    this.$typeArgs = typeArgs
+
+    this.borrowed = fields.borrowed
+    this.targetAllocWeightBps = fields.targetAllocWeightBps
+    this.maxBorrow = fields.maxBorrow
+  }
+
+  static reified(): StrategyStateReified {
+    return {
+      typeName: StrategyState.$typeName,
+      fullTypeName: composeSuiType(
+        StrategyState.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::vault::StrategyState`,
+      typeArgs: [] as [],
+      isPhantom: StrategyState.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => StrategyState.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => StrategyState.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => StrategyState.fromBcs(data),
+      bcs: StrategyState.bcs,
+      fromJSONField: (field: any) => StrategyState.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => StrategyState.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => StrategyState.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => StrategyState.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => StrategyState.fetch(client, id),
+      new: (fields: StrategyStateFields) => {
+        return new StrategyState([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return StrategyState.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<StrategyState>> {
+    return phantom(StrategyState.reified())
+  }
+  static get p() {
+    return StrategyState.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('StrategyState', {
+      borrowed: bcs.u64(),
+      target_alloc_weight_bps: bcs.u64(),
+      max_borrow: Option.bcs(bcs.u64()),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): StrategyState {
+    return StrategyState.reified().new({
+      borrowed: decodeFromFields('u64', fields.borrowed),
+      targetAllocWeightBps: decodeFromFields('u64', fields.target_alloc_weight_bps),
+      maxBorrow: decodeFromFields(Option.reified('u64'), fields.max_borrow),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): StrategyState {
+    if (!isStrategyState(item.type)) {
+      throw new Error('not a StrategyState type')
+    }
+
+    return StrategyState.reified().new({
+      borrowed: decodeFromFieldsWithTypes('u64', item.fields.borrowed),
+      targetAllocWeightBps: decodeFromFieldsWithTypes('u64', item.fields.target_alloc_weight_bps),
+      maxBorrow: decodeFromFieldsWithTypes(Option.reified('u64'), item.fields.max_borrow),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): StrategyState {
+    return StrategyState.fromFields(StrategyState.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      borrowed: this.borrowed.toString(),
+      targetAllocWeightBps: this.targetAllocWeightBps.toString(),
+      maxBorrow: fieldToJSON<Option<'u64'>>(`${Option.$typeName}<u64>`, this.maxBorrow),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): StrategyState {
+    return StrategyState.reified().new({
+      borrowed: decodeFromJSONField('u64', field.borrowed),
+      targetAllocWeightBps: decodeFromJSONField('u64', field.targetAllocWeightBps),
+      maxBorrow: decodeFromJSONField(Option.reified('u64'), field.maxBorrow),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): StrategyState {
+    if (json.$typeName !== StrategyState.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return StrategyState.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): StrategyState {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isStrategyState(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a StrategyState object`)
+    }
+    return StrategyState.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): StrategyState {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isStrategyState(data.bcs.type)) {
+        throw new Error(`object at is not a StrategyState object`)
+      }
+
+      return StrategyState.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return StrategyState.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<StrategyState> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching StrategyState object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isStrategyState(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a StrategyState object`)
+    }
+
+    return StrategyState.fromSuiObjectData(res.data)
   }
 }
 
@@ -2361,677 +3033,5 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
     }
 
     return Vault.fromSuiObjectData(typeArgs, res.data)
-  }
-}
-
-/* ============================== VaultAccess =============================== */
-
-export function isVaultAccess(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::vault::VaultAccess`
-}
-
-export interface VaultAccessFields {
-  id: ToField<UID>
-}
-
-export type VaultAccessReified = Reified<VaultAccess, VaultAccessFields>
-
-export class VaultAccess implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::vault::VaultAccess`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = VaultAccess.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::VaultAccess`
-  readonly $typeArgs: []
-  readonly $isPhantom = VaultAccess.$isPhantom
-
-  readonly id: ToField<UID>
-
-  private constructor(typeArgs: [], fields: VaultAccessFields) {
-    this.$fullTypeName = composeSuiType(
-      VaultAccess.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::vault::VaultAccess`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-  }
-
-  static reified(): VaultAccessReified {
-    return {
-      typeName: VaultAccess.$typeName,
-      fullTypeName: composeSuiType(
-        VaultAccess.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::vault::VaultAccess`,
-      typeArgs: [] as [],
-      isPhantom: VaultAccess.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => VaultAccess.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => VaultAccess.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VaultAccess.fromBcs(data),
-      bcs: VaultAccess.bcs,
-      fromJSONField: (field: any) => VaultAccess.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => VaultAccess.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => VaultAccess.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => VaultAccess.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => VaultAccess.fetch(client, id),
-      new: (fields: VaultAccessFields) => {
-        return new VaultAccess([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return VaultAccess.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<VaultAccess>> {
-    return phantom(VaultAccess.reified())
-  }
-  static get p() {
-    return VaultAccess.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('VaultAccess', {
-      id: UID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): VaultAccess {
-    return VaultAccess.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): VaultAccess {
-    if (!isVaultAccess(item.type)) {
-      throw new Error('not a VaultAccess type')
-    }
-
-    return VaultAccess.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): VaultAccess {
-    return VaultAccess.fromFields(VaultAccess.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): VaultAccess {
-    return VaultAccess.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
-  }
-
-  static fromJSON(json: Record<string, any>): VaultAccess {
-    if (json.$typeName !== VaultAccess.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return VaultAccess.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): VaultAccess {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isVaultAccess(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a VaultAccess object`)
-    }
-    return VaultAccess.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): VaultAccess {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isVaultAccess(data.bcs.type)) {
-        throw new Error(`object at is not a VaultAccess object`)
-      }
-
-      return VaultAccess.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return VaultAccess.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<VaultAccess> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching VaultAccess object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVaultAccess(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a VaultAccess object`)
-    }
-
-    return VaultAccess.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== WithdrawEvent =============================== */
-
-export function isWithdrawEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V4}::vault::WithdrawEvent` + '<')
-}
-
-export interface WithdrawEventFields<YT extends PhantomTypeArgument> {
-  amount: ToField<'u64'>
-  lpBurned: ToField<'u64'>
-}
-
-export type WithdrawEventReified<YT extends PhantomTypeArgument> = Reified<
-  WithdrawEvent<YT>,
-  WithdrawEventFields<YT>
->
-
-export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V4}::vault::WithdrawEvent`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = WithdrawEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<YT>}>`
-  readonly $typeArgs: [PhantomToTypeStr<YT>]
-  readonly $isPhantom = WithdrawEvent.$isPhantom
-
-  readonly amount: ToField<'u64'>
-  readonly lpBurned: ToField<'u64'>
-
-  private constructor(typeArgs: [PhantomToTypeStr<YT>], fields: WithdrawEventFields<YT>) {
-    this.$fullTypeName = composeSuiType(
-      WithdrawEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<YT>}>`
-    this.$typeArgs = typeArgs
-
-    this.amount = fields.amount
-    this.lpBurned = fields.lpBurned
-  }
-
-  static reified<YT extends PhantomReified<PhantomTypeArgument>>(
-    YT: YT
-  ): WithdrawEventReified<ToPhantomTypeArgument<YT>> {
-    return {
-      typeName: WithdrawEvent.$typeName,
-      fullTypeName: composeSuiType(
-        WithdrawEvent.$typeName,
-        ...[extractType(YT)]
-      ) as `${typeof PKG_V4}::vault::WithdrawEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
-      isPhantom: WithdrawEvent.$isPhantom,
-      reifiedTypeArgs: [YT],
-      fromFields: (fields: Record<string, any>) => WithdrawEvent.fromFields(YT, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawEvent.fromFieldsWithTypes(YT, item),
-      fromBcs: (data: Uint8Array) => WithdrawEvent.fromBcs(YT, data),
-      bcs: WithdrawEvent.bcs,
-      fromJSONField: (field: any) => WithdrawEvent.fromJSONField(YT, field),
-      fromJSON: (json: Record<string, any>) => WithdrawEvent.fromJSON(YT, json),
-      fromSuiParsedData: (content: SuiParsedData) => WithdrawEvent.fromSuiParsedData(YT, content),
-      fromSuiObjectData: (content: SuiObjectData) => WithdrawEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SuiClient, id: string) => WithdrawEvent.fetch(client, YT, id),
-      new: (fields: WithdrawEventFields<ToPhantomTypeArgument<YT>>) => {
-        return new WithdrawEvent([extractType(YT)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return WithdrawEvent.reified
-  }
-
-  static phantom<YT extends PhantomReified<PhantomTypeArgument>>(
-    YT: YT
-  ): PhantomReified<ToTypeStr<WithdrawEvent<ToPhantomTypeArgument<YT>>>> {
-    return phantom(WithdrawEvent.reified(YT))
-  }
-  static get p() {
-    return WithdrawEvent.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('WithdrawEvent', {
-      amount: bcs.u64(),
-      lp_burned: bcs.u64(),
-    })
-  }
-
-  static fromFields<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    fields: Record<string, any>
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    return WithdrawEvent.reified(typeArg).new({
-      amount: decodeFromFields('u64', fields.amount),
-      lpBurned: decodeFromFields('u64', fields.lp_burned),
-    })
-  }
-
-  static fromFieldsWithTypes<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    item: FieldsWithTypes
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    if (!isWithdrawEvent(item.type)) {
-      throw new Error('not a WithdrawEvent type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return WithdrawEvent.reified(typeArg).new({
-      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
-      lpBurned: decodeFromFieldsWithTypes('u64', item.fields.lp_burned),
-    })
-  }
-
-  static fromBcs<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    data: Uint8Array
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    return WithdrawEvent.fromFields(typeArg, WithdrawEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      amount: this.amount.toString(),
-      lpBurned: this.lpBurned.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    field: any
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    return WithdrawEvent.reified(typeArg).new({
-      amount: decodeFromJSONField('u64', field.amount),
-      lpBurned: decodeFromJSONField('u64', field.lpBurned),
-    })
-  }
-
-  static fromJSON<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    json: Record<string, any>
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    if (json.$typeName !== WithdrawEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(WithdrawEvent.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return WithdrawEvent.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    content: SuiParsedData
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isWithdrawEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawEvent object`)
-    }
-    return WithdrawEvent.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: YT,
-    data: SuiObjectData
-  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isWithdrawEvent(data.bcs.type)) {
-        throw new Error(`object at is not a WithdrawEvent object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return WithdrawEvent.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return WithdrawEvent.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: YT,
-    id: string
-  ): Promise<WithdrawEvent<ToPhantomTypeArgument<YT>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching WithdrawEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a WithdrawEvent object`)
-    }
-
-    return WithdrawEvent.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== WithdrawTicket =============================== */
-
-export function isWithdrawTicket(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::vault::WithdrawTicket` + '<')
-}
-
-export interface WithdrawTicketFields<
-  T extends PhantomTypeArgument,
-  YT extends PhantomTypeArgument,
-> {
-  toWithdrawFromFreeBalance: ToField<'u64'>
-  strategyInfos: ToField<VecMap<ID, StrategyWithdrawInfo<T>>>
-  lpToBurn: ToField<Balance<YT>>
-}
-
-export type WithdrawTicketReified<
-  T extends PhantomTypeArgument,
-  YT extends PhantomTypeArgument,
-> = Reified<WithdrawTicket<T, YT>, WithdrawTicketFields<T, YT>>
-
-export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTypeArgument>
-  implements StructClass
-{
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::vault::WithdrawTicket`
-  static readonly $numTypeParams = 2
-  static readonly $isPhantom = [true, true] as const
-
-  readonly $typeName = WithdrawTicket.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<YT>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<YT>]
-  readonly $isPhantom = WithdrawTicket.$isPhantom
-
-  readonly toWithdrawFromFreeBalance: ToField<'u64'>
-  readonly strategyInfos: ToField<VecMap<ID, StrategyWithdrawInfo<T>>>
-  readonly lpToBurn: ToField<Balance<YT>>
-
-  private constructor(
-    typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<YT>],
-    fields: WithdrawTicketFields<T, YT>
-  ) {
-    this.$fullTypeName = composeSuiType(
-      WithdrawTicket.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<YT>}>`
-    this.$typeArgs = typeArgs
-
-    this.toWithdrawFromFreeBalance = fields.toWithdrawFromFreeBalance
-    this.strategyInfos = fields.strategyInfos
-    this.lpToBurn = fields.lpToBurn
-  }
-
-  static reified<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(T: T, YT: YT): WithdrawTicketReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    return {
-      typeName: WithdrawTicket.$typeName,
-      fullTypeName: composeSuiType(
-        WithdrawTicket.$typeName,
-        ...[extractType(T), extractType(YT)]
-      ) as `${typeof PKG_V1}::vault::WithdrawTicket<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(T), extractType(YT)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
-      ],
-      isPhantom: WithdrawTicket.$isPhantom,
-      reifiedTypeArgs: [T, YT],
-      fromFields: (fields: Record<string, any>) => WithdrawTicket.fromFields([T, YT], fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        WithdrawTicket.fromFieldsWithTypes([T, YT], item),
-      fromBcs: (data: Uint8Array) => WithdrawTicket.fromBcs([T, YT], data),
-      bcs: WithdrawTicket.bcs,
-      fromJSONField: (field: any) => WithdrawTicket.fromJSONField([T, YT], field),
-      fromJSON: (json: Record<string, any>) => WithdrawTicket.fromJSON([T, YT], json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        WithdrawTicket.fromSuiParsedData([T, YT], content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        WithdrawTicket.fromSuiObjectData([T, YT], content),
-      fetch: async (client: SuiClient, id: string) => WithdrawTicket.fetch(client, [T, YT], id),
-      new: (fields: WithdrawTicketFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>) => {
-        return new WithdrawTicket([extractType(T), extractType(YT)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return WithdrawTicket.reified
-  }
-
-  static phantom<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    T: T,
-    YT: YT
-  ): PhantomReified<
-    ToTypeStr<WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>>
-  > {
-    return phantom(WithdrawTicket.reified(T, YT))
-  }
-  static get p() {
-    return WithdrawTicket.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('WithdrawTicket', {
-      to_withdraw_from_free_balance: bcs.u64(),
-      strategy_infos: VecMap.bcs(ID.bcs, StrategyWithdrawInfo.bcs),
-      lp_to_burn: Balance.bcs,
-    })
-  }
-
-  static fromFields<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    fields: Record<string, any>
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
-      toWithdrawFromFreeBalance: decodeFromFields('u64', fields.to_withdraw_from_free_balance),
-      strategyInfos: decodeFromFields(
-        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
-        fields.strategy_infos
-      ),
-      lpToBurn: decodeFromFields(Balance.reified(typeArgs[1]), fields.lp_to_burn),
-    })
-  }
-
-  static fromFieldsWithTypes<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    item: FieldsWithTypes
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    if (!isWithdrawTicket(item.type)) {
-      throw new Error('not a WithdrawTicket type')
-    }
-    assertFieldsWithTypesArgsMatch(item, typeArgs)
-
-    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
-      toWithdrawFromFreeBalance: decodeFromFieldsWithTypes(
-        'u64',
-        item.fields.to_withdraw_from_free_balance
-      ),
-      strategyInfos: decodeFromFieldsWithTypes(
-        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
-        item.fields.strategy_infos
-      ),
-      lpToBurn: decodeFromFieldsWithTypes(Balance.reified(typeArgs[1]), item.fields.lp_to_burn),
-    })
-  }
-
-  static fromBcs<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    data: Uint8Array
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    return WithdrawTicket.fromFields(typeArgs, WithdrawTicket.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      toWithdrawFromFreeBalance: this.toWithdrawFromFreeBalance.toString(),
-      strategyInfos: this.strategyInfos.toJSONField(),
-      lpToBurn: this.lpToBurn.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    field: any
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    return WithdrawTicket.reified(typeArgs[0], typeArgs[1]).new({
-      toWithdrawFromFreeBalance: decodeFromJSONField('u64', field.toWithdrawFromFreeBalance),
-      strategyInfos: decodeFromJSONField(
-        VecMap.reified(ID.reified(), StrategyWithdrawInfo.reified(typeArgs[0])),
-        field.strategyInfos
-      ),
-      lpToBurn: decodeFromJSONField(Balance.reified(typeArgs[1]), field.lpToBurn),
-    })
-  }
-
-  static fromJSON<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    json: Record<string, any>
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    if (json.$typeName !== WithdrawTicket.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(WithdrawTicket.$typeName, ...typeArgs.map(extractType)),
-      json.$typeArgs,
-      typeArgs
-    )
-
-    return WithdrawTicket.fromJSONField(typeArgs, json)
-  }
-
-  static fromSuiParsedData<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    content: SuiParsedData
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isWithdrawTicket(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a WithdrawTicket object`)
-    }
-    return WithdrawTicket.fromFieldsWithTypes(typeArgs, content)
-  }
-
-  static fromSuiObjectData<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [T, YT],
-    data: SuiObjectData
-  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isWithdrawTicket(data.bcs.type)) {
-        throw new Error(`object at is not a WithdrawTicket object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 2) {
-        throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
-        )
-      }
-      for (let i = 0; i < 2; i++) {
-        const gotTypeArg = compressSuiType(gotTypeArgs[i])
-        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
-        if (gotTypeArg !== expectedTypeArg) {
-          throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-          )
-        }
-      }
-
-      return WithdrawTicket.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return WithdrawTicket.fromSuiParsedData(typeArgs, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<
-    T extends PhantomReified<PhantomTypeArgument>,
-    YT extends PhantomReified<PhantomTypeArgument>,
-  >(
-    client: SuiClient,
-    typeArgs: [T, YT],
-    id: string
-  ): Promise<WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching WithdrawTicket object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawTicket(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a WithdrawTicket object`)
-    }
-
-    return WithdrawTicket.fromSuiObjectData(typeArgs, res.data)
   }
 }

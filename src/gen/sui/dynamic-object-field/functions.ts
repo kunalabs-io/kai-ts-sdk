@@ -46,6 +46,19 @@ export function borrowMut(tx: Transaction, typeArgs: [string, string], args: Bor
   })
 }
 
+export interface RemoveArgs {
+  object: TransactionObjectInput
+  name: GenericArg
+}
+
+export function remove(tx: Transaction, typeArgs: [string, string], args: RemoveArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::dynamic_object_field::remove`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+  })
+}
+
 export interface Exists_Args {
   object: TransactionObjectInput
   name: GenericArg
@@ -141,23 +154,6 @@ export function internalBorrowMut(
   })
 }
 
-export interface InternalExistsWithTypeArgs {
-  object: TransactionObjectInput
-  name: GenericArg
-}
-
-export function internalExistsWithType(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: InternalExistsWithTypeArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_exists_with_type`,
-    typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
-  })
-}
-
 export interface InternalRemoveArgs {
   object: TransactionObjectInput
   name: GenericArg
@@ -175,14 +171,18 @@ export function internalRemove(
   })
 }
 
-export interface RemoveArgs {
+export interface InternalExistsWithTypeArgs {
   object: TransactionObjectInput
   name: GenericArg
 }
 
-export function remove(tx: Transaction, typeArgs: [string, string], args: RemoveArgs) {
+export function internalExistsWithType(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: InternalExistsWithTypeArgs
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::remove`,
+    target: `${PUBLISHED_AT}::dynamic_object_field::internal_exists_with_type`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
   })

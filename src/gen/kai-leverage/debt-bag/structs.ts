@@ -21,6 +21,182 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== Info =============================== */
+
+export function isInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::debt_bag::Info`
+}
+
+export interface InfoFields {
+  assetType: ToField<TypeName>
+  shareType: ToField<TypeName>
+  amount: ToField<'u128'>
+}
+
+export type InfoReified = Reified<Info, InfoFields>
+
+export class Info implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::debt_bag::Info`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Info.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::debt_bag::Info`
+  readonly $typeArgs: []
+  readonly $isPhantom = Info.$isPhantom
+
+  readonly assetType: ToField<TypeName>
+  readonly shareType: ToField<TypeName>
+  readonly amount: ToField<'u128'>
+
+  private constructor(typeArgs: [], fields: InfoFields) {
+    this.$fullTypeName = composeSuiType(
+      Info.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::debt_bag::Info`
+    this.$typeArgs = typeArgs
+
+    this.assetType = fields.assetType
+    this.shareType = fields.shareType
+    this.amount = fields.amount
+  }
+
+  static reified(): InfoReified {
+    return {
+      typeName: Info.$typeName,
+      fullTypeName: composeSuiType(Info.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Info`,
+      typeArgs: [] as [],
+      isPhantom: Info.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Info.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Info.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Info.fromBcs(data),
+      bcs: Info.bcs,
+      fromJSONField: (field: any) => Info.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Info.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Info.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Info.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Info.fetch(client, id),
+      new: (fields: InfoFields) => {
+        return new Info([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Info.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Info>> {
+    return phantom(Info.reified())
+  }
+  static get p() {
+    return Info.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Info', {
+      asset_type: TypeName.bcs,
+      share_type: TypeName.bcs,
+      amount: bcs.u128(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Info {
+    return Info.reified().new({
+      assetType: decodeFromFields(TypeName.reified(), fields.asset_type),
+      shareType: decodeFromFields(TypeName.reified(), fields.share_type),
+      amount: decodeFromFields('u128', fields.amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Info {
+    if (!isInfo(item.type)) {
+      throw new Error('not a Info type')
+    }
+
+    return Info.reified().new({
+      assetType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.asset_type),
+      shareType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.share_type),
+      amount: decodeFromFieldsWithTypes('u128', item.fields.amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Info {
+    return Info.fromFields(Info.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      assetType: this.assetType.toJSONField(),
+      shareType: this.shareType.toJSONField(),
+      amount: this.amount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Info {
+    return Info.reified().new({
+      assetType: decodeFromJSONField(TypeName.reified(), field.assetType),
+      shareType: decodeFromJSONField(TypeName.reified(), field.shareType),
+      amount: decodeFromJSONField('u128', field.amount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Info {
+    if (json.$typeName !== Info.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Info.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Info {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Info object`)
+    }
+    return Info.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Info {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isInfo(data.bcs.type)) {
+        throw new Error(`object at is not a Info object`)
+      }
+
+      return Info.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Info.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Info> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Info object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Info object`)
+    }
+
+    return Info.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== DebtBag =============================== */
 
 export function isDebtBag(type: string): boolean {
@@ -197,182 +373,6 @@ export class DebtBag implements StructClass {
     }
 
     return DebtBag.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Info =============================== */
-
-export function isInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_bag::Info`
-}
-
-export interface InfoFields {
-  assetType: ToField<TypeName>
-  shareType: ToField<TypeName>
-  amount: ToField<'u128'>
-}
-
-export type InfoReified = Reified<Info, InfoFields>
-
-export class Info implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::debt_bag::Info`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Info.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_bag::Info`
-  readonly $typeArgs: []
-  readonly $isPhantom = Info.$isPhantom
-
-  readonly assetType: ToField<TypeName>
-  readonly shareType: ToField<TypeName>
-  readonly amount: ToField<'u128'>
-
-  private constructor(typeArgs: [], fields: InfoFields) {
-    this.$fullTypeName = composeSuiType(
-      Info.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_bag::Info`
-    this.$typeArgs = typeArgs
-
-    this.assetType = fields.assetType
-    this.shareType = fields.shareType
-    this.amount = fields.amount
-  }
-
-  static reified(): InfoReified {
-    return {
-      typeName: Info.$typeName,
-      fullTypeName: composeSuiType(Info.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Info`,
-      typeArgs: [] as [],
-      isPhantom: Info.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Info.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Info.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Info.fromBcs(data),
-      bcs: Info.bcs,
-      fromJSONField: (field: any) => Info.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Info.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Info.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Info.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Info.fetch(client, id),
-      new: (fields: InfoFields) => {
-        return new Info([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Info.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Info>> {
-    return phantom(Info.reified())
-  }
-  static get p() {
-    return Info.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Info', {
-      asset_type: TypeName.bcs,
-      share_type: TypeName.bcs,
-      amount: bcs.u128(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Info {
-    return Info.reified().new({
-      assetType: decodeFromFields(TypeName.reified(), fields.asset_type),
-      shareType: decodeFromFields(TypeName.reified(), fields.share_type),
-      amount: decodeFromFields('u128', fields.amount),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Info {
-    if (!isInfo(item.type)) {
-      throw new Error('not a Info type')
-    }
-
-    return Info.reified().new({
-      assetType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.asset_type),
-      shareType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.share_type),
-      amount: decodeFromFieldsWithTypes('u128', item.fields.amount),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Info {
-    return Info.fromFields(Info.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      assetType: this.assetType.toJSONField(),
-      shareType: this.shareType.toJSONField(),
-      amount: this.amount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Info {
-    return Info.reified().new({
-      assetType: decodeFromJSONField(TypeName.reified(), field.assetType),
-      shareType: decodeFromJSONField(TypeName.reified(), field.shareType),
-      amount: decodeFromJSONField('u128', field.amount),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Info {
-    if (json.$typeName !== Info.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Info.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Info {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Info object`)
-    }
-    return Info.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Info {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isInfo(data.bcs.type)) {
-        throw new Error(`object at is not a Info object`)
-      }
-
-      return Info.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Info.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Info> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Info object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Info object`)
-    }
-
-    return Info.fromSuiObjectData(res.data)
   }
 }
 

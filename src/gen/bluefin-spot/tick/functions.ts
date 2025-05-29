@@ -2,23 +2,53 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function bitmap(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::bitmap`, arguments: [obj(tx, manager)] })
+export interface GetTickFromTableArgs {
+  ticks: TransactionObjectInput
+  index: TransactionObjectInput
+}
+
+export function getTickFromTable(tx: Transaction, args: GetTickFromTableArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::get_tick_from_table`,
+    arguments: [obj(tx, args.ticks), obj(tx, args.index)],
+  })
+}
+
+export interface GetTickFromManagerArgs {
+  manager: TransactionObjectInput
+  index: TransactionObjectInput
+}
+
+export function getTickFromManager(tx: Transaction, args: GetTickFromManagerArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::get_tick_from_manager`,
+    arguments: [obj(tx, args.manager), obj(tx, args.index)],
+  })
+}
+
+export function sqrtPrice(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::sqrt_price`, arguments: [obj(tx, tick)] })
 }
 
 export function createTick(tx: Transaction, index: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::tick::create_tick`, arguments: [obj(tx, index)] })
 }
 
-export interface FetchProvidedTicksArgs {
-  manager: TransactionObjectInput
-  ticks: Array<number | TransactionArgument> | TransactionArgument
+export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
+    arguments: [obj(tx, tick)],
+  })
 }
 
-export function fetchProvidedTicks(tx: Transaction, args: FetchProvidedTicksArgs) {
+export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
+}
+
+export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::fetch_provided_ticks`,
-    arguments: [obj(tx, args.manager), pure(tx, args.ticks, `vector<u32>`)],
+    target: `${PUBLISHED_AT}::tick::tick_spacing`,
+    arguments: [obj(tx, manager)],
   })
 }
 
@@ -65,30 +95,6 @@ export function getFeeAndRewardGrowthsOutside(
   })
 }
 
-export interface GetTickFromManagerArgs {
-  manager: TransactionObjectInput
-  index: TransactionObjectInput
-}
-
-export function getTickFromManager(tx: Transaction, args: GetTickFromManagerArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::get_tick_from_manager`,
-    arguments: [obj(tx, args.manager), obj(tx, args.index)],
-  })
-}
-
-export interface GetTickFromTableArgs {
-  ticks: TransactionObjectInput
-  index: TransactionObjectInput
-}
-
-export function getTickFromTable(tx: Transaction, args: GetTickFromTableArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::get_tick_from_table`,
-    arguments: [obj(tx, args.ticks), obj(tx, args.index)],
-  })
-}
-
 export interface IsTickInitializedArgs {
   manager: TransactionObjectInput
   tickIndex: TransactionObjectInput
@@ -101,24 +107,18 @@ export function isTickInitialized(tx: Transaction, args: IsTickInitializedArgs) 
   })
 }
 
-export function liquidityGross(tx: Transaction, tick: TransactionObjectInput) {
+export function bitmap(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::bitmap`, arguments: [obj(tx, manager)] })
+}
+
+export interface FetchProvidedTicksArgs {
+  manager: TransactionObjectInput
+  ticks: Array<number | TransactionArgument> | TransactionArgument
+}
+
+export function fetchProvidedTicks(tx: Transaction, args: FetchProvidedTicksArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::liquidity_gross`,
-    arguments: [obj(tx, tick)],
-  })
-}
-
-export function liquidityNet(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::liquidity_net`, arguments: [obj(tx, tick)] })
-}
-
-export function sqrtPrice(tx: Transaction, tick: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::sqrt_price`, arguments: [obj(tx, tick)] })
-}
-
-export function tickSpacing(tx: Transaction, manager: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::tick::tick_spacing`,
-    arguments: [obj(tx, manager)],
+    target: `${PUBLISHED_AT}::tick::fetch_provided_ticks`,
+    arguments: [obj(tx, args.manager), pure(tx, args.ticks, `vector<u32>`)],
   })
 }

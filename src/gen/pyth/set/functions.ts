@@ -2,6 +2,14 @@ import { PUBLISHED_AT } from '..'
 import { GenericArg, generic, obj } from '../../_framework/util'
 import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function new_(tx: Transaction, typeArg: string) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::set::new`,
+    typeArguments: [typeArg],
+    arguments: [],
+  })
+}
+
 export interface AddArgs {
   set: TransactionObjectInput
   key: GenericArg
@@ -33,13 +41,5 @@ export function empty(tx: Transaction, typeArg: string, set: TransactionObjectIn
     target: `${PUBLISHED_AT}::set::empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, set)],
-  })
-}
-
-export function new_(tx: Transaction, typeArg: string) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::new`,
-    typeArguments: [typeArg],
-    arguments: [],
   })
 }

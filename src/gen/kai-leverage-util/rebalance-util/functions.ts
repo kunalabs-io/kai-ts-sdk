@@ -19,6 +19,25 @@ export function calcFX64(tx: Transaction, args: CalcFX64Args) {
   })
 }
 
+export interface CalcXAndYSellAmountsArgs {
+  haveX: bigint | TransactionArgument
+  haveY: bigint | TransactionArgument
+  fX64: bigint | TransactionArgument
+  pX128: bigint | TransactionArgument
+}
+
+export function calcXAndYSellAmounts(tx: Transaction, args: CalcXAndYSellAmountsArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rebalance_util::calc_x_and_y_sell_amounts`,
+    arguments: [
+      pure(tx, args.haveX, `u64`),
+      pure(tx, args.haveY, `u64`),
+      pure(tx, args.fX64, `u128`),
+      pure(tx, args.pX128, `u256`),
+    ],
+  })
+}
+
 export interface CalcRewardSellAmountsArgs {
   rewardAmount: bigint | TransactionArgument
   fX64: bigint | TransactionArgument
@@ -36,25 +55,6 @@ export function calcRewardSellAmounts(tx: Transaction, args: CalcRewardSellAmoun
       pure(tx, args.pX128, `u256`),
       pure(tx, args.priceToXX128, `u256`),
       pure(tx, args.priceToYX128, `u256`),
-    ],
-  })
-}
-
-export interface CalcXAndYSellAmountsArgs {
-  haveX: bigint | TransactionArgument
-  haveY: bigint | TransactionArgument
-  fX64: bigint | TransactionArgument
-  pX128: bigint | TransactionArgument
-}
-
-export function calcXAndYSellAmounts(tx: Transaction, args: CalcXAndYSellAmountsArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::rebalance_util::calc_x_and_y_sell_amounts`,
-    arguments: [
-      pure(tx, args.haveX, `u64`),
-      pure(tx, args.haveY, `u64`),
-      pure(tx, args.fX64, `u128`),
-      pure(tx, args.pX128, `u256`),
     ],
   })
 }

@@ -38,6 +38,731 @@ import { BcsType, bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== PackageAdmin =============================== */
+
+export function isPackageAdmin(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::access::PackageAdmin`
+}
+
+export interface PackageAdminFields {
+  id: ToField<UID>
+  package: ToField<String>
+}
+
+export type PackageAdminReified = Reified<PackageAdmin, PackageAdminFields>
+
+export class PackageAdmin implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::access::PackageAdmin`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PackageAdmin.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::access::PackageAdmin`
+  readonly $typeArgs: []
+  readonly $isPhantom = PackageAdmin.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly package: ToField<String>
+
+  private constructor(typeArgs: [], fields: PackageAdminFields) {
+    this.$fullTypeName = composeSuiType(
+      PackageAdmin.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::access::PackageAdmin`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.package = fields.package
+  }
+
+  static reified(): PackageAdminReified {
+    return {
+      typeName: PackageAdmin.$typeName,
+      fullTypeName: composeSuiType(
+        PackageAdmin.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::access::PackageAdmin`,
+      typeArgs: [] as [],
+      isPhantom: PackageAdmin.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PackageAdmin.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PackageAdmin.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PackageAdmin.fromBcs(data),
+      bcs: PackageAdmin.bcs,
+      fromJSONField: (field: any) => PackageAdmin.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PackageAdmin.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PackageAdmin.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PackageAdmin.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PackageAdmin.fetch(client, id),
+      new: (fields: PackageAdminFields) => {
+        return new PackageAdmin([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PackageAdmin.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PackageAdmin>> {
+    return phantom(PackageAdmin.reified())
+  }
+  static get p() {
+    return PackageAdmin.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PackageAdmin', {
+      id: UID.bcs,
+      package: String.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PackageAdmin {
+    return PackageAdmin.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      package: decodeFromFields(String.reified(), fields.package),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PackageAdmin {
+    if (!isPackageAdmin(item.type)) {
+      throw new Error('not a PackageAdmin type')
+    }
+
+    return PackageAdmin.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      package: decodeFromFieldsWithTypes(String.reified(), item.fields.package),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PackageAdmin {
+    return PackageAdmin.fromFields(PackageAdmin.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      package: this.package,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PackageAdmin {
+    return PackageAdmin.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      package: decodeFromJSONField(String.reified(), field.package),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PackageAdmin {
+    if (json.$typeName !== PackageAdmin.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PackageAdmin.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PackageAdmin {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPackageAdmin(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PackageAdmin object`)
+    }
+    return PackageAdmin.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PackageAdmin {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPackageAdmin(data.bcs.type)) {
+        throw new Error(`object at is not a PackageAdmin object`)
+      }
+
+      return PackageAdmin.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PackageAdmin.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PackageAdmin> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PackageAdmin object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPackageAdmin(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PackageAdmin object`)
+    }
+
+    return PackageAdmin.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Entity =============================== */
+
+export function isEntity(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::access::Entity`
+}
+
+export interface EntityFields {
+  id: ToField<UID>
+}
+
+export type EntityReified = Reified<Entity, EntityFields>
+
+export class Entity implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::access::Entity`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Entity.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::access::Entity`
+  readonly $typeArgs: []
+  readonly $isPhantom = Entity.$isPhantom
+
+  readonly id: ToField<UID>
+
+  private constructor(typeArgs: [], fields: EntityFields) {
+    this.$fullTypeName = composeSuiType(
+      Entity.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::access::Entity`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+  }
+
+  static reified(): EntityReified {
+    return {
+      typeName: Entity.$typeName,
+      fullTypeName: composeSuiType(Entity.$typeName, ...[]) as `${typeof PKG_V1}::access::Entity`,
+      typeArgs: [] as [],
+      isPhantom: Entity.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Entity.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Entity.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Entity.fromBcs(data),
+      bcs: Entity.bcs,
+      fromJSONField: (field: any) => Entity.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Entity.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Entity.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Entity.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Entity.fetch(client, id),
+      new: (fields: EntityFields) => {
+        return new Entity([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Entity.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Entity>> {
+    return phantom(Entity.reified())
+  }
+  static get p() {
+    return Entity.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Entity', {
+      id: UID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Entity {
+    return Entity.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Entity {
+    if (!isEntity(item.type)) {
+      throw new Error('not a Entity type')
+    }
+
+    return Entity.reified().new({ id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id) })
+  }
+
+  static fromBcs(data: Uint8Array): Entity {
+    return Entity.fromFields(Entity.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Entity {
+    return Entity.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+  }
+
+  static fromJSON(json: Record<string, any>): Entity {
+    if (json.$typeName !== Entity.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Entity.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Entity {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isEntity(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Entity object`)
+    }
+    return Entity.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Entity {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isEntity(data.bcs.type)) {
+        throw new Error(`object at is not a Entity object`)
+      }
+
+      return Entity.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Entity.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Entity> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Entity object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isEntity(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Entity object`)
+    }
+
+    return Entity.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Rule =============================== */
+
+export function isRule(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::access::Rule`
+}
+
+export interface RuleFields {
+  actions: ToField<VecSet<TypeName>>
+  conditions: ToField<VecSet<TypeName>>
+  conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
+}
+
+export type RuleReified = Reified<Rule, RuleFields>
+
+export class Rule implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::access::Rule`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Rule.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::access::Rule`
+  readonly $typeArgs: []
+  readonly $isPhantom = Rule.$isPhantom
+
+  readonly actions: ToField<VecSet<TypeName>>
+  readonly conditions: ToField<VecSet<TypeName>>
+  readonly conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
+
+  private constructor(typeArgs: [], fields: RuleFields) {
+    this.$fullTypeName = composeSuiType(
+      Rule.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::access::Rule`
+    this.$typeArgs = typeArgs
+
+    this.actions = fields.actions
+    this.conditions = fields.conditions
+    this.conditionConfigs = fields.conditionConfigs
+  }
+
+  static reified(): RuleReified {
+    return {
+      typeName: Rule.$typeName,
+      fullTypeName: composeSuiType(Rule.$typeName, ...[]) as `${typeof PKG_V1}::access::Rule`,
+      typeArgs: [] as [],
+      isPhantom: Rule.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Rule.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Rule.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Rule.fromBcs(data),
+      bcs: Rule.bcs,
+      fromJSONField: (field: any) => Rule.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Rule.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Rule.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Rule.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Rule.fetch(client, id),
+      new: (fields: RuleFields) => {
+        return new Rule([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Rule.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Rule>> {
+    return phantom(Rule.reified())
+  }
+  static get p() {
+    return Rule.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Rule', {
+      actions: VecSet.bcs(TypeName.bcs),
+      conditions: VecSet.bcs(TypeName.bcs),
+      condition_configs: DynamicMap.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Rule {
+    return Rule.reified().new({
+      actions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.actions),
+      conditions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.conditions),
+      conditionConfigs: decodeFromFields(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        fields.condition_configs
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Rule {
+    if (!isRule(item.type)) {
+      throw new Error('not a Rule type')
+    }
+
+    return Rule.reified().new({
+      actions: decodeFromFieldsWithTypes(VecSet.reified(TypeName.reified()), item.fields.actions),
+      conditions: decodeFromFieldsWithTypes(
+        VecSet.reified(TypeName.reified()),
+        item.fields.conditions
+      ),
+      conditionConfigs: decodeFromFieldsWithTypes(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        item.fields.condition_configs
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Rule {
+    return Rule.fromFields(Rule.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      actions: this.actions.toJSONField(),
+      conditions: this.conditions.toJSONField(),
+      conditionConfigs: this.conditionConfigs.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Rule {
+    return Rule.reified().new({
+      actions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.actions),
+      conditions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.conditions),
+      conditionConfigs: decodeFromJSONField(
+        DynamicMap.reified(reified.phantom(TypeName.reified())),
+        field.conditionConfigs
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Rule {
+    if (json.$typeName !== Rule.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Rule.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Rule {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRule(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Rule object`)
+    }
+    return Rule.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Rule {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRule(data.bcs.type)) {
+        throw new Error(`object at is not a Rule object`)
+      }
+
+      return Rule.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Rule.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Rule> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Rule object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRule(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Rule object`)
+    }
+
+    return Rule.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== Policy =============================== */
+
+export function isPolicy(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::access::Policy`
+}
+
+export interface PolicyFields {
+  id: ToField<UID>
+  package: ToField<String>
+  allowedEntities: ToField<VecSet<ID>>
+  rules: ToField<VecMap<'address', Rule>>
+  enabled: ToField<'bool'>
+  version: ToField<'u16'>
+}
+
+export type PolicyReified = Reified<Policy, PolicyFields>
+
+export class Policy implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::access::Policy`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Policy.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::access::Policy`
+  readonly $typeArgs: []
+  readonly $isPhantom = Policy.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly package: ToField<String>
+  readonly allowedEntities: ToField<VecSet<ID>>
+  readonly rules: ToField<VecMap<'address', Rule>>
+  readonly enabled: ToField<'bool'>
+  readonly version: ToField<'u16'>
+
+  private constructor(typeArgs: [], fields: PolicyFields) {
+    this.$fullTypeName = composeSuiType(
+      Policy.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::access::Policy`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.package = fields.package
+    this.allowedEntities = fields.allowedEntities
+    this.rules = fields.rules
+    this.enabled = fields.enabled
+    this.version = fields.version
+  }
+
+  static reified(): PolicyReified {
+    return {
+      typeName: Policy.$typeName,
+      fullTypeName: composeSuiType(Policy.$typeName, ...[]) as `${typeof PKG_V1}::access::Policy`,
+      typeArgs: [] as [],
+      isPhantom: Policy.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Policy.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Policy.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Policy.fromBcs(data),
+      bcs: Policy.bcs,
+      fromJSONField: (field: any) => Policy.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Policy.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Policy.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Policy.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Policy.fetch(client, id),
+      new: (fields: PolicyFields) => {
+        return new Policy([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Policy.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Policy>> {
+    return phantom(Policy.reified())
+  }
+  static get p() {
+    return Policy.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Policy', {
+      id: UID.bcs,
+      package: String.bcs,
+      allowed_entities: VecSet.bcs(ID.bcs),
+      rules: VecMap.bcs(
+        bcs.bytes(32).transform({
+          input: (val: string) => fromHEX(val),
+          output: (val: Uint8Array) => toHEX(val),
+        }),
+        Rule.bcs
+      ),
+      enabled: bcs.bool(),
+      version: bcs.u16(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Policy {
+    return Policy.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      package: decodeFromFields(String.reified(), fields.package),
+      allowedEntities: decodeFromFields(VecSet.reified(ID.reified()), fields.allowed_entities),
+      rules: decodeFromFields(VecMap.reified('address', Rule.reified()), fields.rules),
+      enabled: decodeFromFields('bool', fields.enabled),
+      version: decodeFromFields('u16', fields.version),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Policy {
+    if (!isPolicy(item.type)) {
+      throw new Error('not a Policy type')
+    }
+
+    return Policy.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      package: decodeFromFieldsWithTypes(String.reified(), item.fields.package),
+      allowedEntities: decodeFromFieldsWithTypes(
+        VecSet.reified(ID.reified()),
+        item.fields.allowed_entities
+      ),
+      rules: decodeFromFieldsWithTypes(
+        VecMap.reified('address', Rule.reified()),
+        item.fields.rules
+      ),
+      enabled: decodeFromFieldsWithTypes('bool', item.fields.enabled),
+      version: decodeFromFieldsWithTypes('u16', item.fields.version),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Policy {
+    return Policy.fromFields(Policy.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      package: this.package,
+      allowedEntities: this.allowedEntities.toJSONField(),
+      rules: this.rules.toJSONField(),
+      enabled: this.enabled,
+      version: this.version,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Policy {
+    return Policy.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      package: decodeFromJSONField(String.reified(), field.package),
+      allowedEntities: decodeFromJSONField(VecSet.reified(ID.reified()), field.allowedEntities),
+      rules: decodeFromJSONField(VecMap.reified('address', Rule.reified()), field.rules),
+      enabled: decodeFromJSONField('bool', field.enabled),
+      version: decodeFromJSONField('u16', field.version),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Policy {
+    if (json.$typeName !== Policy.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Policy.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Policy {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPolicy(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Policy object`)
+    }
+    return Policy.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Policy {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPolicy(data.bcs.type)) {
+        throw new Error(`object at is not a Policy object`)
+      }
+
+      return Policy.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Policy.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Policy> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Policy object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPolicy(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Policy object`)
+    }
+
+    return Policy.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== ActionRequest =============================== */
 
 export function isActionRequest(type: string): boolean {
@@ -697,730 +1422,5 @@ export class ConfigNone implements StructClass {
     }
 
     return ConfigNone.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Entity =============================== */
-
-export function isEntity(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::access::Entity`
-}
-
-export interface EntityFields {
-  id: ToField<UID>
-}
-
-export type EntityReified = Reified<Entity, EntityFields>
-
-export class Entity implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::access::Entity`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Entity.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::access::Entity`
-  readonly $typeArgs: []
-  readonly $isPhantom = Entity.$isPhantom
-
-  readonly id: ToField<UID>
-
-  private constructor(typeArgs: [], fields: EntityFields) {
-    this.$fullTypeName = composeSuiType(
-      Entity.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::access::Entity`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-  }
-
-  static reified(): EntityReified {
-    return {
-      typeName: Entity.$typeName,
-      fullTypeName: composeSuiType(Entity.$typeName, ...[]) as `${typeof PKG_V1}::access::Entity`,
-      typeArgs: [] as [],
-      isPhantom: Entity.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Entity.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Entity.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Entity.fromBcs(data),
-      bcs: Entity.bcs,
-      fromJSONField: (field: any) => Entity.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Entity.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Entity.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Entity.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Entity.fetch(client, id),
-      new: (fields: EntityFields) => {
-        return new Entity([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Entity.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Entity>> {
-    return phantom(Entity.reified())
-  }
-  static get p() {
-    return Entity.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Entity', {
-      id: UID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Entity {
-    return Entity.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Entity {
-    if (!isEntity(item.type)) {
-      throw new Error('not a Entity type')
-    }
-
-    return Entity.reified().new({ id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id) })
-  }
-
-  static fromBcs(data: Uint8Array): Entity {
-    return Entity.fromFields(Entity.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Entity {
-    return Entity.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
-  }
-
-  static fromJSON(json: Record<string, any>): Entity {
-    if (json.$typeName !== Entity.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Entity.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Entity {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isEntity(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Entity object`)
-    }
-    return Entity.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Entity {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isEntity(data.bcs.type)) {
-        throw new Error(`object at is not a Entity object`)
-      }
-
-      return Entity.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Entity.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Entity> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Entity object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEntity(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Entity object`)
-    }
-
-    return Entity.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== PackageAdmin =============================== */
-
-export function isPackageAdmin(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::access::PackageAdmin`
-}
-
-export interface PackageAdminFields {
-  id: ToField<UID>
-  package: ToField<String>
-}
-
-export type PackageAdminReified = Reified<PackageAdmin, PackageAdminFields>
-
-export class PackageAdmin implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::access::PackageAdmin`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PackageAdmin.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::access::PackageAdmin`
-  readonly $typeArgs: []
-  readonly $isPhantom = PackageAdmin.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly package: ToField<String>
-
-  private constructor(typeArgs: [], fields: PackageAdminFields) {
-    this.$fullTypeName = composeSuiType(
-      PackageAdmin.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::access::PackageAdmin`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.package = fields.package
-  }
-
-  static reified(): PackageAdminReified {
-    return {
-      typeName: PackageAdmin.$typeName,
-      fullTypeName: composeSuiType(
-        PackageAdmin.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::access::PackageAdmin`,
-      typeArgs: [] as [],
-      isPhantom: PackageAdmin.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PackageAdmin.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PackageAdmin.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PackageAdmin.fromBcs(data),
-      bcs: PackageAdmin.bcs,
-      fromJSONField: (field: any) => PackageAdmin.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PackageAdmin.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PackageAdmin.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PackageAdmin.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PackageAdmin.fetch(client, id),
-      new: (fields: PackageAdminFields) => {
-        return new PackageAdmin([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PackageAdmin.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PackageAdmin>> {
-    return phantom(PackageAdmin.reified())
-  }
-  static get p() {
-    return PackageAdmin.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PackageAdmin', {
-      id: UID.bcs,
-      package: String.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PackageAdmin {
-    return PackageAdmin.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      package: decodeFromFields(String.reified(), fields.package),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PackageAdmin {
-    if (!isPackageAdmin(item.type)) {
-      throw new Error('not a PackageAdmin type')
-    }
-
-    return PackageAdmin.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      package: decodeFromFieldsWithTypes(String.reified(), item.fields.package),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PackageAdmin {
-    return PackageAdmin.fromFields(PackageAdmin.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      package: this.package,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PackageAdmin {
-    return PackageAdmin.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      package: decodeFromJSONField(String.reified(), field.package),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PackageAdmin {
-    if (json.$typeName !== PackageAdmin.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PackageAdmin.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PackageAdmin {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPackageAdmin(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PackageAdmin object`)
-    }
-    return PackageAdmin.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PackageAdmin {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPackageAdmin(data.bcs.type)) {
-        throw new Error(`object at is not a PackageAdmin object`)
-      }
-
-      return PackageAdmin.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PackageAdmin.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PackageAdmin> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PackageAdmin object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPackageAdmin(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PackageAdmin object`)
-    }
-
-    return PackageAdmin.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Policy =============================== */
-
-export function isPolicy(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::access::Policy`
-}
-
-export interface PolicyFields {
-  id: ToField<UID>
-  package: ToField<String>
-  allowedEntities: ToField<VecSet<ID>>
-  rules: ToField<VecMap<'address', Rule>>
-  enabled: ToField<'bool'>
-  version: ToField<'u16'>
-}
-
-export type PolicyReified = Reified<Policy, PolicyFields>
-
-export class Policy implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::access::Policy`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Policy.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::access::Policy`
-  readonly $typeArgs: []
-  readonly $isPhantom = Policy.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly package: ToField<String>
-  readonly allowedEntities: ToField<VecSet<ID>>
-  readonly rules: ToField<VecMap<'address', Rule>>
-  readonly enabled: ToField<'bool'>
-  readonly version: ToField<'u16'>
-
-  private constructor(typeArgs: [], fields: PolicyFields) {
-    this.$fullTypeName = composeSuiType(
-      Policy.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::access::Policy`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.package = fields.package
-    this.allowedEntities = fields.allowedEntities
-    this.rules = fields.rules
-    this.enabled = fields.enabled
-    this.version = fields.version
-  }
-
-  static reified(): PolicyReified {
-    return {
-      typeName: Policy.$typeName,
-      fullTypeName: composeSuiType(Policy.$typeName, ...[]) as `${typeof PKG_V1}::access::Policy`,
-      typeArgs: [] as [],
-      isPhantom: Policy.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Policy.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Policy.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Policy.fromBcs(data),
-      bcs: Policy.bcs,
-      fromJSONField: (field: any) => Policy.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Policy.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Policy.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Policy.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Policy.fetch(client, id),
-      new: (fields: PolicyFields) => {
-        return new Policy([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Policy.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Policy>> {
-    return phantom(Policy.reified())
-  }
-  static get p() {
-    return Policy.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Policy', {
-      id: UID.bcs,
-      package: String.bcs,
-      allowed_entities: VecSet.bcs(ID.bcs),
-      rules: VecMap.bcs(
-        bcs.bytes(32).transform({
-          input: (val: string) => fromHEX(val),
-          output: (val: Uint8Array) => toHEX(val),
-        }),
-        Rule.bcs
-      ),
-      enabled: bcs.bool(),
-      version: bcs.u16(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Policy {
-    return Policy.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      package: decodeFromFields(String.reified(), fields.package),
-      allowedEntities: decodeFromFields(VecSet.reified(ID.reified()), fields.allowed_entities),
-      rules: decodeFromFields(VecMap.reified('address', Rule.reified()), fields.rules),
-      enabled: decodeFromFields('bool', fields.enabled),
-      version: decodeFromFields('u16', fields.version),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Policy {
-    if (!isPolicy(item.type)) {
-      throw new Error('not a Policy type')
-    }
-
-    return Policy.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      package: decodeFromFieldsWithTypes(String.reified(), item.fields.package),
-      allowedEntities: decodeFromFieldsWithTypes(
-        VecSet.reified(ID.reified()),
-        item.fields.allowed_entities
-      ),
-      rules: decodeFromFieldsWithTypes(
-        VecMap.reified('address', Rule.reified()),
-        item.fields.rules
-      ),
-      enabled: decodeFromFieldsWithTypes('bool', item.fields.enabled),
-      version: decodeFromFieldsWithTypes('u16', item.fields.version),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Policy {
-    return Policy.fromFields(Policy.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      package: this.package,
-      allowedEntities: this.allowedEntities.toJSONField(),
-      rules: this.rules.toJSONField(),
-      enabled: this.enabled,
-      version: this.version,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Policy {
-    return Policy.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      package: decodeFromJSONField(String.reified(), field.package),
-      allowedEntities: decodeFromJSONField(VecSet.reified(ID.reified()), field.allowedEntities),
-      rules: decodeFromJSONField(VecMap.reified('address', Rule.reified()), field.rules),
-      enabled: decodeFromJSONField('bool', field.enabled),
-      version: decodeFromJSONField('u16', field.version),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Policy {
-    if (json.$typeName !== Policy.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Policy.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Policy {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPolicy(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Policy object`)
-    }
-    return Policy.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Policy {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPolicy(data.bcs.type)) {
-        throw new Error(`object at is not a Policy object`)
-      }
-
-      return Policy.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Policy.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Policy> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Policy object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPolicy(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Policy object`)
-    }
-
-    return Policy.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Rule =============================== */
-
-export function isRule(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::access::Rule`
-}
-
-export interface RuleFields {
-  actions: ToField<VecSet<TypeName>>
-  conditions: ToField<VecSet<TypeName>>
-  conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
-}
-
-export type RuleReified = Reified<Rule, RuleFields>
-
-export class Rule implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::access::Rule`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Rule.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::access::Rule`
-  readonly $typeArgs: []
-  readonly $isPhantom = Rule.$isPhantom
-
-  readonly actions: ToField<VecSet<TypeName>>
-  readonly conditions: ToField<VecSet<TypeName>>
-  readonly conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
-
-  private constructor(typeArgs: [], fields: RuleFields) {
-    this.$fullTypeName = composeSuiType(
-      Rule.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::access::Rule`
-    this.$typeArgs = typeArgs
-
-    this.actions = fields.actions
-    this.conditions = fields.conditions
-    this.conditionConfigs = fields.conditionConfigs
-  }
-
-  static reified(): RuleReified {
-    return {
-      typeName: Rule.$typeName,
-      fullTypeName: composeSuiType(Rule.$typeName, ...[]) as `${typeof PKG_V1}::access::Rule`,
-      typeArgs: [] as [],
-      isPhantom: Rule.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Rule.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Rule.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Rule.fromBcs(data),
-      bcs: Rule.bcs,
-      fromJSONField: (field: any) => Rule.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Rule.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Rule.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Rule.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Rule.fetch(client, id),
-      new: (fields: RuleFields) => {
-        return new Rule([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Rule.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Rule>> {
-    return phantom(Rule.reified())
-  }
-  static get p() {
-    return Rule.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Rule', {
-      actions: VecSet.bcs(TypeName.bcs),
-      conditions: VecSet.bcs(TypeName.bcs),
-      condition_configs: DynamicMap.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Rule {
-    return Rule.reified().new({
-      actions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.actions),
-      conditions: decodeFromFields(VecSet.reified(TypeName.reified()), fields.conditions),
-      conditionConfigs: decodeFromFields(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        fields.condition_configs
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Rule {
-    if (!isRule(item.type)) {
-      throw new Error('not a Rule type')
-    }
-
-    return Rule.reified().new({
-      actions: decodeFromFieldsWithTypes(VecSet.reified(TypeName.reified()), item.fields.actions),
-      conditions: decodeFromFieldsWithTypes(
-        VecSet.reified(TypeName.reified()),
-        item.fields.conditions
-      ),
-      conditionConfigs: decodeFromFieldsWithTypes(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        item.fields.condition_configs
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Rule {
-    return Rule.fromFields(Rule.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      actions: this.actions.toJSONField(),
-      conditions: this.conditions.toJSONField(),
-      conditionConfigs: this.conditionConfigs.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Rule {
-    return Rule.reified().new({
-      actions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.actions),
-      conditions: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.conditions),
-      conditionConfigs: decodeFromJSONField(
-        DynamicMap.reified(reified.phantom(TypeName.reified())),
-        field.conditionConfigs
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Rule {
-    if (json.$typeName !== Rule.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Rule.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Rule {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRule(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Rule object`)
-    }
-    return Rule.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Rule {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRule(data.bcs.type)) {
-        throw new Error(`object at is not a Rule object`)
-      }
-
-      return Rule.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Rule.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Rule> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Rule object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRule(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Rule object`)
-    }
-
-    return Rule.fromSuiObjectData(res.data)
   }
 }

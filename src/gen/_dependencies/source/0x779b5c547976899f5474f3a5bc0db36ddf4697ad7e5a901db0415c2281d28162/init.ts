@@ -9,13 +9,13 @@ import { StructClassLoader } from '../../../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
   loader.register(acTable.AcTable)
-  loader.register(acTable.AcTableCap)
   loader.register(acTable.AcTableOwnership)
+  loader.register(acTable.AcTableCap)
   loader.register(balanceBag.BalanceBag)
   loader.register(oneTimeLockValue.OneTimeLockValue)
   loader.register(ownership.Ownership)
   loader.register(supplyBag.SupplyBag)
   loader.register(witTable.WitTable)
-  loader.register(witness.Witness)
   loader.register(witness.WitnessGenerator)
+  loader.register(witness.Witness)
 }

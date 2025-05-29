@@ -9,13 +9,16 @@ export function authorizeGovernance(tx: Transaction, state: TransactionObjectInp
   })
 }
 
-export function deserialize(
-  tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
-) {
+export interface UpdateGuardianSetArgs {
+  state: TransactionObjectInput
+  decreeReceipt: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function updateGuardianSet(tx: Transaction, args: UpdateGuardianSetArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::update_guardian_set::deserialize`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
+    target: `${PUBLISHED_AT}::update_guardian_set::update_guardian_set`,
+    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt), obj(tx, args.clock)],
   })
 }
 
@@ -38,15 +41,12 @@ export function handleUpdateGuardianSet(tx: Transaction, args: HandleUpdateGuard
   })
 }
 
-export interface UpdateGuardianSetArgs {
-  state: TransactionObjectInput
-  decreeReceipt: TransactionObjectInput
-  clock: TransactionObjectInput
-}
-
-export function updateGuardianSet(tx: Transaction, args: UpdateGuardianSetArgs) {
+export function deserialize(
+  tx: Transaction,
+  vecU8: Array<number | TransactionArgument> | TransactionArgument
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::update_guardian_set::update_guardian_set`,
-    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt), obj(tx, args.clock)],
+    target: `${PUBLISHED_AT}::update_guardian_set::deserialize`,
+    arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }

@@ -2,21 +2,16 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function getPoolCreationFeeAmount(
-  tx: Transaction,
-  typeArg: string,
-  protocolConfig: TransactionObjectInput
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::get_pool_creation_fee_amount`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, protocolConfig)],
-  })
-}
-
 export function getTickRange(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::config::get_tick_range`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function verifyVersion(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::verify_version`,
     arguments: [obj(tx, config)],
   })
 }
@@ -33,9 +28,14 @@ export function verifyRewardManager(tx: Transaction, args: VerifyRewardManagerAr
   })
 }
 
-export function verifyVersion(tx: Transaction, config: TransactionObjectInput) {
+export function getPoolCreationFeeAmount(
+  tx: Transaction,
+  typeArg: string,
+  protocolConfig: TransactionObjectInput
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::verify_version`,
-    arguments: [obj(tx, config)],
+    target: `${PUBLISHED_AT}::config::get_pool_creation_fee_amount`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, protocolConfig)],
   })
 }

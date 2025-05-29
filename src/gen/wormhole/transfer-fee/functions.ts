@@ -9,13 +9,15 @@ export function authorizeGovernance(tx: Transaction, state: TransactionObjectInp
   })
 }
 
-export function deserialize(
-  tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
-) {
+export interface TransferFeeArgs {
+  state: TransactionObjectInput
+  decreeReceipt: TransactionObjectInput
+}
+
+export function transferFee(tx: Transaction, args: TransferFeeArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::transfer_fee::deserialize`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
+    target: `${PUBLISHED_AT}::transfer_fee::transfer_fee`,
+    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt)],
   })
 }
 
@@ -32,14 +34,12 @@ export function handleTransferFee(tx: Transaction, args: HandleTransferFeeArgs) 
   })
 }
 
-export interface TransferFeeArgs {
-  state: TransactionObjectInput
-  decreeReceipt: TransactionObjectInput
-}
-
-export function transferFee(tx: Transaction, args: TransferFeeArgs) {
+export function deserialize(
+  tx: Transaction,
+  vecU8: Array<number | TransactionArgument> | TransactionArgument
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::transfer_fee::transfer_fee`,
-    arguments: [obj(tx, args.state), obj(tx, args.decreeReceipt)],
+    target: `${PUBLISHED_AT}::transfer_fee::deserialize`,
+    arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }

@@ -33,12 +33,12 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs) {
   })
 }
 
-export function deserialize(
+export function takeDigest(
   tx: Transaction,
   vecU8: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::upgrade_contract::deserialize`,
+    target: `${PUBLISHED_AT}::upgrade_contract::take_digest`,
     arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }
@@ -55,12 +55,12 @@ export function handleUpgradeContract(tx: Transaction, args: HandleUpgradeContra
   })
 }
 
-export function takeDigest(
+export function deserialize(
   tx: Transaction,
   vecU8: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::upgrade_contract::take_digest`,
+    target: `${PUBLISHED_AT}::upgrade_contract::deserialize`,
     arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }

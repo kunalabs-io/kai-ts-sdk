@@ -17,6 +17,165 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== RiskModels =============================== */
+
+export function isRiskModels(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::risk_model::RiskModels`
+}
+
+export interface RiskModelsFields {
+  dummyField: ToField<'bool'>
+}
+
+export type RiskModelsReified = Reified<RiskModels, RiskModelsFields>
+
+export class RiskModels implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::risk_model::RiskModels`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = RiskModels.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::risk_model::RiskModels`
+  readonly $typeArgs: []
+  readonly $isPhantom = RiskModels.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: RiskModelsFields) {
+    this.$fullTypeName = composeSuiType(
+      RiskModels.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::risk_model::RiskModels`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): RiskModelsReified {
+    return {
+      typeName: RiskModels.$typeName,
+      fullTypeName: composeSuiType(
+        RiskModels.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::risk_model::RiskModels`,
+      typeArgs: [] as [],
+      isPhantom: RiskModels.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => RiskModels.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModels.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RiskModels.fromBcs(data),
+      bcs: RiskModels.bcs,
+      fromJSONField: (field: any) => RiskModels.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RiskModels.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RiskModels.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RiskModels.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RiskModels.fetch(client, id),
+      new: (fields: RiskModelsFields) => {
+        return new RiskModels([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return RiskModels.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<RiskModels>> {
+    return phantom(RiskModels.reified())
+  }
+  static get p() {
+    return RiskModels.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('RiskModels', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): RiskModels {
+    return RiskModels.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): RiskModels {
+    if (!isRiskModels(item.type)) {
+      throw new Error('not a RiskModels type')
+    }
+
+    return RiskModels.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): RiskModels {
+    return RiskModels.fromFields(RiskModels.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): RiskModels {
+    return RiskModels.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): RiskModels {
+    if (json.$typeName !== RiskModels.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return RiskModels.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): RiskModels {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isRiskModels(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RiskModels object`)
+    }
+    return RiskModels.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): RiskModels {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isRiskModels(data.bcs.type)) {
+        throw new Error(`object at is not a RiskModels object`)
+      }
+
+      return RiskModels.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return RiskModels.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<RiskModels> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching RiskModels object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRiskModels(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RiskModels object`)
+    }
+
+    return RiskModels.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== RiskModel =============================== */
 
 export function isRiskModel(type: string): boolean {
@@ -249,177 +408,6 @@ export class RiskModel implements StructClass {
   }
 }
 
-/* ============================== RiskModelAdded =============================== */
-
-export function isRiskModelAdded(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::risk_model::RiskModelAdded`
-}
-
-export interface RiskModelAddedFields {
-  riskModel: ToField<RiskModel>
-  currentEpoch: ToField<'u64'>
-}
-
-export type RiskModelAddedReified = Reified<RiskModelAdded, RiskModelAddedFields>
-
-export class RiskModelAdded implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::risk_model::RiskModelAdded`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = RiskModelAdded.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::risk_model::RiskModelAdded`
-  readonly $typeArgs: []
-  readonly $isPhantom = RiskModelAdded.$isPhantom
-
-  readonly riskModel: ToField<RiskModel>
-  readonly currentEpoch: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: RiskModelAddedFields) {
-    this.$fullTypeName = composeSuiType(
-      RiskModelAdded.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::risk_model::RiskModelAdded`
-    this.$typeArgs = typeArgs
-
-    this.riskModel = fields.riskModel
-    this.currentEpoch = fields.currentEpoch
-  }
-
-  static reified(): RiskModelAddedReified {
-    return {
-      typeName: RiskModelAdded.$typeName,
-      fullTypeName: composeSuiType(
-        RiskModelAdded.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::risk_model::RiskModelAdded`,
-      typeArgs: [] as [],
-      isPhantom: RiskModelAdded.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RiskModelAdded.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModelAdded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModelAdded.fromBcs(data),
-      bcs: RiskModelAdded.bcs,
-      fromJSONField: (field: any) => RiskModelAdded.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RiskModelAdded.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RiskModelAdded.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RiskModelAdded.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RiskModelAdded.fetch(client, id),
-      new: (fields: RiskModelAddedFields) => {
-        return new RiskModelAdded([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return RiskModelAdded.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<RiskModelAdded>> {
-    return phantom(RiskModelAdded.reified())
-  }
-  static get p() {
-    return RiskModelAdded.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('RiskModelAdded', {
-      risk_model: RiskModel.bcs,
-      current_epoch: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): RiskModelAdded {
-    return RiskModelAdded.reified().new({
-      riskModel: decodeFromFields(RiskModel.reified(), fields.risk_model),
-      currentEpoch: decodeFromFields('u64', fields.current_epoch),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): RiskModelAdded {
-    if (!isRiskModelAdded(item.type)) {
-      throw new Error('not a RiskModelAdded type')
-    }
-
-    return RiskModelAdded.reified().new({
-      riskModel: decodeFromFieldsWithTypes(RiskModel.reified(), item.fields.risk_model),
-      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): RiskModelAdded {
-    return RiskModelAdded.fromFields(RiskModelAdded.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      riskModel: this.riskModel.toJSONField(),
-      currentEpoch: this.currentEpoch.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): RiskModelAdded {
-    return RiskModelAdded.reified().new({
-      riskModel: decodeFromJSONField(RiskModel.reified(), field.riskModel),
-      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): RiskModelAdded {
-    if (json.$typeName !== RiskModelAdded.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return RiskModelAdded.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): RiskModelAdded {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRiskModelAdded(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RiskModelAdded object`)
-    }
-    return RiskModelAdded.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): RiskModelAdded {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRiskModelAdded(data.bcs.type)) {
-        throw new Error(`object at is not a RiskModelAdded object`)
-      }
-
-      return RiskModelAdded.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return RiskModelAdded.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<RiskModelAdded> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RiskModelAdded object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRiskModelAdded(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RiskModelAdded object`)
-    }
-
-    return RiskModelAdded.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== RiskModelChangeCreated =============================== */
 
 export function isRiskModelChangeCreated(type: string): boolean {
@@ -615,107 +603,116 @@ export class RiskModelChangeCreated implements StructClass {
   }
 }
 
-/* ============================== RiskModels =============================== */
+/* ============================== RiskModelAdded =============================== */
 
-export function isRiskModels(type: string): boolean {
+export function isRiskModelAdded(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::risk_model::RiskModels`
+  return type === `${PKG_V1}::risk_model::RiskModelAdded`
 }
 
-export interface RiskModelsFields {
-  dummyField: ToField<'bool'>
+export interface RiskModelAddedFields {
+  riskModel: ToField<RiskModel>
+  currentEpoch: ToField<'u64'>
 }
 
-export type RiskModelsReified = Reified<RiskModels, RiskModelsFields>
+export type RiskModelAddedReified = Reified<RiskModelAdded, RiskModelAddedFields>
 
-export class RiskModels implements StructClass {
+export class RiskModelAdded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::risk_model::RiskModels`
+  static readonly $typeName = `${PKG_V1}::risk_model::RiskModelAdded`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RiskModels.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::risk_model::RiskModels`
+  readonly $typeName = RiskModelAdded.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::risk_model::RiskModelAdded`
   readonly $typeArgs: []
-  readonly $isPhantom = RiskModels.$isPhantom
+  readonly $isPhantom = RiskModelAdded.$isPhantom
 
-  readonly dummyField: ToField<'bool'>
+  readonly riskModel: ToField<RiskModel>
+  readonly currentEpoch: ToField<'u64'>
 
-  private constructor(typeArgs: [], fields: RiskModelsFields) {
+  private constructor(typeArgs: [], fields: RiskModelAddedFields) {
     this.$fullTypeName = composeSuiType(
-      RiskModels.$typeName,
+      RiskModelAdded.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::risk_model::RiskModels`
+    ) as `${typeof PKG_V1}::risk_model::RiskModelAdded`
     this.$typeArgs = typeArgs
 
-    this.dummyField = fields.dummyField
+    this.riskModel = fields.riskModel
+    this.currentEpoch = fields.currentEpoch
   }
 
-  static reified(): RiskModelsReified {
+  static reified(): RiskModelAddedReified {
     return {
-      typeName: RiskModels.$typeName,
+      typeName: RiskModelAdded.$typeName,
       fullTypeName: composeSuiType(
-        RiskModels.$typeName,
+        RiskModelAdded.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::risk_model::RiskModels`,
+      ) as `${typeof PKG_V1}::risk_model::RiskModelAdded`,
       typeArgs: [] as [],
-      isPhantom: RiskModels.$isPhantom,
+      isPhantom: RiskModelAdded.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => RiskModels.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModels.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModels.fromBcs(data),
-      bcs: RiskModels.bcs,
-      fromJSONField: (field: any) => RiskModels.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => RiskModels.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => RiskModels.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => RiskModels.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RiskModels.fetch(client, id),
-      new: (fields: RiskModelsFields) => {
-        return new RiskModels([], fields)
+      fromFields: (fields: Record<string, any>) => RiskModelAdded.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModelAdded.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => RiskModelAdded.fromBcs(data),
+      bcs: RiskModelAdded.bcs,
+      fromJSONField: (field: any) => RiskModelAdded.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => RiskModelAdded.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => RiskModelAdded.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => RiskModelAdded.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => RiskModelAdded.fetch(client, id),
+      new: (fields: RiskModelAddedFields) => {
+        return new RiskModelAdded([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return RiskModels.reified()
+    return RiskModelAdded.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<RiskModels>> {
-    return phantom(RiskModels.reified())
+  static phantom(): PhantomReified<ToTypeStr<RiskModelAdded>> {
+    return phantom(RiskModelAdded.reified())
   }
   static get p() {
-    return RiskModels.phantom()
+    return RiskModelAdded.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('RiskModels', {
-      dummy_field: bcs.bool(),
+    return bcs.struct('RiskModelAdded', {
+      risk_model: RiskModel.bcs,
+      current_epoch: bcs.u64(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): RiskModels {
-    return RiskModels.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  static fromFields(fields: Record<string, any>): RiskModelAdded {
+    return RiskModelAdded.reified().new({
+      riskModel: decodeFromFields(RiskModel.reified(), fields.risk_model),
+      currentEpoch: decodeFromFields('u64', fields.current_epoch),
+    })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): RiskModels {
-    if (!isRiskModels(item.type)) {
-      throw new Error('not a RiskModels type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): RiskModelAdded {
+    if (!isRiskModelAdded(item.type)) {
+      throw new Error('not a RiskModelAdded type')
     }
 
-    return RiskModels.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    return RiskModelAdded.reified().new({
+      riskModel: decodeFromFieldsWithTypes(RiskModel.reified(), item.fields.risk_model),
+      currentEpoch: decodeFromFieldsWithTypes('u64', item.fields.current_epoch),
     })
   }
 
-  static fromBcs(data: Uint8Array): RiskModels {
-    return RiskModels.fromFields(RiskModels.bcs.parse(data))
+  static fromBcs(data: Uint8Array): RiskModelAdded {
+    return RiskModelAdded.fromFields(RiskModelAdded.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      dummyField: this.dummyField,
+      riskModel: this.riskModel.toJSONField(),
+      currentEpoch: this.currentEpoch.toString(),
     }
   }
 
@@ -723,53 +720,56 @@ export class RiskModels implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): RiskModels {
-    return RiskModels.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  static fromJSONField(field: any): RiskModelAdded {
+    return RiskModelAdded.reified().new({
+      riskModel: decodeFromJSONField(RiskModel.reified(), field.riskModel),
+      currentEpoch: decodeFromJSONField('u64', field.currentEpoch),
+    })
   }
 
-  static fromJSON(json: Record<string, any>): RiskModels {
-    if (json.$typeName !== RiskModels.$typeName) {
+  static fromJSON(json: Record<string, any>): RiskModelAdded {
+    if (json.$typeName !== RiskModelAdded.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return RiskModels.fromJSONField(json)
+    return RiskModelAdded.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): RiskModels {
+  static fromSuiParsedData(content: SuiParsedData): RiskModelAdded {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isRiskModels(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a RiskModels object`)
+    if (!isRiskModelAdded(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a RiskModelAdded object`)
     }
-    return RiskModels.fromFieldsWithTypes(content)
+    return RiskModelAdded.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): RiskModels {
+  static fromSuiObjectData(data: SuiObjectData): RiskModelAdded {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRiskModels(data.bcs.type)) {
-        throw new Error(`object at is not a RiskModels object`)
+      if (data.bcs.dataType !== 'moveObject' || !isRiskModelAdded(data.bcs.type)) {
+        throw new Error(`object at is not a RiskModelAdded object`)
       }
 
-      return RiskModels.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RiskModelAdded.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return RiskModels.fromSuiParsedData(data.content)
+      return RiskModelAdded.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RiskModels> {
+  static async fetch(client: SuiClient, id: string): Promise<RiskModelAdded> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching RiskModels object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching RiskModelAdded object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRiskModels(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a RiskModels object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRiskModelAdded(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a RiskModelAdded object`)
     }
 
-    return RiskModels.fromSuiObjectData(res.data)
+    return RiskModelAdded.fromSuiObjectData(res.data)
   }
 }

@@ -3,34 +3,6 @@ import { String } from '../../_dependencies/onchain/0x1/string/structs'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export interface BuildInitPositionArgArgs {
-  u128: bigint | TransactionArgument
-  u321: number | TransactionArgument
-  u322: number | TransactionArgument
-  coin1: TransactionObjectInput
-  coin2: TransactionObjectInput
-  bool: boolean | TransactionArgument
-}
-
-export function buildInitPositionArg(
-  tx: Transaction,
-  typeArgs: [string, string],
-  args: BuildInitPositionArgArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator_v2::build_init_position_arg`,
-    typeArguments: typeArgs,
-    arguments: [
-      pure(tx, args.u128, `u128`),
-      pure(tx, args.u321, `u32`),
-      pure(tx, args.u322, `u32`),
-      obj(tx, args.coin1),
-      obj(tx, args.coin2),
-      pure(tx, args.bool, `bool`),
-    ],
-  })
-}
-
 export interface CreatePoolV2Args {
   globalConfig: TransactionObjectInput
   pools: TransactionObjectInput
@@ -109,6 +81,34 @@ export function createPoolV2WithCreationCap(
       obj(tx, args.coinMetadata2),
       pure(tx, args.bool, `bool`),
       obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface BuildInitPositionArgArgs {
+  u128: bigint | TransactionArgument
+  u321: number | TransactionArgument
+  u322: number | TransactionArgument
+  coin1: TransactionObjectInput
+  coin2: TransactionObjectInput
+  bool: boolean | TransactionArgument
+}
+
+export function buildInitPositionArg(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: BuildInitPositionArgArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool_creator_v2::build_init_position_arg`,
+    typeArguments: typeArgs,
+    arguments: [
+      pure(tx, args.u128, `u128`),
+      pure(tx, args.u321, `u32`),
+      pure(tx, args.u322, `u32`),
+      obj(tx, args.coin1),
+      obj(tx, args.coin2),
+      pure(tx, args.bool, `bool`),
     ],
   })
 }

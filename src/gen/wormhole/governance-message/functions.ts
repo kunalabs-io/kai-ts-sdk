@@ -54,32 +54,6 @@ export function authorizeVerifyLocal(
   })
 }
 
-export function deserialize(
-  tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::deserialize`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
-  })
-}
-
-export function destroy(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::destroy`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, decreeReceipt)],
-  })
-}
-
-export function payload(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::payload`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, decreeReceipt)],
-  })
-}
-
 export function sequence(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::sequence`,
@@ -101,6 +75,22 @@ export function takePayload(tx: Transaction, typeArg: string, args: TakePayloadA
   })
 }
 
+export function payload(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance_message::payload`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, decreeReceipt)],
+  })
+}
+
+export function destroy(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance_message::destroy`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, decreeReceipt)],
+  })
+}
+
 export interface VerifyVaaArgs {
   state: TransactionObjectInput
   vaa: TransactionObjectInput
@@ -112,5 +102,15 @@ export function verifyVaa(tx: Transaction, typeArg: string, args: VerifyVaaArgs)
     target: `${PUBLISHED_AT}::governance_message::verify_vaa`,
     typeArguments: [typeArg],
     arguments: [obj(tx, args.state), obj(tx, args.vaa), obj(tx, args.decreeTicket)],
+  })
+}
+
+export function deserialize(
+  tx: Transaction,
+  vecU8: Array<number | TransactionArgument> | TransactionArgument
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance_message::deserialize`,
+    arguments: [pure(tx, vecU8, `vector<u8>`)],
   })
 }

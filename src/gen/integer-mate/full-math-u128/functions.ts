@@ -2,35 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { pure } from '../../_framework/util'
 import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
-export interface FullMulArgs {
-  num1: bigint | TransactionArgument
-  num2: bigint | TransactionArgument
-}
-
-export function fullMul(tx: Transaction, args: FullMulArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::full_mul`,
-    arguments: [pure(tx, args.num1, `u128`), pure(tx, args.num2, `u128`)],
-  })
-}
-
-export interface MulDivCeilArgs {
-  num1: bigint | TransactionArgument
-  num2: bigint | TransactionArgument
-  denom: bigint | TransactionArgument
-}
-
-export function mulDivCeil(tx: Transaction, args: MulDivCeilArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_div_ceil`,
-    arguments: [
-      pure(tx, args.num1, `u128`),
-      pure(tx, args.num2, `u128`),
-      pure(tx, args.denom, `u128`),
-    ],
-  })
-}
-
 export interface MulDivFloorArgs {
   num1: bigint | TransactionArgument
   num2: bigint | TransactionArgument
@@ -65,19 +36,19 @@ export function mulDivRound(tx: Transaction, args: MulDivRoundArgs) {
   })
 }
 
-export interface MulShlArgs {
+export interface MulDivCeilArgs {
   num1: bigint | TransactionArgument
   num2: bigint | TransactionArgument
-  shift: number | TransactionArgument
+  denom: bigint | TransactionArgument
 }
 
-export function mulShl(tx: Transaction, args: MulShlArgs) {
+export function mulDivCeil(tx: Transaction, args: MulDivCeilArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_shl`,
+    target: `${PUBLISHED_AT}::full_math_u128::mul_div_ceil`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
-      pure(tx, args.shift, `u8`),
+      pure(tx, args.denom, `u128`),
     ],
   })
 }
@@ -96,5 +67,34 @@ export function mulShr(tx: Transaction, args: MulShrArgs) {
       pure(tx, args.num2, `u128`),
       pure(tx, args.shift, `u8`),
     ],
+  })
+}
+
+export interface MulShlArgs {
+  num1: bigint | TransactionArgument
+  num2: bigint | TransactionArgument
+  shift: number | TransactionArgument
+}
+
+export function mulShl(tx: Transaction, args: MulShlArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::full_math_u128::mul_shl`,
+    arguments: [
+      pure(tx, args.num1, `u128`),
+      pure(tx, args.num2, `u128`),
+      pure(tx, args.shift, `u8`),
+    ],
+  })
+}
+
+export interface FullMulArgs {
+  num1: bigint | TransactionArgument
+  num2: bigint | TransactionArgument
+}
+
+export function fullMul(tx: Transaction, args: FullMulArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::full_math_u128::full_mul`,
+    arguments: [pure(tx, args.num1, `u128`), pure(tx, args.num2, `u128`)],
   })
 }

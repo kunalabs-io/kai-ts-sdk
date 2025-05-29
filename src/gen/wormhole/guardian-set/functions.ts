@@ -3,29 +3,15 @@ import { obj, pure, vector } from '../../_framework/util'
 import { Guardian } from '../guardian/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function expirationTimestampMs(tx: Transaction, guardianSet: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_set::expiration_timestamp_ms`,
-    arguments: [obj(tx, guardianSet)],
-  })
+export interface NewArgs {
+  u32: number | TransactionArgument
+  vecGuardian: Array<TransactionObjectInput> | TransactionArgument
 }
 
-export interface GuardianAtArgs {
-  guardianSet: TransactionObjectInput
-  u64: bigint | TransactionArgument
-}
-
-export function guardianAt(tx: Transaction, args: GuardianAtArgs) {
+export function new_(tx: Transaction, args: NewArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_set::guardian_at`,
-    arguments: [obj(tx, args.guardianSet), pure(tx, args.u64, `u64`)],
-  })
-}
-
-export function guardians(tx: Transaction, guardianSet: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_set::guardians`,
-    arguments: [obj(tx, guardianSet)],
+    target: `${PUBLISHED_AT}::guardian_set::new`,
+    arguments: [pure(tx, args.u32, `u32`), vector(tx, `${Guardian.$typeName}`, args.vecGuardian)],
   })
 }
 
@@ -43,6 +29,32 @@ export function indexAsU64(tx: Transaction, guardianSet: TransactionObjectInput)
   })
 }
 
+export function guardians(tx: Transaction, guardianSet: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian_set::guardians`,
+    arguments: [obj(tx, guardianSet)],
+  })
+}
+
+export interface GuardianAtArgs {
+  guardianSet: TransactionObjectInput
+  u64: bigint | TransactionArgument
+}
+
+export function guardianAt(tx: Transaction, args: GuardianAtArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian_set::guardian_at`,
+    arguments: [obj(tx, args.guardianSet), pure(tx, args.u64, `u64`)],
+  })
+}
+
+export function expirationTimestampMs(tx: Transaction, guardianSet: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian_set::expiration_timestamp_ms`,
+    arguments: [obj(tx, guardianSet)],
+  })
+}
+
 export interface IsActiveArgs {
   guardianSet: TransactionObjectInput
   clock: TransactionObjectInput
@@ -52,18 +64,6 @@ export function isActive(tx: Transaction, args: IsActiveArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::is_active`,
     arguments: [obj(tx, args.guardianSet), obj(tx, args.clock)],
-  })
-}
-
-export interface NewArgs {
-  u32: number | TransactionArgument
-  vecGuardian: Array<TransactionObjectInput> | TransactionArgument
-}
-
-export function new_(tx: Transaction, args: NewArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_set::new`,
-    arguments: [pure(tx, args.u32, `u32`), vector(tx, `${Guardian.$typeName}`, args.vecGuardian)],
   })
 }
 

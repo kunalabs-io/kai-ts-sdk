@@ -2,25 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function asBytes(tx: Transaction, guardian: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian::as_bytes`,
-    arguments: [obj(tx, guardian)],
-  })
-}
-
-export interface EcrecoverArgs {
-  vecU81: Array<number | TransactionArgument> | TransactionArgument
-  vecU82: Array<number | TransactionArgument> | TransactionArgument
-}
-
-export function ecrecover(tx: Transaction, args: EcrecoverArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian::ecrecover`,
-    arguments: [pure(tx, args.vecU81, `vector<u8>`), pure(tx, args.vecU82, `vector<u8>`)],
-  })
-}
-
 export function new_(
   tx: Transaction,
   vecU8: Array<number | TransactionArgument> | TransactionArgument
@@ -34,6 +15,13 @@ export function new_(
 export function pubkey(tx: Transaction, guardian: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian::pubkey`,
+    arguments: [obj(tx, guardian)],
+  })
+}
+
+export function asBytes(tx: Transaction, guardian: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian::as_bytes`,
     arguments: [obj(tx, guardian)],
   })
 }
@@ -52,5 +40,17 @@ export function verify(tx: Transaction, args: VerifyArgs) {
       obj(tx, args.guardianSignature),
       pure(tx, args.vecU8, `vector<u8>`),
     ],
+  })
+}
+
+export interface EcrecoverArgs {
+  vecU81: Array<number | TransactionArgument> | TransactionArgument
+  vecU82: Array<number | TransactionArgument> | TransactionArgument
+}
+
+export function ecrecover(tx: Transaction, args: EcrecoverArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian::ecrecover`,
+    arguments: [pure(tx, args.vecU81, `vector<u8>`), pure(tx, args.vecU82, `vector<u8>`)],
   })
 }

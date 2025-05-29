@@ -23,6 +23,177 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== PositionRewardInfo =============================== */
+
+export function isPositionRewardInfo(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position_manager::PositionRewardInfo`
+}
+
+export interface PositionRewardInfoFields {
+  rewardGrowthInside: ToField<'u128'>
+  amountOwed: ToField<'u64'>
+}
+
+export type PositionRewardInfoReified = Reified<PositionRewardInfo, PositionRewardInfoFields>
+
+export class PositionRewardInfo implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position_manager::PositionRewardInfo`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PositionRewardInfo.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position_manager::PositionRewardInfo`
+  readonly $typeArgs: []
+  readonly $isPhantom = PositionRewardInfo.$isPhantom
+
+  readonly rewardGrowthInside: ToField<'u128'>
+  readonly amountOwed: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: PositionRewardInfoFields) {
+    this.$fullTypeName = composeSuiType(
+      PositionRewardInfo.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position_manager::PositionRewardInfo`
+    this.$typeArgs = typeArgs
+
+    this.rewardGrowthInside = fields.rewardGrowthInside
+    this.amountOwed = fields.amountOwed
+  }
+
+  static reified(): PositionRewardInfoReified {
+    return {
+      typeName: PositionRewardInfo.$typeName,
+      fullTypeName: composeSuiType(
+        PositionRewardInfo.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position_manager::PositionRewardInfo`,
+      typeArgs: [] as [],
+      isPhantom: PositionRewardInfo.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PositionRewardInfo.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionRewardInfo.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromBcs(data),
+      bcs: PositionRewardInfo.bcs,
+      fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PositionRewardInfo.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PositionRewardInfo.fetch(client, id),
+      new: (fields: PositionRewardInfoFields) => {
+        return new PositionRewardInfo([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PositionRewardInfo.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PositionRewardInfo>> {
+    return phantom(PositionRewardInfo.reified())
+  }
+  static get p() {
+    return PositionRewardInfo.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PositionRewardInfo', {
+      reward_growth_inside: bcs.u128(),
+      amount_owed: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PositionRewardInfo {
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromFields('u128', fields.reward_growth_inside),
+      amountOwed: decodeFromFields('u64', fields.amount_owed),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PositionRewardInfo {
+    if (!isPositionRewardInfo(item.type)) {
+      throw new Error('not a PositionRewardInfo type')
+    }
+
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_inside),
+      amountOwed: decodeFromFieldsWithTypes('u64', item.fields.amount_owed),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PositionRewardInfo {
+    return PositionRewardInfo.fromFields(PositionRewardInfo.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      rewardGrowthInside: this.rewardGrowthInside.toString(),
+      amountOwed: this.amountOwed.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PositionRewardInfo {
+    return PositionRewardInfo.reified().new({
+      rewardGrowthInside: decodeFromJSONField('u128', field.rewardGrowthInside),
+      amountOwed: decodeFromJSONField('u64', field.amountOwed),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PositionRewardInfo {
+    if (json.$typeName !== PositionRewardInfo.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PositionRewardInfo.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PositionRewardInfo {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPositionRewardInfo(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PositionRewardInfo object`)
+    }
+    return PositionRewardInfo.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PositionRewardInfo {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPositionRewardInfo(data.bcs.type)) {
+        throw new Error(`object at is not a PositionRewardInfo object`)
+      }
+
+      return PositionRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PositionRewardInfo.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PositionRewardInfo> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PositionRewardInfo object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionRewardInfo(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PositionRewardInfo object`)
+    }
+
+    return PositionRewardInfo.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== Position =============================== */
 
 export function isPosition(type: string): boolean {
@@ -259,177 +430,6 @@ export class Position implements StructClass {
     }
 
     return Position.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== PositionRewardInfo =============================== */
-
-export function isPositionRewardInfo(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position_manager::PositionRewardInfo`
-}
-
-export interface PositionRewardInfoFields {
-  rewardGrowthInside: ToField<'u128'>
-  amountOwed: ToField<'u64'>
-}
-
-export type PositionRewardInfoReified = Reified<PositionRewardInfo, PositionRewardInfoFields>
-
-export class PositionRewardInfo implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position_manager::PositionRewardInfo`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PositionRewardInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_manager::PositionRewardInfo`
-  readonly $typeArgs: []
-  readonly $isPhantom = PositionRewardInfo.$isPhantom
-
-  readonly rewardGrowthInside: ToField<'u128'>
-  readonly amountOwed: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: PositionRewardInfoFields) {
-    this.$fullTypeName = composeSuiType(
-      PositionRewardInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_manager::PositionRewardInfo`
-    this.$typeArgs = typeArgs
-
-    this.rewardGrowthInside = fields.rewardGrowthInside
-    this.amountOwed = fields.amountOwed
-  }
-
-  static reified(): PositionRewardInfoReified {
-    return {
-      typeName: PositionRewardInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PositionRewardInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_manager::PositionRewardInfo`,
-      typeArgs: [] as [],
-      isPhantom: PositionRewardInfo.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PositionRewardInfo.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionRewardInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromBcs(data),
-      bcs: PositionRewardInfo.bcs,
-      fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PositionRewardInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionRewardInfo.fetch(client, id),
-      new: (fields: PositionRewardInfoFields) => {
-        return new PositionRewardInfo([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PositionRewardInfo.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PositionRewardInfo>> {
-    return phantom(PositionRewardInfo.reified())
-  }
-  static get p() {
-    return PositionRewardInfo.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PositionRewardInfo', {
-      reward_growth_inside: bcs.u128(),
-      amount_owed: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PositionRewardInfo {
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromFields('u128', fields.reward_growth_inside),
-      amountOwed: decodeFromFields('u64', fields.amount_owed),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PositionRewardInfo {
-    if (!isPositionRewardInfo(item.type)) {
-      throw new Error('not a PositionRewardInfo type')
-    }
-
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromFieldsWithTypes('u128', item.fields.reward_growth_inside),
-      amountOwed: decodeFromFieldsWithTypes('u64', item.fields.amount_owed),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PositionRewardInfo {
-    return PositionRewardInfo.fromFields(PositionRewardInfo.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      rewardGrowthInside: this.rewardGrowthInside.toString(),
-      amountOwed: this.amountOwed.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PositionRewardInfo {
-    return PositionRewardInfo.reified().new({
-      rewardGrowthInside: decodeFromJSONField('u128', field.rewardGrowthInside),
-      amountOwed: decodeFromJSONField('u64', field.amountOwed),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PositionRewardInfo {
-    if (json.$typeName !== PositionRewardInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PositionRewardInfo.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PositionRewardInfo {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPositionRewardInfo(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PositionRewardInfo object`)
-    }
-    return PositionRewardInfo.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PositionRewardInfo {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPositionRewardInfo(data.bcs.type)) {
-        throw new Error(`object at is not a PositionRewardInfo object`)
-      }
-
-      return PositionRewardInfo.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PositionRewardInfo.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PositionRewardInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionRewardInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionRewardInfo(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PositionRewardInfo object`)
-    }
-
-    return PositionRewardInfo.fromSuiObjectData(res.data)
   }
 }
 

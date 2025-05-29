@@ -322,6 +322,169 @@ export class Obligation implements StructClass {
   }
 }
 
+/* ============================== ObligationOwnership =============================== */
+
+export function isObligationOwnership(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::obligation::ObligationOwnership`
+}
+
+export interface ObligationOwnershipFields {
+  dummyField: ToField<'bool'>
+}
+
+export type ObligationOwnershipReified = Reified<ObligationOwnership, ObligationOwnershipFields>
+
+export class ObligationOwnership implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::obligation::ObligationOwnership`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ObligationOwnership.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::obligation::ObligationOwnership`
+  readonly $typeArgs: []
+  readonly $isPhantom = ObligationOwnership.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: ObligationOwnershipFields) {
+    this.$fullTypeName = composeSuiType(
+      ObligationOwnership.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::obligation::ObligationOwnership`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): ObligationOwnershipReified {
+    return {
+      typeName: ObligationOwnership.$typeName,
+      fullTypeName: composeSuiType(
+        ObligationOwnership.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::obligation::ObligationOwnership`,
+      typeArgs: [] as [],
+      isPhantom: ObligationOwnership.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ObligationOwnership.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationOwnership.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ObligationOwnership.fromBcs(data),
+      bcs: ObligationOwnership.bcs,
+      fromJSONField: (field: any) => ObligationOwnership.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ObligationOwnership.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ObligationOwnership.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ObligationOwnership.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ObligationOwnership.fetch(client, id),
+      new: (fields: ObligationOwnershipFields) => {
+        return new ObligationOwnership([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ObligationOwnership.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ObligationOwnership>> {
+    return phantom(ObligationOwnership.reified())
+  }
+  static get p() {
+    return ObligationOwnership.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ObligationOwnership', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ObligationOwnership {
+    return ObligationOwnership.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationOwnership {
+    if (!isObligationOwnership(item.type)) {
+      throw new Error('not a ObligationOwnership type')
+    }
+
+    return ObligationOwnership.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ObligationOwnership {
+    return ObligationOwnership.fromFields(ObligationOwnership.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ObligationOwnership {
+    return ObligationOwnership.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ObligationOwnership {
+    if (json.$typeName !== ObligationOwnership.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ObligationOwnership.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ObligationOwnership {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isObligationOwnership(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ObligationOwnership object`)
+    }
+    return ObligationOwnership.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ObligationOwnership {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isObligationOwnership(data.bcs.type)) {
+        throw new Error(`object at is not a ObligationOwnership object`)
+      }
+
+      return ObligationOwnership.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ObligationOwnership.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ObligationOwnership> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ObligationOwnership object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isObligationOwnership(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ObligationOwnership object`)
+    }
+
+    return ObligationOwnership.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== ObligationKey =============================== */
 
 export function isObligationKey(type: string): boolean {
@@ -499,6 +662,200 @@ export class ObligationKey implements StructClass {
     }
 
     return ObligationKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== ObligationRewardsPointRedeemed =============================== */
+
+export function isObligationRewardsPointRedeemed(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::obligation::ObligationRewardsPointRedeemed`
+}
+
+export interface ObligationRewardsPointRedeemedFields {
+  obligation: ToField<ID>
+  witness: ToField<TypeName>
+  amount: ToField<'u64'>
+}
+
+export type ObligationRewardsPointRedeemedReified = Reified<
+  ObligationRewardsPointRedeemed,
+  ObligationRewardsPointRedeemedFields
+>
+
+export class ObligationRewardsPointRedeemed implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::obligation::ObligationRewardsPointRedeemed`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ObligationRewardsPointRedeemed.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`
+  readonly $typeArgs: []
+  readonly $isPhantom = ObligationRewardsPointRedeemed.$isPhantom
+
+  readonly obligation: ToField<ID>
+  readonly witness: ToField<TypeName>
+  readonly amount: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: ObligationRewardsPointRedeemedFields) {
+    this.$fullTypeName = composeSuiType(
+      ObligationRewardsPointRedeemed.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`
+    this.$typeArgs = typeArgs
+
+    this.obligation = fields.obligation
+    this.witness = fields.witness
+    this.amount = fields.amount
+  }
+
+  static reified(): ObligationRewardsPointRedeemedReified {
+    return {
+      typeName: ObligationRewardsPointRedeemed.$typeName,
+      fullTypeName: composeSuiType(
+        ObligationRewardsPointRedeemed.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`,
+      typeArgs: [] as [],
+      isPhantom: ObligationRewardsPointRedeemed.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) =>
+        ObligationRewardsPointRedeemed.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        ObligationRewardsPointRedeemed.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ObligationRewardsPointRedeemed.fromBcs(data),
+      bcs: ObligationRewardsPointRedeemed.bcs,
+      fromJSONField: (field: any) => ObligationRewardsPointRedeemed.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ObligationRewardsPointRedeemed.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        ObligationRewardsPointRedeemed.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        ObligationRewardsPointRedeemed.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        ObligationRewardsPointRedeemed.fetch(client, id),
+      new: (fields: ObligationRewardsPointRedeemedFields) => {
+        return new ObligationRewardsPointRedeemed([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ObligationRewardsPointRedeemed.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ObligationRewardsPointRedeemed>> {
+    return phantom(ObligationRewardsPointRedeemed.reified())
+  }
+  static get p() {
+    return ObligationRewardsPointRedeemed.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ObligationRewardsPointRedeemed', {
+      obligation: ID.bcs,
+      witness: TypeName.bcs,
+      amount: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ObligationRewardsPointRedeemed {
+    return ObligationRewardsPointRedeemed.reified().new({
+      obligation: decodeFromFields(ID.reified(), fields.obligation),
+      witness: decodeFromFields(TypeName.reified(), fields.witness),
+      amount: decodeFromFields('u64', fields.amount),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationRewardsPointRedeemed {
+    if (!isObligationRewardsPointRedeemed(item.type)) {
+      throw new Error('not a ObligationRewardsPointRedeemed type')
+    }
+
+    return ObligationRewardsPointRedeemed.reified().new({
+      obligation: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation),
+      witness: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.witness),
+      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ObligationRewardsPointRedeemed {
+    return ObligationRewardsPointRedeemed.fromFields(ObligationRewardsPointRedeemed.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      obligation: this.obligation,
+      witness: this.witness.toJSONField(),
+      amount: this.amount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ObligationRewardsPointRedeemed {
+    return ObligationRewardsPointRedeemed.reified().new({
+      obligation: decodeFromJSONField(ID.reified(), field.obligation),
+      witness: decodeFromJSONField(TypeName.reified(), field.witness),
+      amount: decodeFromJSONField('u64', field.amount),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ObligationRewardsPointRedeemed {
+    if (json.$typeName !== ObligationRewardsPointRedeemed.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ObligationRewardsPointRedeemed.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ObligationRewardsPointRedeemed {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isObligationRewardsPointRedeemed(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a ObligationRewardsPointRedeemed object`
+      )
+    }
+    return ObligationRewardsPointRedeemed.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ObligationRewardsPointRedeemed {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isObligationRewardsPointRedeemed(data.bcs.type)) {
+        throw new Error(`object at is not a ObligationRewardsPointRedeemed object`)
+      }
+
+      return ObligationRewardsPointRedeemed.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ObligationRewardsPointRedeemed.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ObligationRewardsPointRedeemed> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching ObligationRewardsPointRedeemed object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isObligationRewardsPointRedeemed(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a ObligationRewardsPointRedeemed object`)
+    }
+
+    return ObligationRewardsPointRedeemed.fromSuiObjectData(res.data)
   }
 }
 
@@ -716,363 +1073,6 @@ export class ObligationLocked implements StructClass {
     }
 
     return ObligationLocked.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ObligationOwnership =============================== */
-
-export function isObligationOwnership(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::obligation::ObligationOwnership`
-}
-
-export interface ObligationOwnershipFields {
-  dummyField: ToField<'bool'>
-}
-
-export type ObligationOwnershipReified = Reified<ObligationOwnership, ObligationOwnershipFields>
-
-export class ObligationOwnership implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::obligation::ObligationOwnership`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ObligationOwnership.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::obligation::ObligationOwnership`
-  readonly $typeArgs: []
-  readonly $isPhantom = ObligationOwnership.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: ObligationOwnershipFields) {
-    this.$fullTypeName = composeSuiType(
-      ObligationOwnership.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::obligation::ObligationOwnership`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): ObligationOwnershipReified {
-    return {
-      typeName: ObligationOwnership.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationOwnership.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::obligation::ObligationOwnership`,
-      typeArgs: [] as [],
-      isPhantom: ObligationOwnership.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ObligationOwnership.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationOwnership.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationOwnership.fromBcs(data),
-      bcs: ObligationOwnership.bcs,
-      fromJSONField: (field: any) => ObligationOwnership.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ObligationOwnership.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ObligationOwnership.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ObligationOwnership.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ObligationOwnership.fetch(client, id),
-      new: (fields: ObligationOwnershipFields) => {
-        return new ObligationOwnership([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ObligationOwnership.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ObligationOwnership>> {
-    return phantom(ObligationOwnership.reified())
-  }
-  static get p() {
-    return ObligationOwnership.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ObligationOwnership', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ObligationOwnership {
-    return ObligationOwnership.reified().new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationOwnership {
-    if (!isObligationOwnership(item.type)) {
-      throw new Error('not a ObligationOwnership type')
-    }
-
-    return ObligationOwnership.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ObligationOwnership {
-    return ObligationOwnership.fromFields(ObligationOwnership.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ObligationOwnership {
-    return ObligationOwnership.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ObligationOwnership {
-    if (json.$typeName !== ObligationOwnership.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ObligationOwnership.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ObligationOwnership {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isObligationOwnership(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ObligationOwnership object`)
-    }
-    return ObligationOwnership.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ObligationOwnership {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isObligationOwnership(data.bcs.type)) {
-        throw new Error(`object at is not a ObligationOwnership object`)
-      }
-
-      return ObligationOwnership.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ObligationOwnership.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ObligationOwnership> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ObligationOwnership object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isObligationOwnership(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ObligationOwnership object`)
-    }
-
-    return ObligationOwnership.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ObligationRewardsPointRedeemed =============================== */
-
-export function isObligationRewardsPointRedeemed(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::obligation::ObligationRewardsPointRedeemed`
-}
-
-export interface ObligationRewardsPointRedeemedFields {
-  obligation: ToField<ID>
-  witness: ToField<TypeName>
-  amount: ToField<'u64'>
-}
-
-export type ObligationRewardsPointRedeemedReified = Reified<
-  ObligationRewardsPointRedeemed,
-  ObligationRewardsPointRedeemedFields
->
-
-export class ObligationRewardsPointRedeemed implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::obligation::ObligationRewardsPointRedeemed`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ObligationRewardsPointRedeemed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`
-  readonly $typeArgs: []
-  readonly $isPhantom = ObligationRewardsPointRedeemed.$isPhantom
-
-  readonly obligation: ToField<ID>
-  readonly witness: ToField<TypeName>
-  readonly amount: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: ObligationRewardsPointRedeemedFields) {
-    this.$fullTypeName = composeSuiType(
-      ObligationRewardsPointRedeemed.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`
-    this.$typeArgs = typeArgs
-
-    this.obligation = fields.obligation
-    this.witness = fields.witness
-    this.amount = fields.amount
-  }
-
-  static reified(): ObligationRewardsPointRedeemedReified {
-    return {
-      typeName: ObligationRewardsPointRedeemed.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationRewardsPointRedeemed.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::obligation::ObligationRewardsPointRedeemed`,
-      typeArgs: [] as [],
-      isPhantom: ObligationRewardsPointRedeemed.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) =>
-        ObligationRewardsPointRedeemed.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        ObligationRewardsPointRedeemed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationRewardsPointRedeemed.fromBcs(data),
-      bcs: ObligationRewardsPointRedeemed.bcs,
-      fromJSONField: (field: any) => ObligationRewardsPointRedeemed.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ObligationRewardsPointRedeemed.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        ObligationRewardsPointRedeemed.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        ObligationRewardsPointRedeemed.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
-        ObligationRewardsPointRedeemed.fetch(client, id),
-      new: (fields: ObligationRewardsPointRedeemedFields) => {
-        return new ObligationRewardsPointRedeemed([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ObligationRewardsPointRedeemed.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ObligationRewardsPointRedeemed>> {
-    return phantom(ObligationRewardsPointRedeemed.reified())
-  }
-  static get p() {
-    return ObligationRewardsPointRedeemed.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ObligationRewardsPointRedeemed', {
-      obligation: ID.bcs,
-      witness: TypeName.bcs,
-      amount: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ObligationRewardsPointRedeemed {
-    return ObligationRewardsPointRedeemed.reified().new({
-      obligation: decodeFromFields(ID.reified(), fields.obligation),
-      witness: decodeFromFields(TypeName.reified(), fields.witness),
-      amount: decodeFromFields('u64', fields.amount),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationRewardsPointRedeemed {
-    if (!isObligationRewardsPointRedeemed(item.type)) {
-      throw new Error('not a ObligationRewardsPointRedeemed type')
-    }
-
-    return ObligationRewardsPointRedeemed.reified().new({
-      obligation: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation),
-      witness: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.witness),
-      amount: decodeFromFieldsWithTypes('u64', item.fields.amount),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ObligationRewardsPointRedeemed {
-    return ObligationRewardsPointRedeemed.fromFields(ObligationRewardsPointRedeemed.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      obligation: this.obligation,
-      witness: this.witness.toJSONField(),
-      amount: this.amount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ObligationRewardsPointRedeemed {
-    return ObligationRewardsPointRedeemed.reified().new({
-      obligation: decodeFromJSONField(ID.reified(), field.obligation),
-      witness: decodeFromJSONField(TypeName.reified(), field.witness),
-      amount: decodeFromJSONField('u64', field.amount),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ObligationRewardsPointRedeemed {
-    if (json.$typeName !== ObligationRewardsPointRedeemed.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ObligationRewardsPointRedeemed.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ObligationRewardsPointRedeemed {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isObligationRewardsPointRedeemed(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a ObligationRewardsPointRedeemed object`
-      )
-    }
-    return ObligationRewardsPointRedeemed.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ObligationRewardsPointRedeemed {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isObligationRewardsPointRedeemed(data.bcs.type)) {
-        throw new Error(`object at is not a ObligationRewardsPointRedeemed object`)
-      }
-
-      return ObligationRewardsPointRedeemed.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ObligationRewardsPointRedeemed.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ObligationRewardsPointRedeemed> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching ObligationRewardsPointRedeemed object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isObligationRewardsPointRedeemed(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a ObligationRewardsPointRedeemed object`)
-    }
-
-    return ObligationRewardsPointRedeemed.fromSuiObjectData(res.data)
   }
 }
 

@@ -3,6 +3,17 @@ import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function empty(tx: Transaction, facilId: string | TransactionArgument) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::debt_info::empty`,
+    arguments: [pure(tx, facilId, `${ID.$typeName}`)],
+  })
+}
+
+export function facilId(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_info::facil_id`, arguments: [obj(tx, self)] })
+}
+
 export interface AddArgs {
   self: TransactionObjectInput
   registry: TransactionObjectInput
@@ -34,28 +45,40 @@ export function addFromSupplyPool(
   })
 }
 
-export interface CalcRepayByAmountArgs {
+export interface ValidateArgs {
   self: TransactionObjectInput
-  type: TransactionObjectInput
-  amount: bigint | TransactionArgument
+  facilId: string | TransactionArgument
 }
 
-export function calcRepayByAmount(tx: Transaction, args: CalcRepayByAmountArgs) {
+export function validate(tx: Transaction, args: ValidateArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_amount`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.amount, `u64`)],
+    target: `${PUBLISHED_AT}::debt_info::validate`,
+    arguments: [obj(tx, args.self), pure(tx, args.facilId, `${ID.$typeName}`)],
   })
 }
 
-export interface CalcRepayBySharesArgs {
+export interface CalcRepayX64Args {
   self: TransactionObjectInput
   type: TransactionObjectInput
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRepayByShares(tx: Transaction, args: CalcRepayBySharesArgs) {
+export function calcRepayX64(tx: Transaction, args: CalcRepayX64Args) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_shares`,
+    target: `${PUBLISHED_AT}::debt_info::calc_repay_x64`,
+    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
+  })
+}
+
+export interface CalcRepayLossyArgs {
+  self: TransactionObjectInput
+  type: TransactionObjectInput
+  shareValueX64: bigint | TransactionArgument
+}
+
+export function calcRepayLossy(tx: Transaction, args: CalcRepayLossyArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::debt_info::calc_repay_lossy`,
     arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
   })
 }
@@ -73,51 +96,28 @@ export function calcRepayForAmount(tx: Transaction, args: CalcRepayForAmountArgs
   })
 }
 
-export interface CalcRepayLossyArgs {
+export interface CalcRepayBySharesArgs {
   self: TransactionObjectInput
   type: TransactionObjectInput
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRepayLossy(tx: Transaction, args: CalcRepayLossyArgs) {
+export function calcRepayByShares(tx: Transaction, args: CalcRepayBySharesArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_lossy`,
+    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_shares`,
     arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
   })
 }
 
-export interface CalcRepayX64Args {
+export interface CalcRepayByAmountArgs {
   self: TransactionObjectInput
   type: TransactionObjectInput
-  shareValueX64: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
 }
 
-export function calcRepayX64(tx: Transaction, args: CalcRepayX64Args) {
+export function calcRepayByAmount(tx: Transaction, args: CalcRepayByAmountArgs) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_x64`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
-  })
-}
-
-export function empty(tx: Transaction, facilId: string | TransactionArgument) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::empty`,
-    arguments: [pure(tx, facilId, `${ID.$typeName}`)],
-  })
-}
-
-export function facilId(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_info::facil_id`, arguments: [obj(tx, self)] })
-}
-
-export interface ValidateArgs {
-  self: TransactionObjectInput
-  facilId: string | TransactionArgument
-}
-
-export function validate(tx: Transaction, args: ValidateArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::validate`,
-    arguments: [obj(tx, args.self), pure(tx, args.facilId, `${ID.$typeName}`)],
+    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_amount`,
+    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.amount, `u64`)],
   })
 }

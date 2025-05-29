@@ -33,6 +33,167 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== BalanceSheets =============================== */
+
+export function isBalanceSheets(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::reserve::BalanceSheets`
+}
+
+export interface BalanceSheetsFields {
+  dummyField: ToField<'bool'>
+}
+
+export type BalanceSheetsReified = Reified<BalanceSheets, BalanceSheetsFields>
+
+export class BalanceSheets implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::reserve::BalanceSheets`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = BalanceSheets.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::reserve::BalanceSheets`
+  readonly $typeArgs: []
+  readonly $isPhantom = BalanceSheets.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: BalanceSheetsFields) {
+    this.$fullTypeName = composeSuiType(
+      BalanceSheets.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::reserve::BalanceSheets`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): BalanceSheetsReified {
+    return {
+      typeName: BalanceSheets.$typeName,
+      fullTypeName: composeSuiType(
+        BalanceSheets.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::reserve::BalanceSheets`,
+      typeArgs: [] as [],
+      isPhantom: BalanceSheets.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => BalanceSheets.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => BalanceSheets.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => BalanceSheets.fromBcs(data),
+      bcs: BalanceSheets.bcs,
+      fromJSONField: (field: any) => BalanceSheets.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => BalanceSheets.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => BalanceSheets.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => BalanceSheets.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => BalanceSheets.fetch(client, id),
+      new: (fields: BalanceSheetsFields) => {
+        return new BalanceSheets([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return BalanceSheets.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<BalanceSheets>> {
+    return phantom(BalanceSheets.reified())
+  }
+  static get p() {
+    return BalanceSheets.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('BalanceSheets', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): BalanceSheets {
+    return BalanceSheets.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): BalanceSheets {
+    if (!isBalanceSheets(item.type)) {
+      throw new Error('not a BalanceSheets type')
+    }
+
+    return BalanceSheets.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): BalanceSheets {
+    return BalanceSheets.fromFields(BalanceSheets.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): BalanceSheets {
+    return BalanceSheets.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): BalanceSheets {
+    if (json.$typeName !== BalanceSheets.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return BalanceSheets.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): BalanceSheets {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isBalanceSheets(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a BalanceSheets object`)
+    }
+    return BalanceSheets.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): BalanceSheets {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isBalanceSheets(data.bcs.type)) {
+        throw new Error(`object at is not a BalanceSheets object`)
+      }
+
+      return BalanceSheets.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return BalanceSheets.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<BalanceSheets> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching BalanceSheets object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isBalanceSheets(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a BalanceSheets object`)
+    }
+
+    return BalanceSheets.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== BalanceSheet =============================== */
 
 export function isBalanceSheet(type: string): boolean {
@@ -220,102 +381,102 @@ export class BalanceSheet implements StructClass {
   }
 }
 
-/* ============================== BalanceSheets =============================== */
+/* ============================== FlashLoanFees =============================== */
 
-export function isBalanceSheets(type: string): boolean {
+export function isFlashLoanFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::reserve::BalanceSheets`
+  return type === `${PKG_V1}::reserve::FlashLoanFees`
 }
 
-export interface BalanceSheetsFields {
+export interface FlashLoanFeesFields {
   dummyField: ToField<'bool'>
 }
 
-export type BalanceSheetsReified = Reified<BalanceSheets, BalanceSheetsFields>
+export type FlashLoanFeesReified = Reified<FlashLoanFees, FlashLoanFeesFields>
 
-export class BalanceSheets implements StructClass {
+export class FlashLoanFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::reserve::BalanceSheets`
+  static readonly $typeName = `${PKG_V1}::reserve::FlashLoanFees`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = BalanceSheets.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::reserve::BalanceSheets`
+  readonly $typeName = FlashLoanFees.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::reserve::FlashLoanFees`
   readonly $typeArgs: []
-  readonly $isPhantom = BalanceSheets.$isPhantom
+  readonly $isPhantom = FlashLoanFees.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [], fields: BalanceSheetsFields) {
+  private constructor(typeArgs: [], fields: FlashLoanFeesFields) {
     this.$fullTypeName = composeSuiType(
-      BalanceSheets.$typeName,
+      FlashLoanFees.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::reserve::BalanceSheets`
+    ) as `${typeof PKG_V1}::reserve::FlashLoanFees`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified(): BalanceSheetsReified {
+  static reified(): FlashLoanFeesReified {
     return {
-      typeName: BalanceSheets.$typeName,
+      typeName: FlashLoanFees.$typeName,
       fullTypeName: composeSuiType(
-        BalanceSheets.$typeName,
+        FlashLoanFees.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::reserve::BalanceSheets`,
+      ) as `${typeof PKG_V1}::reserve::FlashLoanFees`,
       typeArgs: [] as [],
-      isPhantom: BalanceSheets.$isPhantom,
+      isPhantom: FlashLoanFees.$isPhantom,
       reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => BalanceSheets.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => BalanceSheets.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BalanceSheets.fromBcs(data),
-      bcs: BalanceSheets.bcs,
-      fromJSONField: (field: any) => BalanceSheets.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => BalanceSheets.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => BalanceSheets.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => BalanceSheets.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => BalanceSheets.fetch(client, id),
-      new: (fields: BalanceSheetsFields) => {
-        return new BalanceSheets([], fields)
+      fromFields: (fields: Record<string, any>) => FlashLoanFees.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoanFees.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FlashLoanFees.fromBcs(data),
+      bcs: FlashLoanFees.bcs,
+      fromJSONField: (field: any) => FlashLoanFees.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FlashLoanFees.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FlashLoanFees.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FlashLoanFees.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FlashLoanFees.fetch(client, id),
+      new: (fields: FlashLoanFeesFields) => {
+        return new FlashLoanFees([], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return BalanceSheets.reified()
+    return FlashLoanFees.reified()
   }
 
-  static phantom(): PhantomReified<ToTypeStr<BalanceSheets>> {
-    return phantom(BalanceSheets.reified())
+  static phantom(): PhantomReified<ToTypeStr<FlashLoanFees>> {
+    return phantom(FlashLoanFees.reified())
   }
   static get p() {
-    return BalanceSheets.phantom()
+    return FlashLoanFees.phantom()
   }
 
   static get bcs() {
-    return bcs.struct('BalanceSheets', {
+    return bcs.struct('FlashLoanFees', {
       dummy_field: bcs.bool(),
     })
   }
 
-  static fromFields(fields: Record<string, any>): BalanceSheets {
-    return BalanceSheets.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  static fromFields(fields: Record<string, any>): FlashLoanFees {
+    return FlashLoanFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): BalanceSheets {
-    if (!isBalanceSheets(item.type)) {
-      throw new Error('not a BalanceSheets type')
+  static fromFieldsWithTypes(item: FieldsWithTypes): FlashLoanFees {
+    if (!isFlashLoanFees(item.type)) {
+      throw new Error('not a FlashLoanFees type')
     }
 
-    return BalanceSheets.reified().new({
+    return FlashLoanFees.reified().new({
       dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
     })
   }
 
-  static fromBcs(data: Uint8Array): BalanceSheets {
-    return BalanceSheets.fromFields(BalanceSheets.bcs.parse(data))
+  static fromBcs(data: Uint8Array): FlashLoanFees {
+    return FlashLoanFees.fromFields(FlashLoanFees.bcs.parse(data))
   }
 
   toJSONField() {
@@ -328,56 +489,56 @@ export class BalanceSheets implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): BalanceSheets {
-    return BalanceSheets.reified().new({
+  static fromJSONField(field: any): FlashLoanFees {
+    return FlashLoanFees.reified().new({
       dummyField: decodeFromJSONField('bool', field.dummyField),
     })
   }
 
-  static fromJSON(json: Record<string, any>): BalanceSheets {
-    if (json.$typeName !== BalanceSheets.$typeName) {
+  static fromJSON(json: Record<string, any>): FlashLoanFees {
+    if (json.$typeName !== FlashLoanFees.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
 
-    return BalanceSheets.fromJSONField(json)
+    return FlashLoanFees.fromJSONField(json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): BalanceSheets {
+  static fromSuiParsedData(content: SuiParsedData): FlashLoanFees {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isBalanceSheets(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a BalanceSheets object`)
+    if (!isFlashLoanFees(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FlashLoanFees object`)
     }
-    return BalanceSheets.fromFieldsWithTypes(content)
+    return FlashLoanFees.fromFieldsWithTypes(content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): BalanceSheets {
+  static fromSuiObjectData(data: SuiObjectData): FlashLoanFees {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isBalanceSheets(data.bcs.type)) {
-        throw new Error(`object at is not a BalanceSheets object`)
+      if (data.bcs.dataType !== 'moveObject' || !isFlashLoanFees(data.bcs.type)) {
+        throw new Error(`object at is not a FlashLoanFees object`)
       }
 
-      return BalanceSheets.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FlashLoanFees.fromBcs(fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return BalanceSheets.fromSuiParsedData(data.content)
+      return FlashLoanFees.fromSuiParsedData(data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<BalanceSheets> {
+  static async fetch(client: SuiClient, id: string): Promise<FlashLoanFees> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching BalanceSheets object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching FlashLoanFees object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBalanceSheets(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a BalanceSheets object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashLoanFees(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FlashLoanFees object`)
     }
 
-    return BalanceSheets.fromSuiObjectData(res.data)
+    return FlashLoanFees.fromSuiObjectData(res.data)
   }
 }
 
@@ -601,167 +762,6 @@ export class FlashLoan<T0 extends PhantomTypeArgument> implements StructClass {
     }
 
     return FlashLoan.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== FlashLoanFees =============================== */
-
-export function isFlashLoanFees(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::reserve::FlashLoanFees`
-}
-
-export interface FlashLoanFeesFields {
-  dummyField: ToField<'bool'>
-}
-
-export type FlashLoanFeesReified = Reified<FlashLoanFees, FlashLoanFeesFields>
-
-export class FlashLoanFees implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::reserve::FlashLoanFees`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = FlashLoanFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::reserve::FlashLoanFees`
-  readonly $typeArgs: []
-  readonly $isPhantom = FlashLoanFees.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: FlashLoanFeesFields) {
-    this.$fullTypeName = composeSuiType(
-      FlashLoanFees.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::reserve::FlashLoanFees`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): FlashLoanFeesReified {
-    return {
-      typeName: FlashLoanFees.$typeName,
-      fullTypeName: composeSuiType(
-        FlashLoanFees.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::reserve::FlashLoanFees`,
-      typeArgs: [] as [],
-      isPhantom: FlashLoanFees.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FlashLoanFees.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoanFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FlashLoanFees.fromBcs(data),
-      bcs: FlashLoanFees.bcs,
-      fromJSONField: (field: any) => FlashLoanFees.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FlashLoanFees.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => FlashLoanFees.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => FlashLoanFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FlashLoanFees.fetch(client, id),
-      new: (fields: FlashLoanFeesFields) => {
-        return new FlashLoanFees([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FlashLoanFees.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<FlashLoanFees>> {
-    return phantom(FlashLoanFees.reified())
-  }
-  static get p() {
-    return FlashLoanFees.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('FlashLoanFees', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): FlashLoanFees {
-    return FlashLoanFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): FlashLoanFees {
-    if (!isFlashLoanFees(item.type)) {
-      throw new Error('not a FlashLoanFees type')
-    }
-
-    return FlashLoanFees.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): FlashLoanFees {
-    return FlashLoanFees.fromFields(FlashLoanFees.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): FlashLoanFees {
-    return FlashLoanFees.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): FlashLoanFees {
-    if (json.$typeName !== FlashLoanFees.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return FlashLoanFees.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): FlashLoanFees {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFlashLoanFees(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FlashLoanFees object`)
-    }
-    return FlashLoanFees.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): FlashLoanFees {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFlashLoanFees(data.bcs.type)) {
-        throw new Error(`object at is not a FlashLoanFees object`)
-      }
-
-      return FlashLoanFees.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FlashLoanFees.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<FlashLoanFees> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FlashLoanFees object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashLoanFees(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FlashLoanFees object`)
-    }
-
-    return FlashLoanFees.fromSuiObjectData(res.data)
   }
 }
 

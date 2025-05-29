@@ -18,6 +18,177 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== DebtInfoEntry =============================== */
+
+export function isDebtInfoEntry(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::debt_info::DebtInfoEntry`
+}
+
+export interface DebtInfoEntryFields {
+  supplyX64: ToField<'u128'>
+  liabilityValueX64: ToField<'u128'>
+}
+
+export type DebtInfoEntryReified = Reified<DebtInfoEntry, DebtInfoEntryFields>
+
+export class DebtInfoEntry implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::debt_info::DebtInfoEntry`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = DebtInfoEntry.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::debt_info::DebtInfoEntry`
+  readonly $typeArgs: []
+  readonly $isPhantom = DebtInfoEntry.$isPhantom
+
+  readonly supplyX64: ToField<'u128'>
+  readonly liabilityValueX64: ToField<'u128'>
+
+  private constructor(typeArgs: [], fields: DebtInfoEntryFields) {
+    this.$fullTypeName = composeSuiType(
+      DebtInfoEntry.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`
+    this.$typeArgs = typeArgs
+
+    this.supplyX64 = fields.supplyX64
+    this.liabilityValueX64 = fields.liabilityValueX64
+  }
+
+  static reified(): DebtInfoEntryReified {
+    return {
+      typeName: DebtInfoEntry.$typeName,
+      fullTypeName: composeSuiType(
+        DebtInfoEntry.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`,
+      typeArgs: [] as [],
+      isPhantom: DebtInfoEntry.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => DebtInfoEntry.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DebtInfoEntry.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => DebtInfoEntry.fromBcs(data),
+      bcs: DebtInfoEntry.bcs,
+      fromJSONField: (field: any) => DebtInfoEntry.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => DebtInfoEntry.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => DebtInfoEntry.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => DebtInfoEntry.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => DebtInfoEntry.fetch(client, id),
+      new: (fields: DebtInfoEntryFields) => {
+        return new DebtInfoEntry([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return DebtInfoEntry.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<DebtInfoEntry>> {
+    return phantom(DebtInfoEntry.reified())
+  }
+  static get p() {
+    return DebtInfoEntry.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('DebtInfoEntry', {
+      supply_x64: bcs.u128(),
+      liability_value_x64: bcs.u128(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): DebtInfoEntry {
+    return DebtInfoEntry.reified().new({
+      supplyX64: decodeFromFields('u128', fields.supply_x64),
+      liabilityValueX64: decodeFromFields('u128', fields.liability_value_x64),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): DebtInfoEntry {
+    if (!isDebtInfoEntry(item.type)) {
+      throw new Error('not a DebtInfoEntry type')
+    }
+
+    return DebtInfoEntry.reified().new({
+      supplyX64: decodeFromFieldsWithTypes('u128', item.fields.supply_x64),
+      liabilityValueX64: decodeFromFieldsWithTypes('u128', item.fields.liability_value_x64),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): DebtInfoEntry {
+    return DebtInfoEntry.fromFields(DebtInfoEntry.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      supplyX64: this.supplyX64.toString(),
+      liabilityValueX64: this.liabilityValueX64.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): DebtInfoEntry {
+    return DebtInfoEntry.reified().new({
+      supplyX64: decodeFromJSONField('u128', field.supplyX64),
+      liabilityValueX64: decodeFromJSONField('u128', field.liabilityValueX64),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): DebtInfoEntry {
+    if (json.$typeName !== DebtInfoEntry.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return DebtInfoEntry.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): DebtInfoEntry {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isDebtInfoEntry(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a DebtInfoEntry object`)
+    }
+    return DebtInfoEntry.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): DebtInfoEntry {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isDebtInfoEntry(data.bcs.type)) {
+        throw new Error(`object at is not a DebtInfoEntry object`)
+      }
+
+      return DebtInfoEntry.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return DebtInfoEntry.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<DebtInfoEntry> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching DebtInfoEntry object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtInfoEntry(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a DebtInfoEntry object`)
+    }
+
+    return DebtInfoEntry.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== DebtInfo =============================== */
 
 export function isDebtInfo(type: string): boolean {
@@ -195,177 +366,6 @@ export class DebtInfo implements StructClass {
     }
 
     return DebtInfo.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== DebtInfoEntry =============================== */
-
-export function isDebtInfoEntry(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_info::DebtInfoEntry`
-}
-
-export interface DebtInfoEntryFields {
-  supplyX64: ToField<'u128'>
-  liabilityValueX64: ToField<'u128'>
-}
-
-export type DebtInfoEntryReified = Reified<DebtInfoEntry, DebtInfoEntryFields>
-
-export class DebtInfoEntry implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::debt_info::DebtInfoEntry`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = DebtInfoEntry.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_info::DebtInfoEntry`
-  readonly $typeArgs: []
-  readonly $isPhantom = DebtInfoEntry.$isPhantom
-
-  readonly supplyX64: ToField<'u128'>
-  readonly liabilityValueX64: ToField<'u128'>
-
-  private constructor(typeArgs: [], fields: DebtInfoEntryFields) {
-    this.$fullTypeName = composeSuiType(
-      DebtInfoEntry.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`
-    this.$typeArgs = typeArgs
-
-    this.supplyX64 = fields.supplyX64
-    this.liabilityValueX64 = fields.liabilityValueX64
-  }
-
-  static reified(): DebtInfoEntryReified {
-    return {
-      typeName: DebtInfoEntry.$typeName,
-      fullTypeName: composeSuiType(
-        DebtInfoEntry.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`,
-      typeArgs: [] as [],
-      isPhantom: DebtInfoEntry.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => DebtInfoEntry.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DebtInfoEntry.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DebtInfoEntry.fromBcs(data),
-      bcs: DebtInfoEntry.bcs,
-      fromJSONField: (field: any) => DebtInfoEntry.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => DebtInfoEntry.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => DebtInfoEntry.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => DebtInfoEntry.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DebtInfoEntry.fetch(client, id),
-      new: (fields: DebtInfoEntryFields) => {
-        return new DebtInfoEntry([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return DebtInfoEntry.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<DebtInfoEntry>> {
-    return phantom(DebtInfoEntry.reified())
-  }
-  static get p() {
-    return DebtInfoEntry.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('DebtInfoEntry', {
-      supply_x64: bcs.u128(),
-      liability_value_x64: bcs.u128(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): DebtInfoEntry {
-    return DebtInfoEntry.reified().new({
-      supplyX64: decodeFromFields('u128', fields.supply_x64),
-      liabilityValueX64: decodeFromFields('u128', fields.liability_value_x64),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): DebtInfoEntry {
-    if (!isDebtInfoEntry(item.type)) {
-      throw new Error('not a DebtInfoEntry type')
-    }
-
-    return DebtInfoEntry.reified().new({
-      supplyX64: decodeFromFieldsWithTypes('u128', item.fields.supply_x64),
-      liabilityValueX64: decodeFromFieldsWithTypes('u128', item.fields.liability_value_x64),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): DebtInfoEntry {
-    return DebtInfoEntry.fromFields(DebtInfoEntry.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      supplyX64: this.supplyX64.toString(),
-      liabilityValueX64: this.liabilityValueX64.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): DebtInfoEntry {
-    return DebtInfoEntry.reified().new({
-      supplyX64: decodeFromJSONField('u128', field.supplyX64),
-      liabilityValueX64: decodeFromJSONField('u128', field.liabilityValueX64),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): DebtInfoEntry {
-    if (json.$typeName !== DebtInfoEntry.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return DebtInfoEntry.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): DebtInfoEntry {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isDebtInfoEntry(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a DebtInfoEntry object`)
-    }
-    return DebtInfoEntry.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): DebtInfoEntry {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isDebtInfoEntry(data.bcs.type)) {
-        throw new Error(`object at is not a DebtInfoEntry object`)
-      }
-
-      return DebtInfoEntry.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return DebtInfoEntry.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<DebtInfoEntry> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DebtInfoEntry object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtInfoEntry(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a DebtInfoEntry object`)
-    }
-
-    return DebtInfoEntry.fromSuiObjectData(res.data)
   }
 }
 

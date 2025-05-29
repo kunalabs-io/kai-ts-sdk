@@ -22,205 +22,6 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== PoolConfig =============================== */
-
-export function isPoolConfig(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::pool_factory::PoolConfig`
-}
-
-export interface PoolConfigFields {
-  id: ToField<UID>
-  feeMap: ToField<VecMap<String, ID>>
-  feeProtocol: ToField<'u32'>
-  pools: ToField<Table<ToPhantom<ID>, ToPhantom<PoolSimpleInfo>>>
-}
-
-export type PoolConfigReified = Reified<PoolConfig, PoolConfigFields>
-
-export class PoolConfig implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool_factory::PoolConfig`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PoolConfig.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool_factory::PoolConfig`
-  readonly $typeArgs: []
-  readonly $isPhantom = PoolConfig.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly feeMap: ToField<VecMap<String, ID>>
-  readonly feeProtocol: ToField<'u32'>
-  readonly pools: ToField<Table<ToPhantom<ID>, ToPhantom<PoolSimpleInfo>>>
-
-  private constructor(typeArgs: [], fields: PoolConfigFields) {
-    this.$fullTypeName = composeSuiType(
-      PoolConfig.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool_factory::PoolConfig`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.feeMap = fields.feeMap
-    this.feeProtocol = fields.feeProtocol
-    this.pools = fields.pools
-  }
-
-  static reified(): PoolConfigReified {
-    return {
-      typeName: PoolConfig.$typeName,
-      fullTypeName: composeSuiType(
-        PoolConfig.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pool_factory::PoolConfig`,
-      typeArgs: [] as [],
-      isPhantom: PoolConfig.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PoolConfig.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolConfig.fromBcs(data),
-      bcs: PoolConfig.bcs,
-      fromJSONField: (field: any) => PoolConfig.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PoolConfig.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PoolConfig.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PoolConfig.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PoolConfig.fetch(client, id),
-      new: (fields: PoolConfigFields) => {
-        return new PoolConfig([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PoolConfig.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PoolConfig>> {
-    return phantom(PoolConfig.reified())
-  }
-  static get p() {
-    return PoolConfig.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PoolConfig', {
-      id: UID.bcs,
-      fee_map: VecMap.bcs(String.bcs, ID.bcs),
-      fee_protocol: bcs.u32(),
-      pools: Table.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PoolConfig {
-    return PoolConfig.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      feeMap: decodeFromFields(VecMap.reified(String.reified(), ID.reified()), fields.fee_map),
-      feeProtocol: decodeFromFields('u32', fields.fee_protocol),
-      pools: decodeFromFields(
-        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
-        fields.pools
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PoolConfig {
-    if (!isPoolConfig(item.type)) {
-      throw new Error('not a PoolConfig type')
-    }
-
-    return PoolConfig.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      feeMap: decodeFromFieldsWithTypes(
-        VecMap.reified(String.reified(), ID.reified()),
-        item.fields.fee_map
-      ),
-      feeProtocol: decodeFromFieldsWithTypes('u32', item.fields.fee_protocol),
-      pools: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
-        item.fields.pools
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PoolConfig {
-    return PoolConfig.fromFields(PoolConfig.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      feeMap: this.feeMap.toJSONField(),
-      feeProtocol: this.feeProtocol,
-      pools: this.pools.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PoolConfig {
-    return PoolConfig.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      feeMap: decodeFromJSONField(VecMap.reified(String.reified(), ID.reified()), field.feeMap),
-      feeProtocol: decodeFromJSONField('u32', field.feeProtocol),
-      pools: decodeFromJSONField(
-        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
-        field.pools
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PoolConfig {
-    if (json.$typeName !== PoolConfig.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PoolConfig.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PoolConfig {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPoolConfig(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PoolConfig object`)
-    }
-    return PoolConfig.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PoolConfig {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPoolConfig(data.bcs.type)) {
-        throw new Error(`object at is not a PoolConfig object`)
-      }
-
-      return PoolConfig.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PoolConfig.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PoolConfig> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PoolConfig object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolConfig(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PoolConfig object`)
-    }
-
-    return PoolConfig.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== PoolFactoryAdminCap =============================== */
 
 export function isPoolFactoryAdminCap(type: string): boolean {
@@ -588,5 +389,204 @@ export class PoolSimpleInfo implements StructClass {
     }
 
     return PoolSimpleInfo.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PoolConfig =============================== */
+
+export function isPoolConfig(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::pool_factory::PoolConfig`
+}
+
+export interface PoolConfigFields {
+  id: ToField<UID>
+  feeMap: ToField<VecMap<String, ID>>
+  feeProtocol: ToField<'u32'>
+  pools: ToField<Table<ToPhantom<ID>, ToPhantom<PoolSimpleInfo>>>
+}
+
+export type PoolConfigReified = Reified<PoolConfig, PoolConfigFields>
+
+export class PoolConfig implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool_factory::PoolConfig`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PoolConfig.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool_factory::PoolConfig`
+  readonly $typeArgs: []
+  readonly $isPhantom = PoolConfig.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly feeMap: ToField<VecMap<String, ID>>
+  readonly feeProtocol: ToField<'u32'>
+  readonly pools: ToField<Table<ToPhantom<ID>, ToPhantom<PoolSimpleInfo>>>
+
+  private constructor(typeArgs: [], fields: PoolConfigFields) {
+    this.$fullTypeName = composeSuiType(
+      PoolConfig.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool_factory::PoolConfig`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.feeMap = fields.feeMap
+    this.feeProtocol = fields.feeProtocol
+    this.pools = fields.pools
+  }
+
+  static reified(): PoolConfigReified {
+    return {
+      typeName: PoolConfig.$typeName,
+      fullTypeName: composeSuiType(
+        PoolConfig.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::pool_factory::PoolConfig`,
+      typeArgs: [] as [],
+      isPhantom: PoolConfig.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PoolConfig.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PoolConfig.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PoolConfig.fromBcs(data),
+      bcs: PoolConfig.bcs,
+      fromJSONField: (field: any) => PoolConfig.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PoolConfig.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PoolConfig.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PoolConfig.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PoolConfig.fetch(client, id),
+      new: (fields: PoolConfigFields) => {
+        return new PoolConfig([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PoolConfig.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PoolConfig>> {
+    return phantom(PoolConfig.reified())
+  }
+  static get p() {
+    return PoolConfig.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PoolConfig', {
+      id: UID.bcs,
+      fee_map: VecMap.bcs(String.bcs, ID.bcs),
+      fee_protocol: bcs.u32(),
+      pools: Table.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PoolConfig {
+    return PoolConfig.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      feeMap: decodeFromFields(VecMap.reified(String.reified(), ID.reified()), fields.fee_map),
+      feeProtocol: decodeFromFields('u32', fields.fee_protocol),
+      pools: decodeFromFields(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
+        fields.pools
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PoolConfig {
+    if (!isPoolConfig(item.type)) {
+      throw new Error('not a PoolConfig type')
+    }
+
+    return PoolConfig.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      feeMap: decodeFromFieldsWithTypes(
+        VecMap.reified(String.reified(), ID.reified()),
+        item.fields.fee_map
+      ),
+      feeProtocol: decodeFromFieldsWithTypes('u32', item.fields.fee_protocol),
+      pools: decodeFromFieldsWithTypes(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
+        item.fields.pools
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PoolConfig {
+    return PoolConfig.fromFields(PoolConfig.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      feeMap: this.feeMap.toJSONField(),
+      feeProtocol: this.feeProtocol,
+      pools: this.pools.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PoolConfig {
+    return PoolConfig.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      feeMap: decodeFromJSONField(VecMap.reified(String.reified(), ID.reified()), field.feeMap),
+      feeProtocol: decodeFromJSONField('u32', field.feeProtocol),
+      pools: decodeFromJSONField(
+        Table.reified(reified.phantom(ID.reified()), reified.phantom(PoolSimpleInfo.reified())),
+        field.pools
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PoolConfig {
+    if (json.$typeName !== PoolConfig.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PoolConfig.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PoolConfig {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPoolConfig(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PoolConfig object`)
+    }
+    return PoolConfig.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PoolConfig {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPoolConfig(data.bcs.type)) {
+        throw new Error(`object at is not a PoolConfig object`)
+      }
+
+      return PoolConfig.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PoolConfig.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PoolConfig> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PoolConfig object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPoolConfig(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PoolConfig object`)
+    }
+
+    return PoolConfig.fromSuiObjectData(res.data)
   }
 }

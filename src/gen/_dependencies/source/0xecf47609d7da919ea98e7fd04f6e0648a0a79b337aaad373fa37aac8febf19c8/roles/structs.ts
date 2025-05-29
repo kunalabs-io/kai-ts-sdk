@@ -27,142 +27,121 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
-/* ============================== BlocklisterChanged =============================== */
+/* ============================== Roles =============================== */
 
-export function isBlocklisterChanged(type: string): boolean {
+export function isRoles(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::roles::BlocklisterChanged` + '<')
+  return type.startsWith(`${PKG_V1}::roles::Roles` + '<')
 }
 
-export interface BlocklisterChangedFields<T extends PhantomTypeArgument> {
-  oldBlocklister: ToField<'address'>
-  newBlocklister: ToField<'address'>
+export interface RolesFields<T extends PhantomTypeArgument> {
+  data: ToField<Bag>
 }
 
-export type BlocklisterChangedReified<T extends PhantomTypeArgument> = Reified<
-  BlocklisterChanged<T>,
-  BlocklisterChangedFields<T>
->
+export type RolesReified<T extends PhantomTypeArgument> = Reified<Roles<T>, RolesFields<T>>
 
-export class BlocklisterChanged<T extends PhantomTypeArgument> implements StructClass {
+export class Roles<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::roles::BlocklisterChanged`
+  static readonly $typeName = `${PKG_V1}::roles::Roles`
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = BlocklisterChanged.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<T>}>`
+  readonly $typeName = Roles.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = BlocklisterChanged.$isPhantom
+  readonly $isPhantom = Roles.$isPhantom
 
-  readonly oldBlocklister: ToField<'address'>
-  readonly newBlocklister: ToField<'address'>
+  readonly data: ToField<Bag>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: BlocklisterChangedFields<T>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: RolesFields<T>) {
     this.$fullTypeName = composeSuiType(
-      BlocklisterChanged.$typeName,
+      Roles.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<T>}>`
+    ) as `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
-    this.oldBlocklister = fields.oldBlocklister
-    this.newBlocklister = fields.newBlocklister
+    this.data = fields.data
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
-  ): BlocklisterChangedReified<ToPhantomTypeArgument<T>> {
+  ): RolesReified<ToPhantomTypeArgument<T>> {
     return {
-      typeName: BlocklisterChanged.$typeName,
+      typeName: Roles.$typeName,
       fullTypeName: composeSuiType(
-        BlocklisterChanged.$typeName,
+        Roles.$typeName,
         ...[extractType(T)]
-      ) as `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      ) as `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: BlocklisterChanged.$isPhantom,
+      isPhantom: Roles.$isPhantom,
       reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => BlocklisterChanged.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        BlocklisterChanged.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => BlocklisterChanged.fromBcs(T, data),
-      bcs: BlocklisterChanged.bcs,
-      fromJSONField: (field: any) => BlocklisterChanged.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => BlocklisterChanged.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        BlocklisterChanged.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        BlocklisterChanged.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => BlocklisterChanged.fetch(client, T, id),
-      new: (fields: BlocklisterChangedFields<ToPhantomTypeArgument<T>>) => {
-        return new BlocklisterChanged([extractType(T)], fields)
+      fromFields: (fields: Record<string, any>) => Roles.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Roles.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => Roles.fromBcs(T, data),
+      bcs: Roles.bcs,
+      fromJSONField: (field: any) => Roles.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => Roles.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => Roles.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => Roles.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => Roles.fetch(client, T, id),
+      new: (fields: RolesFields<ToPhantomTypeArgument<T>>) => {
+        return new Roles([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return BlocklisterChanged.reified
+    return Roles.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
-  ): PhantomReified<ToTypeStr<BlocklisterChanged<ToPhantomTypeArgument<T>>>> {
-    return phantom(BlocklisterChanged.reified(T))
+  ): PhantomReified<ToTypeStr<Roles<ToPhantomTypeArgument<T>>>> {
+    return phantom(Roles.reified(T))
   }
   static get p() {
-    return BlocklisterChanged.phantom
+    return Roles.phantom
   }
 
   static get bcs() {
-    return bcs.struct('BlocklisterChanged', {
-      old_blocklister: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      new_blocklister: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
+    return bcs.struct('Roles', {
+      data: Bag.bcs,
     })
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     fields: Record<string, any>
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
-    return BlocklisterChanged.reified(typeArg).new({
-      oldBlocklister: decodeFromFields('address', fields.old_blocklister),
-      newBlocklister: decodeFromFields('address', fields.new_blocklister),
-    })
+  ): Roles<ToPhantomTypeArgument<T>> {
+    return Roles.reified(typeArg).new({ data: decodeFromFields(Bag.reified(), fields.data) })
   }
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     item: FieldsWithTypes
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
-    if (!isBlocklisterChanged(item.type)) {
-      throw new Error('not a BlocklisterChanged type')
+  ): Roles<ToPhantomTypeArgument<T>> {
+    if (!isRoles(item.type)) {
+      throw new Error('not a Roles type')
     }
     assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return BlocklisterChanged.reified(typeArg).new({
-      oldBlocklister: decodeFromFieldsWithTypes('address', item.fields.old_blocklister),
-      newBlocklister: decodeFromFieldsWithTypes('address', item.fields.new_blocklister),
+    return Roles.reified(typeArg).new({
+      data: decodeFromFieldsWithTypes(Bag.reified(), item.fields.data),
     })
   }
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: Uint8Array
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
-    return BlocklisterChanged.fromFields(typeArg, BlocklisterChanged.bcs.parse(data))
+  ): Roles<ToPhantomTypeArgument<T>> {
+    return Roles.fromFields(typeArg, Roles.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      oldBlocklister: this.oldBlocklister,
-      newBlocklister: this.newBlocklister,
+      data: this.data.toJSONField(),
     }
   }
 
@@ -173,49 +152,46 @@ export class BlocklisterChanged<T extends PhantomTypeArgument> implements Struct
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     field: any
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
-    return BlocklisterChanged.reified(typeArg).new({
-      oldBlocklister: decodeFromJSONField('address', field.oldBlocklister),
-      newBlocklister: decodeFromJSONField('address', field.newBlocklister),
-    })
+  ): Roles<ToPhantomTypeArgument<T>> {
+    return Roles.reified(typeArg).new({ data: decodeFromJSONField(Bag.reified(), field.data) })
   }
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     json: Record<string, any>
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== BlocklisterChanged.$typeName) {
+  ): Roles<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== Roles.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(BlocklisterChanged.$typeName, extractType(typeArg)),
+      composeSuiType(Roles.$typeName, extractType(typeArg)),
       json.$typeArgs,
       [typeArg]
     )
 
-    return BlocklisterChanged.fromJSONField(typeArg, json)
+    return Roles.fromJSONField(typeArg, json)
   }
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+  ): Roles<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isBlocklisterChanged(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a BlocklisterChanged object`)
+    if (!isRoles(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Roles object`)
     }
-    return BlocklisterChanged.fromFieldsWithTypes(typeArg, content)
+    return Roles.fromFieldsWithTypes(typeArg, content)
   }
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData
-  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+  ): Roles<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isBlocklisterChanged(data.bcs.type)) {
-        throw new Error(`object at is not a BlocklisterChanged object`)
+      if (data.bcs.dataType !== 'moveObject' || !isRoles(data.bcs.type)) {
+        throw new Error(`object at is not a Roles object`)
       }
 
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
@@ -232,10 +208,10 @@ export class BlocklisterChanged<T extends PhantomTypeArgument> implements Struct
         )
       }
 
-      return BlocklisterChanged.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return Roles.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return BlocklisterChanged.fromSuiParsedData(typeArg, data.content)
+      return Roles.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
@@ -246,16 +222,553 @@ export class BlocklisterChanged<T extends PhantomTypeArgument> implements Struct
     client: SuiClient,
     typeArg: T,
     id: string
-  ): Promise<BlocklisterChanged<ToPhantomTypeArgument<T>>> {
+  ): Promise<Roles<ToPhantomTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching BlocklisterChanged object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching Roles object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBlocklisterChanged(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a BlocklisterChanged object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isRoles(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Roles object`)
     }
 
-    return BlocklisterChanged.fromSuiObjectData(typeArg, res.data)
+    return Roles.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== OwnerRole =============================== */
+
+export function isOwnerRole(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::roles::OwnerRole` + '<')
+}
+
+export interface OwnerRoleFields<T extends PhantomTypeArgument> {
+  dummyField: ToField<'bool'>
+}
+
+export type OwnerRoleReified<T extends PhantomTypeArgument> = Reified<
+  OwnerRole<T>,
+  OwnerRoleFields<T>
+>
+
+export class OwnerRole<T extends PhantomTypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::OwnerRole`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
+
+  readonly $typeName = OwnerRole.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
+  readonly $isPhantom = OwnerRole.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: OwnerRoleFields<T>) {
+    this.$fullTypeName = composeSuiType(
+      OwnerRole.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<T>}>`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): OwnerRoleReified<ToPhantomTypeArgument<T>> {
+    return {
+      typeName: OwnerRole.$typeName,
+      fullTypeName: composeSuiType(
+        OwnerRole.$typeName,
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      isPhantom: OwnerRole.$isPhantom,
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => OwnerRole.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => OwnerRole.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => OwnerRole.fromBcs(T, data),
+      bcs: OwnerRole.bcs,
+      fromJSONField: (field: any) => OwnerRole.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => OwnerRole.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => OwnerRole.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => OwnerRole.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => OwnerRole.fetch(client, T, id),
+      new: (fields: OwnerRoleFields<ToPhantomTypeArgument<T>>) => {
+        return new OwnerRole([extractType(T)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return OwnerRole.reified
+  }
+
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<OwnerRole<ToPhantomTypeArgument<T>>>> {
+    return phantom(OwnerRole.reified(T))
+  }
+  static get p() {
+    return OwnerRole.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('OwnerRole', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    fields: Record<string, any>
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    return OwnerRole.reified(typeArg).new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    item: FieldsWithTypes
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    if (!isOwnerRole(item.type)) {
+      throw new Error('not a OwnerRole type')
+    }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
+
+    return OwnerRole.reified(typeArg).new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: Uint8Array
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    return OwnerRole.fromFields(typeArg, OwnerRole.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    field: any
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    return OwnerRole.reified(typeArg).new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    json: Record<string, any>
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== OwnerRole.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(OwnerRole.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
+
+    return OwnerRole.fromJSONField(typeArg, json)
+  }
+
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    content: SuiParsedData
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isOwnerRole(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a OwnerRole object`)
+    }
+    return OwnerRole.fromFieldsWithTypes(typeArg, content)
+  }
+
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: SuiObjectData
+  ): OwnerRole<ToPhantomTypeArgument<T>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isOwnerRole(data.bcs.type)) {
+        throw new Error(`object at is not a OwnerRole object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return OwnerRole.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return OwnerRole.fromSuiParsedData(typeArg, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: T,
+    id: string
+  ): Promise<OwnerRole<ToPhantomTypeArgument<T>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching OwnerRole object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerRole(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a OwnerRole object`)
+    }
+
+    return OwnerRole.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== OwnerKey =============================== */
+
+export function isOwnerKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::roles::OwnerKey`
+}
+
+export interface OwnerKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type OwnerKeyReified = Reified<OwnerKey, OwnerKeyFields>
+
+export class OwnerKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::OwnerKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = OwnerKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::OwnerKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = OwnerKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: OwnerKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      OwnerKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::OwnerKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): OwnerKeyReified {
+    return {
+      typeName: OwnerKey.$typeName,
+      fullTypeName: composeSuiType(
+        OwnerKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::roles::OwnerKey`,
+      typeArgs: [] as [],
+      isPhantom: OwnerKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => OwnerKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => OwnerKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => OwnerKey.fromBcs(data),
+      bcs: OwnerKey.bcs,
+      fromJSONField: (field: any) => OwnerKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => OwnerKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => OwnerKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => OwnerKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => OwnerKey.fetch(client, id),
+      new: (fields: OwnerKeyFields) => {
+        return new OwnerKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return OwnerKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<OwnerKey>> {
+    return phantom(OwnerKey.reified())
+  }
+  static get p() {
+    return OwnerKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('OwnerKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): OwnerKey {
+    return OwnerKey.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): OwnerKey {
+    if (!isOwnerKey(item.type)) {
+      throw new Error('not a OwnerKey type')
+    }
+
+    return OwnerKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): OwnerKey {
+    return OwnerKey.fromFields(OwnerKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): OwnerKey {
+    return OwnerKey.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): OwnerKey {
+    if (json.$typeName !== OwnerKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return OwnerKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): OwnerKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isOwnerKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a OwnerKey object`)
+    }
+    return OwnerKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): OwnerKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isOwnerKey(data.bcs.type)) {
+        throw new Error(`object at is not a OwnerKey object`)
+      }
+
+      return OwnerKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return OwnerKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<OwnerKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching OwnerKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a OwnerKey object`)
+    }
+
+    return OwnerKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== MasterMinterKey =============================== */
+
+export function isMasterMinterKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::roles::MasterMinterKey`
+}
+
+export interface MasterMinterKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type MasterMinterKeyReified = Reified<MasterMinterKey, MasterMinterKeyFields>
+
+export class MasterMinterKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::MasterMinterKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = MasterMinterKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::MasterMinterKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = MasterMinterKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: MasterMinterKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      MasterMinterKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::MasterMinterKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): MasterMinterKeyReified {
+    return {
+      typeName: MasterMinterKey.$typeName,
+      fullTypeName: composeSuiType(
+        MasterMinterKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::roles::MasterMinterKey`,
+      typeArgs: [] as [],
+      isPhantom: MasterMinterKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => MasterMinterKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => MasterMinterKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => MasterMinterKey.fromBcs(data),
+      bcs: MasterMinterKey.bcs,
+      fromJSONField: (field: any) => MasterMinterKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => MasterMinterKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => MasterMinterKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => MasterMinterKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => MasterMinterKey.fetch(client, id),
+      new: (fields: MasterMinterKeyFields) => {
+        return new MasterMinterKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return MasterMinterKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<MasterMinterKey>> {
+    return phantom(MasterMinterKey.reified())
+  }
+  static get p() {
+    return MasterMinterKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('MasterMinterKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): MasterMinterKey {
+    return MasterMinterKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): MasterMinterKey {
+    if (!isMasterMinterKey(item.type)) {
+      throw new Error('not a MasterMinterKey type')
+    }
+
+    return MasterMinterKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): MasterMinterKey {
+    return MasterMinterKey.fromFields(MasterMinterKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): MasterMinterKey {
+    return MasterMinterKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): MasterMinterKey {
+    if (json.$typeName !== MasterMinterKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return MasterMinterKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): MasterMinterKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isMasterMinterKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a MasterMinterKey object`)
+    }
+    return MasterMinterKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): MasterMinterKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isMasterMinterKey(data.bcs.type)) {
+        throw new Error(`object at is not a MasterMinterKey object`)
+      }
+
+      return MasterMinterKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return MasterMinterKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<MasterMinterKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching MasterMinterKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isMasterMinterKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a MasterMinterKey object`)
+    }
+
+    return MasterMinterKey.fromSuiObjectData(res.data)
   }
 }
 
@@ -419,6 +932,328 @@ export class BlocklisterKey implements StructClass {
     }
 
     return BlocklisterKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PauserKey =============================== */
+
+export function isPauserKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::roles::PauserKey`
+}
+
+export interface PauserKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type PauserKeyReified = Reified<PauserKey, PauserKeyFields>
+
+export class PauserKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::PauserKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PauserKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::PauserKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = PauserKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: PauserKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      PauserKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::PauserKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): PauserKeyReified {
+    return {
+      typeName: PauserKey.$typeName,
+      fullTypeName: composeSuiType(
+        PauserKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::roles::PauserKey`,
+      typeArgs: [] as [],
+      isPhantom: PauserKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PauserKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PauserKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PauserKey.fromBcs(data),
+      bcs: PauserKey.bcs,
+      fromJSONField: (field: any) => PauserKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PauserKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PauserKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PauserKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PauserKey.fetch(client, id),
+      new: (fields: PauserKeyFields) => {
+        return new PauserKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PauserKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PauserKey>> {
+    return phantom(PauserKey.reified())
+  }
+  static get p() {
+    return PauserKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PauserKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PauserKey {
+    return PauserKey.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PauserKey {
+    if (!isPauserKey(item.type)) {
+      throw new Error('not a PauserKey type')
+    }
+
+    return PauserKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PauserKey {
+    return PauserKey.fromFields(PauserKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PauserKey {
+    return PauserKey.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+  }
+
+  static fromJSON(json: Record<string, any>): PauserKey {
+    if (json.$typeName !== PauserKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PauserKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PauserKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPauserKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PauserKey object`)
+    }
+    return PauserKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PauserKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPauserKey(data.bcs.type)) {
+        throw new Error(`object at is not a PauserKey object`)
+      }
+
+      return PauserKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PauserKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PauserKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PauserKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPauserKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PauserKey object`)
+    }
+
+    return PauserKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== MetadataUpdaterKey =============================== */
+
+export function isMetadataUpdaterKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::roles::MetadataUpdaterKey`
+}
+
+export interface MetadataUpdaterKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type MetadataUpdaterKeyReified = Reified<MetadataUpdaterKey, MetadataUpdaterKeyFields>
+
+export class MetadataUpdaterKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::MetadataUpdaterKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = MetadataUpdaterKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::MetadataUpdaterKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = MetadataUpdaterKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: MetadataUpdaterKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      MetadataUpdaterKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::MetadataUpdaterKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): MetadataUpdaterKeyReified {
+    return {
+      typeName: MetadataUpdaterKey.$typeName,
+      fullTypeName: composeSuiType(
+        MetadataUpdaterKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::roles::MetadataUpdaterKey`,
+      typeArgs: [] as [],
+      isPhantom: MetadataUpdaterKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => MetadataUpdaterKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => MetadataUpdaterKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => MetadataUpdaterKey.fromBcs(data),
+      bcs: MetadataUpdaterKey.bcs,
+      fromJSONField: (field: any) => MetadataUpdaterKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => MetadataUpdaterKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => MetadataUpdaterKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => MetadataUpdaterKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => MetadataUpdaterKey.fetch(client, id),
+      new: (fields: MetadataUpdaterKeyFields) => {
+        return new MetadataUpdaterKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return MetadataUpdaterKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<MetadataUpdaterKey>> {
+    return phantom(MetadataUpdaterKey.reified())
+  }
+  static get p() {
+    return MetadataUpdaterKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('MetadataUpdaterKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): MetadataUpdaterKey {
+    return MetadataUpdaterKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): MetadataUpdaterKey {
+    if (!isMetadataUpdaterKey(item.type)) {
+      throw new Error('not a MetadataUpdaterKey type')
+    }
+
+    return MetadataUpdaterKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): MetadataUpdaterKey {
+    return MetadataUpdaterKey.fromFields(MetadataUpdaterKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): MetadataUpdaterKey {
+    return MetadataUpdaterKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): MetadataUpdaterKey {
+    if (json.$typeName !== MetadataUpdaterKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return MetadataUpdaterKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): MetadataUpdaterKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isMetadataUpdaterKey(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a MetadataUpdaterKey object`)
+    }
+    return MetadataUpdaterKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): MetadataUpdaterKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isMetadataUpdaterKey(data.bcs.type)) {
+        throw new Error(`object at is not a MetadataUpdaterKey object`)
+      }
+
+      return MetadataUpdaterKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return MetadataUpdaterKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<MetadataUpdaterKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching MetadataUpdaterKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isMetadataUpdaterKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a MetadataUpdaterKey object`)
+    }
+
+    return MetadataUpdaterKey.fromSuiObjectData(res.data)
   }
 }
 
@@ -654,109 +1489,142 @@ export class MasterMinterChanged<T extends PhantomTypeArgument> implements Struc
   }
 }
 
-/* ============================== MasterMinterKey =============================== */
+/* ============================== BlocklisterChanged =============================== */
 
-export function isMasterMinterKey(type: string): boolean {
+export function isBlocklisterChanged(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::roles::MasterMinterKey`
+  return type.startsWith(`${PKG_V1}::roles::BlocklisterChanged` + '<')
 }
 
-export interface MasterMinterKeyFields {
-  dummyField: ToField<'bool'>
+export interface BlocklisterChangedFields<T extends PhantomTypeArgument> {
+  oldBlocklister: ToField<'address'>
+  newBlocklister: ToField<'address'>
 }
 
-export type MasterMinterKeyReified = Reified<MasterMinterKey, MasterMinterKeyFields>
+export type BlocklisterChangedReified<T extends PhantomTypeArgument> = Reified<
+  BlocklisterChanged<T>,
+  BlocklisterChangedFields<T>
+>
 
-export class MasterMinterKey implements StructClass {
+export class BlocklisterChanged<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::roles::MasterMinterKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
+  static readonly $typeName = `${PKG_V1}::roles::BlocklisterChanged`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
 
-  readonly $typeName = MasterMinterKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::MasterMinterKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = MasterMinterKey.$isPhantom
+  readonly $typeName = BlocklisterChanged.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
+  readonly $isPhantom = BlocklisterChanged.$isPhantom
 
-  readonly dummyField: ToField<'bool'>
+  readonly oldBlocklister: ToField<'address'>
+  readonly newBlocklister: ToField<'address'>
 
-  private constructor(typeArgs: [], fields: MasterMinterKeyFields) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: BlocklisterChangedFields<T>) {
     this.$fullTypeName = composeSuiType(
-      MasterMinterKey.$typeName,
+      BlocklisterChanged.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::roles::MasterMinterKey`
+    ) as `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
-    this.dummyField = fields.dummyField
+    this.oldBlocklister = fields.oldBlocklister
+    this.newBlocklister = fields.newBlocklister
   }
 
-  static reified(): MasterMinterKeyReified {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): BlocklisterChangedReified<ToPhantomTypeArgument<T>> {
     return {
-      typeName: MasterMinterKey.$typeName,
+      typeName: BlocklisterChanged.$typeName,
       fullTypeName: composeSuiType(
-        MasterMinterKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::roles::MasterMinterKey`,
-      typeArgs: [] as [],
-      isPhantom: MasterMinterKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => MasterMinterKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => MasterMinterKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => MasterMinterKey.fromBcs(data),
-      bcs: MasterMinterKey.bcs,
-      fromJSONField: (field: any) => MasterMinterKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => MasterMinterKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => MasterMinterKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => MasterMinterKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => MasterMinterKey.fetch(client, id),
-      new: (fields: MasterMinterKeyFields) => {
-        return new MasterMinterKey([], fields)
+        BlocklisterChanged.$typeName,
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::roles::BlocklisterChanged<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      isPhantom: BlocklisterChanged.$isPhantom,
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => BlocklisterChanged.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        BlocklisterChanged.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => BlocklisterChanged.fromBcs(T, data),
+      bcs: BlocklisterChanged.bcs,
+      fromJSONField: (field: any) => BlocklisterChanged.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => BlocklisterChanged.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        BlocklisterChanged.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        BlocklisterChanged.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => BlocklisterChanged.fetch(client, T, id),
+      new: (fields: BlocklisterChangedFields<ToPhantomTypeArgument<T>>) => {
+        return new BlocklisterChanged([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
   }
 
   static get r() {
-    return MasterMinterKey.reified()
+    return BlocklisterChanged.reified
   }
 
-  static phantom(): PhantomReified<ToTypeStr<MasterMinterKey>> {
-    return phantom(MasterMinterKey.reified())
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<BlocklisterChanged<ToPhantomTypeArgument<T>>>> {
+    return phantom(BlocklisterChanged.reified(T))
   }
   static get p() {
-    return MasterMinterKey.phantom()
+    return BlocklisterChanged.phantom
   }
 
   static get bcs() {
-    return bcs.struct('MasterMinterKey', {
-      dummy_field: bcs.bool(),
+    return bcs.struct('BlocklisterChanged', {
+      old_blocklister: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      new_blocklister: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
     })
   }
 
-  static fromFields(fields: Record<string, any>): MasterMinterKey {
-    return MasterMinterKey.reified().new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    fields: Record<string, any>
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+    return BlocklisterChanged.reified(typeArg).new({
+      oldBlocklister: decodeFromFields('address', fields.old_blocklister),
+      newBlocklister: decodeFromFields('address', fields.new_blocklister),
     })
   }
 
-  static fromFieldsWithTypes(item: FieldsWithTypes): MasterMinterKey {
-    if (!isMasterMinterKey(item.type)) {
-      throw new Error('not a MasterMinterKey type')
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    item: FieldsWithTypes
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+    if (!isBlocklisterChanged(item.type)) {
+      throw new Error('not a BlocklisterChanged type')
     }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
 
-    return MasterMinterKey.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    return BlocklisterChanged.reified(typeArg).new({
+      oldBlocklister: decodeFromFieldsWithTypes('address', item.fields.old_blocklister),
+      newBlocklister: decodeFromFieldsWithTypes('address', item.fields.new_blocklister),
     })
   }
 
-  static fromBcs(data: Uint8Array): MasterMinterKey {
-    return MasterMinterKey.fromFields(MasterMinterKey.bcs.parse(data))
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: Uint8Array
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+    return BlocklisterChanged.fromFields(typeArg, BlocklisterChanged.bcs.parse(data))
   }
 
   toJSONField() {
     return {
-      dummyField: this.dummyField,
+      oldBlocklister: this.oldBlocklister,
+      newBlocklister: this.newBlocklister,
     }
   }
 
@@ -764,56 +1632,321 @@ export class MasterMinterKey implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField(field: any): MasterMinterKey {
-    return MasterMinterKey.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    field: any
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+    return BlocklisterChanged.reified(typeArg).new({
+      oldBlocklister: decodeFromJSONField('address', field.oldBlocklister),
+      newBlocklister: decodeFromJSONField('address', field.newBlocklister),
     })
   }
 
-  static fromJSON(json: Record<string, any>): MasterMinterKey {
-    if (json.$typeName !== MasterMinterKey.$typeName) {
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    json: Record<string, any>
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== BlocklisterChanged.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(BlocklisterChanged.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
 
-    return MasterMinterKey.fromJSONField(json)
+    return BlocklisterChanged.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData(content: SuiParsedData): MasterMinterKey {
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    content: SuiParsedData
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
-    if (!isMasterMinterKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a MasterMinterKey object`)
+    if (!isBlocklisterChanged(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a BlocklisterChanged object`)
     }
-    return MasterMinterKey.fromFieldsWithTypes(content)
+    return BlocklisterChanged.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData(data: SuiObjectData): MasterMinterKey {
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: SuiObjectData
+  ): BlocklisterChanged<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isMasterMinterKey(data.bcs.type)) {
-        throw new Error(`object at is not a MasterMinterKey object`)
+      if (data.bcs.dataType !== 'moveObject' || !isBlocklisterChanged(data.bcs.type)) {
+        throw new Error(`object at is not a BlocklisterChanged object`)
       }
 
-      return MasterMinterKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return BlocklisterChanged.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
     }
     if (data.content) {
-      return MasterMinterKey.fromSuiParsedData(data.content)
+      return BlocklisterChanged.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
       'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<MasterMinterKey> {
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: T,
+    id: string
+  ): Promise<BlocklisterChanged<ToPhantomTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
-      throw new Error(`error fetching MasterMinterKey object at id ${id}: ${res.error.code}`)
+      throw new Error(`error fetching BlocklisterChanged object at id ${id}: ${res.error.code}`)
     }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isMasterMinterKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a MasterMinterKey object`)
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isBlocklisterChanged(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a BlocklisterChanged object`)
     }
 
-    return MasterMinterKey.fromSuiObjectData(res.data)
+    return BlocklisterChanged.fromSuiObjectData(typeArg, res.data)
+  }
+}
+
+/* ============================== PauserChanged =============================== */
+
+export function isPauserChanged(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::roles::PauserChanged` + '<')
+}
+
+export interface PauserChangedFields<T extends PhantomTypeArgument> {
+  oldPauser: ToField<'address'>
+  newPauser: ToField<'address'>
+}
+
+export type PauserChangedReified<T extends PhantomTypeArgument> = Reified<
+  PauserChanged<T>,
+  PauserChangedFields<T>
+>
+
+export class PauserChanged<T extends PhantomTypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::roles::PauserChanged`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
+
+  readonly $typeName = PauserChanged.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
+  readonly $isPhantom = PauserChanged.$isPhantom
+
+  readonly oldPauser: ToField<'address'>
+  readonly newPauser: ToField<'address'>
+
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: PauserChangedFields<T>) {
+    this.$fullTypeName = composeSuiType(
+      PauserChanged.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<T>}>`
+    this.$typeArgs = typeArgs
+
+    this.oldPauser = fields.oldPauser
+    this.newPauser = fields.newPauser
+  }
+
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PauserChangedReified<ToPhantomTypeArgument<T>> {
+    return {
+      typeName: PauserChanged.$typeName,
+      fullTypeName: composeSuiType(
+        PauserChanged.$typeName,
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      isPhantom: PauserChanged.$isPhantom,
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => PauserChanged.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PauserChanged.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => PauserChanged.fromBcs(T, data),
+      bcs: PauserChanged.bcs,
+      fromJSONField: (field: any) => PauserChanged.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => PauserChanged.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => PauserChanged.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => PauserChanged.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => PauserChanged.fetch(client, T, id),
+      new: (fields: PauserChangedFields<ToPhantomTypeArgument<T>>) => {
+        return new PauserChanged([extractType(T)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PauserChanged.reified
+  }
+
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<PauserChanged<ToPhantomTypeArgument<T>>>> {
+    return phantom(PauserChanged.reified(T))
+  }
+  static get p() {
+    return PauserChanged.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('PauserChanged', {
+      old_pauser: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      new_pauser: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+    })
+  }
+
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    fields: Record<string, any>
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    return PauserChanged.reified(typeArg).new({
+      oldPauser: decodeFromFields('address', fields.old_pauser),
+      newPauser: decodeFromFields('address', fields.new_pauser),
+    })
+  }
+
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    item: FieldsWithTypes
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    if (!isPauserChanged(item.type)) {
+      throw new Error('not a PauserChanged type')
+    }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
+
+    return PauserChanged.reified(typeArg).new({
+      oldPauser: decodeFromFieldsWithTypes('address', item.fields.old_pauser),
+      newPauser: decodeFromFieldsWithTypes('address', item.fields.new_pauser),
+    })
+  }
+
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: Uint8Array
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    return PauserChanged.fromFields(typeArg, PauserChanged.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      oldPauser: this.oldPauser,
+      newPauser: this.newPauser,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    field: any
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    return PauserChanged.reified(typeArg).new({
+      oldPauser: decodeFromJSONField('address', field.oldPauser),
+      newPauser: decodeFromJSONField('address', field.newPauser),
+    })
+  }
+
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    json: Record<string, any>
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    if (json.$typeName !== PauserChanged.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(PauserChanged.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
+
+    return PauserChanged.fromJSONField(typeArg, json)
+  }
+
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    content: SuiParsedData
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPauserChanged(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PauserChanged object`)
+    }
+    return PauserChanged.fromFieldsWithTypes(typeArg, content)
+  }
+
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    data: SuiObjectData
+  ): PauserChanged<ToPhantomTypeArgument<T>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPauserChanged(data.bcs.type)) {
+        throw new Error(`object at is not a PauserChanged object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return PauserChanged.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PauserChanged.fromSuiParsedData(typeArg, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: T,
+    id: string
+  ): Promise<PauserChanged<ToPhantomTypeArgument<T>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PauserChanged object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPauserChanged(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PauserChanged object`)
+    }
+
+    return PauserChanged.fromSuiObjectData(typeArg, res.data)
   }
 }
 
@@ -1048,1138 +2181,5 @@ export class MetadataUpdaterChanged<T extends PhantomTypeArgument> implements St
     }
 
     return MetadataUpdaterChanged.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== MetadataUpdaterKey =============================== */
-
-export function isMetadataUpdaterKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::roles::MetadataUpdaterKey`
-}
-
-export interface MetadataUpdaterKeyFields {
-  dummyField: ToField<'bool'>
-}
-
-export type MetadataUpdaterKeyReified = Reified<MetadataUpdaterKey, MetadataUpdaterKeyFields>
-
-export class MetadataUpdaterKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::MetadataUpdaterKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = MetadataUpdaterKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::MetadataUpdaterKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = MetadataUpdaterKey.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: MetadataUpdaterKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      MetadataUpdaterKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::MetadataUpdaterKey`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): MetadataUpdaterKeyReified {
-    return {
-      typeName: MetadataUpdaterKey.$typeName,
-      fullTypeName: composeSuiType(
-        MetadataUpdaterKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::roles::MetadataUpdaterKey`,
-      typeArgs: [] as [],
-      isPhantom: MetadataUpdaterKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => MetadataUpdaterKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => MetadataUpdaterKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => MetadataUpdaterKey.fromBcs(data),
-      bcs: MetadataUpdaterKey.bcs,
-      fromJSONField: (field: any) => MetadataUpdaterKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => MetadataUpdaterKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => MetadataUpdaterKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => MetadataUpdaterKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => MetadataUpdaterKey.fetch(client, id),
-      new: (fields: MetadataUpdaterKeyFields) => {
-        return new MetadataUpdaterKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return MetadataUpdaterKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<MetadataUpdaterKey>> {
-    return phantom(MetadataUpdaterKey.reified())
-  }
-  static get p() {
-    return MetadataUpdaterKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('MetadataUpdaterKey', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): MetadataUpdaterKey {
-    return MetadataUpdaterKey.reified().new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): MetadataUpdaterKey {
-    if (!isMetadataUpdaterKey(item.type)) {
-      throw new Error('not a MetadataUpdaterKey type')
-    }
-
-    return MetadataUpdaterKey.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): MetadataUpdaterKey {
-    return MetadataUpdaterKey.fromFields(MetadataUpdaterKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): MetadataUpdaterKey {
-    return MetadataUpdaterKey.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): MetadataUpdaterKey {
-    if (json.$typeName !== MetadataUpdaterKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return MetadataUpdaterKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): MetadataUpdaterKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isMetadataUpdaterKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a MetadataUpdaterKey object`)
-    }
-    return MetadataUpdaterKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): MetadataUpdaterKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isMetadataUpdaterKey(data.bcs.type)) {
-        throw new Error(`object at is not a MetadataUpdaterKey object`)
-      }
-
-      return MetadataUpdaterKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return MetadataUpdaterKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<MetadataUpdaterKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching MetadataUpdaterKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isMetadataUpdaterKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a MetadataUpdaterKey object`)
-    }
-
-    return MetadataUpdaterKey.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== OwnerKey =============================== */
-
-export function isOwnerKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::roles::OwnerKey`
-}
-
-export interface OwnerKeyFields {
-  dummyField: ToField<'bool'>
-}
-
-export type OwnerKeyReified = Reified<OwnerKey, OwnerKeyFields>
-
-export class OwnerKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::OwnerKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = OwnerKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::OwnerKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = OwnerKey.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: OwnerKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      OwnerKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::OwnerKey`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): OwnerKeyReified {
-    return {
-      typeName: OwnerKey.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::roles::OwnerKey`,
-      typeArgs: [] as [],
-      isPhantom: OwnerKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => OwnerKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => OwnerKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => OwnerKey.fromBcs(data),
-      bcs: OwnerKey.bcs,
-      fromJSONField: (field: any) => OwnerKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => OwnerKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => OwnerKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => OwnerKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => OwnerKey.fetch(client, id),
-      new: (fields: OwnerKeyFields) => {
-        return new OwnerKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return OwnerKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<OwnerKey>> {
-    return phantom(OwnerKey.reified())
-  }
-  static get p() {
-    return OwnerKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('OwnerKey', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): OwnerKey {
-    return OwnerKey.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): OwnerKey {
-    if (!isOwnerKey(item.type)) {
-      throw new Error('not a OwnerKey type')
-    }
-
-    return OwnerKey.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): OwnerKey {
-    return OwnerKey.fromFields(OwnerKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): OwnerKey {
-    return OwnerKey.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): OwnerKey {
-    if (json.$typeName !== OwnerKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return OwnerKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): OwnerKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isOwnerKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a OwnerKey object`)
-    }
-    return OwnerKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): OwnerKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isOwnerKey(data.bcs.type)) {
-        throw new Error(`object at is not a OwnerKey object`)
-      }
-
-      return OwnerKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return OwnerKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<OwnerKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching OwnerKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a OwnerKey object`)
-    }
-
-    return OwnerKey.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== OwnerRole =============================== */
-
-export function isOwnerRole(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::roles::OwnerRole` + '<')
-}
-
-export interface OwnerRoleFields<T extends PhantomTypeArgument> {
-  dummyField: ToField<'bool'>
-}
-
-export type OwnerRoleReified<T extends PhantomTypeArgument> = Reified<
-  OwnerRole<T>,
-  OwnerRoleFields<T>
->
-
-export class OwnerRole<T extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::OwnerRole`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = OwnerRole.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<T>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = OwnerRole.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: OwnerRoleFields<T>) {
-    this.$fullTypeName = composeSuiType(
-      OwnerRole.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<T>}>`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): OwnerRoleReified<ToPhantomTypeArgument<T>> {
-    return {
-      typeName: OwnerRole.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerRole.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::roles::OwnerRole<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: OwnerRole.$isPhantom,
-      reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => OwnerRole.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => OwnerRole.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => OwnerRole.fromBcs(T, data),
-      bcs: OwnerRole.bcs,
-      fromJSONField: (field: any) => OwnerRole.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => OwnerRole.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) => OwnerRole.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) => OwnerRole.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => OwnerRole.fetch(client, T, id),
-      new: (fields: OwnerRoleFields<ToPhantomTypeArgument<T>>) => {
-        return new OwnerRole([extractType(T)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return OwnerRole.reified
-  }
-
-  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PhantomReified<ToTypeStr<OwnerRole<ToPhantomTypeArgument<T>>>> {
-    return phantom(OwnerRole.reified(T))
-  }
-  static get p() {
-    return OwnerRole.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('OwnerRole', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    fields: Record<string, any>
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    return OwnerRole.reified(typeArg).new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
-    })
-  }
-
-  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    item: FieldsWithTypes
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    if (!isOwnerRole(item.type)) {
-      throw new Error('not a OwnerRole type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return OwnerRole.reified(typeArg).new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: Uint8Array
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    return OwnerRole.fromFields(typeArg, OwnerRole.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    field: any
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    return OwnerRole.reified(typeArg).new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    json: Record<string, any>
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== OwnerRole.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(OwnerRole.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return OwnerRole.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    content: SuiParsedData
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isOwnerRole(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a OwnerRole object`)
-    }
-    return OwnerRole.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: SuiObjectData
-  ): OwnerRole<ToPhantomTypeArgument<T>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isOwnerRole(data.bcs.type)) {
-        throw new Error(`object at is not a OwnerRole object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return OwnerRole.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return OwnerRole.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: T,
-    id: string
-  ): Promise<OwnerRole<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching OwnerRole object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerRole(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a OwnerRole object`)
-    }
-
-    return OwnerRole.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== PauserChanged =============================== */
-
-export function isPauserChanged(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::roles::PauserChanged` + '<')
-}
-
-export interface PauserChangedFields<T extends PhantomTypeArgument> {
-  oldPauser: ToField<'address'>
-  newPauser: ToField<'address'>
-}
-
-export type PauserChangedReified<T extends PhantomTypeArgument> = Reified<
-  PauserChanged<T>,
-  PauserChangedFields<T>
->
-
-export class PauserChanged<T extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::PauserChanged`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = PauserChanged.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<T>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = PauserChanged.$isPhantom
-
-  readonly oldPauser: ToField<'address'>
-  readonly newPauser: ToField<'address'>
-
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: PauserChangedFields<T>) {
-    this.$fullTypeName = composeSuiType(
-      PauserChanged.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<T>}>`
-    this.$typeArgs = typeArgs
-
-    this.oldPauser = fields.oldPauser
-    this.newPauser = fields.newPauser
-  }
-
-  static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PauserChangedReified<ToPhantomTypeArgument<T>> {
-    return {
-      typeName: PauserChanged.$typeName,
-      fullTypeName: composeSuiType(
-        PauserChanged.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::roles::PauserChanged<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: PauserChanged.$isPhantom,
-      reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => PauserChanged.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PauserChanged.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => PauserChanged.fromBcs(T, data),
-      bcs: PauserChanged.bcs,
-      fromJSONField: (field: any) => PauserChanged.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => PauserChanged.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) => PauserChanged.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) => PauserChanged.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => PauserChanged.fetch(client, T, id),
-      new: (fields: PauserChangedFields<ToPhantomTypeArgument<T>>) => {
-        return new PauserChanged([extractType(T)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PauserChanged.reified
-  }
-
-  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PhantomReified<ToTypeStr<PauserChanged<ToPhantomTypeArgument<T>>>> {
-    return phantom(PauserChanged.reified(T))
-  }
-  static get p() {
-    return PauserChanged.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('PauserChanged', {
-      old_pauser: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      new_pauser: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-    })
-  }
-
-  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    fields: Record<string, any>
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    return PauserChanged.reified(typeArg).new({
-      oldPauser: decodeFromFields('address', fields.old_pauser),
-      newPauser: decodeFromFields('address', fields.new_pauser),
-    })
-  }
-
-  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    item: FieldsWithTypes
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    if (!isPauserChanged(item.type)) {
-      throw new Error('not a PauserChanged type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return PauserChanged.reified(typeArg).new({
-      oldPauser: decodeFromFieldsWithTypes('address', item.fields.old_pauser),
-      newPauser: decodeFromFieldsWithTypes('address', item.fields.new_pauser),
-    })
-  }
-
-  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: Uint8Array
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    return PauserChanged.fromFields(typeArg, PauserChanged.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      oldPauser: this.oldPauser,
-      newPauser: this.newPauser,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    field: any
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    return PauserChanged.reified(typeArg).new({
-      oldPauser: decodeFromJSONField('address', field.oldPauser),
-      newPauser: decodeFromJSONField('address', field.newPauser),
-    })
-  }
-
-  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    json: Record<string, any>
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== PauserChanged.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(PauserChanged.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return PauserChanged.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    content: SuiParsedData
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPauserChanged(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PauserChanged object`)
-    }
-    return PauserChanged.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: SuiObjectData
-  ): PauserChanged<ToPhantomTypeArgument<T>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPauserChanged(data.bcs.type)) {
-        throw new Error(`object at is not a PauserChanged object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return PauserChanged.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PauserChanged.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: T,
-    id: string
-  ): Promise<PauserChanged<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PauserChanged object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPauserChanged(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PauserChanged object`)
-    }
-
-    return PauserChanged.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== PauserKey =============================== */
-
-export function isPauserKey(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::roles::PauserKey`
-}
-
-export interface PauserKeyFields {
-  dummyField: ToField<'bool'>
-}
-
-export type PauserKeyReified = Reified<PauserKey, PauserKeyFields>
-
-export class PauserKey implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::PauserKey`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PauserKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::PauserKey`
-  readonly $typeArgs: []
-  readonly $isPhantom = PauserKey.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: PauserKeyFields) {
-    this.$fullTypeName = composeSuiType(
-      PauserKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::PauserKey`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): PauserKeyReified {
-    return {
-      typeName: PauserKey.$typeName,
-      fullTypeName: composeSuiType(
-        PauserKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::roles::PauserKey`,
-      typeArgs: [] as [],
-      isPhantom: PauserKey.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PauserKey.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PauserKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PauserKey.fromBcs(data),
-      bcs: PauserKey.bcs,
-      fromJSONField: (field: any) => PauserKey.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PauserKey.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PauserKey.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PauserKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PauserKey.fetch(client, id),
-      new: (fields: PauserKeyFields) => {
-        return new PauserKey([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PauserKey.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PauserKey>> {
-    return phantom(PauserKey.reified())
-  }
-  static get p() {
-    return PauserKey.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PauserKey', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PauserKey {
-    return PauserKey.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PauserKey {
-    if (!isPauserKey(item.type)) {
-      throw new Error('not a PauserKey type')
-    }
-
-    return PauserKey.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PauserKey {
-    return PauserKey.fromFields(PauserKey.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PauserKey {
-    return PauserKey.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
-  }
-
-  static fromJSON(json: Record<string, any>): PauserKey {
-    if (json.$typeName !== PauserKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PauserKey.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PauserKey {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPauserKey(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PauserKey object`)
-    }
-    return PauserKey.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PauserKey {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPauserKey(data.bcs.type)) {
-        throw new Error(`object at is not a PauserKey object`)
-      }
-
-      return PauserKey.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PauserKey.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PauserKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PauserKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPauserKey(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PauserKey object`)
-    }
-
-    return PauserKey.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Roles =============================== */
-
-export function isRoles(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::roles::Roles` + '<')
-}
-
-export interface RolesFields<T extends PhantomTypeArgument> {
-  data: ToField<Bag>
-}
-
-export type RolesReified<T extends PhantomTypeArgument> = Reified<Roles<T>, RolesFields<T>>
-
-export class Roles<T extends PhantomTypeArgument> implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::roles::Roles`
-  static readonly $numTypeParams = 1
-  static readonly $isPhantom = [true] as const
-
-  readonly $typeName = Roles.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<T>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = Roles.$isPhantom
-
-  readonly data: ToField<Bag>
-
-  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: RolesFields<T>) {
-    this.$fullTypeName = composeSuiType(
-      Roles.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<T>}>`
-    this.$typeArgs = typeArgs
-
-    this.data = fields.data
-  }
-
-  static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): RolesReified<ToPhantomTypeArgument<T>> {
-    return {
-      typeName: Roles.$typeName,
-      fullTypeName: composeSuiType(
-        Roles.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::roles::Roles<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
-      isPhantom: Roles.$isPhantom,
-      reifiedTypeArgs: [T],
-      fromFields: (fields: Record<string, any>) => Roles.fromFields(T, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Roles.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => Roles.fromBcs(T, data),
-      bcs: Roles.bcs,
-      fromJSONField: (field: any) => Roles.fromJSONField(T, field),
-      fromJSON: (json: Record<string, any>) => Roles.fromJSON(T, json),
-      fromSuiParsedData: (content: SuiParsedData) => Roles.fromSuiParsedData(T, content),
-      fromSuiObjectData: (content: SuiObjectData) => Roles.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => Roles.fetch(client, T, id),
-      new: (fields: RolesFields<ToPhantomTypeArgument<T>>) => {
-        return new Roles([extractType(T)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Roles.reified
-  }
-
-  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
-  ): PhantomReified<ToTypeStr<Roles<ToPhantomTypeArgument<T>>>> {
-    return phantom(Roles.reified(T))
-  }
-  static get p() {
-    return Roles.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('Roles', {
-      data: Bag.bcs,
-    })
-  }
-
-  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    fields: Record<string, any>
-  ): Roles<ToPhantomTypeArgument<T>> {
-    return Roles.reified(typeArg).new({ data: decodeFromFields(Bag.reified(), fields.data) })
-  }
-
-  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    item: FieldsWithTypes
-  ): Roles<ToPhantomTypeArgument<T>> {
-    if (!isRoles(item.type)) {
-      throw new Error('not a Roles type')
-    }
-    assertFieldsWithTypesArgsMatch(item, [typeArg])
-
-    return Roles.reified(typeArg).new({
-      data: decodeFromFieldsWithTypes(Bag.reified(), item.fields.data),
-    })
-  }
-
-  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: Uint8Array
-  ): Roles<ToPhantomTypeArgument<T>> {
-    return Roles.fromFields(typeArg, Roles.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      data: this.data.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    field: any
-  ): Roles<ToPhantomTypeArgument<T>> {
-    return Roles.reified(typeArg).new({ data: decodeFromJSONField(Bag.reified(), field.data) })
-  }
-
-  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    json: Record<string, any>
-  ): Roles<ToPhantomTypeArgument<T>> {
-    if (json.$typeName !== Roles.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(Roles.$typeName, extractType(typeArg)),
-      json.$typeArgs,
-      [typeArg]
-    )
-
-    return Roles.fromJSONField(typeArg, json)
-  }
-
-  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    content: SuiParsedData
-  ): Roles<ToPhantomTypeArgument<T>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isRoles(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Roles object`)
-    }
-    return Roles.fromFieldsWithTypes(typeArg, content)
-  }
-
-  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T,
-    data: SuiObjectData
-  ): Roles<ToPhantomTypeArgument<T>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isRoles(data.bcs.type)) {
-        throw new Error(`object at is not a Roles object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 1) {
-        throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
-        )
-      }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
-      }
-
-      return Roles.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Roles.fromSuiParsedData(typeArg, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
-    typeArg: T,
-    id: string
-  ): Promise<Roles<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Roles object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRoles(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Roles object`)
-    }
-
-    return Roles.fromSuiObjectData(typeArg, res.data)
   }
 }

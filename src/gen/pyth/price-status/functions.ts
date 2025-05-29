@@ -16,10 +16,10 @@ export function getStatus(tx: Transaction, priceStatus: TransactionObjectInput) 
   })
 }
 
-export function newTrading(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::price_status::new_trading`, arguments: [] })
-}
-
 export function newUnknown(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::price_status::new_unknown`, arguments: [] })
+}
+
+export function newTrading(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::price_status::new_trading`, arguments: [] })
 }

@@ -14,6 +14,13 @@ export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs) {
   })
 }
 
+export function takeUpgradeDigest(tx: Transaction, receipt: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::contract_upgrade::take_upgrade_digest`,
+    arguments: [obj(tx, receipt)],
+  })
+}
+
 export interface CommitUpgradeArgs {
   self: TransactionObjectInput
   receipt: TransactionObjectInput
@@ -26,13 +33,13 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs) {
   })
 }
 
-export function deserialize(
+export function takeDigest(
   tx: Transaction,
-  payload: Array<number | TransactionArgument> | TransactionArgument
+  governancePayload: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::contract_upgrade::deserialize`,
-    arguments: [pure(tx, payload, `vector<u8>`)],
+    target: `${PUBLISHED_AT}::contract_upgrade::take_digest`,
+    arguments: [pure(tx, governancePayload, `vector<u8>`)],
   })
 }
 
@@ -48,19 +55,12 @@ export function handleUpgradeContract(tx: Transaction, args: HandleUpgradeContra
   })
 }
 
-export function takeDigest(
+export function deserialize(
   tx: Transaction,
-  governancePayload: Array<number | TransactionArgument> | TransactionArgument
+  payload: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::contract_upgrade::take_digest`,
-    arguments: [pure(tx, governancePayload, `vector<u8>`)],
-  })
-}
-
-export function takeUpgradeDigest(tx: Transaction, receipt: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::contract_upgrade::take_upgrade_digest`,
-    arguments: [obj(tx, receipt)],
+    target: `${PUBLISHED_AT}::contract_upgrade::deserialize`,
+    arguments: [pure(tx, payload, `vector<u8>`)],
   })
 }

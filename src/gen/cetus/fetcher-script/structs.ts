@@ -23,6 +23,177 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== FetchTicksResultEvent =============================== */
+
+export function isFetchTicksResultEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
+}
+
+export interface FetchTicksResultEventFields {
+  ticks: ToField<Vector<Tick>>
+}
+
+export type FetchTicksResultEventReified = Reified<
+  FetchTicksResultEvent,
+  FetchTicksResultEventFields
+>
+
+export class FetchTicksResultEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FetchTicksResultEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = FetchTicksResultEvent.$isPhantom
+
+  readonly ticks: ToField<Vector<Tick>>
+
+  private constructor(typeArgs: [], fields: FetchTicksResultEventFields) {
+    this.$fullTypeName = composeSuiType(
+      FetchTicksResultEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
+    this.$typeArgs = typeArgs
+
+    this.ticks = fields.ticks
+  }
+
+  static reified(): FetchTicksResultEventReified {
+    return {
+      typeName: FetchTicksResultEvent.$typeName,
+      fullTypeName: composeSuiType(
+        FetchTicksResultEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`,
+      typeArgs: [] as [],
+      isPhantom: FetchTicksResultEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FetchTicksResultEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        FetchTicksResultEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FetchTicksResultEvent.fromBcs(data),
+      bcs: FetchTicksResultEvent.bcs,
+      fromJSONField: (field: any) => FetchTicksResultEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FetchTicksResultEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        FetchTicksResultEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        FetchTicksResultEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FetchTicksResultEvent.fetch(client, id),
+      new: (fields: FetchTicksResultEventFields) => {
+        return new FetchTicksResultEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FetchTicksResultEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FetchTicksResultEvent>> {
+    return phantom(FetchTicksResultEvent.reified())
+  }
+  static get p() {
+    return FetchTicksResultEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FetchTicksResultEvent', {
+      ticks: bcs.vector(Tick.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FetchTicksResultEvent {
+    return FetchTicksResultEvent.reified().new({
+      ticks: decodeFromFields(reified.vector(Tick.reified()), fields.ticks),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FetchTicksResultEvent {
+    if (!isFetchTicksResultEvent(item.type)) {
+      throw new Error('not a FetchTicksResultEvent type')
+    }
+
+    return FetchTicksResultEvent.reified().new({
+      ticks: decodeFromFieldsWithTypes(reified.vector(Tick.reified()), item.fields.ticks),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FetchTicksResultEvent {
+    return FetchTicksResultEvent.fromFields(FetchTicksResultEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      ticks: fieldToJSON<Vector<Tick>>(`vector<${Tick.$typeName}>`, this.ticks),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FetchTicksResultEvent {
+    return FetchTicksResultEvent.reified().new({
+      ticks: decodeFromJSONField(reified.vector(Tick.reified()), field.ticks),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FetchTicksResultEvent {
+    if (json.$typeName !== FetchTicksResultEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FetchTicksResultEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FetchTicksResultEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFetchTicksResultEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a FetchTicksResultEvent object`
+      )
+    }
+    return FetchTicksResultEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FetchTicksResultEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFetchTicksResultEvent(data.bcs.type)) {
+        throw new Error(`object at is not a FetchTicksResultEvent object`)
+      }
+
+      return FetchTicksResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FetchTicksResultEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FetchTicksResultEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FetchTicksResultEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchTicksResultEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FetchTicksResultEvent object`)
+    }
+
+    return FetchTicksResultEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== CalculatedSwapResultEvent =============================== */
 
 export function isCalculatedSwapResultEvent(type: string): boolean {
@@ -199,6 +370,175 @@ export class CalculatedSwapResultEvent implements StructClass {
   }
 }
 
+/* ============================== FetchPositionsEvent =============================== */
+
+export function isFetchPositionsEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::fetcher_script::FetchPositionsEvent`
+}
+
+export interface FetchPositionsEventFields {
+  positions: ToField<Vector<PositionInfo>>
+}
+
+export type FetchPositionsEventReified = Reified<FetchPositionsEvent, FetchPositionsEventFields>
+
+export class FetchPositionsEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionsEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FetchPositionsEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = FetchPositionsEvent.$isPhantom
+
+  readonly positions: ToField<Vector<PositionInfo>>
+
+  private constructor(typeArgs: [], fields: FetchPositionsEventFields) {
+    this.$fullTypeName = composeSuiType(
+      FetchPositionsEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
+    this.$typeArgs = typeArgs
+
+    this.positions = fields.positions
+  }
+
+  static reified(): FetchPositionsEventReified {
+    return {
+      typeName: FetchPositionsEvent.$typeName,
+      fullTypeName: composeSuiType(
+        FetchPositionsEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`,
+      typeArgs: [] as [],
+      isPhantom: FetchPositionsEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FetchPositionsEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => FetchPositionsEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FetchPositionsEvent.fromBcs(data),
+      bcs: FetchPositionsEvent.bcs,
+      fromJSONField: (field: any) => FetchPositionsEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FetchPositionsEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => FetchPositionsEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => FetchPositionsEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FetchPositionsEvent.fetch(client, id),
+      new: (fields: FetchPositionsEventFields) => {
+        return new FetchPositionsEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FetchPositionsEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FetchPositionsEvent>> {
+    return phantom(FetchPositionsEvent.reified())
+  }
+  static get p() {
+    return FetchPositionsEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FetchPositionsEvent', {
+      positions: bcs.vector(PositionInfo.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FetchPositionsEvent {
+    return FetchPositionsEvent.reified().new({
+      positions: decodeFromFields(reified.vector(PositionInfo.reified()), fields.positions),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FetchPositionsEvent {
+    if (!isFetchPositionsEvent(item.type)) {
+      throw new Error('not a FetchPositionsEvent type')
+    }
+
+    return FetchPositionsEvent.reified().new({
+      positions: decodeFromFieldsWithTypes(
+        reified.vector(PositionInfo.reified()),
+        item.fields.positions
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FetchPositionsEvent {
+    return FetchPositionsEvent.fromFields(FetchPositionsEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      positions: fieldToJSON<Vector<PositionInfo>>(
+        `vector<${PositionInfo.$typeName}>`,
+        this.positions
+      ),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FetchPositionsEvent {
+    return FetchPositionsEvent.reified().new({
+      positions: decodeFromJSONField(reified.vector(PositionInfo.reified()), field.positions),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FetchPositionsEvent {
+    if (json.$typeName !== FetchPositionsEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FetchPositionsEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FetchPositionsEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFetchPositionsEvent(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FetchPositionsEvent object`)
+    }
+    return FetchPositionsEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FetchPositionsEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFetchPositionsEvent(data.bcs.type)) {
+        throw new Error(`object at is not a FetchPositionsEvent object`)
+      }
+
+      return FetchPositionsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FetchPositionsEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FetchPositionsEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FetchPositionsEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchPositionsEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FetchPositionsEvent object`)
+    }
+
+    return FetchPositionsEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== FetchPoolsEvent =============================== */
 
 export function isFetchPoolsEvent(type: string): boolean {
@@ -359,6 +699,190 @@ export class FetchPoolsEvent implements StructClass {
     }
 
     return FetchPoolsEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== FetchPositionRewardsEvent =============================== */
+
+export function isFetchPositionRewardsEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+}
+
+export interface FetchPositionRewardsEventFields {
+  data: ToField<Vector<'u64'>>
+  positionId: ToField<ID>
+}
+
+export type FetchPositionRewardsEventReified = Reified<
+  FetchPositionRewardsEvent,
+  FetchPositionRewardsEventFields
+>
+
+export class FetchPositionRewardsEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = FetchPositionRewardsEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = FetchPositionRewardsEvent.$isPhantom
+
+  readonly data: ToField<Vector<'u64'>>
+  readonly positionId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: FetchPositionRewardsEventFields) {
+    this.$fullTypeName = composeSuiType(
+      FetchPositionRewardsEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+    this.$typeArgs = typeArgs
+
+    this.data = fields.data
+    this.positionId = fields.positionId
+  }
+
+  static reified(): FetchPositionRewardsEventReified {
+    return {
+      typeName: FetchPositionRewardsEvent.$typeName,
+      fullTypeName: composeSuiType(
+        FetchPositionRewardsEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`,
+      typeArgs: [] as [],
+      isPhantom: FetchPositionRewardsEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => FetchPositionRewardsEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        FetchPositionRewardsEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => FetchPositionRewardsEvent.fromBcs(data),
+      bcs: FetchPositionRewardsEvent.bcs,
+      fromJSONField: (field: any) => FetchPositionRewardsEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => FetchPositionRewardsEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        FetchPositionRewardsEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        FetchPositionRewardsEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => FetchPositionRewardsEvent.fetch(client, id),
+      new: (fields: FetchPositionRewardsEventFields) => {
+        return new FetchPositionRewardsEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FetchPositionRewardsEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<FetchPositionRewardsEvent>> {
+    return phantom(FetchPositionRewardsEvent.reified())
+  }
+  static get p() {
+    return FetchPositionRewardsEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('FetchPositionRewardsEvent', {
+      data: bcs.vector(bcs.u64()),
+      position_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): FetchPositionRewardsEvent {
+    return FetchPositionRewardsEvent.reified().new({
+      data: decodeFromFields(reified.vector('u64'), fields.data),
+      positionId: decodeFromFields(ID.reified(), fields.position_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): FetchPositionRewardsEvent {
+    if (!isFetchPositionRewardsEvent(item.type)) {
+      throw new Error('not a FetchPositionRewardsEvent type')
+    }
+
+    return FetchPositionRewardsEvent.reified().new({
+      data: decodeFromFieldsWithTypes(reified.vector('u64'), item.fields.data),
+      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): FetchPositionRewardsEvent {
+    return FetchPositionRewardsEvent.fromFields(FetchPositionRewardsEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      data: fieldToJSON<Vector<'u64'>>(`vector<u64>`, this.data),
+      positionId: this.positionId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): FetchPositionRewardsEvent {
+    return FetchPositionRewardsEvent.reified().new({
+      data: decodeFromJSONField(reified.vector('u64'), field.data),
+      positionId: decodeFromJSONField(ID.reified(), field.positionId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): FetchPositionRewardsEvent {
+    if (json.$typeName !== FetchPositionRewardsEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return FetchPositionRewardsEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): FetchPositionRewardsEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFetchPositionRewardsEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a FetchPositionRewardsEvent object`
+      )
+    }
+    return FetchPositionRewardsEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): FetchPositionRewardsEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFetchPositionRewardsEvent(data.bcs.type)) {
+        throw new Error(`object at is not a FetchPositionRewardsEvent object`)
+      }
+
+      return FetchPositionRewardsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FetchPositionRewardsEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<FetchPositionRewardsEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching FetchPositionRewardsEvent object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isFetchPositionRewardsEvent(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a FetchPositionRewardsEvent object`)
+    }
+
+    return FetchPositionRewardsEvent.fromSuiObjectData(res.data)
   }
 }
 
@@ -730,529 +1254,5 @@ export class FetchPositionPointsEvent implements StructClass {
     }
 
     return FetchPositionPointsEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== FetchPositionRewardsEvent =============================== */
-
-export function isFetchPositionRewardsEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
-}
-
-export interface FetchPositionRewardsEventFields {
-  data: ToField<Vector<'u64'>>
-  positionId: ToField<ID>
-}
-
-export type FetchPositionRewardsEventReified = Reified<
-  FetchPositionRewardsEvent,
-  FetchPositionRewardsEventFields
->
-
-export class FetchPositionRewardsEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = FetchPositionRewardsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionRewardsEvent.$isPhantom
-
-  readonly data: ToField<Vector<'u64'>>
-  readonly positionId: ToField<ID>
-
-  private constructor(typeArgs: [], fields: FetchPositionRewardsEventFields) {
-    this.$fullTypeName = composeSuiType(
-      FetchPositionRewardsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
-    this.$typeArgs = typeArgs
-
-    this.data = fields.data
-    this.positionId = fields.positionId
-  }
-
-  static reified(): FetchPositionRewardsEventReified {
-    return {
-      typeName: FetchPositionRewardsEvent.$typeName,
-      fullTypeName: composeSuiType(
-        FetchPositionRewardsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`,
-      typeArgs: [] as [],
-      isPhantom: FetchPositionRewardsEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FetchPositionRewardsEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        FetchPositionRewardsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionRewardsEvent.fromBcs(data),
-      bcs: FetchPositionRewardsEvent.bcs,
-      fromJSONField: (field: any) => FetchPositionRewardsEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FetchPositionRewardsEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        FetchPositionRewardsEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        FetchPositionRewardsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionRewardsEvent.fetch(client, id),
-      new: (fields: FetchPositionRewardsEventFields) => {
-        return new FetchPositionRewardsEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FetchPositionRewardsEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<FetchPositionRewardsEvent>> {
-    return phantom(FetchPositionRewardsEvent.reified())
-  }
-  static get p() {
-    return FetchPositionRewardsEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('FetchPositionRewardsEvent', {
-      data: bcs.vector(bcs.u64()),
-      position_id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): FetchPositionRewardsEvent {
-    return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromFields(reified.vector('u64'), fields.data),
-      positionId: decodeFromFields(ID.reified(), fields.position_id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): FetchPositionRewardsEvent {
-    if (!isFetchPositionRewardsEvent(item.type)) {
-      throw new Error('not a FetchPositionRewardsEvent type')
-    }
-
-    return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromFieldsWithTypes(reified.vector('u64'), item.fields.data),
-      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): FetchPositionRewardsEvent {
-    return FetchPositionRewardsEvent.fromFields(FetchPositionRewardsEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      data: fieldToJSON<Vector<'u64'>>(`vector<u64>`, this.data),
-      positionId: this.positionId,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): FetchPositionRewardsEvent {
-    return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromJSONField(reified.vector('u64'), field.data),
-      positionId: decodeFromJSONField(ID.reified(), field.positionId),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): FetchPositionRewardsEvent {
-    if (json.$typeName !== FetchPositionRewardsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return FetchPositionRewardsEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): FetchPositionRewardsEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFetchPositionRewardsEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchPositionRewardsEvent object`
-      )
-    }
-    return FetchPositionRewardsEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): FetchPositionRewardsEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFetchPositionRewardsEvent(data.bcs.type)) {
-        throw new Error(`object at is not a FetchPositionRewardsEvent object`)
-      }
-
-      return FetchPositionRewardsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FetchPositionRewardsEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionRewardsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching FetchPositionRewardsEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isFetchPositionRewardsEvent(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a FetchPositionRewardsEvent object`)
-    }
-
-    return FetchPositionRewardsEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== FetchPositionsEvent =============================== */
-
-export function isFetchPositionsEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchPositionsEvent`
-}
-
-export interface FetchPositionsEventFields {
-  positions: ToField<Vector<PositionInfo>>
-}
-
-export type FetchPositionsEventReified = Reified<FetchPositionsEvent, FetchPositionsEventFields>
-
-export class FetchPositionsEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionsEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = FetchPositionsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionsEvent.$isPhantom
-
-  readonly positions: ToField<Vector<PositionInfo>>
-
-  private constructor(typeArgs: [], fields: FetchPositionsEventFields) {
-    this.$fullTypeName = composeSuiType(
-      FetchPositionsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
-    this.$typeArgs = typeArgs
-
-    this.positions = fields.positions
-  }
-
-  static reified(): FetchPositionsEventReified {
-    return {
-      typeName: FetchPositionsEvent.$typeName,
-      fullTypeName: composeSuiType(
-        FetchPositionsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`,
-      typeArgs: [] as [],
-      isPhantom: FetchPositionsEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FetchPositionsEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => FetchPositionsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionsEvent.fromBcs(data),
-      bcs: FetchPositionsEvent.bcs,
-      fromJSONField: (field: any) => FetchPositionsEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FetchPositionsEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => FetchPositionsEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => FetchPositionsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionsEvent.fetch(client, id),
-      new: (fields: FetchPositionsEventFields) => {
-        return new FetchPositionsEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FetchPositionsEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<FetchPositionsEvent>> {
-    return phantom(FetchPositionsEvent.reified())
-  }
-  static get p() {
-    return FetchPositionsEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('FetchPositionsEvent', {
-      positions: bcs.vector(PositionInfo.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): FetchPositionsEvent {
-    return FetchPositionsEvent.reified().new({
-      positions: decodeFromFields(reified.vector(PositionInfo.reified()), fields.positions),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): FetchPositionsEvent {
-    if (!isFetchPositionsEvent(item.type)) {
-      throw new Error('not a FetchPositionsEvent type')
-    }
-
-    return FetchPositionsEvent.reified().new({
-      positions: decodeFromFieldsWithTypes(
-        reified.vector(PositionInfo.reified()),
-        item.fields.positions
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): FetchPositionsEvent {
-    return FetchPositionsEvent.fromFields(FetchPositionsEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      positions: fieldToJSON<Vector<PositionInfo>>(
-        `vector<${PositionInfo.$typeName}>`,
-        this.positions
-      ),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): FetchPositionsEvent {
-    return FetchPositionsEvent.reified().new({
-      positions: decodeFromJSONField(reified.vector(PositionInfo.reified()), field.positions),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): FetchPositionsEvent {
-    if (json.$typeName !== FetchPositionsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return FetchPositionsEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): FetchPositionsEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFetchPositionsEvent(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FetchPositionsEvent object`)
-    }
-    return FetchPositionsEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): FetchPositionsEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFetchPositionsEvent(data.bcs.type)) {
-        throw new Error(`object at is not a FetchPositionsEvent object`)
-      }
-
-      return FetchPositionsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FetchPositionsEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchPositionsEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchPositionsEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FetchPositionsEvent object`)
-    }
-
-    return FetchPositionsEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== FetchTicksResultEvent =============================== */
-
-export function isFetchTicksResultEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
-}
-
-export interface FetchTicksResultEventFields {
-  ticks: ToField<Vector<Tick>>
-}
-
-export type FetchTicksResultEventReified = Reified<
-  FetchTicksResultEvent,
-  FetchTicksResultEventFields
->
-
-export class FetchTicksResultEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = FetchTicksResultEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = FetchTicksResultEvent.$isPhantom
-
-  readonly ticks: ToField<Vector<Tick>>
-
-  private constructor(typeArgs: [], fields: FetchTicksResultEventFields) {
-    this.$fullTypeName = composeSuiType(
-      FetchTicksResultEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
-    this.$typeArgs = typeArgs
-
-    this.ticks = fields.ticks
-  }
-
-  static reified(): FetchTicksResultEventReified {
-    return {
-      typeName: FetchTicksResultEvent.$typeName,
-      fullTypeName: composeSuiType(
-        FetchTicksResultEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`,
-      typeArgs: [] as [],
-      isPhantom: FetchTicksResultEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => FetchTicksResultEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        FetchTicksResultEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchTicksResultEvent.fromBcs(data),
-      bcs: FetchTicksResultEvent.bcs,
-      fromJSONField: (field: any) => FetchTicksResultEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => FetchTicksResultEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        FetchTicksResultEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        FetchTicksResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchTicksResultEvent.fetch(client, id),
-      new: (fields: FetchTicksResultEventFields) => {
-        return new FetchTicksResultEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FetchTicksResultEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<FetchTicksResultEvent>> {
-    return phantom(FetchTicksResultEvent.reified())
-  }
-  static get p() {
-    return FetchTicksResultEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('FetchTicksResultEvent', {
-      ticks: bcs.vector(Tick.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): FetchTicksResultEvent {
-    return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromFields(reified.vector(Tick.reified()), fields.ticks),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): FetchTicksResultEvent {
-    if (!isFetchTicksResultEvent(item.type)) {
-      throw new Error('not a FetchTicksResultEvent type')
-    }
-
-    return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromFieldsWithTypes(reified.vector(Tick.reified()), item.fields.ticks),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): FetchTicksResultEvent {
-    return FetchTicksResultEvent.fromFields(FetchTicksResultEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      ticks: fieldToJSON<Vector<Tick>>(`vector<${Tick.$typeName}>`, this.ticks),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): FetchTicksResultEvent {
-    return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromJSONField(reified.vector(Tick.reified()), field.ticks),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): FetchTicksResultEvent {
-    if (json.$typeName !== FetchTicksResultEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return FetchTicksResultEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): FetchTicksResultEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFetchTicksResultEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchTicksResultEvent object`
-      )
-    }
-    return FetchTicksResultEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): FetchTicksResultEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFetchTicksResultEvent(data.bcs.type)) {
-        throw new Error(`object at is not a FetchTicksResultEvent object`)
-      }
-
-      return FetchTicksResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FetchTicksResultEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<FetchTicksResultEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchTicksResultEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchTicksResultEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FetchTicksResultEvent object`)
-    }
-
-    return FetchTicksResultEvent.fromSuiObjectData(res.data)
   }
 }

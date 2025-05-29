@@ -23,6 +23,13 @@ export function newContractUpgrade(tx: Transaction) {
   })
 }
 
+export function newSetGovernanceDataSource(tx: Transaction) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::governance_action::new_set_governance_data_source`,
+    arguments: [],
+  })
+}
+
 export function newSetDataSources(tx: Transaction) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_action::new_set_data_sources`,
@@ -30,16 +37,9 @@ export function newSetDataSources(tx: Transaction) {
   })
 }
 
-export function newSetFeeRecipient(tx: Transaction) {
+export function newSetUpdateFee(tx: Transaction) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_fee_recipient`,
-    arguments: [],
-  })
-}
-
-export function newSetGovernanceDataSource(tx: Transaction) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_governance_data_source`,
+    target: `${PUBLISHED_AT}::governance_action::new_set_update_fee`,
     arguments: [],
   })
 }
@@ -51,9 +51,9 @@ export function newSetStalePriceThreshold(tx: Transaction) {
   })
 }
 
-export function newSetUpdateFee(tx: Transaction) {
+export function newSetFeeRecipient(tx: Transaction) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_update_fee`,
+    target: `${PUBLISHED_AT}::governance_action::new_set_fee_recipient`,
     arguments: [],
   })
 }

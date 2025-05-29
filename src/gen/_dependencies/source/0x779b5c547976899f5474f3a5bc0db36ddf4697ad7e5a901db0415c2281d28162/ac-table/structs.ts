@@ -366,6 +366,169 @@ export class AcTable<
   }
 }
 
+/* ============================== AcTableOwnership =============================== */
+
+export function isAcTableOwnership(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::ac_table::AcTableOwnership`
+}
+
+export interface AcTableOwnershipFields {
+  dummyField: ToField<'bool'>
+}
+
+export type AcTableOwnershipReified = Reified<AcTableOwnership, AcTableOwnershipFields>
+
+export class AcTableOwnership implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::ac_table::AcTableOwnership`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AcTableOwnership.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::ac_table::AcTableOwnership`
+  readonly $typeArgs: []
+  readonly $isPhantom = AcTableOwnership.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: AcTableOwnershipFields) {
+    this.$fullTypeName = composeSuiType(
+      AcTableOwnership.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::ac_table::AcTableOwnership`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): AcTableOwnershipReified {
+    return {
+      typeName: AcTableOwnership.$typeName,
+      fullTypeName: composeSuiType(
+        AcTableOwnership.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::ac_table::AcTableOwnership`,
+      typeArgs: [] as [],
+      isPhantom: AcTableOwnership.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AcTableOwnership.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableOwnership.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AcTableOwnership.fromBcs(data),
+      bcs: AcTableOwnership.bcs,
+      fromJSONField: (field: any) => AcTableOwnership.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AcTableOwnership.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => AcTableOwnership.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => AcTableOwnership.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AcTableOwnership.fetch(client, id),
+      new: (fields: AcTableOwnershipFields) => {
+        return new AcTableOwnership([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AcTableOwnership.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AcTableOwnership>> {
+    return phantom(AcTableOwnership.reified())
+  }
+  static get p() {
+    return AcTableOwnership.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AcTableOwnership', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AcTableOwnership {
+    return AcTableOwnership.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AcTableOwnership {
+    if (!isAcTableOwnership(item.type)) {
+      throw new Error('not a AcTableOwnership type')
+    }
+
+    return AcTableOwnership.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AcTableOwnership {
+    return AcTableOwnership.fromFields(AcTableOwnership.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AcTableOwnership {
+    return AcTableOwnership.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AcTableOwnership {
+    if (json.$typeName !== AcTableOwnership.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AcTableOwnership.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AcTableOwnership {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAcTableOwnership(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a AcTableOwnership object`)
+    }
+    return AcTableOwnership.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AcTableOwnership {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAcTableOwnership(data.bcs.type)) {
+        throw new Error(`object at is not a AcTableOwnership object`)
+      }
+
+      return AcTableOwnership.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AcTableOwnership.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AcTableOwnership> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AcTableOwnership object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAcTableOwnership(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AcTableOwnership object`)
+    }
+
+    return AcTableOwnership.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== AcTableCap =============================== */
 
 export function isAcTableCap(type: string): boolean {
@@ -595,168 +758,5 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     }
 
     return AcTableCap.fromSuiObjectData(typeArg, res.data)
-  }
-}
-
-/* ============================== AcTableOwnership =============================== */
-
-export function isAcTableOwnership(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::ac_table::AcTableOwnership`
-}
-
-export interface AcTableOwnershipFields {
-  dummyField: ToField<'bool'>
-}
-
-export type AcTableOwnershipReified = Reified<AcTableOwnership, AcTableOwnershipFields>
-
-export class AcTableOwnership implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::ac_table::AcTableOwnership`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = AcTableOwnership.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::ac_table::AcTableOwnership`
-  readonly $typeArgs: []
-  readonly $isPhantom = AcTableOwnership.$isPhantom
-
-  readonly dummyField: ToField<'bool'>
-
-  private constructor(typeArgs: [], fields: AcTableOwnershipFields) {
-    this.$fullTypeName = composeSuiType(
-      AcTableOwnership.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::ac_table::AcTableOwnership`
-    this.$typeArgs = typeArgs
-
-    this.dummyField = fields.dummyField
-  }
-
-  static reified(): AcTableOwnershipReified {
-    return {
-      typeName: AcTableOwnership.$typeName,
-      fullTypeName: composeSuiType(
-        AcTableOwnership.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::ac_table::AcTableOwnership`,
-      typeArgs: [] as [],
-      isPhantom: AcTableOwnership.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AcTableOwnership.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableOwnership.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AcTableOwnership.fromBcs(data),
-      bcs: AcTableOwnership.bcs,
-      fromJSONField: (field: any) => AcTableOwnership.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AcTableOwnership.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => AcTableOwnership.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => AcTableOwnership.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AcTableOwnership.fetch(client, id),
-      new: (fields: AcTableOwnershipFields) => {
-        return new AcTableOwnership([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AcTableOwnership.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<AcTableOwnership>> {
-    return phantom(AcTableOwnership.reified())
-  }
-  static get p() {
-    return AcTableOwnership.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('AcTableOwnership', {
-      dummy_field: bcs.bool(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): AcTableOwnership {
-    return AcTableOwnership.reified().new({
-      dummyField: decodeFromFields('bool', fields.dummy_field),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): AcTableOwnership {
-    if (!isAcTableOwnership(item.type)) {
-      throw new Error('not a AcTableOwnership type')
-    }
-
-    return AcTableOwnership.reified().new({
-      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): AcTableOwnership {
-    return AcTableOwnership.fromFields(AcTableOwnership.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      dummyField: this.dummyField,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): AcTableOwnership {
-    return AcTableOwnership.reified().new({
-      dummyField: decodeFromJSONField('bool', field.dummyField),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): AcTableOwnership {
-    if (json.$typeName !== AcTableOwnership.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return AcTableOwnership.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): AcTableOwnership {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAcTableOwnership(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a AcTableOwnership object`)
-    }
-    return AcTableOwnership.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): AcTableOwnership {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAcTableOwnership(data.bcs.type)) {
-        throw new Error(`object at is not a AcTableOwnership object`)
-      }
-
-      return AcTableOwnership.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AcTableOwnership.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<AcTableOwnership> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AcTableOwnership object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAcTableOwnership(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AcTableOwnership object`)
-    }
-
-    return AcTableOwnership.fromSuiObjectData(res.data)
   }
 }

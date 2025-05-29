@@ -18,6 +18,177 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== Section =============================== */
+
+export function isSection(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::piecewise::Section`
+}
+
+export interface SectionFields {
+  end: ToField<'u64'>
+  endVal: ToField<'u64'>
+}
+
+export type SectionReified = Reified<Section, SectionFields>
+
+export class Section implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::piecewise::Section`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = Section.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::piecewise::Section`
+  readonly $typeArgs: []
+  readonly $isPhantom = Section.$isPhantom
+
+  readonly end: ToField<'u64'>
+  readonly endVal: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: SectionFields) {
+    this.$fullTypeName = composeSuiType(
+      Section.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::piecewise::Section`
+    this.$typeArgs = typeArgs
+
+    this.end = fields.end
+    this.endVal = fields.endVal
+  }
+
+  static reified(): SectionReified {
+    return {
+      typeName: Section.$typeName,
+      fullTypeName: composeSuiType(
+        Section.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::piecewise::Section`,
+      typeArgs: [] as [],
+      isPhantom: Section.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => Section.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Section.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => Section.fromBcs(data),
+      bcs: Section.bcs,
+      fromJSONField: (field: any) => Section.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => Section.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => Section.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => Section.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => Section.fetch(client, id),
+      new: (fields: SectionFields) => {
+        return new Section([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return Section.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<Section>> {
+    return phantom(Section.reified())
+  }
+  static get p() {
+    return Section.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('Section', {
+      end: bcs.u64(),
+      end_val: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): Section {
+    return Section.reified().new({
+      end: decodeFromFields('u64', fields.end),
+      endVal: decodeFromFields('u64', fields.end_val),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): Section {
+    if (!isSection(item.type)) {
+      throw new Error('not a Section type')
+    }
+
+    return Section.reified().new({
+      end: decodeFromFieldsWithTypes('u64', item.fields.end),
+      endVal: decodeFromFieldsWithTypes('u64', item.fields.end_val),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): Section {
+    return Section.fromFields(Section.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      end: this.end.toString(),
+      endVal: this.endVal.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): Section {
+    return Section.reified().new({
+      end: decodeFromJSONField('u64', field.end),
+      endVal: decodeFromJSONField('u64', field.endVal),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): Section {
+    if (json.$typeName !== Section.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return Section.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): Section {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSection(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Section object`)
+    }
+    return Section.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): Section {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSection(data.bcs.type)) {
+        throw new Error(`object at is not a Section object`)
+      }
+
+      return Section.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Section.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<Section> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching Section object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSection(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a Section object`)
+    }
+
+    return Section.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== Piecewise =============================== */
 
 export function isPiecewise(type: string): boolean {
@@ -194,176 +365,5 @@ export class Piecewise implements StructClass {
     }
 
     return Piecewise.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== Section =============================== */
-
-export function isSection(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::piecewise::Section`
-}
-
-export interface SectionFields {
-  end: ToField<'u64'>
-  endVal: ToField<'u64'>
-}
-
-export type SectionReified = Reified<Section, SectionFields>
-
-export class Section implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::piecewise::Section`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = Section.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::piecewise::Section`
-  readonly $typeArgs: []
-  readonly $isPhantom = Section.$isPhantom
-
-  readonly end: ToField<'u64'>
-  readonly endVal: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: SectionFields) {
-    this.$fullTypeName = composeSuiType(
-      Section.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::piecewise::Section`
-    this.$typeArgs = typeArgs
-
-    this.end = fields.end
-    this.endVal = fields.endVal
-  }
-
-  static reified(): SectionReified {
-    return {
-      typeName: Section.$typeName,
-      fullTypeName: composeSuiType(
-        Section.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::piecewise::Section`,
-      typeArgs: [] as [],
-      isPhantom: Section.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => Section.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Section.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Section.fromBcs(data),
-      bcs: Section.bcs,
-      fromJSONField: (field: any) => Section.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => Section.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => Section.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => Section.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Section.fetch(client, id),
-      new: (fields: SectionFields) => {
-        return new Section([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return Section.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<Section>> {
-    return phantom(Section.reified())
-  }
-  static get p() {
-    return Section.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('Section', {
-      end: bcs.u64(),
-      end_val: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): Section {
-    return Section.reified().new({
-      end: decodeFromFields('u64', fields.end),
-      endVal: decodeFromFields('u64', fields.end_val),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): Section {
-    if (!isSection(item.type)) {
-      throw new Error('not a Section type')
-    }
-
-    return Section.reified().new({
-      end: decodeFromFieldsWithTypes('u64', item.fields.end),
-      endVal: decodeFromFieldsWithTypes('u64', item.fields.end_val),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): Section {
-    return Section.fromFields(Section.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      end: this.end.toString(),
-      endVal: this.endVal.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): Section {
-    return Section.reified().new({
-      end: decodeFromJSONField('u64', field.end),
-      endVal: decodeFromJSONField('u64', field.endVal),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): Section {
-    if (json.$typeName !== Section.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return Section.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): Section {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSection(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a Section object`)
-    }
-    return Section.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): Section {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSection(data.bcs.type)) {
-        throw new Error(`object at is not a Section object`)
-      }
-
-      return Section.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return Section.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<Section> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Section object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSection(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a Section object`)
-    }
-
-    return Section.fromSuiObjectData(res.data)
   }
 }

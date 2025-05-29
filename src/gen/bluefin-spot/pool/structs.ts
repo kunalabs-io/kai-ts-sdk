@@ -35,297 +35,6 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== FlashSwapReceipt =============================== */
-
-export function isFlashSwapReceipt(type: string): boolean {
-  type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::pool::FlashSwapReceipt` + '<')
-}
-
-export interface FlashSwapReceiptFields<
-  CoinTypeA extends PhantomTypeArgument,
-  CoinTypeB extends PhantomTypeArgument,
-> {
-  poolId: ToField<ID>
-  a2B: ToField<'bool'>
-  payAmount: ToField<'u64'>
-}
-
-export type FlashSwapReceiptReified<
-  CoinTypeA extends PhantomTypeArgument,
-  CoinTypeB extends PhantomTypeArgument,
-> = Reified<FlashSwapReceipt<CoinTypeA, CoinTypeB>, FlashSwapReceiptFields<CoinTypeA, CoinTypeB>>
-
-export class FlashSwapReceipt<
-  CoinTypeA extends PhantomTypeArgument,
-  CoinTypeB extends PhantomTypeArgument,
-> implements StructClass
-{
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::pool::FlashSwapReceipt`
-  static readonly $numTypeParams = 2
-  static readonly $isPhantom = [true, true] as const
-
-  readonly $typeName = FlashSwapReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<CoinTypeA>}, ${PhantomToTypeStr<CoinTypeB>}>`
-  readonly $typeArgs: [PhantomToTypeStr<CoinTypeA>, PhantomToTypeStr<CoinTypeB>]
-  readonly $isPhantom = FlashSwapReceipt.$isPhantom
-
-  readonly poolId: ToField<ID>
-  readonly a2B: ToField<'bool'>
-  readonly payAmount: ToField<'u64'>
-
-  private constructor(
-    typeArgs: [PhantomToTypeStr<CoinTypeA>, PhantomToTypeStr<CoinTypeB>],
-    fields: FlashSwapReceiptFields<CoinTypeA, CoinTypeB>
-  ) {
-    this.$fullTypeName = composeSuiType(
-      FlashSwapReceipt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<CoinTypeA>}, ${PhantomToTypeStr<CoinTypeB>}>`
-    this.$typeArgs = typeArgs
-
-    this.poolId = fields.poolId
-    this.a2B = fields.a2B
-    this.payAmount = fields.payAmount
-  }
-
-  static reified<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    CoinTypeA: CoinTypeA,
-    CoinTypeB: CoinTypeB
-  ): FlashSwapReceiptReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    return {
-      typeName: FlashSwapReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        FlashSwapReceipt.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)]
-      ) as `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
-      isPhantom: FlashSwapReceipt.$isPhantom,
-      reifiedTypeArgs: [CoinTypeA, CoinTypeB],
-      fromFields: (fields: Record<string, any>) =>
-        FlashSwapReceipt.fromFields([CoinTypeA, CoinTypeB], fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        FlashSwapReceipt.fromFieldsWithTypes([CoinTypeA, CoinTypeB], item),
-      fromBcs: (data: Uint8Array) => FlashSwapReceipt.fromBcs([CoinTypeA, CoinTypeB], data),
-      bcs: FlashSwapReceipt.bcs,
-      fromJSONField: (field: any) => FlashSwapReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
-      fromJSON: (json: Record<string, any>) =>
-        FlashSwapReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        FlashSwapReceipt.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        FlashSwapReceipt.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SuiClient, id: string) =>
-        FlashSwapReceipt.fetch(client, [CoinTypeA, CoinTypeB], id),
-      new: (
-        fields: FlashSwapReceiptFields<
-          ToPhantomTypeArgument<CoinTypeA>,
-          ToPhantomTypeArgument<CoinTypeB>
-        >
-      ) => {
-        return new FlashSwapReceipt([extractType(CoinTypeA), extractType(CoinTypeB)], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return FlashSwapReceipt.reified
-  }
-
-  static phantom<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    CoinTypeA: CoinTypeA,
-    CoinTypeB: CoinTypeB
-  ): PhantomReified<
-    ToTypeStr<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>>
-  > {
-    return phantom(FlashSwapReceipt.reified(CoinTypeA, CoinTypeB))
-  }
-  static get p() {
-    return FlashSwapReceipt.phantom
-  }
-
-  static get bcs() {
-    return bcs.struct('FlashSwapReceipt', {
-      pool_id: ID.bcs,
-      a2b: bcs.bool(),
-      pay_amount: bcs.u64(),
-    })
-  }
-
-  static fromFields<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    fields: Record<string, any>
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
-      poolId: decodeFromFields(ID.reified(), fields.pool_id),
-      a2B: decodeFromFields('bool', fields.a2b),
-      payAmount: decodeFromFields('u64', fields.pay_amount),
-    })
-  }
-
-  static fromFieldsWithTypes<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    item: FieldsWithTypes
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    if (!isFlashSwapReceipt(item.type)) {
-      throw new Error('not a FlashSwapReceipt type')
-    }
-    assertFieldsWithTypesArgsMatch(item, typeArgs)
-
-    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
-      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
-      a2B: decodeFromFieldsWithTypes('bool', item.fields.a2b),
-      payAmount: decodeFromFieldsWithTypes('u64', item.fields.pay_amount),
-    })
-  }
-
-  static fromBcs<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    data: Uint8Array
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    return FlashSwapReceipt.fromFields(typeArgs, FlashSwapReceipt.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      poolId: this.poolId,
-      a2B: this.a2B,
-      payAmount: this.payAmount.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    field: any
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
-      poolId: decodeFromJSONField(ID.reified(), field.poolId),
-      a2B: decodeFromJSONField('bool', field.a2B),
-      payAmount: decodeFromJSONField('u64', field.payAmount),
-    })
-  }
-
-  static fromJSON<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    json: Record<string, any>
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    if (json.$typeName !== FlashSwapReceipt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-    assertReifiedTypeArgsMatch(
-      composeSuiType(FlashSwapReceipt.$typeName, ...typeArgs.map(extractType)),
-      json.$typeArgs,
-      typeArgs
-    )
-
-    return FlashSwapReceipt.fromJSONField(typeArgs, json)
-  }
-
-  static fromSuiParsedData<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    content: SuiParsedData
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isFlashSwapReceipt(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a FlashSwapReceipt object`)
-    }
-    return FlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
-  }
-
-  static fromSuiObjectData<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    typeArgs: [CoinTypeA, CoinTypeB],
-    data: SuiObjectData
-  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isFlashSwapReceipt(data.bcs.type)) {
-        throw new Error(`object at is not a FlashSwapReceipt object`)
-      }
-
-      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
-      if (gotTypeArgs.length !== 2) {
-        throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
-        )
-      }
-      for (let i = 0; i < 2; i++) {
-        const gotTypeArg = compressSuiType(gotTypeArgs[i])
-        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
-        if (gotTypeArg !== expectedTypeArg) {
-          throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-          )
-        }
-      }
-
-      return FlashSwapReceipt.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return FlashSwapReceipt.fromSuiParsedData(typeArgs, data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch<
-    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
-    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
-  >(
-    client: SuiClient,
-    typeArgs: [CoinTypeA, CoinTypeB],
-    id: string
-  ): Promise<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FlashSwapReceipt object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashSwapReceipt(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a FlashSwapReceipt object`)
-    }
-
-    return FlashSwapReceipt.fromSuiObjectData(typeArgs, res.data)
-  }
-}
-
 /* ============================== Pool =============================== */
 
 export function isPool(type: string): boolean {
@@ -1496,5 +1205,296 @@ export class SwapStepResult implements StructClass {
     }
 
     return SwapStepResult.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== FlashSwapReceipt =============================== */
+
+export function isFlashSwapReceipt(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V1}::pool::FlashSwapReceipt` + '<')
+}
+
+export interface FlashSwapReceiptFields<
+  CoinTypeA extends PhantomTypeArgument,
+  CoinTypeB extends PhantomTypeArgument,
+> {
+  poolId: ToField<ID>
+  a2B: ToField<'bool'>
+  payAmount: ToField<'u64'>
+}
+
+export type FlashSwapReceiptReified<
+  CoinTypeA extends PhantomTypeArgument,
+  CoinTypeB extends PhantomTypeArgument,
+> = Reified<FlashSwapReceipt<CoinTypeA, CoinTypeB>, FlashSwapReceiptFields<CoinTypeA, CoinTypeB>>
+
+export class FlashSwapReceipt<
+  CoinTypeA extends PhantomTypeArgument,
+  CoinTypeB extends PhantomTypeArgument,
+> implements StructClass
+{
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::pool::FlashSwapReceipt`
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [true, true] as const
+
+  readonly $typeName = FlashSwapReceipt.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<CoinTypeA>}, ${PhantomToTypeStr<CoinTypeB>}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinTypeA>, PhantomToTypeStr<CoinTypeB>]
+  readonly $isPhantom = FlashSwapReceipt.$isPhantom
+
+  readonly poolId: ToField<ID>
+  readonly a2B: ToField<'bool'>
+  readonly payAmount: ToField<'u64'>
+
+  private constructor(
+    typeArgs: [PhantomToTypeStr<CoinTypeA>, PhantomToTypeStr<CoinTypeB>],
+    fields: FlashSwapReceiptFields<CoinTypeA, CoinTypeB>
+  ) {
+    this.$fullTypeName = composeSuiType(
+      FlashSwapReceipt.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<CoinTypeA>}, ${PhantomToTypeStr<CoinTypeB>}>`
+    this.$typeArgs = typeArgs
+
+    this.poolId = fields.poolId
+    this.a2B = fields.a2B
+    this.payAmount = fields.payAmount
+  }
+
+  static reified<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    CoinTypeA: CoinTypeA,
+    CoinTypeB: CoinTypeB
+  ): FlashSwapReceiptReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    return {
+      typeName: FlashSwapReceipt.$typeName,
+      fullTypeName: composeSuiType(
+        FlashSwapReceipt.$typeName,
+        ...[extractType(CoinTypeA), extractType(CoinTypeB)]
+      ) as `${typeof PKG_V1}::pool::FlashSwapReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
+      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+      ],
+      isPhantom: FlashSwapReceipt.$isPhantom,
+      reifiedTypeArgs: [CoinTypeA, CoinTypeB],
+      fromFields: (fields: Record<string, any>) =>
+        FlashSwapReceipt.fromFields([CoinTypeA, CoinTypeB], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        FlashSwapReceipt.fromFieldsWithTypes([CoinTypeA, CoinTypeB], item),
+      fromBcs: (data: Uint8Array) => FlashSwapReceipt.fromBcs([CoinTypeA, CoinTypeB], data),
+      bcs: FlashSwapReceipt.bcs,
+      fromJSONField: (field: any) => FlashSwapReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
+      fromJSON: (json: Record<string, any>) =>
+        FlashSwapReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        FlashSwapReceipt.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        FlashSwapReceipt.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
+      fetch: async (client: SuiClient, id: string) =>
+        FlashSwapReceipt.fetch(client, [CoinTypeA, CoinTypeB], id),
+      new: (
+        fields: FlashSwapReceiptFields<
+          ToPhantomTypeArgument<CoinTypeA>,
+          ToPhantomTypeArgument<CoinTypeB>
+        >
+      ) => {
+        return new FlashSwapReceipt([extractType(CoinTypeA), extractType(CoinTypeB)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return FlashSwapReceipt.reified
+  }
+
+  static phantom<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    CoinTypeA: CoinTypeA,
+    CoinTypeB: CoinTypeB
+  ): PhantomReified<
+    ToTypeStr<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>>
+  > {
+    return phantom(FlashSwapReceipt.reified(CoinTypeA, CoinTypeB))
+  }
+  static get p() {
+    return FlashSwapReceipt.phantom
+  }
+
+  static get bcs() {
+    return bcs.struct('FlashSwapReceipt', {
+      pool_id: ID.bcs,
+      a2b: bcs.bool(),
+      pay_amount: bcs.u64(),
+    })
+  }
+
+  static fromFields<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    fields: Record<string, any>
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      poolId: decodeFromFields(ID.reified(), fields.pool_id),
+      a2B: decodeFromFields('bool', fields.a2b),
+      payAmount: decodeFromFields('u64', fields.pay_amount),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    item: FieldsWithTypes
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isFlashSwapReceipt(item.type)) {
+      throw new Error('not a FlashSwapReceipt type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      poolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.pool_id),
+      a2B: decodeFromFieldsWithTypes('bool', item.fields.a2b),
+      payAmount: decodeFromFieldsWithTypes('u64', item.fields.pay_amount),
+    })
+  }
+
+  static fromBcs<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    data: Uint8Array
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    return FlashSwapReceipt.fromFields(typeArgs, FlashSwapReceipt.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      poolId: this.poolId,
+      a2B: this.a2B,
+      payAmount: this.payAmount.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    field: any
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    return FlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
+      poolId: decodeFromJSONField(ID.reified(), field.poolId),
+      a2B: decodeFromJSONField('bool', field.a2B),
+      payAmount: decodeFromJSONField('u64', field.payAmount),
+    })
+  }
+
+  static fromJSON<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    json: Record<string, any>
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (json.$typeName !== FlashSwapReceipt.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(FlashSwapReceipt.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs
+    )
+
+    return FlashSwapReceipt.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    content: SuiParsedData
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isFlashSwapReceipt(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a FlashSwapReceipt object`)
+    }
+    return FlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    data: SuiObjectData
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isFlashSwapReceipt(data.bcs.type)) {
+        throw new Error(`object at is not a FlashSwapReceipt object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+          )
+        }
+      }
+
+      return FlashSwapReceipt.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return FlashSwapReceipt.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    client: SuiClient,
+    typeArgs: [CoinTypeA, CoinTypeB],
+    id: string
+  ): Promise<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching FlashSwapReceipt object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isFlashSwapReceipt(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a FlashSwapReceipt object`)
+    }
+
+    return FlashSwapReceipt.fromSuiObjectData(typeArgs, res.data)
   }
 }

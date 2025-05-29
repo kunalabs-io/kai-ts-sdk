@@ -1,3 +1,3 @@
 export const PACKAGE_ID = '0x2'
 export const PUBLISHED_AT = '0x2'
-export const PKG_V31 = '0x2'
+export const PKG_V34 = '0x2'

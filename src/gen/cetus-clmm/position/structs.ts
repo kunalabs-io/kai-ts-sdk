@@ -24,6 +24,194 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
+/* ============================== PositionManager =============================== */
+
+export function isPositionManager(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::position::PositionManager`
+}
+
+export interface PositionManagerFields {
+  tickSpacing: ToField<'u32'>
+  positionIndex: ToField<'u64'>
+  positions: ToField<LinkedTable<ID, ToPhantom<PositionInfo>>>
+}
+
+export type PositionManagerReified = Reified<PositionManager, PositionManagerFields>
+
+export class PositionManager implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::position::PositionManager`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PositionManager.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::position::PositionManager`
+  readonly $typeArgs: []
+  readonly $isPhantom = PositionManager.$isPhantom
+
+  readonly tickSpacing: ToField<'u32'>
+  readonly positionIndex: ToField<'u64'>
+  readonly positions: ToField<LinkedTable<ID, ToPhantom<PositionInfo>>>
+
+  private constructor(typeArgs: [], fields: PositionManagerFields) {
+    this.$fullTypeName = composeSuiType(
+      PositionManager.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::position::PositionManager`
+    this.$typeArgs = typeArgs
+
+    this.tickSpacing = fields.tickSpacing
+    this.positionIndex = fields.positionIndex
+    this.positions = fields.positions
+  }
+
+  static reified(): PositionManagerReified {
+    return {
+      typeName: PositionManager.$typeName,
+      fullTypeName: composeSuiType(
+        PositionManager.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::position::PositionManager`,
+      typeArgs: [] as [],
+      isPhantom: PositionManager.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => PositionManager.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionManager.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => PositionManager.fromBcs(data),
+      bcs: PositionManager.bcs,
+      fromJSONField: (field: any) => PositionManager.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PositionManager.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => PositionManager.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => PositionManager.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => PositionManager.fetch(client, id),
+      new: (fields: PositionManagerFields) => {
+        return new PositionManager([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PositionManager.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PositionManager>> {
+    return phantom(PositionManager.reified())
+  }
+  static get p() {
+    return PositionManager.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('PositionManager', {
+      tick_spacing: bcs.u32(),
+      position_index: bcs.u64(),
+      positions: LinkedTable.bcs(ID.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): PositionManager {
+    return PositionManager.reified().new({
+      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
+      positionIndex: decodeFromFields('u64', fields.position_index),
+      positions: decodeFromFields(
+        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
+        fields.positions
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PositionManager {
+    if (!isPositionManager(item.type)) {
+      throw new Error('not a PositionManager type')
+    }
+
+    return PositionManager.reified().new({
+      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
+      positionIndex: decodeFromFieldsWithTypes('u64', item.fields.position_index),
+      positions: decodeFromFieldsWithTypes(
+        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
+        item.fields.positions
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PositionManager {
+    return PositionManager.fromFields(PositionManager.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      tickSpacing: this.tickSpacing,
+      positionIndex: this.positionIndex.toString(),
+      positions: this.positions.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PositionManager {
+    return PositionManager.reified().new({
+      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
+      positionIndex: decodeFromJSONField('u64', field.positionIndex),
+      positions: decodeFromJSONField(
+        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
+        field.positions
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PositionManager {
+    if (json.$typeName !== PositionManager.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PositionManager.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PositionManager {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPositionManager(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a PositionManager object`)
+    }
+    return PositionManager.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PositionManager {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isPositionManager(data.bcs.type)) {
+        throw new Error(`object at is not a PositionManager object`)
+      }
+
+      return PositionManager.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PositionManager.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PositionManager> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching PositionManager object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionManager(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a PositionManager object`)
+    }
+
+    return PositionManager.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== POSITION =============================== */
 
 export function isPOSITION(type: string): boolean {
@@ -672,194 +860,6 @@ export class PositionInfo implements StructClass {
     }
 
     return PositionInfo.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== PositionManager =============================== */
-
-export function isPositionManager(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::position::PositionManager`
-}
-
-export interface PositionManagerFields {
-  tickSpacing: ToField<'u32'>
-  positionIndex: ToField<'u64'>
-  positions: ToField<LinkedTable<ID, ToPhantom<PositionInfo>>>
-}
-
-export type PositionManagerReified = Reified<PositionManager, PositionManagerFields>
-
-export class PositionManager implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::position::PositionManager`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = PositionManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::PositionManager`
-  readonly $typeArgs: []
-  readonly $isPhantom = PositionManager.$isPhantom
-
-  readonly tickSpacing: ToField<'u32'>
-  readonly positionIndex: ToField<'u64'>
-  readonly positions: ToField<LinkedTable<ID, ToPhantom<PositionInfo>>>
-
-  private constructor(typeArgs: [], fields: PositionManagerFields) {
-    this.$fullTypeName = composeSuiType(
-      PositionManager.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::PositionManager`
-    this.$typeArgs = typeArgs
-
-    this.tickSpacing = fields.tickSpacing
-    this.positionIndex = fields.positionIndex
-    this.positions = fields.positions
-  }
-
-  static reified(): PositionManagerReified {
-    return {
-      typeName: PositionManager.$typeName,
-      fullTypeName: composeSuiType(
-        PositionManager.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::PositionManager`,
-      typeArgs: [] as [],
-      isPhantom: PositionManager.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => PositionManager.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => PositionManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionManager.fromBcs(data),
-      bcs: PositionManager.bcs,
-      fromJSONField: (field: any) => PositionManager.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => PositionManager.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => PositionManager.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => PositionManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionManager.fetch(client, id),
-      new: (fields: PositionManagerFields) => {
-        return new PositionManager([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return PositionManager.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<PositionManager>> {
-    return phantom(PositionManager.reified())
-  }
-  static get p() {
-    return PositionManager.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('PositionManager', {
-      tick_spacing: bcs.u32(),
-      position_index: bcs.u64(),
-      positions: LinkedTable.bcs(ID.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): PositionManager {
-    return PositionManager.reified().new({
-      tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      positionIndex: decodeFromFields('u64', fields.position_index),
-      positions: decodeFromFields(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        fields.positions
-      ),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): PositionManager {
-    if (!isPositionManager(item.type)) {
-      throw new Error('not a PositionManager type')
-    }
-
-    return PositionManager.reified().new({
-      tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
-      positionIndex: decodeFromFieldsWithTypes('u64', item.fields.position_index),
-      positions: decodeFromFieldsWithTypes(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        item.fields.positions
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): PositionManager {
-    return PositionManager.fromFields(PositionManager.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      tickSpacing: this.tickSpacing,
-      positionIndex: this.positionIndex.toString(),
-      positions: this.positions.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): PositionManager {
-    return PositionManager.reified().new({
-      tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      positionIndex: decodeFromJSONField('u64', field.positionIndex),
-      positions: decodeFromJSONField(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        field.positions
-      ),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): PositionManager {
-    if (json.$typeName !== PositionManager.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return PositionManager.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): PositionManager {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isPositionManager(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a PositionManager object`)
-    }
-    return PositionManager.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): PositionManager {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isPositionManager(data.bcs.type)) {
-        throw new Error(`object at is not a PositionManager object`)
-      }
-
-      return PositionManager.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return PositionManager.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<PositionManager> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionManager object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionManager(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a PositionManager object`)
-    }
-
-    return PositionManager.fromSuiObjectData(res.data)
   }
 }
 

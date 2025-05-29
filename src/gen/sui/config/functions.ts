@@ -3,6 +3,35 @@ import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { ID } from '../object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function new_(tx: Transaction, typeArg: string, cap: GenericArg) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::new`,
+    typeArguments: [typeArg],
+    arguments: [generic(tx, `${typeArg}`, cap)],
+  })
+}
+
+export function share(tx: Transaction, typeArg: string, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::share`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface TransferArgs {
+  config: TransactionObjectInput
+  owner: string | TransactionArgument
+}
+
+export function transfer(tx: Transaction, typeArg: string, args: TransferArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::transfer`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.config), pure(tx, args.owner, `address`)],
+  })
+}
+
 export interface AddForNextEpochArgs {
   config: TransactionObjectInput
   cap: GenericArg
@@ -27,19 +56,19 @@ export function addForNextEpoch(
   })
 }
 
-export interface BorrowForNextEpochMutArgs {
+export interface RemoveForNextEpochArgs {
   config: TransactionObjectInput
   cap: GenericArg
   name: GenericArg
 }
 
-export function borrowForNextEpochMut(
+export function removeForNextEpoch(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: BorrowForNextEpochMutArgs
+  args: RemoveForNextEpochArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::borrow_for_next_epoch_mut`,
+    target: `${PUBLISHED_AT}::config::remove_for_next_epoch`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -83,24 +112,25 @@ export function existsWithTypeForNextEpoch(
   })
 }
 
-export function new_(tx: Transaction, typeArg: string, cap: GenericArg) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::new`,
-    typeArguments: [typeArg],
-    arguments: [generic(tx, `${typeArg}`, cap)],
-  })
-}
-
-export interface ReadSettingArgs {
-  config: string | TransactionArgument
+export interface BorrowForNextEpochMutArgs {
+  config: TransactionObjectInput
+  cap: GenericArg
   name: GenericArg
 }
 
-export function readSetting(tx: Transaction, typeArgs: [string, string], args: ReadSettingArgs) {
+export function borrowForNextEpochMut(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: BorrowForNextEpochMutArgs
+) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::read_setting`,
+    target: `${PUBLISHED_AT}::config::borrow_for_next_epoch_mut`,
     typeArguments: typeArgs,
-    arguments: [pure(tx, args.config, `${ID.$typeName}`), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.config),
+      generic(tx, `${typeArgs[0]}`, args.cap),
+      generic(tx, `${typeArgs[1]}`, args.name),
+    ],
   })
 }
 
@@ -118,6 +148,19 @@ export function readSettingForNextEpoch(
     target: `${PUBLISHED_AT}::config::read_setting_for_next_epoch`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.config), generic(tx, `${typeArgs[1]}`, args.name)],
+  })
+}
+
+export interface ReadSettingArgs {
+  config: string | TransactionArgument
+  name: GenericArg
+}
+
+export function readSetting(tx: Transaction, typeArgs: [string, string], args: ReadSettingArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::read_setting`,
+    typeArguments: typeArgs,
+    arguments: [pure(tx, args.config, `${ID.$typeName}`), generic(tx, `${typeArgs[0]}`, args.name)],
   })
 }
 
@@ -140,48 +183,5 @@ export function readSettingImpl(
       pure(tx, args.name, `address`),
       pure(tx, args.currentEpoch, `u64`),
     ],
-  })
-}
-
-export interface RemoveForNextEpochArgs {
-  config: TransactionObjectInput
-  cap: GenericArg
-  name: GenericArg
-}
-
-export function removeForNextEpoch(
-  tx: Transaction,
-  typeArgs: [string, string, string],
-  args: RemoveForNextEpochArgs
-) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::remove_for_next_epoch`,
-    typeArguments: typeArgs,
-    arguments: [
-      obj(tx, args.config),
-      generic(tx, `${typeArgs[0]}`, args.cap),
-      generic(tx, `${typeArgs[1]}`, args.name),
-    ],
-  })
-}
-
-export function share(tx: Transaction, typeArg: string, config: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::share`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, config)],
-  })
-}
-
-export interface TransferArgs {
-  config: TransactionObjectInput
-  owner: string | TransactionArgument
-}
-
-export function transfer(tx: Transaction, typeArg: string, args: TransferArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::transfer`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), pure(tx, args.owner, `address`)],
   })
 }

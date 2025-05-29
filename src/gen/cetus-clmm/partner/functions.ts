@@ -3,27 +3,6 @@ import { obj, pure } from '../../_framework/util'
 import { String } from '../../move-stdlib/string/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function balances(tx: Transaction, partner: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::balances`,
-    arguments: [obj(tx, partner)],
-  })
-}
-
-export interface ClaimRefFeeArgs {
-  config: TransactionObjectInput
-  partnerCap: TransactionObjectInput
-  partner: TransactionObjectInput
-}
-
-export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::claim_ref_fee`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.partnerCap), obj(tx, args.partner)],
-  })
-}
-
 export interface CreatePartnerArgs {
   config: TransactionObjectInput
   partners: TransactionObjectInput
@@ -51,40 +30,8 @@ export function createPartner(tx: Transaction, args: CreatePartnerArgs) {
   })
 }
 
-export interface CurrentRefFeeRateArgs {
-  partner: TransactionObjectInput
-  currentTime: bigint | TransactionArgument
-}
-
-export function currentRefFeeRate(tx: Transaction, args: CurrentRefFeeRateArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::current_ref_fee_rate`,
-    arguments: [obj(tx, args.partner), pure(tx, args.currentTime, `u64`)],
-  })
-}
-
-export function endTime(tx: Transaction, partner: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::end_time`,
-    arguments: [obj(tx, partner)],
-  })
-}
-
 export function name(tx: Transaction, partner: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::partner::name`, arguments: [obj(tx, partner)] })
-}
-
-export interface ReceiveRefFeeArgs {
-  partner: TransactionObjectInput
-  fee: TransactionObjectInput
-}
-
-export function receiveRefFee(tx: Transaction, typeArg: string, args: ReceiveRefFeeArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::receive_ref_fee`,
-    typeArguments: [typeArg],
-    arguments: [obj(tx, args.partner), obj(tx, args.fee)],
-  })
 }
 
 export function refFeeRate(tx: Transaction, partner: TransactionObjectInput) {
@@ -98,6 +45,32 @@ export function startTime(tx: Transaction, partner: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::partner::start_time`,
     arguments: [obj(tx, partner)],
+  })
+}
+
+export function endTime(tx: Transaction, partner: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::end_time`,
+    arguments: [obj(tx, partner)],
+  })
+}
+
+export function balances(tx: Transaction, partner: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::balances`,
+    arguments: [obj(tx, partner)],
+  })
+}
+
+export interface CurrentRefFeeRateArgs {
+  partner: TransactionObjectInput
+  currentTime: bigint | TransactionArgument
+}
+
+export function currentRefFeeRate(tx: Transaction, args: CurrentRefFeeRateArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::current_ref_fee_rate`,
+    arguments: [obj(tx, args.partner), pure(tx, args.currentTime, `u64`)],
   })
 }
 
@@ -132,5 +105,32 @@ export function updateTimeRange(tx: Transaction, args: UpdateTimeRangeArgs) {
       pure(tx, args.endTime, `u64`),
       obj(tx, args.clock),
     ],
+  })
+}
+
+export interface ReceiveRefFeeArgs {
+  partner: TransactionObjectInput
+  fee: TransactionObjectInput
+}
+
+export function receiveRefFee(tx: Transaction, typeArg: string, args: ReceiveRefFeeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::receive_ref_fee`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.partner), obj(tx, args.fee)],
+  })
+}
+
+export interface ClaimRefFeeArgs {
+  config: TransactionObjectInput
+  partnerCap: TransactionObjectInput
+  partner: TransactionObjectInput
+}
+
+export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::claim_ref_fee`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.config), obj(tx, args.partnerCap), obj(tx, args.partner)],
   })
 }

@@ -214,6 +214,444 @@ export class CreateSpoolAccountEvent implements StructClass {
   }
 }
 
+/* ============================== SpoolAccountUnstakeEvent =============================== */
+
+export function isSpoolAccountUnstakeEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::user::SpoolAccountUnstakeEvent`
+}
+
+export interface SpoolAccountUnstakeEventFields {
+  spoolAccountId: ToField<ID>
+  spoolId: ToField<ID>
+  stakingType: ToField<TypeName>
+  unstakeAmount: ToField<'u64'>
+  remainingAmount: ToField<'u64'>
+  timestamp: ToField<'u64'>
+}
+
+export type SpoolAccountUnstakeEventReified = Reified<
+  SpoolAccountUnstakeEvent,
+  SpoolAccountUnstakeEventFields
+>
+
+export class SpoolAccountUnstakeEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::user::SpoolAccountUnstakeEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = SpoolAccountUnstakeEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = SpoolAccountUnstakeEvent.$isPhantom
+
+  readonly spoolAccountId: ToField<ID>
+  readonly spoolId: ToField<ID>
+  readonly stakingType: ToField<TypeName>
+  readonly unstakeAmount: ToField<'u64'>
+  readonly remainingAmount: ToField<'u64'>
+  readonly timestamp: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: SpoolAccountUnstakeEventFields) {
+    this.$fullTypeName = composeSuiType(
+      SpoolAccountUnstakeEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`
+    this.$typeArgs = typeArgs
+
+    this.spoolAccountId = fields.spoolAccountId
+    this.spoolId = fields.spoolId
+    this.stakingType = fields.stakingType
+    this.unstakeAmount = fields.unstakeAmount
+    this.remainingAmount = fields.remainingAmount
+    this.timestamp = fields.timestamp
+  }
+
+  static reified(): SpoolAccountUnstakeEventReified {
+    return {
+      typeName: SpoolAccountUnstakeEvent.$typeName,
+      fullTypeName: composeSuiType(
+        SpoolAccountUnstakeEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`,
+      typeArgs: [] as [],
+      isPhantom: SpoolAccountUnstakeEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => SpoolAccountUnstakeEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        SpoolAccountUnstakeEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SpoolAccountUnstakeEvent.fromBcs(data),
+      bcs: SpoolAccountUnstakeEvent.bcs,
+      fromJSONField: (field: any) => SpoolAccountUnstakeEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SpoolAccountUnstakeEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        SpoolAccountUnstakeEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        SpoolAccountUnstakeEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SpoolAccountUnstakeEvent.fetch(client, id),
+      new: (fields: SpoolAccountUnstakeEventFields) => {
+        return new SpoolAccountUnstakeEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return SpoolAccountUnstakeEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<SpoolAccountUnstakeEvent>> {
+    return phantom(SpoolAccountUnstakeEvent.reified())
+  }
+  static get p() {
+    return SpoolAccountUnstakeEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('SpoolAccountUnstakeEvent', {
+      spool_account_id: ID.bcs,
+      spool_id: ID.bcs,
+      staking_type: TypeName.bcs,
+      unstake_amount: bcs.u64(),
+      remaining_amount: bcs.u64(),
+      timestamp: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): SpoolAccountUnstakeEvent {
+    return SpoolAccountUnstakeEvent.reified().new({
+      spoolAccountId: decodeFromFields(ID.reified(), fields.spool_account_id),
+      spoolId: decodeFromFields(ID.reified(), fields.spool_id),
+      stakingType: decodeFromFields(TypeName.reified(), fields.staking_type),
+      unstakeAmount: decodeFromFields('u64', fields.unstake_amount),
+      remainingAmount: decodeFromFields('u64', fields.remaining_amount),
+      timestamp: decodeFromFields('u64', fields.timestamp),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): SpoolAccountUnstakeEvent {
+    if (!isSpoolAccountUnstakeEvent(item.type)) {
+      throw new Error('not a SpoolAccountUnstakeEvent type')
+    }
+
+    return SpoolAccountUnstakeEvent.reified().new({
+      spoolAccountId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_account_id),
+      spoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_id),
+      stakingType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.staking_type),
+      unstakeAmount: decodeFromFieldsWithTypes('u64', item.fields.unstake_amount),
+      remainingAmount: decodeFromFieldsWithTypes('u64', item.fields.remaining_amount),
+      timestamp: decodeFromFieldsWithTypes('u64', item.fields.timestamp),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): SpoolAccountUnstakeEvent {
+    return SpoolAccountUnstakeEvent.fromFields(SpoolAccountUnstakeEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      spoolAccountId: this.spoolAccountId,
+      spoolId: this.spoolId,
+      stakingType: this.stakingType.toJSONField(),
+      unstakeAmount: this.unstakeAmount.toString(),
+      remainingAmount: this.remainingAmount.toString(),
+      timestamp: this.timestamp.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): SpoolAccountUnstakeEvent {
+    return SpoolAccountUnstakeEvent.reified().new({
+      spoolAccountId: decodeFromJSONField(ID.reified(), field.spoolAccountId),
+      spoolId: decodeFromJSONField(ID.reified(), field.spoolId),
+      stakingType: decodeFromJSONField(TypeName.reified(), field.stakingType),
+      unstakeAmount: decodeFromJSONField('u64', field.unstakeAmount),
+      remainingAmount: decodeFromJSONField('u64', field.remainingAmount),
+      timestamp: decodeFromJSONField('u64', field.timestamp),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): SpoolAccountUnstakeEvent {
+    if (json.$typeName !== SpoolAccountUnstakeEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return SpoolAccountUnstakeEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): SpoolAccountUnstakeEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSpoolAccountUnstakeEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a SpoolAccountUnstakeEvent object`
+      )
+    }
+    return SpoolAccountUnstakeEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): SpoolAccountUnstakeEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountUnstakeEvent(data.bcs.type)) {
+        throw new Error(`object at is not a SpoolAccountUnstakeEvent object`)
+      }
+
+      return SpoolAccountUnstakeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return SpoolAccountUnstakeEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<SpoolAccountUnstakeEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching SpoolAccountUnstakeEvent object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isSpoolAccountUnstakeEvent(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a SpoolAccountUnstakeEvent object`)
+    }
+
+    return SpoolAccountUnstakeEvent.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== SpoolAccountStakeEvent =============================== */
+
+export function isSpoolAccountStakeEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::user::SpoolAccountStakeEvent`
+}
+
+export interface SpoolAccountStakeEventFields {
+  sender: ToField<'address'>
+  spoolAccountId: ToField<ID>
+  spoolId: ToField<ID>
+  stakingType: ToField<TypeName>
+  stakeAmount: ToField<'u64'>
+  previousAmount: ToField<'u64'>
+  timestamp: ToField<'u64'>
+}
+
+export type SpoolAccountStakeEventReified = Reified<
+  SpoolAccountStakeEvent,
+  SpoolAccountStakeEventFields
+>
+
+export class SpoolAccountStakeEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::user::SpoolAccountStakeEvent`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = SpoolAccountStakeEvent.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::user::SpoolAccountStakeEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom = SpoolAccountStakeEvent.$isPhantom
+
+  readonly sender: ToField<'address'>
+  readonly spoolAccountId: ToField<ID>
+  readonly spoolId: ToField<ID>
+  readonly stakingType: ToField<TypeName>
+  readonly stakeAmount: ToField<'u64'>
+  readonly previousAmount: ToField<'u64'>
+  readonly timestamp: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: SpoolAccountStakeEventFields) {
+    this.$fullTypeName = composeSuiType(
+      SpoolAccountStakeEvent.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::user::SpoolAccountStakeEvent`
+    this.$typeArgs = typeArgs
+
+    this.sender = fields.sender
+    this.spoolAccountId = fields.spoolAccountId
+    this.spoolId = fields.spoolId
+    this.stakingType = fields.stakingType
+    this.stakeAmount = fields.stakeAmount
+    this.previousAmount = fields.previousAmount
+    this.timestamp = fields.timestamp
+  }
+
+  static reified(): SpoolAccountStakeEventReified {
+    return {
+      typeName: SpoolAccountStakeEvent.$typeName,
+      fullTypeName: composeSuiType(
+        SpoolAccountStakeEvent.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::user::SpoolAccountStakeEvent`,
+      typeArgs: [] as [],
+      isPhantom: SpoolAccountStakeEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => SpoolAccountStakeEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        SpoolAccountStakeEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => SpoolAccountStakeEvent.fromBcs(data),
+      bcs: SpoolAccountStakeEvent.bcs,
+      fromJSONField: (field: any) => SpoolAccountStakeEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => SpoolAccountStakeEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        SpoolAccountStakeEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        SpoolAccountStakeEvent.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => SpoolAccountStakeEvent.fetch(client, id),
+      new: (fields: SpoolAccountStakeEventFields) => {
+        return new SpoolAccountStakeEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return SpoolAccountStakeEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<SpoolAccountStakeEvent>> {
+    return phantom(SpoolAccountStakeEvent.reified())
+  }
+  static get p() {
+    return SpoolAccountStakeEvent.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('SpoolAccountStakeEvent', {
+      sender: bcs.bytes(32).transform({
+        input: (val: string) => fromHEX(val),
+        output: (val: Uint8Array) => toHEX(val),
+      }),
+      spool_account_id: ID.bcs,
+      spool_id: ID.bcs,
+      staking_type: TypeName.bcs,
+      stake_amount: bcs.u64(),
+      previous_amount: bcs.u64(),
+      timestamp: bcs.u64(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): SpoolAccountStakeEvent {
+    return SpoolAccountStakeEvent.reified().new({
+      sender: decodeFromFields('address', fields.sender),
+      spoolAccountId: decodeFromFields(ID.reified(), fields.spool_account_id),
+      spoolId: decodeFromFields(ID.reified(), fields.spool_id),
+      stakingType: decodeFromFields(TypeName.reified(), fields.staking_type),
+      stakeAmount: decodeFromFields('u64', fields.stake_amount),
+      previousAmount: decodeFromFields('u64', fields.previous_amount),
+      timestamp: decodeFromFields('u64', fields.timestamp),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): SpoolAccountStakeEvent {
+    if (!isSpoolAccountStakeEvent(item.type)) {
+      throw new Error('not a SpoolAccountStakeEvent type')
+    }
+
+    return SpoolAccountStakeEvent.reified().new({
+      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
+      spoolAccountId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_account_id),
+      spoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_id),
+      stakingType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.staking_type),
+      stakeAmount: decodeFromFieldsWithTypes('u64', item.fields.stake_amount),
+      previousAmount: decodeFromFieldsWithTypes('u64', item.fields.previous_amount),
+      timestamp: decodeFromFieldsWithTypes('u64', item.fields.timestamp),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): SpoolAccountStakeEvent {
+    return SpoolAccountStakeEvent.fromFields(SpoolAccountStakeEvent.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      sender: this.sender,
+      spoolAccountId: this.spoolAccountId,
+      spoolId: this.spoolId,
+      stakingType: this.stakingType.toJSONField(),
+      stakeAmount: this.stakeAmount.toString(),
+      previousAmount: this.previousAmount.toString(),
+      timestamp: this.timestamp.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): SpoolAccountStakeEvent {
+    return SpoolAccountStakeEvent.reified().new({
+      sender: decodeFromJSONField('address', field.sender),
+      spoolAccountId: decodeFromJSONField(ID.reified(), field.spoolAccountId),
+      spoolId: decodeFromJSONField(ID.reified(), field.spoolId),
+      stakingType: decodeFromJSONField(TypeName.reified(), field.stakingType),
+      stakeAmount: decodeFromJSONField('u64', field.stakeAmount),
+      previousAmount: decodeFromJSONField('u64', field.previousAmount),
+      timestamp: decodeFromJSONField('u64', field.timestamp),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): SpoolAccountStakeEvent {
+    if (json.$typeName !== SpoolAccountStakeEvent.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return SpoolAccountStakeEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): SpoolAccountStakeEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isSpoolAccountStakeEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a SpoolAccountStakeEvent object`
+      )
+    }
+    return SpoolAccountStakeEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): SpoolAccountStakeEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountStakeEvent(data.bcs.type)) {
+        throw new Error(`object at is not a SpoolAccountStakeEvent object`)
+      }
+
+      return SpoolAccountStakeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return SpoolAccountStakeEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<SpoolAccountStakeEvent> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching SpoolAccountStakeEvent object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isSpoolAccountStakeEvent(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a SpoolAccountStakeEvent object`)
+    }
+
+    return SpoolAccountStakeEvent.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== SpoolAccountRedeemRewardsEvent =============================== */
 
 export function isSpoolAccountRedeemRewardsEvent(type: string): boolean {
@@ -762,443 +1200,5 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
     }
 
     return SpoolAccountRedeemRewardsEventV2.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== SpoolAccountStakeEvent =============================== */
-
-export function isSpoolAccountStakeEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::user::SpoolAccountStakeEvent`
-}
-
-export interface SpoolAccountStakeEventFields {
-  sender: ToField<'address'>
-  spoolAccountId: ToField<ID>
-  spoolId: ToField<ID>
-  stakingType: ToField<TypeName>
-  stakeAmount: ToField<'u64'>
-  previousAmount: ToField<'u64'>
-  timestamp: ToField<'u64'>
-}
-
-export type SpoolAccountStakeEventReified = Reified<
-  SpoolAccountStakeEvent,
-  SpoolAccountStakeEventFields
->
-
-export class SpoolAccountStakeEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::user::SpoolAccountStakeEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = SpoolAccountStakeEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::user::SpoolAccountStakeEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = SpoolAccountStakeEvent.$isPhantom
-
-  readonly sender: ToField<'address'>
-  readonly spoolAccountId: ToField<ID>
-  readonly spoolId: ToField<ID>
-  readonly stakingType: ToField<TypeName>
-  readonly stakeAmount: ToField<'u64'>
-  readonly previousAmount: ToField<'u64'>
-  readonly timestamp: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: SpoolAccountStakeEventFields) {
-    this.$fullTypeName = composeSuiType(
-      SpoolAccountStakeEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::user::SpoolAccountStakeEvent`
-    this.$typeArgs = typeArgs
-
-    this.sender = fields.sender
-    this.spoolAccountId = fields.spoolAccountId
-    this.spoolId = fields.spoolId
-    this.stakingType = fields.stakingType
-    this.stakeAmount = fields.stakeAmount
-    this.previousAmount = fields.previousAmount
-    this.timestamp = fields.timestamp
-  }
-
-  static reified(): SpoolAccountStakeEventReified {
-    return {
-      typeName: SpoolAccountStakeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccountStakeEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::user::SpoolAccountStakeEvent`,
-      typeArgs: [] as [],
-      isPhantom: SpoolAccountStakeEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SpoolAccountStakeEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        SpoolAccountStakeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountStakeEvent.fromBcs(data),
-      bcs: SpoolAccountStakeEvent.bcs,
-      fromJSONField: (field: any) => SpoolAccountStakeEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SpoolAccountStakeEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        SpoolAccountStakeEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        SpoolAccountStakeEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SpoolAccountStakeEvent.fetch(client, id),
-      new: (fields: SpoolAccountStakeEventFields) => {
-        return new SpoolAccountStakeEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return SpoolAccountStakeEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<SpoolAccountStakeEvent>> {
-    return phantom(SpoolAccountStakeEvent.reified())
-  }
-  static get p() {
-    return SpoolAccountStakeEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('SpoolAccountStakeEvent', {
-      sender: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
-      }),
-      spool_account_id: ID.bcs,
-      spool_id: ID.bcs,
-      staking_type: TypeName.bcs,
-      stake_amount: bcs.u64(),
-      previous_amount: bcs.u64(),
-      timestamp: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): SpoolAccountStakeEvent {
-    return SpoolAccountStakeEvent.reified().new({
-      sender: decodeFromFields('address', fields.sender),
-      spoolAccountId: decodeFromFields(ID.reified(), fields.spool_account_id),
-      spoolId: decodeFromFields(ID.reified(), fields.spool_id),
-      stakingType: decodeFromFields(TypeName.reified(), fields.staking_type),
-      stakeAmount: decodeFromFields('u64', fields.stake_amount),
-      previousAmount: decodeFromFields('u64', fields.previous_amount),
-      timestamp: decodeFromFields('u64', fields.timestamp),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): SpoolAccountStakeEvent {
-    if (!isSpoolAccountStakeEvent(item.type)) {
-      throw new Error('not a SpoolAccountStakeEvent type')
-    }
-
-    return SpoolAccountStakeEvent.reified().new({
-      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
-      spoolAccountId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_account_id),
-      spoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_id),
-      stakingType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.staking_type),
-      stakeAmount: decodeFromFieldsWithTypes('u64', item.fields.stake_amount),
-      previousAmount: decodeFromFieldsWithTypes('u64', item.fields.previous_amount),
-      timestamp: decodeFromFieldsWithTypes('u64', item.fields.timestamp),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): SpoolAccountStakeEvent {
-    return SpoolAccountStakeEvent.fromFields(SpoolAccountStakeEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      sender: this.sender,
-      spoolAccountId: this.spoolAccountId,
-      spoolId: this.spoolId,
-      stakingType: this.stakingType.toJSONField(),
-      stakeAmount: this.stakeAmount.toString(),
-      previousAmount: this.previousAmount.toString(),
-      timestamp: this.timestamp.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): SpoolAccountStakeEvent {
-    return SpoolAccountStakeEvent.reified().new({
-      sender: decodeFromJSONField('address', field.sender),
-      spoolAccountId: decodeFromJSONField(ID.reified(), field.spoolAccountId),
-      spoolId: decodeFromJSONField(ID.reified(), field.spoolId),
-      stakingType: decodeFromJSONField(TypeName.reified(), field.stakingType),
-      stakeAmount: decodeFromJSONField('u64', field.stakeAmount),
-      previousAmount: decodeFromJSONField('u64', field.previousAmount),
-      timestamp: decodeFromJSONField('u64', field.timestamp),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): SpoolAccountStakeEvent {
-    if (json.$typeName !== SpoolAccountStakeEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return SpoolAccountStakeEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): SpoolAccountStakeEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSpoolAccountStakeEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a SpoolAccountStakeEvent object`
-      )
-    }
-    return SpoolAccountStakeEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): SpoolAccountStakeEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountStakeEvent(data.bcs.type)) {
-        throw new Error(`object at is not a SpoolAccountStakeEvent object`)
-      }
-
-      return SpoolAccountStakeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return SpoolAccountStakeEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<SpoolAccountStakeEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SpoolAccountStakeEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSpoolAccountStakeEvent(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a SpoolAccountStakeEvent object`)
-    }
-
-    return SpoolAccountStakeEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== SpoolAccountUnstakeEvent =============================== */
-
-export function isSpoolAccountUnstakeEvent(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::user::SpoolAccountUnstakeEvent`
-}
-
-export interface SpoolAccountUnstakeEventFields {
-  spoolAccountId: ToField<ID>
-  spoolId: ToField<ID>
-  stakingType: ToField<TypeName>
-  unstakeAmount: ToField<'u64'>
-  remainingAmount: ToField<'u64'>
-  timestamp: ToField<'u64'>
-}
-
-export type SpoolAccountUnstakeEventReified = Reified<
-  SpoolAccountUnstakeEvent,
-  SpoolAccountUnstakeEventFields
->
-
-export class SpoolAccountUnstakeEvent implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::user::SpoolAccountUnstakeEvent`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = SpoolAccountUnstakeEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`
-  readonly $typeArgs: []
-  readonly $isPhantom = SpoolAccountUnstakeEvent.$isPhantom
-
-  readonly spoolAccountId: ToField<ID>
-  readonly spoolId: ToField<ID>
-  readonly stakingType: ToField<TypeName>
-  readonly unstakeAmount: ToField<'u64'>
-  readonly remainingAmount: ToField<'u64'>
-  readonly timestamp: ToField<'u64'>
-
-  private constructor(typeArgs: [], fields: SpoolAccountUnstakeEventFields) {
-    this.$fullTypeName = composeSuiType(
-      SpoolAccountUnstakeEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`
-    this.$typeArgs = typeArgs
-
-    this.spoolAccountId = fields.spoolAccountId
-    this.spoolId = fields.spoolId
-    this.stakingType = fields.stakingType
-    this.unstakeAmount = fields.unstakeAmount
-    this.remainingAmount = fields.remainingAmount
-    this.timestamp = fields.timestamp
-  }
-
-  static reified(): SpoolAccountUnstakeEventReified {
-    return {
-      typeName: SpoolAccountUnstakeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccountUnstakeEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::user::SpoolAccountUnstakeEvent`,
-      typeArgs: [] as [],
-      isPhantom: SpoolAccountUnstakeEvent.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => SpoolAccountUnstakeEvent.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        SpoolAccountUnstakeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountUnstakeEvent.fromBcs(data),
-      bcs: SpoolAccountUnstakeEvent.bcs,
-      fromJSONField: (field: any) => SpoolAccountUnstakeEvent.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => SpoolAccountUnstakeEvent.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        SpoolAccountUnstakeEvent.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        SpoolAccountUnstakeEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SpoolAccountUnstakeEvent.fetch(client, id),
-      new: (fields: SpoolAccountUnstakeEventFields) => {
-        return new SpoolAccountUnstakeEvent([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return SpoolAccountUnstakeEvent.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<SpoolAccountUnstakeEvent>> {
-    return phantom(SpoolAccountUnstakeEvent.reified())
-  }
-  static get p() {
-    return SpoolAccountUnstakeEvent.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('SpoolAccountUnstakeEvent', {
-      spool_account_id: ID.bcs,
-      spool_id: ID.bcs,
-      staking_type: TypeName.bcs,
-      unstake_amount: bcs.u64(),
-      remaining_amount: bcs.u64(),
-      timestamp: bcs.u64(),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): SpoolAccountUnstakeEvent {
-    return SpoolAccountUnstakeEvent.reified().new({
-      spoolAccountId: decodeFromFields(ID.reified(), fields.spool_account_id),
-      spoolId: decodeFromFields(ID.reified(), fields.spool_id),
-      stakingType: decodeFromFields(TypeName.reified(), fields.staking_type),
-      unstakeAmount: decodeFromFields('u64', fields.unstake_amount),
-      remainingAmount: decodeFromFields('u64', fields.remaining_amount),
-      timestamp: decodeFromFields('u64', fields.timestamp),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): SpoolAccountUnstakeEvent {
-    if (!isSpoolAccountUnstakeEvent(item.type)) {
-      throw new Error('not a SpoolAccountUnstakeEvent type')
-    }
-
-    return SpoolAccountUnstakeEvent.reified().new({
-      spoolAccountId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_account_id),
-      spoolId: decodeFromFieldsWithTypes(ID.reified(), item.fields.spool_id),
-      stakingType: decodeFromFieldsWithTypes(TypeName.reified(), item.fields.staking_type),
-      unstakeAmount: decodeFromFieldsWithTypes('u64', item.fields.unstake_amount),
-      remainingAmount: decodeFromFieldsWithTypes('u64', item.fields.remaining_amount),
-      timestamp: decodeFromFieldsWithTypes('u64', item.fields.timestamp),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): SpoolAccountUnstakeEvent {
-    return SpoolAccountUnstakeEvent.fromFields(SpoolAccountUnstakeEvent.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      spoolAccountId: this.spoolAccountId,
-      spoolId: this.spoolId,
-      stakingType: this.stakingType.toJSONField(),
-      unstakeAmount: this.unstakeAmount.toString(),
-      remainingAmount: this.remainingAmount.toString(),
-      timestamp: this.timestamp.toString(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): SpoolAccountUnstakeEvent {
-    return SpoolAccountUnstakeEvent.reified().new({
-      spoolAccountId: decodeFromJSONField(ID.reified(), field.spoolAccountId),
-      spoolId: decodeFromJSONField(ID.reified(), field.spoolId),
-      stakingType: decodeFromJSONField(TypeName.reified(), field.stakingType),
-      unstakeAmount: decodeFromJSONField('u64', field.unstakeAmount),
-      remainingAmount: decodeFromJSONField('u64', field.remainingAmount),
-      timestamp: decodeFromJSONField('u64', field.timestamp),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): SpoolAccountUnstakeEvent {
-    if (json.$typeName !== SpoolAccountUnstakeEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return SpoolAccountUnstakeEvent.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): SpoolAccountUnstakeEvent {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isSpoolAccountUnstakeEvent(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a SpoolAccountUnstakeEvent object`
-      )
-    }
-    return SpoolAccountUnstakeEvent.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): SpoolAccountUnstakeEvent {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountUnstakeEvent(data.bcs.type)) {
-        throw new Error(`object at is not a SpoolAccountUnstakeEvent object`)
-      }
-
-      return SpoolAccountUnstakeEvent.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return SpoolAccountUnstakeEvent.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<SpoolAccountUnstakeEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching SpoolAccountUnstakeEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isSpoolAccountUnstakeEvent(res.data.bcs.type)
-    ) {
-      throw new Error(`object at id ${id} is not a SpoolAccountUnstakeEvent object`)
-    }
-
-    return SpoolAccountUnstakeEvent.fromSuiObjectData(res.data)
   }
 }

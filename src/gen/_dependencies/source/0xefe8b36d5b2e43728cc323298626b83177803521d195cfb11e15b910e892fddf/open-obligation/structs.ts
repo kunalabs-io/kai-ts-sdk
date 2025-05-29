@@ -16,6 +16,169 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== ObligationHotPotato =============================== */
+
+export function isObligationHotPotato(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V1}::open_obligation::ObligationHotPotato`
+}
+
+export interface ObligationHotPotatoFields {
+  obligationId: ToField<ID>
+}
+
+export type ObligationHotPotatoReified = Reified<ObligationHotPotato, ObligationHotPotatoFields>
+
+export class ObligationHotPotato implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V1}::open_obligation::ObligationHotPotato`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ObligationHotPotato.$typeName
+  readonly $fullTypeName: `${typeof PKG_V1}::open_obligation::ObligationHotPotato`
+  readonly $typeArgs: []
+  readonly $isPhantom = ObligationHotPotato.$isPhantom
+
+  readonly obligationId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: ObligationHotPotatoFields) {
+    this.$fullTypeName = composeSuiType(
+      ObligationHotPotato.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V1}::open_obligation::ObligationHotPotato`
+    this.$typeArgs = typeArgs
+
+    this.obligationId = fields.obligationId
+  }
+
+  static reified(): ObligationHotPotatoReified {
+    return {
+      typeName: ObligationHotPotato.$typeName,
+      fullTypeName: composeSuiType(
+        ObligationHotPotato.$typeName,
+        ...[]
+      ) as `${typeof PKG_V1}::open_obligation::ObligationHotPotato`,
+      typeArgs: [] as [],
+      isPhantom: ObligationHotPotato.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ObligationHotPotato.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationHotPotato.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ObligationHotPotato.fromBcs(data),
+      bcs: ObligationHotPotato.bcs,
+      fromJSONField: (field: any) => ObligationHotPotato.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ObligationHotPotato.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ObligationHotPotato.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ObligationHotPotato.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ObligationHotPotato.fetch(client, id),
+      new: (fields: ObligationHotPotatoFields) => {
+        return new ObligationHotPotato([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ObligationHotPotato.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ObligationHotPotato>> {
+    return phantom(ObligationHotPotato.reified())
+  }
+  static get p() {
+    return ObligationHotPotato.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ObligationHotPotato', {
+      obligation_id: ID.bcs,
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ObligationHotPotato {
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromFields(ID.reified(), fields.obligation_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationHotPotato {
+    if (!isObligationHotPotato(item.type)) {
+      throw new Error('not a ObligationHotPotato type')
+    }
+
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ObligationHotPotato {
+    return ObligationHotPotato.fromFields(ObligationHotPotato.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      obligationId: this.obligationId,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ObligationHotPotato {
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromJSONField(ID.reified(), field.obligationId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ObligationHotPotato {
+    if (json.$typeName !== ObligationHotPotato.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ObligationHotPotato.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ObligationHotPotato {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isObligationHotPotato(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ObligationHotPotato object`)
+    }
+    return ObligationHotPotato.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ObligationHotPotato {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isObligationHotPotato(data.bcs.type)) {
+        throw new Error(`object at is not a ObligationHotPotato object`)
+      }
+
+      return ObligationHotPotato.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ObligationHotPotato.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ObligationHotPotato> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ObligationHotPotato object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isObligationHotPotato(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ObligationHotPotato object`)
+    }
+
+    return ObligationHotPotato.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== ObligationCreatedEvent =============================== */
 
 export function isObligationCreatedEvent(type: string): boolean {
@@ -203,168 +366,5 @@ export class ObligationCreatedEvent implements StructClass {
     }
 
     return ObligationCreatedEvent.fromSuiObjectData(res.data)
-  }
-}
-
-/* ============================== ObligationHotPotato =============================== */
-
-export function isObligationHotPotato(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V1}::open_obligation::ObligationHotPotato`
-}
-
-export interface ObligationHotPotatoFields {
-  obligationId: ToField<ID>
-}
-
-export type ObligationHotPotatoReified = Reified<ObligationHotPotato, ObligationHotPotatoFields>
-
-export class ObligationHotPotato implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V1}::open_obligation::ObligationHotPotato`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = ObligationHotPotato.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::open_obligation::ObligationHotPotato`
-  readonly $typeArgs: []
-  readonly $isPhantom = ObligationHotPotato.$isPhantom
-
-  readonly obligationId: ToField<ID>
-
-  private constructor(typeArgs: [], fields: ObligationHotPotatoFields) {
-    this.$fullTypeName = composeSuiType(
-      ObligationHotPotato.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::open_obligation::ObligationHotPotato`
-    this.$typeArgs = typeArgs
-
-    this.obligationId = fields.obligationId
-  }
-
-  static reified(): ObligationHotPotatoReified {
-    return {
-      typeName: ObligationHotPotato.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationHotPotato.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::open_obligation::ObligationHotPotato`,
-      typeArgs: [] as [],
-      isPhantom: ObligationHotPotato.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => ObligationHotPotato.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationHotPotato.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationHotPotato.fromBcs(data),
-      bcs: ObligationHotPotato.bcs,
-      fromJSONField: (field: any) => ObligationHotPotato.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => ObligationHotPotato.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) => ObligationHotPotato.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) => ObligationHotPotato.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ObligationHotPotato.fetch(client, id),
-      new: (fields: ObligationHotPotatoFields) => {
-        return new ObligationHotPotato([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return ObligationHotPotato.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<ObligationHotPotato>> {
-    return phantom(ObligationHotPotato.reified())
-  }
-  static get p() {
-    return ObligationHotPotato.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('ObligationHotPotato', {
-      obligation_id: ID.bcs,
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): ObligationHotPotato {
-    return ObligationHotPotato.reified().new({
-      obligationId: decodeFromFields(ID.reified(), fields.obligation_id),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationHotPotato {
-    if (!isObligationHotPotato(item.type)) {
-      throw new Error('not a ObligationHotPotato type')
-    }
-
-    return ObligationHotPotato.reified().new({
-      obligationId: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation_id),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): ObligationHotPotato {
-    return ObligationHotPotato.fromFields(ObligationHotPotato.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      obligationId: this.obligationId,
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): ObligationHotPotato {
-    return ObligationHotPotato.reified().new({
-      obligationId: decodeFromJSONField(ID.reified(), field.obligationId),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): ObligationHotPotato {
-    if (json.$typeName !== ObligationHotPotato.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return ObligationHotPotato.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): ObligationHotPotato {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isObligationHotPotato(content.type)) {
-      throw new Error(`object at ${(content.fields as any).id} is not a ObligationHotPotato object`)
-    }
-    return ObligationHotPotato.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): ObligationHotPotato {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isObligationHotPotato(data.bcs.type)) {
-        throw new Error(`object at is not a ObligationHotPotato object`)
-      }
-
-      return ObligationHotPotato.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return ObligationHotPotato.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<ObligationHotPotato> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ObligationHotPotato object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isObligationHotPotato(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a ObligationHotPotato object`)
-    }
-
-    return ObligationHotPotato.fromSuiObjectData(res.data)
   }
 }

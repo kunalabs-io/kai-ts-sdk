@@ -1,3 +1,0 @@
-export const PACKAGE_ID = '0x27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14'
-export const PUBLISHED_AT = '0x27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14'
-export const PKG_V1 = '0x27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14'

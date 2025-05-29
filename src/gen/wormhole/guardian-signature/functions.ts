@@ -2,20 +2,6 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function index(tx: Transaction, guardianSignature: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::index`,
-    arguments: [obj(tx, guardianSignature)],
-  })
-}
-
-export function indexAsU64(tx: Transaction, guardianSignature: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::index_as_u64`,
-    arguments: [obj(tx, guardianSignature)],
-  })
-}
-
 export interface NewArgs {
   bytes321: TransactionObjectInput
   bytes322: TransactionObjectInput
@@ -42,6 +28,13 @@ export function r(tx: Transaction, guardianSignature: TransactionObjectInput) {
   })
 }
 
+export function s(tx: Transaction, guardianSignature: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian_signature::s`,
+    arguments: [obj(tx, guardianSignature)],
+  })
+}
+
 export function recoveryId(tx: Transaction, guardianSignature: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_signature::recovery_id`,
@@ -49,9 +42,16 @@ export function recoveryId(tx: Transaction, guardianSignature: TransactionObject
   })
 }
 
-export function s(tx: Transaction, guardianSignature: TransactionObjectInput) {
+export function index(tx: Transaction, guardianSignature: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::s`,
+    target: `${PUBLISHED_AT}::guardian_signature::index`,
+    arguments: [obj(tx, guardianSignature)],
+  })
+}
+
+export function indexAsU64(tx: Transaction, guardianSignature: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::guardian_signature::index_as_u64`,
     arguments: [obj(tx, guardianSignature)],
   })
 }

@@ -34,188 +34,6 @@ import { BcsType, bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
 
-/* ============================== AuthorizedWitnessList =============================== */
-
-export function isAuthorizedWitnessList(type: string): boolean {
-  type = compressSuiType(type)
-  return type === `${PKG_V7}::borrow_referral::AuthorizedWitnessList`
-}
-
-export interface AuthorizedWitnessListFields {
-  id: ToField<UID>
-  witnessList: ToField<VecSet<TypeName>>
-}
-
-export type AuthorizedWitnessListReified = Reified<
-  AuthorizedWitnessList,
-  AuthorizedWitnessListFields
->
-
-export class AuthorizedWitnessList implements StructClass {
-  __StructClass = true as const
-
-  static readonly $typeName = `${PKG_V7}::borrow_referral::AuthorizedWitnessList`
-  static readonly $numTypeParams = 0
-  static readonly $isPhantom = [] as const
-
-  readonly $typeName = AuthorizedWitnessList.$typeName
-  readonly $fullTypeName: `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`
-  readonly $typeArgs: []
-  readonly $isPhantom = AuthorizedWitnessList.$isPhantom
-
-  readonly id: ToField<UID>
-  readonly witnessList: ToField<VecSet<TypeName>>
-
-  private constructor(typeArgs: [], fields: AuthorizedWitnessListFields) {
-    this.$fullTypeName = composeSuiType(
-      AuthorizedWitnessList.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`
-    this.$typeArgs = typeArgs
-
-    this.id = fields.id
-    this.witnessList = fields.witnessList
-  }
-
-  static reified(): AuthorizedWitnessListReified {
-    return {
-      typeName: AuthorizedWitnessList.$typeName,
-      fullTypeName: composeSuiType(
-        AuthorizedWitnessList.$typeName,
-        ...[]
-      ) as `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`,
-      typeArgs: [] as [],
-      isPhantom: AuthorizedWitnessList.$isPhantom,
-      reifiedTypeArgs: [],
-      fromFields: (fields: Record<string, any>) => AuthorizedWitnessList.fromFields(fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        AuthorizedWitnessList.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AuthorizedWitnessList.fromBcs(data),
-      bcs: AuthorizedWitnessList.bcs,
-      fromJSONField: (field: any) => AuthorizedWitnessList.fromJSONField(field),
-      fromJSON: (json: Record<string, any>) => AuthorizedWitnessList.fromJSON(json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        AuthorizedWitnessList.fromSuiParsedData(content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        AuthorizedWitnessList.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AuthorizedWitnessList.fetch(client, id),
-      new: (fields: AuthorizedWitnessListFields) => {
-        return new AuthorizedWitnessList([], fields)
-      },
-      kind: 'StructClassReified',
-    }
-  }
-
-  static get r() {
-    return AuthorizedWitnessList.reified()
-  }
-
-  static phantom(): PhantomReified<ToTypeStr<AuthorizedWitnessList>> {
-    return phantom(AuthorizedWitnessList.reified())
-  }
-  static get p() {
-    return AuthorizedWitnessList.phantom()
-  }
-
-  static get bcs() {
-    return bcs.struct('AuthorizedWitnessList', {
-      id: UID.bcs,
-      witness_list: VecSet.bcs(TypeName.bcs),
-    })
-  }
-
-  static fromFields(fields: Record<string, any>): AuthorizedWitnessList {
-    return AuthorizedWitnessList.reified().new({
-      id: decodeFromFields(UID.reified(), fields.id),
-      witnessList: decodeFromFields(VecSet.reified(TypeName.reified()), fields.witness_list),
-    })
-  }
-
-  static fromFieldsWithTypes(item: FieldsWithTypes): AuthorizedWitnessList {
-    if (!isAuthorizedWitnessList(item.type)) {
-      throw new Error('not a AuthorizedWitnessList type')
-    }
-
-    return AuthorizedWitnessList.reified().new({
-      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      witnessList: decodeFromFieldsWithTypes(
-        VecSet.reified(TypeName.reified()),
-        item.fields.witness_list
-      ),
-    })
-  }
-
-  static fromBcs(data: Uint8Array): AuthorizedWitnessList {
-    return AuthorizedWitnessList.fromFields(AuthorizedWitnessList.bcs.parse(data))
-  }
-
-  toJSONField() {
-    return {
-      id: this.id,
-      witnessList: this.witnessList.toJSONField(),
-    }
-  }
-
-  toJSON() {
-    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
-  }
-
-  static fromJSONField(field: any): AuthorizedWitnessList {
-    return AuthorizedWitnessList.reified().new({
-      id: decodeFromJSONField(UID.reified(), field.id),
-      witnessList: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.witnessList),
-    })
-  }
-
-  static fromJSON(json: Record<string, any>): AuthorizedWitnessList {
-    if (json.$typeName !== AuthorizedWitnessList.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
-    }
-
-    return AuthorizedWitnessList.fromJSONField(json)
-  }
-
-  static fromSuiParsedData(content: SuiParsedData): AuthorizedWitnessList {
-    if (content.dataType !== 'moveObject') {
-      throw new Error('not an object')
-    }
-    if (!isAuthorizedWitnessList(content.type)) {
-      throw new Error(
-        `object at ${(content.fields as any).id} is not a AuthorizedWitnessList object`
-      )
-    }
-    return AuthorizedWitnessList.fromFieldsWithTypes(content)
-  }
-
-  static fromSuiObjectData(data: SuiObjectData): AuthorizedWitnessList {
-    if (data.bcs) {
-      if (data.bcs.dataType !== 'moveObject' || !isAuthorizedWitnessList(data.bcs.type)) {
-        throw new Error(`object at is not a AuthorizedWitnessList object`)
-      }
-
-      return AuthorizedWitnessList.fromBcs(fromB64(data.bcs.bcsBytes))
-    }
-    if (data.content) {
-      return AuthorizedWitnessList.fromSuiParsedData(data.content)
-    }
-    throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
-    )
-  }
-
-  static async fetch(client: SuiClient, id: string): Promise<AuthorizedWitnessList> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AuthorizedWitnessList object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAuthorizedWitnessList(res.data.bcs.type)) {
-      throw new Error(`object at id ${id} is not a AuthorizedWitnessList object`)
-    }
-
-    return AuthorizedWitnessList.fromSuiObjectData(res.data)
-  }
-}
-
 /* ============================== BorrowReferral =============================== */
 
 export function isBorrowReferral(type: string): boolean {
@@ -1053,5 +871,187 @@ export class ReferralFeeKey implements StructClass {
     }
 
     return ReferralFeeKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== AuthorizedWitnessList =============================== */
+
+export function isAuthorizedWitnessList(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V7}::borrow_referral::AuthorizedWitnessList`
+}
+
+export interface AuthorizedWitnessListFields {
+  id: ToField<UID>
+  witnessList: ToField<VecSet<TypeName>>
+}
+
+export type AuthorizedWitnessListReified = Reified<
+  AuthorizedWitnessList,
+  AuthorizedWitnessListFields
+>
+
+export class AuthorizedWitnessList implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V7}::borrow_referral::AuthorizedWitnessList`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AuthorizedWitnessList.$typeName
+  readonly $fullTypeName: `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`
+  readonly $typeArgs: []
+  readonly $isPhantom = AuthorizedWitnessList.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly witnessList: ToField<VecSet<TypeName>>
+
+  private constructor(typeArgs: [], fields: AuthorizedWitnessListFields) {
+    this.$fullTypeName = composeSuiType(
+      AuthorizedWitnessList.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.witnessList = fields.witnessList
+  }
+
+  static reified(): AuthorizedWitnessListReified {
+    return {
+      typeName: AuthorizedWitnessList.$typeName,
+      fullTypeName: composeSuiType(
+        AuthorizedWitnessList.$typeName,
+        ...[]
+      ) as `${typeof PKG_V7}::borrow_referral::AuthorizedWitnessList`,
+      typeArgs: [] as [],
+      isPhantom: AuthorizedWitnessList.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AuthorizedWitnessList.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        AuthorizedWitnessList.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AuthorizedWitnessList.fromBcs(data),
+      bcs: AuthorizedWitnessList.bcs,
+      fromJSONField: (field: any) => AuthorizedWitnessList.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AuthorizedWitnessList.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        AuthorizedWitnessList.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        AuthorizedWitnessList.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AuthorizedWitnessList.fetch(client, id),
+      new: (fields: AuthorizedWitnessListFields) => {
+        return new AuthorizedWitnessList([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AuthorizedWitnessList.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AuthorizedWitnessList>> {
+    return phantom(AuthorizedWitnessList.reified())
+  }
+  static get p() {
+    return AuthorizedWitnessList.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AuthorizedWitnessList', {
+      id: UID.bcs,
+      witness_list: VecSet.bcs(TypeName.bcs),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AuthorizedWitnessList {
+    return AuthorizedWitnessList.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      witnessList: decodeFromFields(VecSet.reified(TypeName.reified()), fields.witness_list),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AuthorizedWitnessList {
+    if (!isAuthorizedWitnessList(item.type)) {
+      throw new Error('not a AuthorizedWitnessList type')
+    }
+
+    return AuthorizedWitnessList.reified().new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      witnessList: decodeFromFieldsWithTypes(
+        VecSet.reified(TypeName.reified()),
+        item.fields.witness_list
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AuthorizedWitnessList {
+    return AuthorizedWitnessList.fromFields(AuthorizedWitnessList.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      id: this.id,
+      witnessList: this.witnessList.toJSONField(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AuthorizedWitnessList {
+    return AuthorizedWitnessList.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      witnessList: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.witnessList),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AuthorizedWitnessList {
+    if (json.$typeName !== AuthorizedWitnessList.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AuthorizedWitnessList.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AuthorizedWitnessList {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAuthorizedWitnessList(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a AuthorizedWitnessList object`
+      )
+    }
+    return AuthorizedWitnessList.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AuthorizedWitnessList {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAuthorizedWitnessList(data.bcs.type)) {
+        throw new Error(`object at is not a AuthorizedWitnessList object`)
+      }
+
+      return AuthorizedWitnessList.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AuthorizedWitnessList.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AuthorizedWitnessList> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching AuthorizedWitnessList object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAuthorizedWitnessList(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AuthorizedWitnessList object`)
+    }
+
+    return AuthorizedWitnessList.fromSuiObjectData(res.data)
   }
 }
