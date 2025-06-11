@@ -115,11 +115,6 @@ export function filterByLiquidationAndDeleverageNeeded(
       continue
     }
 
-    if (position.isCetus()) {
-      // Skipping position because it is a Cetus position due to incident
-      continue
-    }
-
     if (marginLevel.lt(config.liqMargin)) {
       positionsToProcess.set(position.id, info)
       logger.info(
