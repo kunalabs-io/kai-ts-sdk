@@ -37,7 +37,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     const logger = this.logger.child({ operation: 'poll' })
     logger.info('Polling...')
 
-    metrics.monitorPollRunCount.add(1)
+    metrics.monitorPollRunCount?.add(1)
 
     const start = Date.now()
 
@@ -50,7 +50,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
         const duration = Date.now() - start
         logger.info({ duration }, 'Poll finished in %dms')
 
-        metrics.monitorPollRunSuccessDurationMs.record(duration)
+        metrics.monitorPollRunSuccessDurationMs?.record(duration)
         return
       }
 
@@ -64,7 +64,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     const duration = Date.now() - start
     logger.info({ duration }, 'Poll finished in %dms')
 
-    metrics.monitorPollRunSuccessDurationMs.record(duration)
+    metrics.monitorPollRunSuccessDurationMs?.record(duration)
   }
 
   public onLiquidationNeeded(

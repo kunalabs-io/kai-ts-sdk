@@ -109,9 +109,6 @@ export function filterByLiquidationAndDeleverageNeeded(
     const { position, config, marginLevel } = info
 
     if (marginLevel.eq(0)) {
-      logger.info(
-        `Position ${position.id} margin level is ${marginLevel.toDP(6).toString()}, skipping`
-      )
       continue
     }
 

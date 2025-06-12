@@ -80,7 +80,7 @@ export class RpcPositionMonitor extends BasePositionMonitor {
       }
     }
 
-    metrics.getActivePositionInfosRpcFetchLatencyMs.record(Date.now() - start)
+    metrics.getActivePositionInfosRpcFetchLatencyMs?.record(Date.now() - start)
 
     return filterByLiquidationAndDeleverageNeeded(
       positionInfos,

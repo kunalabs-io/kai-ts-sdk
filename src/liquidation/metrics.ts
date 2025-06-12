@@ -1,20 +1,20 @@
 import { Counter, Histogram, Meter, Gauge } from '@opentelemetry/api'
 
-export let monitorPollRunCount: Counter
-export let monitorPollRunSuccessDurationMs: Histogram
-export let getActivePositionInfosRpcFetchLatencyMs: Histogram
-export let positionsToProcessCount: Gauge
-export let excludedPositionsCount: Gauge
-export let recentlyProcessedPositionsCount: Gauge
-export let liquidateOrDeleveragePositionDurationMs: Histogram
-export let workerLiquidateOrDeleverageCallAttemptsCount: Counter
-export let workerLiquidateOrDeleverageCallFailuresCount: Counter
-export let liquidatePositionAttemptCount: Counter
-export let liquidatePositionSuccessCount: Counter
+export let monitorPollRunCount: Counter | undefined
+export let monitorPollRunSuccessDurationMs: Histogram | undefined
+export let getActivePositionInfosRpcFetchLatencyMs: Histogram | undefined
+export let positionsToProcessCount: Gauge | undefined
+export let excludedPositionsCount: Gauge | undefined
+export let recentlyProcessedPositionsCount: Gauge | undefined
+export let liquidateOrDeleveragePositionDurationMs: Histogram | undefined
+export let workerLiquidateOrDeleverageCallAttemptsCount: Counter | undefined
+export let workerLiquidateOrDeleverageCallFailuresCount: Counter | undefined
+export let liquidatePositionAttemptCount: Counter | undefined
+export let liquidatePositionSuccessCount: Counter | undefined
 
 const IO_LATENCY_BUCKETS_MS = [10, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 2000, 3000, 5000]
 
-export function createHistogram(meter: Meter, name: string, description: string) {
+function createHistogram(meter: Meter, name: string, description: string) {
   return meter.createHistogram(name, {
     description,
     unit: 'ms',
@@ -24,7 +24,7 @@ export function createHistogram(meter: Meter, name: string, description: string)
   })
 }
 
-export function createCounter(meter: Meter, name: string, description: string) {
+function createCounter(meter: Meter, name: string, description: string) {
   const counter = meter.createCounter(name, {
     description,
   })
@@ -32,7 +32,7 @@ export function createCounter(meter: Meter, name: string, description: string) {
   return counter
 }
 
-export function createGauge(meter: Meter, name: string, description: string) {
+function createGauge(meter: Meter, name: string, description: string) {
   return meter.createGauge(name, {
     description,
   })

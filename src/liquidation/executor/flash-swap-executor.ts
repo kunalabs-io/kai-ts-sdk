@@ -100,7 +100,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     this.logger.info(`Attempting to liquidate position`)
 
-    metrics.liquidatePositionAttemptCount.add(1)
+    metrics.liquidatePositionAttemptCount?.add(1)
 
     const di = debtInfo.empty(tx, position.configInfo.lendFacilCap)
     debtInfo.addFromSupplyPool(
@@ -156,7 +156,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     this.logger.info({ txDigest: res.digest }, 'Liquidation transaction executed')
 
-    metrics.liquidatePositionSuccessCount.add(1)
+    metrics.liquidatePositionSuccessCount?.add(1)
   }
 
   private addLiquidateColXCalls(

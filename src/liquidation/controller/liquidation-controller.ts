@@ -37,9 +37,9 @@ export class LiquidationController {
   async handleNewPositions(positions: Map<string, PositionInfo>): Promise<void> {
     const start = Date.now()
 
-    metrics.recentlyProcessedPositionsCount.record(this.recentlyProcessedPositions.size)
-    metrics.excludedPositionsCount.record(this.excludedPositions.size)
-    metrics.positionsToProcessCount.record(positions.size)
+    metrics.recentlyProcessedPositionsCount?.record(this.recentlyProcessedPositions.size)
+    metrics.excludedPositionsCount?.record(this.excludedPositions.size)
+    metrics.positionsToProcessCount?.record(positions.size)
 
     // Shuffle positions randomly and remove positions that are excluded,
     // recently processed, or currently being processed
@@ -79,7 +79,7 @@ export class LiquidationController {
       )
     )
 
-    metrics.liquidateOrDeleveragePositionDurationMs.record(Date.now() - start)
+    metrics.liquidateOrDeleveragePositionDurationMs?.record(Date.now() - start)
   }
 
   private async processPosition(positionId: string, positionInfo: PositionInfo): Promise<void> {
@@ -94,12 +94,12 @@ export class LiquidationController {
       await this.liquidationExecutor.execute(positionInfo)
 
       this.logger.info({ positionId }, 'Position processed successfully')
-      metrics.workerLiquidateOrDeleverageCallAttemptsCount.add(1)
+      metrics.workerLiquidateOrDeleverageCallAttemptsCount?.add(1)
 
       this.recentlyProcessedPositions.set(positionId, true)
       this.positionFailureCounts.delete(positionId)
     } catch (error) {
-      metrics.workerLiquidateOrDeleverageCallFailuresCount.add(1)
+      metrics.workerLiquidateOrDeleverageCallFailuresCount?.add(1)
 
       this.logger.error({ positionId, error }, `Failed to process position ${positionId}: ${error}`)
 
