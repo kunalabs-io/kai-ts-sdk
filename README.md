@@ -374,3 +374,48 @@ async function compound(client: SuiClient) {
   )
 }
 ```
+
+## Liquidation Framework
+
+The SDK provides functionality for monitoring, controlling, and executing liquidations of LP positions.
+
+#### Features
+
+- Real-time position monitoring
+- Automated liquidation execution
+- Flash swap execution for liquidations
+- OpenTelemetry metrics
+
+#### System Architecture
+
+The SDK liqudation consists of three main components:
+
+1. **Position Monitor (`RpcPositionMonitor`)**
+
+   - Continuously watches for positions that need liquidation
+   - Polls the chain at regular intervals
+   - Triggers events when positions need liquidation
+
+2. **Liquidation Controller (`LiquidationController`)**
+
+   - Acts as the decision-making component
+   - Receives positions from the monitor
+   - Determines how to handle liquidations
+   - Coordinates with the executor to perform liquidations
+
+3. **Flash Swap Executor (`FlashSwapExecutor`)**
+   - Handles the actual execution of liquidations
+   - Signs and sends transactions to the network
+   - Performs flash swaps for liquidation
+
+The system follows a clear flow:
+
+1. Monitor detects positions needing liquidation
+2. Controller receives and processes these positions
+3. Executor carries out the actual liquidation transactions
+
+#### Example
+
+This example repository demonstrates how to implement a liquidation bot for the Kai Finance protocol, including position monitoring, liquidation controller, and flash swap execution. The example should help you understand how to use the SDK's liquidation features in practice.
+
+[Kai Liquidation Bot Example](https://github.com/kunalabs-io/kai-liquidation-bot-example)
