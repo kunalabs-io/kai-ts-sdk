@@ -1,7 +1,7 @@
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { SupplyPool } from '../../lp/supply-pool'
-import { CoinInfo } from '../../coin-info'
+import { CoinInfo, SUI } from '../../coin-info'
 import { Price } from '../../price'
 import { PositionConfig } from '../../lp/config'
 import { PriceFeed, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
@@ -11,6 +11,7 @@ import { SuiClient } from '@mysten/sui/client'
 import { Decimal } from 'decimal.js'
 import { Logger } from 'pino'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
+import { Amount } from '../../amount'
 
 export interface PriceFeedUpdateInfo {
   feedIds: string[]
@@ -24,6 +25,7 @@ export interface PositionInfo {
   position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
   config: PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
   marginLevel: Decimal
+  assetValue: Decimal | undefined
   priceFeedUpdateInfo: PriceFeedUpdateInfo
 }
 
@@ -101,18 +103,23 @@ export async function getPriceFeedUpdateInfo(
 export function filterByLiquidationAndDeleverageNeeded(
   positionInfos: PositionInfo[],
   logger: Logger,
-  includeDeleveragePositions: boolean = false
+  includeDeleveragePositions: boolean = false,
+  minAssetValue: number = 0.01
 ): Map<string, PositionInfo> {
   const positionsToProcess = new Map<string, PositionInfo>()
 
   for (const info of positionInfos) {
-    const { position, config, marginLevel } = info
+    const { position, config, marginLevel, assetValue } = info
 
     if (marginLevel.eq(0)) {
       continue
     }
 
     if (marginLevel.lt(config.liqMargin)) {
+      if (assetValue?.lt(minAssetValue)) {
+        continue
+      }
+
       positionsToProcess.set(position.id, info)
       logger.info(
         `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below liquidation margin ${config.liqMargin.toDP(6).toString()}, adding to positions to process`
@@ -210,4 +217,44 @@ export function calcPositionMarginLevel({
     supplyPoolY,
     timestampMs: Date.now(),
   })
+}
+
+export function calcPositionAssetValue(
+  position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
+  allPriceFeeds: PriceFeed[],
+  assetValueCoin: CoinInfo<PhantomTypeArgument>,
+  prices: {
+    x: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
+    y: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
+  }
+) {
+  const feedX = allPriceFeeds.find(
+    pf => normalizeSuiAddress(pf.id) === position.configInfo.pioInfoX.priceFeedId
+  )
+  const feedY = allPriceFeeds.find(
+    pf => normalizeSuiAddress(pf.id) === position.configInfo.pioInfoY.priceFeedId
+  )
+  if (!feedX) {
+    throw new Error(`Price feed X for position ${position.id} not found`)
+  }
+  if (!feedY) {
+    throw new Error(`Price feed Y for position ${position.id} not found`)
+  }
+
+  const currentPrice = priceFromPythFeedPrice(
+    { feed: feedX, info: position.X },
+    { feed: feedY, info: position.Y }
+  )
+
+  if (!prices.x || !prices.y) {
+    return undefined
+  }
+
+  const positionAssetValue = position.calcAssetValue({
+    poolPrice: currentPrice,
+    xPriceT: prices.x,
+    yPriceT: prices.y,
+  })
+
+  return Amount.fromInt(positionAssetValue, assetValueCoin.decimals).toDecimal()
 }

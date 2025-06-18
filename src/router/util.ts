@@ -69,6 +69,40 @@ export class PriceCache {
 
     return entry.price as Price<X, Y>
   }
+
+  getCachedPrice<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    tokenX: CoinInfo<X>,
+    tokenY: CoinInfo<Y>
+  ): Price<X, Y> | undefined {
+    const cacheKey = `${compressSuiType(tokenX.typeName)}-${compressSuiType(tokenY.typeName)}`
+    let entry = this.cache.get(cacheKey)
+
+    if (!entry) {
+      const inverseCacheKey = `${compressSuiType(tokenY.typeName)}-${compressSuiType(tokenX.typeName)}`
+      const inverseEntry = this.cache.get(inverseCacheKey)
+      if (inverseEntry) {
+        entry = { price: inverseEntry.price.inverted() }
+      } else {
+        return undefined
+      }
+    }
+
+    return entry.price as Price<X, Y>
+  }
+
+  async getFreshPrice<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    tokenX: CoinInfo<X>,
+    tokenY: CoinInfo<Y>
+  ): Promise<Price<X, Y> | undefined> {
+    const cacheKey = `${compressSuiType(tokenX.typeName)}-${compressSuiType(tokenY.typeName)}`
+    const price = await getTokenPrice(tokenX, tokenY)
+    if (price) {
+      this.cache.set(cacheKey, { price })
+      return price
+    }
+
+    return undefined
+  }
 }
 
 const PRICE_CACHE = new PriceCache(60 * 60)

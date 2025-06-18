@@ -17,9 +17,12 @@ import {
   PositionInfo,
   calcPositionMarginLevel,
   isPositionActive,
+  calcPositionAssetValue,
 } from './utils'
 import { LRUCache } from 'lru-cache'
 import { PositionMonitorConfig } from './base-position-monitor'
+import { Price } from './../../price'
+import { SUI } from './../../coin-info'
 
 interface CacheEntry {
   allConfigs: Map<string, PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>>
@@ -74,7 +77,11 @@ export class RpcPositionMonitor extends BasePositionMonitor {
     const positionInfos: PositionInfo[] = []
 
     for (const position of activePositions) {
-      const info = await this.getPositionInfo(position, priceFeedUpdateInfo)
+      const xPrice = this.priceCache.getCachedPrice(position.X, this.config.assetValueCoin || SUI)
+      const yPrice = this.priceCache.getCachedPrice(position.Y, this.config.assetValueCoin || SUI)
+      const prices = { x: xPrice, y: yPrice }
+
+      const info = await this.getPositionInfo(position, priceFeedUpdateInfo, prices)
       if (info !== null) {
         positionInfos.push(info)
       }
@@ -85,7 +92,8 @@ export class RpcPositionMonitor extends BasePositionMonitor {
     return filterByLiquidationAndDeleverageNeeded(
       positionInfos,
       this.logger,
-      this.config.includeDeleveragePositions
+      this.config.includeDeleveragePositions,
+      this.config.minAssetValue
     )
   }
 
@@ -233,7 +241,11 @@ export class RpcPositionMonitor extends BasePositionMonitor {
 
   public async getPositionInfo(
     position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
-    priceFeedUpdateInfo: PriceFeedUpdateInfo
+    priceFeedUpdateInfo: PriceFeedUpdateInfo,
+    prices: {
+      x: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
+      y: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
+    }
   ): Promise<PositionInfo | null> {
     const [config, supplyPools] = await Promise.all([
       this.getPositionConfig(position),
@@ -249,10 +261,18 @@ export class RpcPositionMonitor extends BasePositionMonitor {
       allPriceFeeds: priceFeedUpdateInfo.priceFeeds,
     })
 
+    const assetValue = calcPositionAssetValue(
+      position,
+      priceFeedUpdateInfo.priceFeeds,
+      this.config.assetValueCoin || SUI,
+      prices
+    )
+
     return {
       position,
       config,
       marginLevel,
+      assetValue,
       priceFeedUpdateInfo,
     }
   }

@@ -132,6 +132,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     const res = await this.executor.executeTransaction(tx, {
       showEvents: true,
+      showEffects: true,
     })
 
     if (res.data.errors) {
@@ -140,6 +141,14 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
         'Liquidate transaction failed'
       )
       throw new Error(`Liquidate transaction failed: ${res.data.errors}`)
+    }
+
+    if (res.data.effects?.status?.status === 'failure') {
+      this.logger.error(
+        { txDigest: res.digest, txErrors: res.data.effects?.status?.error },
+        'Liquidate transaction failed'
+      )
+      throw new Error(`Liquidate transaction failed: ${res.data.effects?.status?.error}`)
     }
 
     const deleverageEvent = res.data.events?.find(e => isDeleverageInfo(e.type))
