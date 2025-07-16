@@ -1,7 +1,7 @@
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 import * as balance from '../../gen/sui/balance/functions'
 import * as bluefinUtil from '../../gen/kai-leverage-util/bluefin-spot/functions'
-import { findRoute, findRouteStep, RouteStep, swapWithRoute } from '.'
+import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 import * as bluefinSpot from '../../gen/bluefin-spot/pool/functions'

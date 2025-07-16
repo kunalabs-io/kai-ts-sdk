@@ -755,6 +755,58 @@ export function rebalanceAddLiquidityByFixCoin(
   })
 }
 
+export interface SyncExploitedPositionLiquidityBySmallWithdrawArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  balanceBag: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function syncExploitedPositionLiquidityBySmallWithdraw(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SyncExploitedPositionLiquidityBySmallWithdrawArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::sync_exploited_position_liquidity_by_small_withdraw`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.cetusConfig),
+      obj(tx, args.cetusPool),
+      obj(tx, args.balanceBag),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface DestructExploitedPositionAndReturnLpArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  cap: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+}
+
+export function destructExploitedPositionAndReturnLp(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: DestructExploitedPositionAndReturnLpArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::destruct_exploited_position_and_return_lp`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.cap),
+      obj(tx, args.cetusPool),
+    ],
+  })
+}
+
 export interface PositionModelArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput

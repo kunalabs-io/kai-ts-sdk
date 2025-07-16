@@ -15,6 +15,7 @@ export interface RouterSwapBalanceArgs {
   amountIn: bigint
   sender: string
   slippage: number
+  protocolDenylist?: string[]
 }
 
 export interface RouterSwapCoinArgs {
@@ -25,6 +26,7 @@ export interface RouterSwapCoinArgs {
   amountIn: bigint
   sender: string
   slippage: number
+  protocolDenylist?: string[]
 }
 
 export interface RouterSwapBalanceResult {
@@ -44,7 +46,9 @@ export interface RouterSwapExactOutBalanceArgs {
   balanceIn: TransactionArgument
   amountOut: bigint
   sender: string
+  /** The allowed swap slippage, e.g. 0.01 is 1% */
   slippage: number
+  protocolDenylist?: string[]
 }
 
 export interface RouterSwapExactOutCoinArgs {
@@ -55,6 +59,7 @@ export interface RouterSwapExactOutCoinArgs {
   amountOut: bigint
   sender: string
   slippage: number
+  protocolDenylist?: string[]
 }
 
 export interface SwapExactOutCoinResult {
@@ -72,9 +77,12 @@ export interface GetPriceArgs<X extends PhantomTypeArgument, Y extends PhantomTy
   Y: CoinInfo<Y>
   xToY: boolean
   amountIn: bigint
+  protocolDenylist?: string[]
 }
 
 export interface Router {
+  /** The identifier of the router */
+  id: () => string
   /** Initializes the router */
   initialize: () => Promise<void>
   /** Swaps a balance of X for a balance of Y */
@@ -89,4 +97,6 @@ export interface Router {
   getPrice: <X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
     args: GetPriceArgs<X, Y>
   ) => Promise<Price<X, Y>>
+  /** Returns the list of protocols supported by the router */
+  protocolList: () => string[]
 }

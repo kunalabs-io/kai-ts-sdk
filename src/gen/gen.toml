@@ -6,10 +6,10 @@ KaiSingleAssetVault = { local = "../../../../../move/kai/sav/core" }
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.35.2", override = true }
 MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "mainnet-v1.35.2", override = true }
 Cetus = { id = "0x2d8c2e0fc6dd25b0214b3fa747e0fd27fd54608142cd2e4f64c1cd350cc4add4" }
-CetusClmm = { git = "https://github.com/CetusProtocol/cetus-clmm-interface.git", subdir = "sui/cetus_clmm", rev = "mainnet-v1.26.0", override = true }
-IntegerMate = { git = "https://github.com/CetusProtocol/integer-mate.git", subdir = "sui", rev = "mainnet-v1.23.1" }
+CetusClmm = { local = "../../../../../move/_vendor/CetusClmm" }
+IntegerMate = { git = "https://github.com/CetusProtocol/integer-mate", subdir = "sui", rev = "c502cff", override = true }
 KaiLeverage = { local = "../../../../../move/kai/leverage/core" }
 KaiLeverageUtil = { local = "../../../../../move/kai/leverage/util" }
 Pyth = { local = "../../../../../move/_vendor/Pyth" }
 Wormhole = { id = "0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a" }
-BluefinSpot = { git = "https://github.com/fireflyprotocol/bluefin-spot-contract-interface.git", subdir = "", rev = "5e70db0", override = true }
+BluefinSpot = { git = "https://github.com/fireflyprotocol/bluefin-spot-contract-interface.git", subdir = "", rev = "dddb0dd" }

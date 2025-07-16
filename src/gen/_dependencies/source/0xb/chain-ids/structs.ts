@@ -10,7 +10,6 @@ import {
   phantom,
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
-import { PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -19,7 +18,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isBridgeRoute(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::chain_ids::BridgeRoute`
+  return type === `0xb::chain_ids::BridgeRoute`
 }
 
 export interface BridgeRouteFields {
@@ -32,12 +31,12 @@ export type BridgeRouteReified = Reified<BridgeRoute, BridgeRouteFields>
 export class BridgeRoute implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::chain_ids::BridgeRoute`
+  static readonly $typeName = `0xb::chain_ids::BridgeRoute`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeRoute.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::chain_ids::BridgeRoute`
+  readonly $fullTypeName: `0xb::chain_ids::BridgeRoute`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeRoute.$isPhantom
 
@@ -48,7 +47,7 @@ export class BridgeRoute implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeRoute.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::chain_ids::BridgeRoute`
+    ) as `0xb::chain_ids::BridgeRoute`
     this.$typeArgs = typeArgs
 
     this.source = fields.source
@@ -58,10 +57,7 @@ export class BridgeRoute implements StructClass {
   static reified(): BridgeRouteReified {
     return {
       typeName: BridgeRoute.$typeName,
-      fullTypeName: composeSuiType(
-        BridgeRoute.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::chain_ids::BridgeRoute`,
+      fullTypeName: composeSuiType(BridgeRoute.$typeName, ...[]) as `0xb::chain_ids::BridgeRoute`,
       typeArgs: [] as [],
       isPhantom: BridgeRoute.$isPhantom,
       reifiedTypeArgs: [],

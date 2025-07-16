@@ -2,7 +2,7 @@ import { Transaction, TransactionArgument, TransactionObjectInput } from '@myste
 import * as balance from '../../gen/sui/balance/functions'
 import * as cetusUtil from '../../gen/kai-leverage-util/cetus/functions'
 import { CETUS_GLOBAL_CONFIG_ID } from '../../constants'
-import { findRoute, findRouteStep, RouteStep, swapWithRoute } from '.'
+import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 import * as cetusRouter from '../../gen/cetus/router/functions'

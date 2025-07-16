@@ -15,7 +15,6 @@ import { Bag } from '../../../../sui/bag/structs'
 import { ObjectBag } from '../../../../sui/object-bag/structs'
 import { UpgradeCap } from '../../../../sui/package/structs'
 import { VecMap } from '../../../../sui/vec-map/structs'
-import { PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -24,7 +23,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isBridgeTreasury(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::BridgeTreasury`
+  return type === `0xb::treasury::BridgeTreasury`
 }
 
 export interface BridgeTreasuryFields {
@@ -39,12 +38,12 @@ export type BridgeTreasuryReified = Reified<BridgeTreasury, BridgeTreasuryFields
 export class BridgeTreasury implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::BridgeTreasury`
+  static readonly $typeName = `0xb::treasury::BridgeTreasury`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeTreasury.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::BridgeTreasury`
+  readonly $fullTypeName: `0xb::treasury::BridgeTreasury`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeTreasury.$isPhantom
 
@@ -57,7 +56,7 @@ export class BridgeTreasury implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeTreasury.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::BridgeTreasury`
+    ) as `0xb::treasury::BridgeTreasury`
     this.$typeArgs = typeArgs
 
     this.treasuries = fields.treasuries
@@ -72,7 +71,7 @@ export class BridgeTreasury implements StructClass {
       fullTypeName: composeSuiType(
         BridgeTreasury.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::BridgeTreasury`,
+      ) as `0xb::treasury::BridgeTreasury`,
       typeArgs: [] as [],
       isPhantom: BridgeTreasury.$isPhantom,
       reifiedTypeArgs: [],
@@ -229,7 +228,7 @@ export class BridgeTreasury implements StructClass {
 
 export function isBridgeTokenMetadata(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::BridgeTokenMetadata`
+  return type === `0xb::treasury::BridgeTokenMetadata`
 }
 
 export interface BridgeTokenMetadataFields {
@@ -244,12 +243,12 @@ export type BridgeTokenMetadataReified = Reified<BridgeTokenMetadata, BridgeToke
 export class BridgeTokenMetadata implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::BridgeTokenMetadata`
+  static readonly $typeName = `0xb::treasury::BridgeTokenMetadata`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeTokenMetadata.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::BridgeTokenMetadata`
+  readonly $fullTypeName: `0xb::treasury::BridgeTokenMetadata`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeTokenMetadata.$isPhantom
 
@@ -262,7 +261,7 @@ export class BridgeTokenMetadata implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeTokenMetadata.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::BridgeTokenMetadata`
+    ) as `0xb::treasury::BridgeTokenMetadata`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -277,7 +276,7 @@ export class BridgeTokenMetadata implements StructClass {
       fullTypeName: composeSuiType(
         BridgeTokenMetadata.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::BridgeTokenMetadata`,
+      ) as `0xb::treasury::BridgeTokenMetadata`,
       typeArgs: [] as [],
       isPhantom: BridgeTokenMetadata.$isPhantom,
       reifiedTypeArgs: [],
@@ -416,7 +415,7 @@ export class BridgeTokenMetadata implements StructClass {
 
 export function isForeignTokenRegistration(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::ForeignTokenRegistration`
+  return type === `0xb::treasury::ForeignTokenRegistration`
 }
 
 export interface ForeignTokenRegistrationFields {
@@ -433,12 +432,12 @@ export type ForeignTokenRegistrationReified = Reified<
 export class ForeignTokenRegistration implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::ForeignTokenRegistration`
+  static readonly $typeName = `0xb::treasury::ForeignTokenRegistration`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = ForeignTokenRegistration.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::ForeignTokenRegistration`
+  readonly $fullTypeName: `0xb::treasury::ForeignTokenRegistration`
   readonly $typeArgs: []
   readonly $isPhantom = ForeignTokenRegistration.$isPhantom
 
@@ -450,7 +449,7 @@ export class ForeignTokenRegistration implements StructClass {
     this.$fullTypeName = composeSuiType(
       ForeignTokenRegistration.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::ForeignTokenRegistration`
+    ) as `0xb::treasury::ForeignTokenRegistration`
     this.$typeArgs = typeArgs
 
     this.typeName = fields.typeName
@@ -464,7 +463,7 @@ export class ForeignTokenRegistration implements StructClass {
       fullTypeName: composeSuiType(
         ForeignTokenRegistration.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::ForeignTokenRegistration`,
+      ) as `0xb::treasury::ForeignTokenRegistration`,
       typeArgs: [] as [],
       isPhantom: ForeignTokenRegistration.$isPhantom,
       reifiedTypeArgs: [],
@@ -608,7 +607,7 @@ export class ForeignTokenRegistration implements StructClass {
 
 export function isUpdateTokenPriceEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::UpdateTokenPriceEvent`
+  return type === `0xb::treasury::UpdateTokenPriceEvent`
 }
 
 export interface UpdateTokenPriceEventFields {
@@ -624,12 +623,12 @@ export type UpdateTokenPriceEventReified = Reified<
 export class UpdateTokenPriceEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::UpdateTokenPriceEvent`
+  static readonly $typeName = `0xb::treasury::UpdateTokenPriceEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = UpdateTokenPriceEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::UpdateTokenPriceEvent`
+  readonly $fullTypeName: `0xb::treasury::UpdateTokenPriceEvent`
   readonly $typeArgs: []
   readonly $isPhantom = UpdateTokenPriceEvent.$isPhantom
 
@@ -640,7 +639,7 @@ export class UpdateTokenPriceEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       UpdateTokenPriceEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::UpdateTokenPriceEvent`
+    ) as `0xb::treasury::UpdateTokenPriceEvent`
     this.$typeArgs = typeArgs
 
     this.tokenId = fields.tokenId
@@ -653,7 +652,7 @@ export class UpdateTokenPriceEvent implements StructClass {
       fullTypeName: composeSuiType(
         UpdateTokenPriceEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::UpdateTokenPriceEvent`,
+      ) as `0xb::treasury::UpdateTokenPriceEvent`,
       typeArgs: [] as [],
       isPhantom: UpdateTokenPriceEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -787,7 +786,7 @@ export class UpdateTokenPriceEvent implements StructClass {
 
 export function isNewTokenEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::NewTokenEvent`
+  return type === `0xb::treasury::NewTokenEvent`
 }
 
 export interface NewTokenEventFields {
@@ -803,12 +802,12 @@ export type NewTokenEventReified = Reified<NewTokenEvent, NewTokenEventFields>
 export class NewTokenEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::NewTokenEvent`
+  static readonly $typeName = `0xb::treasury::NewTokenEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = NewTokenEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::NewTokenEvent`
+  readonly $fullTypeName: `0xb::treasury::NewTokenEvent`
   readonly $typeArgs: []
   readonly $isPhantom = NewTokenEvent.$isPhantom
 
@@ -822,7 +821,7 @@ export class NewTokenEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       NewTokenEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::NewTokenEvent`
+    ) as `0xb::treasury::NewTokenEvent`
     this.$typeArgs = typeArgs
 
     this.tokenId = fields.tokenId
@@ -838,7 +837,7 @@ export class NewTokenEvent implements StructClass {
       fullTypeName: composeSuiType(
         NewTokenEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::NewTokenEvent`,
+      ) as `0xb::treasury::NewTokenEvent`,
       typeArgs: [] as [],
       isPhantom: NewTokenEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -982,7 +981,7 @@ export class NewTokenEvent implements StructClass {
 
 export function isTokenRegistrationEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::treasury::TokenRegistrationEvent`
+  return type === `0xb::treasury::TokenRegistrationEvent`
 }
 
 export interface TokenRegistrationEventFields {
@@ -999,12 +998,12 @@ export type TokenRegistrationEventReified = Reified<
 export class TokenRegistrationEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::treasury::TokenRegistrationEvent`
+  static readonly $typeName = `0xb::treasury::TokenRegistrationEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenRegistrationEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::treasury::TokenRegistrationEvent`
+  readonly $fullTypeName: `0xb::treasury::TokenRegistrationEvent`
   readonly $typeArgs: []
   readonly $isPhantom = TokenRegistrationEvent.$isPhantom
 
@@ -1016,7 +1015,7 @@ export class TokenRegistrationEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenRegistrationEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::treasury::TokenRegistrationEvent`
+    ) as `0xb::treasury::TokenRegistrationEvent`
     this.$typeArgs = typeArgs
 
     this.typeName = fields.typeName
@@ -1030,7 +1029,7 @@ export class TokenRegistrationEvent implements StructClass {
       fullTypeName: composeSuiType(
         TokenRegistrationEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::treasury::TokenRegistrationEvent`,
+      ) as `0xb::treasury::TokenRegistrationEvent`,
       typeArgs: [] as [],
       isPhantom: TokenRegistrationEvent.$isPhantom,
       reifiedTypeArgs: [],

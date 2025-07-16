@@ -3,6 +3,7 @@ import * as config from './config/structs'
 import * as factory from './factory/structs'
 import * as partner from './partner/structs'
 import * as pool from './pool/structs'
+import * as positionSnapshot from './position-snapshot/structs'
 import * as position from './position/structs'
 import * as rewarder from './rewarder/structs'
 import * as tick from './tick/structs'
@@ -68,6 +69,8 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(position.Position)
   loader.register(position.PositionInfo)
   loader.register(position.PositionReward)
+  loader.register(positionSnapshot.PositionLiquiditySnapshot)
+  loader.register(positionSnapshot.PositionSnapshot)
   loader.register(rewarder.RewarderManager)
   loader.register(rewarder.Rewarder)
   loader.register(rewarder.RewarderGlobalVault)

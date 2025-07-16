@@ -10,6 +10,9 @@ import {
   USDY,
   DEEP,
   stSUI,
+  LBTC,
+  wBTC,
+  WAL,
 } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 
@@ -69,7 +72,7 @@ export const CETUS_POOL_INFOS: Array<DexInfo> = [
   {
     coinA: USDC,
     coinB: suiUSDT,
-    poolId: '0x7df346f8ef98ad20869ff6d2fc7c43c00403a524987509091b39ce61dde00957',
+    poolId: '0xb8a67c149fd1bc7f9aca1541c61e51ba13bdded64c273c278e50850ae3bff073',
   },
   {
     coinA: USDC,
@@ -80,6 +83,11 @@ export const CETUS_POOL_INFOS: Array<DexInfo> = [
     coinA: DEEP,
     coinB: SUI,
     poolId: '0xe01243f37f712ef87e556afb9b1d03d0fae13f96d324ec912daffc339dfdcbd2',
+  },
+  {
+    coinA: WAL,
+    coinB: SUI,
+    poolId: '0x72f5c6eef73d77de271886219a2543e7c29a33de19a6c69c5cf1899f729c3f17',
   },
 ].map(p => ({ ...p, type: 'dex', protocol: 'cetus' }))
 
@@ -101,8 +109,8 @@ export const BLUEFIN_POOL_INFOS: Array<DexInfo> = [
   },
   {
     coinA: DEEP,
-    coinB: SUI,
-    poolId: '0x1b06371d74082856a1be71760cf49f6a377d050eb57afd017f203e89b09c89a2',
+    coinB: BLUE,
+    poolId: '0x4b8271fc4819078e44ee9a0506a824b77464789d57ace355d0562a4776c51840',
   },
   {
     coinA: whUSDCe,
@@ -112,12 +120,27 @@ export const BLUEFIN_POOL_INFOS: Array<DexInfo> = [
   {
     coinA: BLUE,
     coinB: USDC,
-    poolId: '0x682f4b17874ec47723bb527cf21e18b630eba0699d10781740cd0a7964dc6b19',
+    poolId: '0x198c607644a07d500b5b2bd076e54eecd022f471b714f89a336e38749559a496',
   },
   {
     coinA: DEEP,
     coinB: USDC,
     poolId: '0xd5e3a3c7396702d8f358a63ef921cc7c1951f52c6dfc2051cc8772cf7cb9900c',
+  },
+  {
+    coinA: LBTC,
+    coinB: wBTC,
+    poolId: '0x715959c4a67cc6b8d2d4c0db628618d947a032041453a24c3a5315beb613331a',
+  },
+  {
+    coinA: WAL,
+    coinB: SUI,
+    poolId: '0xe60bc7ade245b9f35b49686dfab0a18e5ca9176d49bef1b90f60d67d06315ff0',
+  },
+  {
+    coinA: WAL,
+    coinB: USDC,
+    poolId: '0xbcc6909d2e85c06cf9cbfe5b292da36f5bfa0f314806474bbf6a0bf9744d37ce',
   },
 ].map(p => ({ ...p, type: 'dex', protocol: 'bluefin' }))
 

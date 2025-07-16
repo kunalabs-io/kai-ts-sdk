@@ -31,7 +31,7 @@ import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
 import { BalanceBag } from '../balance-bag/structs'
-import { PKG_V1, PKG_V3 } from '../index'
+import { PKG_V1, PKG_V11, PKG_V3 } from '../index'
 import { PositionModel } from '../position-model-clmm/structs'
 import { FacilDebtBag, FacilDebtShare, LendFacilCap } from '../supply-pool/structs'
 import { BcsType, bcs } from '@mysten/sui/bcs'
@@ -2419,6 +2419,1047 @@ export class PositionConfig implements StructClass {
     }
 
     return PositionConfig.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== LiquidationDisabledKey =============================== */
+
+export function isLiquidationDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+}
+
+export interface LiquidationDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type LiquidationDisabledKeyReified = Reified<
+  LiquidationDisabledKey,
+  LiquidationDisabledKeyFields
+>
+
+export class LiquidationDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = LiquidationDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = LiquidationDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: LiquidationDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      LiquidationDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): LiquidationDisabledKeyReified {
+    return {
+      typeName: LiquidationDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        LiquidationDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: LiquidationDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => LiquidationDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        LiquidationDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => LiquidationDisabledKey.fromBcs(data),
+      bcs: LiquidationDisabledKey.bcs,
+      fromJSONField: (field: any) => LiquidationDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => LiquidationDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        LiquidationDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        LiquidationDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => LiquidationDisabledKey.fetch(client, id),
+      new: (fields: LiquidationDisabledKeyFields) => {
+        return new LiquidationDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return LiquidationDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<LiquidationDisabledKey>> {
+    return phantom(LiquidationDisabledKey.reified())
+  }
+  static get p() {
+    return LiquidationDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('LiquidationDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): LiquidationDisabledKey {
+    return LiquidationDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): LiquidationDisabledKey {
+    if (!isLiquidationDisabledKey(item.type)) {
+      throw new Error('not a LiquidationDisabledKey type')
+    }
+
+    return LiquidationDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): LiquidationDisabledKey {
+    return LiquidationDisabledKey.fromFields(LiquidationDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): LiquidationDisabledKey {
+    return LiquidationDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): LiquidationDisabledKey {
+    if (json.$typeName !== LiquidationDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return LiquidationDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): LiquidationDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isLiquidationDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a LiquidationDisabledKey object`
+      )
+    }
+    return LiquidationDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): LiquidationDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isLiquidationDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a LiquidationDisabledKey object`)
+      }
+
+      return LiquidationDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return LiquidationDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<LiquidationDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching LiquidationDisabledKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isLiquidationDisabledKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a LiquidationDisabledKey object`)
+    }
+
+    return LiquidationDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== ReductionDisabledKey =============================== */
+
+export function isReductionDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::ReductionDisabledKey`
+}
+
+export interface ReductionDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type ReductionDisabledKeyReified = Reified<ReductionDisabledKey, ReductionDisabledKeyFields>
+
+export class ReductionDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::ReductionDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ReductionDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = ReductionDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: ReductionDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      ReductionDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): ReductionDisabledKeyReified {
+    return {
+      typeName: ReductionDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        ReductionDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: ReductionDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ReductionDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        ReductionDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ReductionDisabledKey.fromBcs(data),
+      bcs: ReductionDisabledKey.bcs,
+      fromJSONField: (field: any) => ReductionDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ReductionDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        ReductionDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        ReductionDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ReductionDisabledKey.fetch(client, id),
+      new: (fields: ReductionDisabledKeyFields) => {
+        return new ReductionDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ReductionDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ReductionDisabledKey>> {
+    return phantom(ReductionDisabledKey.reified())
+  }
+  static get p() {
+    return ReductionDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('ReductionDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): ReductionDisabledKey {
+    return ReductionDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ReductionDisabledKey {
+    if (!isReductionDisabledKey(item.type)) {
+      throw new Error('not a ReductionDisabledKey type')
+    }
+
+    return ReductionDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ReductionDisabledKey {
+    return ReductionDisabledKey.fromFields(ReductionDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ReductionDisabledKey {
+    return ReductionDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ReductionDisabledKey {
+    if (json.$typeName !== ReductionDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ReductionDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ReductionDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isReductionDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a ReductionDisabledKey object`
+      )
+    }
+    return ReductionDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ReductionDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isReductionDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a ReductionDisabledKey object`)
+      }
+
+      return ReductionDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ReductionDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ReductionDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ReductionDisabledKey object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isReductionDisabledKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ReductionDisabledKey object`)
+    }
+
+    return ReductionDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== AddLiquidityDisabledKey =============================== */
+
+export function isAddLiquidityDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+}
+
+export interface AddLiquidityDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type AddLiquidityDisabledKeyReified = Reified<
+  AddLiquidityDisabledKey,
+  AddLiquidityDisabledKeyFields
+>
+
+export class AddLiquidityDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = AddLiquidityDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = AddLiquidityDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: AddLiquidityDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      AddLiquidityDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): AddLiquidityDisabledKeyReified {
+    return {
+      typeName: AddLiquidityDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        AddLiquidityDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: AddLiquidityDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AddLiquidityDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        AddLiquidityDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AddLiquidityDisabledKey.fromBcs(data),
+      bcs: AddLiquidityDisabledKey.bcs,
+      fromJSONField: (field: any) => AddLiquidityDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AddLiquidityDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        AddLiquidityDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        AddLiquidityDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => AddLiquidityDisabledKey.fetch(client, id),
+      new: (fields: AddLiquidityDisabledKeyFields) => {
+        return new AddLiquidityDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return AddLiquidityDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AddLiquidityDisabledKey>> {
+    return phantom(AddLiquidityDisabledKey.reified())
+  }
+  static get p() {
+    return AddLiquidityDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('AddLiquidityDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): AddLiquidityDisabledKey {
+    return AddLiquidityDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AddLiquidityDisabledKey {
+    if (!isAddLiquidityDisabledKey(item.type)) {
+      throw new Error('not a AddLiquidityDisabledKey type')
+    }
+
+    return AddLiquidityDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AddLiquidityDisabledKey {
+    return AddLiquidityDisabledKey.fromFields(AddLiquidityDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AddLiquidityDisabledKey {
+    return AddLiquidityDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AddLiquidityDisabledKey {
+    if (json.$typeName !== AddLiquidityDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return AddLiquidityDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AddLiquidityDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAddLiquidityDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a AddLiquidityDisabledKey object`
+      )
+    }
+    return AddLiquidityDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AddLiquidityDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAddLiquidityDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a AddLiquidityDisabledKey object`)
+      }
+
+      return AddLiquidityDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AddLiquidityDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<AddLiquidityDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching AddLiquidityDisabledKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddLiquidityDisabledKey(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a AddLiquidityDisabledKey object`)
+    }
+
+    return AddLiquidityDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== OwnerCollectFeeDisabledKey =============================== */
+
+export function isOwnerCollectFeeDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+}
+
+export interface OwnerCollectFeeDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type OwnerCollectFeeDisabledKeyReified = Reified<
+  OwnerCollectFeeDisabledKey,
+  OwnerCollectFeeDisabledKeyFields
+>
+
+export class OwnerCollectFeeDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = OwnerCollectFeeDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = OwnerCollectFeeDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: OwnerCollectFeeDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      OwnerCollectFeeDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): OwnerCollectFeeDisabledKeyReified {
+    return {
+      typeName: OwnerCollectFeeDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        OwnerCollectFeeDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: OwnerCollectFeeDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => OwnerCollectFeeDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        OwnerCollectFeeDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => OwnerCollectFeeDisabledKey.fromBcs(data),
+      bcs: OwnerCollectFeeDisabledKey.bcs,
+      fromJSONField: (field: any) => OwnerCollectFeeDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => OwnerCollectFeeDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        OwnerCollectFeeDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        OwnerCollectFeeDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => OwnerCollectFeeDisabledKey.fetch(client, id),
+      new: (fields: OwnerCollectFeeDisabledKeyFields) => {
+        return new OwnerCollectFeeDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return OwnerCollectFeeDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<OwnerCollectFeeDisabledKey>> {
+    return phantom(OwnerCollectFeeDisabledKey.reified())
+  }
+  static get p() {
+    return OwnerCollectFeeDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('OwnerCollectFeeDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): OwnerCollectFeeDisabledKey {
+    return OwnerCollectFeeDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): OwnerCollectFeeDisabledKey {
+    if (!isOwnerCollectFeeDisabledKey(item.type)) {
+      throw new Error('not a OwnerCollectFeeDisabledKey type')
+    }
+
+    return OwnerCollectFeeDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): OwnerCollectFeeDisabledKey {
+    return OwnerCollectFeeDisabledKey.fromFields(OwnerCollectFeeDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): OwnerCollectFeeDisabledKey {
+    return OwnerCollectFeeDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): OwnerCollectFeeDisabledKey {
+    if (json.$typeName !== OwnerCollectFeeDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return OwnerCollectFeeDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): OwnerCollectFeeDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isOwnerCollectFeeDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a OwnerCollectFeeDisabledKey object`
+      )
+    }
+    return OwnerCollectFeeDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): OwnerCollectFeeDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectFeeDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a OwnerCollectFeeDisabledKey object`)
+      }
+
+      return OwnerCollectFeeDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return OwnerCollectFeeDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<OwnerCollectFeeDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching OwnerCollectFeeDisabledKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isOwnerCollectFeeDisabledKey(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a OwnerCollectFeeDisabledKey object`)
+    }
+
+    return OwnerCollectFeeDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== OwnerCollectRewardDisabledKey =============================== */
+
+export function isOwnerCollectRewardDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+}
+
+export interface OwnerCollectRewardDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type OwnerCollectRewardDisabledKeyReified = Reified<
+  OwnerCollectRewardDisabledKey,
+  OwnerCollectRewardDisabledKeyFields
+>
+
+export class OwnerCollectRewardDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = OwnerCollectRewardDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = OwnerCollectRewardDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: OwnerCollectRewardDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      OwnerCollectRewardDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): OwnerCollectRewardDisabledKeyReified {
+    return {
+      typeName: OwnerCollectRewardDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        OwnerCollectRewardDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: OwnerCollectRewardDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => OwnerCollectRewardDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        OwnerCollectRewardDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => OwnerCollectRewardDisabledKey.fromBcs(data),
+      bcs: OwnerCollectRewardDisabledKey.bcs,
+      fromJSONField: (field: any) => OwnerCollectRewardDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => OwnerCollectRewardDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        OwnerCollectRewardDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        OwnerCollectRewardDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        OwnerCollectRewardDisabledKey.fetch(client, id),
+      new: (fields: OwnerCollectRewardDisabledKeyFields) => {
+        return new OwnerCollectRewardDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return OwnerCollectRewardDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<OwnerCollectRewardDisabledKey>> {
+    return phantom(OwnerCollectRewardDisabledKey.reified())
+  }
+  static get p() {
+    return OwnerCollectRewardDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('OwnerCollectRewardDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): OwnerCollectRewardDisabledKey {
+    return OwnerCollectRewardDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): OwnerCollectRewardDisabledKey {
+    if (!isOwnerCollectRewardDisabledKey(item.type)) {
+      throw new Error('not a OwnerCollectRewardDisabledKey type')
+    }
+
+    return OwnerCollectRewardDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): OwnerCollectRewardDisabledKey {
+    return OwnerCollectRewardDisabledKey.fromFields(OwnerCollectRewardDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): OwnerCollectRewardDisabledKey {
+    return OwnerCollectRewardDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): OwnerCollectRewardDisabledKey {
+    if (json.$typeName !== OwnerCollectRewardDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return OwnerCollectRewardDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): OwnerCollectRewardDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isOwnerCollectRewardDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a OwnerCollectRewardDisabledKey object`
+      )
+    }
+    return OwnerCollectRewardDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): OwnerCollectRewardDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectRewardDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a OwnerCollectRewardDisabledKey object`)
+      }
+
+      return OwnerCollectRewardDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return OwnerCollectRewardDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<OwnerCollectRewardDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching OwnerCollectRewardDisabledKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isOwnerCollectRewardDisabledKey(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a OwnerCollectRewardDisabledKey object`)
+    }
+
+    return OwnerCollectRewardDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== DeletePositionDisabledKey =============================== */
+
+export function isDeletePositionDisabledKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+}
+
+export interface DeletePositionDisabledKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type DeletePositionDisabledKeyReified = Reified<
+  DeletePositionDisabledKey,
+  DeletePositionDisabledKeyFields
+>
+
+export class DeletePositionDisabledKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = DeletePositionDisabledKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = DeletePositionDisabledKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: DeletePositionDisabledKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      DeletePositionDisabledKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): DeletePositionDisabledKeyReified {
+    return {
+      typeName: DeletePositionDisabledKey.$typeName,
+      fullTypeName: composeSuiType(
+        DeletePositionDisabledKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`,
+      typeArgs: [] as [],
+      isPhantom: DeletePositionDisabledKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => DeletePositionDisabledKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        DeletePositionDisabledKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => DeletePositionDisabledKey.fromBcs(data),
+      bcs: DeletePositionDisabledKey.bcs,
+      fromJSONField: (field: any) => DeletePositionDisabledKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => DeletePositionDisabledKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        DeletePositionDisabledKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        DeletePositionDisabledKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => DeletePositionDisabledKey.fetch(client, id),
+      new: (fields: DeletePositionDisabledKeyFields) => {
+        return new DeletePositionDisabledKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return DeletePositionDisabledKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<DeletePositionDisabledKey>> {
+    return phantom(DeletePositionDisabledKey.reified())
+  }
+  static get p() {
+    return DeletePositionDisabledKey.phantom()
+  }
+
+  static get bcs() {
+    return bcs.struct('DeletePositionDisabledKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  static fromFields(fields: Record<string, any>): DeletePositionDisabledKey {
+    return DeletePositionDisabledKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): DeletePositionDisabledKey {
+    if (!isDeletePositionDisabledKey(item.type)) {
+      throw new Error('not a DeletePositionDisabledKey type')
+    }
+
+    return DeletePositionDisabledKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): DeletePositionDisabledKey {
+    return DeletePositionDisabledKey.fromFields(DeletePositionDisabledKey.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): DeletePositionDisabledKey {
+    return DeletePositionDisabledKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): DeletePositionDisabledKey {
+    if (json.$typeName !== DeletePositionDisabledKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return DeletePositionDisabledKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): DeletePositionDisabledKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isDeletePositionDisabledKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a DeletePositionDisabledKey object`
+      )
+    }
+    return DeletePositionDisabledKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): DeletePositionDisabledKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isDeletePositionDisabledKey(data.bcs.type)) {
+        throw new Error(`object at is not a DeletePositionDisabledKey object`)
+      }
+
+      return DeletePositionDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return DeletePositionDisabledKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<DeletePositionDisabledKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching DeletePositionDisabledKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isDeletePositionDisabledKey(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a DeletePositionDisabledKey object`)
+    }
+
+    return DeletePositionDisabledKey.fromSuiObjectData(res.data)
   }
 }
 

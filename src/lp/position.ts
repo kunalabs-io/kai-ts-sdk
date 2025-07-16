@@ -1,7 +1,11 @@
 import { PhantomTypeArgument, StructClass, TypeArgument } from '../gen/_framework/reified'
 import {
+  isReductionInfo,
+  isRepayDebtInfo,
   Position as Position_,
   PositionReified,
+  ReductionInfo,
+  RepayDebtInfo,
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
 import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
@@ -15,11 +19,16 @@ import {
 import { Price } from '../price'
 import { Amount } from '../amount'
 import { PositionMath } from './position-math'
-import { SuiClient, SuiObjectData } from '@mysten/sui/client'
-import { COIN_INFO_MAP, CoinInfo } from '../coin-info'
+import { DryRunTransactionBlockResponse, SuiClient, SuiObjectData } from '@mysten/sui/client'
+import { COIN_INFO_MAP, CoinInfo, SUI } from '../coin-info'
 import Decimal from 'decimal.js'
 import { bluefinDecodeTick, cetusDecodeTick, ClmmPool } from './clmm-pool'
-import { fromBase64, normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
+import {
+  fromBase64,
+  normalizeSuiAddress,
+  normalizeSuiObjectId,
+  SUI_CLOCK_OBJECT_ID,
+} from '@mysten/sui/utils'
 import {
   Argument,
   coinWithBalance,
@@ -42,11 +51,13 @@ import { SupplyPool } from './supply-pool'
 import { bcs } from '@mysten/sui/bcs'
 import { compressSuiType } from '../gen/_framework/util'
 import { Router } from '../router/adapter'
-import { max } from '../math'
+import { max, min } from '../math'
 import { BLUEFIN_GLOBAL_CONFIG_ID } from '../constants'
-import * as u64 from '../gen/move-stdlib/u64/functions'
 import { KaiRouterAdapter } from '../router/kai'
 import { getMinSwapAmountBatch, PriceCache } from '../router/util'
+import { createBalanceOfExactValue } from '../coin'
+import * as CetusRedemptionUtil from './cetus-redemption-util'
+import * as positionCore from '../gen/kai-leverage/position-core-clmm/functions'
 
 export interface PositionConstructorArgs<
   X extends PhantomTypeArgument,
@@ -248,7 +259,7 @@ export interface CalcEffectiveInterestRateArgs<
   timestampMs?: number
 }
 
-export interface CalcReduceAmountsArgs<
+export interface CalcReduceAmountsHumanArgs<
   X extends PhantomTypeArgument,
   Y extends PhantomTypeArgument,
 > {
@@ -267,6 +278,45 @@ export interface CalcReduceAmountsArgs<
   timestampMs?: number
 }
 
+export interface CalcReduceAmountsHumanResult {
+  /** The amount of X used (when negative) or received (when positive) for the swap */
+  swapX: Decimal
+  /** The amount of Y used (when negative) or received (when positive) for the swap */
+  swapY: Decimal
+  /** The final amount of X returned to the user after all repayments and swaps */
+  finalX: Decimal
+  /** The final amount of Y returned to the user after all repayments and swaps */
+  finalY: Decimal
+}
+
+export interface GetReduceAmountsArgs {
+  /** The reduction factor */
+  factor: Decimal
+  /** The ID of the position's `PositionCap` object */
+  positionCapId: string
+  /** The router protocol denylist */
+  protocolDenylist?: string[]
+}
+
+interface GetReduceAmountsResult {
+  /** The amount of X tokens received from reducing the position */
+  gotX: Amount
+  /** The amount of Y tokens received from reducing the position */
+  gotY: Amount
+  /** The amount of X tokens needed to repay debt */
+  gotDx: Amount
+  /** The amount of Y tokens needed to repay debt */
+  gotDy: Amount
+  /** The amount of X tokens to swap (in human format) */
+  swapX: number
+  /** The amount of Y tokens to swap (in human format) */
+  swapY: number
+  /** The amount of X tokens to repay as debt externally (in human format) */
+  repayDebtX: number
+  /** The amount of Y tokens to repay as debt externally (in human format) */
+  repayDebtY: number
+}
+
 export interface CalcMarginLevelArgs<X extends PhantomTypeArgument, Y extends PhantomTypeArgument> {
   /** The current pool price */
   currentPrice: Price<X, Y>
@@ -281,22 +331,48 @@ export interface CalcMarginLevelArgs<X extends PhantomTypeArgument, Y extends Ph
   timestampMs?: number
 }
 
-export interface CalcReduceAmountsHumanResult {
-  /** The reduction factor */
-  factor: Decimal
-  /** The final (returned) X amount */
-  finalX: Decimal
-  /** The final (returned) Y amount */
-  finalY: Decimal
-}
+export type ReduceRouterArgs =
+  | {
+      /** Swap method to use: 'exact-in' (swap a fixed input amount) or 'exact-out' (swap to receive a fixed output amount) */
+      swapMethod: 'exact-in'
+      /** The allowed swap slippage, e.g. 0.01 is 1% */
+      slippage: number
+      /** Overestimation factor to account for rounding or volatility, e.g. 0.01 is 1% */
+      overestimationFactor: number
+      /** The protocol denylist */
+      protocolDenylist?: string[]
+    }
+  | {
+      /** Swap method to use: 'exact-in' (swap a fixed input amount) or 'exact-out' (swap to receive a fixed output amount) */
+      swapMethod: 'exact-out'
+      /** The allowed swap slippage, e.g. 0.01 is 1% */
+      slippage: number
+      /** The protocol denylist */
+      protocolDenylist?: string[]
+    }
 
 export interface ReduceArgs {
   /** The reduction factor */
   factor: Decimal
   /** The ID of the position's `PositionCap` object */
   positionCapId: string
-  /** The allowed swap slippage */
-  slippage: number
+  /** The router args */
+  routerArgs: ReduceRouterArgs
+}
+
+export interface DryRunReduceResult {
+  /** The full dry-run transaction response from the Sui client */
+  result: DryRunTransactionBlockResponse
+  /** The parsed reduction event info, including withdrawn and repaid amounts */
+  reductionInfo: ReductionInfo | undefined
+  /** The amount of X used (when negative) or received (when positive) for the swap */
+  swapX: Amount
+  /** The amount of Y used (when negative) or received (when positive) for the swap */
+  swapY: Amount
+  /** The final amount of X returned to the user after all repayments and swaps */
+  finalX: Amount
+  /** The final amount of Y returned to the user after all repayments and swaps */
+  finalY: Amount
 }
 
 export interface CalcDepositResultArgs<
@@ -1154,7 +1230,7 @@ export class Position<
    * @param args - The arguments for the calculation.
    * @returns The resulting amounts that are returned to the user.
    */
-  calcReduceAmountsHuman(args: CalcReduceAmountsArgs<X, Y>) {
+  calcReduceAmountsHuman(args: CalcReduceAmountsHumanArgs<X, Y>): CalcReduceAmountsHumanResult {
     if (args.factor.greaterThan(1) || args.factor.lessThan(0)) {
       throw new Error('factor must be between 0 and 1')
     }
@@ -1197,9 +1273,10 @@ export class Position<
     const finalY = gotY.plus(needY).sub(swapYAmt).sub(gotDy)
 
     return {
-      factor: f,
-      finalX,
-      finalY,
+      swapX: (swapXAmt.gt(0) ? swapXAmt.neg() : needX).toDP(this.X.decimals),
+      swapY: (swapYAmt.gt(0) ? swapYAmt.neg() : needY).toDP(this.Y.decimals),
+      finalX: finalX.toDP(this.X.decimals),
+      finalY: finalY.toDP(this.Y.decimals),
     }
   }
 
@@ -1214,6 +1291,12 @@ export class Position<
    */
   async fetchReduceAmountsDevInspect(client: SuiClient, factor: Decimal, positionCapId: string) {
     const tx = new Transaction()
+
+    // Set liquidation margin to 0 to avoid abort on margin below threshold in reduce
+    positionCore.setLiqMarginBps(tx, {
+      config: this.configInfo.configId,
+      value: 0,
+    })
 
     const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
     pyth.add(tx, {
@@ -1281,7 +1364,7 @@ export class Position<
 
     const di = await client.devInspectTransactionBlock({
       transactionBlock: tx,
-      sender: '0xbd3bec02e47000c4683bfa785fb7661faa1377a0b145cb6a5a65c362ef6627c1',
+      sender: normalizeSuiAddress('0x0'),
     })
     if (di.error) {
       throw new Error(di.error)
@@ -1301,6 +1384,86 @@ export class Position<
     }
 
     return ret
+  }
+
+  /**
+   * Fetch and calculate the amounts needed for position reduction including swap
+   * and debt repayment calculations.
+   *
+   * This method determines how much of each token will be obtained from reducing the position
+   * and calculates the optimal swap strategy to cover any debt shortfalls. It returns detailed
+   * information about the amounts that will be received, debt amounts to repay, and the
+   * recommended swap amounts.
+   *
+   * @param client - The `SuiClient` instance for blockchain interactions.
+   * @param router - The `Router` instance for price calculations and swap routing.
+   * @param factor - The reduction factor.
+   * @param positionCapId - The ID of the position's `PositionCap` object.
+   * @returns A promise that resolves to an object containing:
+   *   - `gotX`: Amount of X tokens that will be received from the reduction
+   *   - `gotY`: Amount of Y tokens that will be received from the reduction
+   *   - `gotDx`: Amount of X debt that needs to be repaid
+   *   - `gotDy`: Amount of Y debt that needs to be repaid
+   *   - `swapX`: Amount of X tokens to swap (0 if no swap needed)
+   *   - `swapY`: Amount of Y tokens to swap (0 if no swap needed)
+   *   - `repayDebtX`: Amount of X debt to repay externally
+   *   - `repayDebtY`: Amount of Y debt to repay externally
+   */
+  async getReduceAmounts(
+    client: SuiClient,
+    router: Router,
+    args: GetReduceAmountsArgs
+  ): Promise<GetReduceAmountsResult> {
+    const { gotX, gotY, gotDx, gotDy } = await this.fetchReduceAmountsDevInspect(
+      client,
+      args.factor,
+      args.positionCapId
+    )
+
+    const needX = Math.max(gotDx.toNumber() - gotX.toNumber(), 0)
+    const needY = Math.max(gotDy.toNumber() - gotY.toNumber(), 0)
+
+    if (needX > 0 && needY > 0) {
+      const swapX = 0
+      const swapY = 0
+      const repayDebtX = needX
+      const repayDebtY = needY
+      return { gotX, gotY, gotDx, gotDy, swapX, swapY, repayDebtX, repayDebtY }
+    } else if (needX > 0) {
+      const p = await router.getPrice({
+        X: this.X,
+        Y: this.Y,
+        xToY: false,
+        amountIn: gotY.int,
+        protocolDenylist: args.protocolDenylist,
+      })
+
+      const swapX = 0
+      const swapY = Math.min(needX * p.human.toNumber(), gotY.toNumber() - gotDy.toNumber())
+      const repayDebtX = Math.max(needX - swapY / p.human.toNumber(), 0)
+      const repayDebtY = 0
+      return { gotX, gotY, gotDx, gotDy, swapX, swapY, repayDebtX, repayDebtY }
+    } else if (needY > 0) {
+      const p = await router.getPrice({
+        X: this.X,
+        Y: this.Y,
+        xToY: true,
+        amountIn: gotX.int,
+        protocolDenylist: args.protocolDenylist,
+      })
+
+      const swapY = 0
+      const swapX = Math.min(needY / p.human.toNumber(), gotX.toNumber() - gotDx.toNumber())
+      const repayDebtX = 0
+      const repayDebtY = Math.max(needY - swapX * p.human.toNumber(), 0)
+      return { gotX, gotY, gotDx, gotDy, swapX, swapY, repayDebtX, repayDebtY }
+    } else {
+      const swapX = 0
+      const swapY = 0
+      const repayDebtX = 0
+      const repayDebtY = 0
+      return { gotX, gotY, gotDx, gotDy, swapX, swapY, repayDebtX, repayDebtY }
+    }
   }
 
   /**
@@ -1324,11 +1487,14 @@ export class Position<
 
     tx.setSenderIfNotSet(sender)
 
-    const amountsDevInspect = await this.fetchReduceAmountsDevInspect(
-      client,
-      args.factor,
-      args.positionCapId
-    )
+    const [reduceAmounts, compoundThresholdCoins] = await Promise.all([
+      this.getReduceAmounts(client, router, {
+        factor: args.factor,
+        positionCapId: args.positionCapId,
+        protocolDenylist: args.routerArgs.protocolDenylist,
+      }),
+      getMinSwapAmountBatch([this.X, this.Y]),
+    ])
 
     const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
     pyth.add(tx, {
@@ -1347,8 +1513,54 @@ export class Position<
       Y: this.Y.typeName,
       SX: this.configInfo.supplyPoolXInfo.ST.typeName,
       SY: this.configInfo.supplyPoolYInfo.ST.typeName,
+      LP: this.reified.typeArgs[2],
     }
 
+    // repay debt externally if needed
+    let repayDebtRemainingX: TransactionArgument | undefined = undefined
+    let repaidDebtX: undefined | Amount = undefined
+    if (reduceAmounts.repayDebtX > 0) {
+      const repayDebtX = this.X.newAmount(
+        BigInt(
+          Math.round(
+            reduceAmounts.repayDebtX * 10 ** this.X.decimals * (1 + args.routerArgs.slippage)
+          )
+        )
+      )
+      const balance = await createBalanceOfExactValue(client, tx, sender, ta.X, repayDebtX)
+      core.repayDebtX(tx, [ta.X, ta.Y, ta.SX, ta.LP], {
+        position: this.id,
+        cap: args.positionCapId,
+        balance,
+        supplyPool: this.configInfo.supplyPoolXInfo.id,
+        clock: SUI_CLOCK_OBJECT_ID,
+      })
+      repayDebtRemainingX = balance
+      repaidDebtX = repayDebtX
+    }
+    let repayDebtRemainingY = undefined
+    let repaidDebtY: undefined | Amount = undefined
+    if (reduceAmounts.repayDebtY > 0) {
+      const repayDebtY = this.Y.newAmount(
+        BigInt(
+          Math.round(
+            reduceAmounts.repayDebtY * 10 ** this.Y.decimals * (1 + args.routerArgs.slippage)
+          )
+        )
+      )
+      const balance = await createBalanceOfExactValue(client, tx, sender, ta.Y, repayDebtY)
+      core.repayDebtY(tx, [ta.X, ta.Y, ta.SY, ta.LP], {
+        position: this.id,
+        cap: args.positionCapId,
+        balance,
+        supplyPool: this.configInfo.supplyPoolYInfo.id,
+        clock: SUI_CLOCK_OBJECT_ID,
+      })
+      repayDebtRemainingY = balance
+      repaidDebtY = repayDebtY
+    }
+
+    // get reduce ticket
     let gotX: Argument, gotY: Argument, ticket: Argument
     if (this.isCetus()) {
       ;[gotX, gotY, ticket] = cetus.reduce(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
@@ -1379,6 +1591,18 @@ export class Position<
     } else {
       throw new Error('Unsupported pool')
     }
+    if (repayDebtRemainingX) {
+      balance.join(tx, ta.X, {
+        self: gotX,
+        balance: repayDebtRemainingX,
+      })
+    }
+    if (repayDebtRemainingY) {
+      balance.join(tx, ta.Y, {
+        self: gotY,
+        balance: repayDebtRemainingY,
+      })
+    }
 
     const toRepayX = core.reductionTicketCalcRepayAmtX(tx, [ta.X, ta.SX, ta.SY], {
       ticket,
@@ -1391,64 +1615,27 @@ export class Position<
       clock: SUI_CLOCK_OBJECT_ID,
     })
 
-    const compoundThresholdCoins = await getMinSwapAmountBatch([this.X, this.Y])
-
-    const swapWithAmountIn = true
-    if (swapWithAmountIn) {
-      const swapXAmt = await (async () => {
-        const di = amountsDevInspect
-        if (di.gotY.int >= di.gotDy.int) {
-          return 0n
-        }
-
-        const needY = di.gotDy.int - di.gotY.int
-
-        const routerPrice = await router.getPrice({
-          X: this.X,
-          Y: this.Y,
-          xToY: true,
-          amountIn: amountsDevInspect.gotX.int,
-        })
-
-        const slippageBuffer = new Decimal(1.001) // 0.1%
-        return BigInt(
-          new Decimal(needY.toString())
-            .div(routerPrice.numeric)
-            .mul(slippageBuffer)
-            .toFixed(0, Decimal.ROUND_UP)
+    // swap if needed
+    if (args.routerArgs.swapMethod === 'exact-in') {
+      if (reduceAmounts.swapX > 0) {
+        const swapX = BigInt(
+          new Decimal(reduceAmounts.swapX)
+            .mul(new Decimal(10).pow(this.X.decimals))
+            .mul(1 + args.routerArgs.overestimationFactor)
+            .toFixed(0, Decimal.ROUND_DOWN)
         )
-      })()
-      const swapYAmt = await (async () => {
-        const di = amountsDevInspect
-        if (di.gotX.int >= di.gotDx.int) {
-          return 0n
-        }
-
-        const routerPrice = await router.getPrice({
-          X: this.X,
-          Y: this.Y,
-          xToY: false,
-          amountIn: amountsDevInspect.gotY.int,
-        })
-
-        const needX = di.gotDx.int - di.gotX.int
-
-        const slippageBuffer = new Decimal(1.001) // 0.1%
-        return BigInt(
-          new Decimal(needX.toString())
-            .mul(routerPrice.numeric)
-            .mul(slippageBuffer)
-            .toFixed(0, Decimal.ROUND_UP)
+        const gotXEstAmt = BigInt(
+          reduceAmounts.gotX
+            .toDecimal()
+            .sub(reduceAmounts.gotDx.toDecimal())
+            .mul(10 ** this.X.decimals)
+            .toFixed(0, Decimal.ROUND_DOWN)
         )
-      })()
+        const balanceInAmt = min(swapX, gotXEstAmt)
 
-      if (swapXAmt > 0n) {
         const balanceIn = balance.split(tx, ta.X, {
           self: gotX,
-          value: u64.min(tx, {
-            x: balance.value(tx, ta.X, gotX),
-            y: swapXAmt,
-          }),
+          value: balanceInAmt,
         })
 
         const { tx: newTx, balanceOut } = await router.swapBalance({
@@ -1456,9 +1643,10 @@ export class Position<
           inInfo: this.X,
           outInfo: this.Y,
           balanceIn,
-          amountIn: swapXAmt,
+          amountIn: balanceInAmt,
           sender: sender,
-          slippage: args.slippage,
+          slippage: args.routerArgs.slippage,
+          protocolDenylist: args.routerArgs.protocolDenylist,
         })
         tx = newTx
 
@@ -1466,13 +1654,25 @@ export class Position<
           self: gotY,
           balance: balanceOut,
         })
-      } else if (swapYAmt > 0n) {
+      } else if (reduceAmounts.swapY > 0) {
+        const swapY = BigInt(
+          new Decimal(reduceAmounts.swapY)
+            .mul(new Decimal(10).pow(this.Y.decimals))
+            .mul(1 + args.routerArgs.overestimationFactor)
+            .toFixed(0, Decimal.ROUND_DOWN)
+        )
+        const gotYEstAmt = BigInt(
+          reduceAmounts.gotY
+            .toDecimal()
+            .sub(reduceAmounts.gotDy.toDecimal())
+            .mul(10 ** this.Y.decimals)
+            .toFixed(0, Decimal.ROUND_DOWN)
+        )
+        const balanceInAmt = min(swapY, gotYEstAmt)
+
         const balanceIn = balance.split(tx, ta.Y, {
           self: gotY,
-          value: u64.min(tx, {
-            x: balance.value(tx, ta.Y, gotY),
-            y: swapYAmt,
-          }),
+          value: balanceInAmt,
         })
 
         const { tx: newTx, balanceOut } = await router.swapBalance({
@@ -1480,9 +1680,10 @@ export class Position<
           inInfo: this.Y,
           outInfo: this.X,
           balanceIn,
-          amountIn: swapYAmt,
+          amountIn: balanceInAmt,
           sender: sender,
-          slippage: args.slippage,
+          slippage: args.routerArgs.slippage,
+          protocolDenylist: args.routerArgs.protocolDenylist,
         })
         tx = newTx
 
@@ -1492,23 +1693,22 @@ export class Position<
         })
       }
     } else {
-      /*
-      const slippageBufferBps = 10n // 0.1%
-      const needX = muldiv(
-        max(0n, amountsDevInspect.gotDx.int - amountsDevInspect.gotX.int),
-        10000n + slippageBufferBps,
-        10000n
+      let needX = BigInt(
+        Decimal.max(
+          0,
+          (reduceAmounts.gotDx.int - reduceAmounts.gotX.int - (repaidDebtX?.int ?? 0n)).toString()
+        ).toFixed(0, Decimal.ROUND_UP)
       )
-      const needY = muldiv(
-        max(0n, amountsDevInspect.gotDy.int - amountsDevInspect.gotY.int),
-        10000n + slippageBufferBps,
-        10000n
+      let needY = BigInt(
+        Decimal.max(
+          0,
+          (reduceAmounts.gotDy.int - reduceAmounts.gotY.int - (repaidDebtY?.int ?? 0n)).toString()
+        ).toFixed(0, Decimal.ROUND_UP)
       )
-      */
-      const needX = max(0n, amountsDevInspect.gotDx.int - amountsDevInspect.gotX.int)
-      const needY = max(0n, amountsDevInspect.gotDy.int - amountsDevInspect.gotY.int)
 
-      if (needX > 0n && needX > compoundThresholdCoins.get(this.Y.typeName)!) {
+      if (needX > 0n) {
+        needX = max(needX, compoundThresholdCoins.get(this.Y.typeName) ?? 0n)
+
         const { tx: newTx, balanceOut } = await router.swapExactOutBalance({
           tx,
           inInfo: this.Y,
@@ -1516,7 +1716,8 @@ export class Position<
           balanceIn: gotY,
           amountOut: needX,
           sender,
-          slippage: args.slippage,
+          slippage: args.routerArgs.slippage,
+          protocolDenylist: args.routerArgs.protocolDenylist,
         })
         tx = newTx
 
@@ -1524,7 +1725,9 @@ export class Position<
           self: gotX,
           balance: balanceOut,
         })
-      } else if (needY > 0n && needY > compoundThresholdCoins.get(this.X.typeName)!) {
+      } else if (needY > 0n) {
+        needY = max(needY, compoundThresholdCoins.get(this.X.typeName) ?? 0n)
+
         const { tx: newTx, balanceOut } = await router.swapExactOutBalance({
           tx,
           inInfo: this.X,
@@ -1532,7 +1735,8 @@ export class Position<
           balanceIn: gotX,
           amountOut: needY,
           sender,
-          slippage: args.slippage,
+          slippage: args.routerArgs.slippage,
+          protocolDenylist: args.routerArgs.protocolDenylist,
         })
         tx = newTx
 
@@ -1571,6 +1775,90 @@ export class Position<
     })
 
     return tx
+  }
+
+  /**
+   * Simulates (dry-runs) a reduction (withdrawal) of the position by a specified factor.
+   * Returns detailed reduction information along with the final amounts of X and Y
+   * that would be returned to the sender after all repayments and swaps.
+   *
+   * @param client - The SuiClient instance used for blockchain interactions.
+   * @param router - The Router instance used for swaps and routing.
+   * @param args - The arguments for the reduction, including factor, positionCapId, and slippage.
+   * @param sender - The address of the sender initiating the reduction.
+   * @returns The reduction info and the final amounts of X and Y in the position.
+   */
+  async dryRunReduce(
+    client: SuiClient,
+    router: Router,
+    args: ReduceArgs,
+    sender: string
+  ): Promise<DryRunReduceResult> {
+    const tx = await this.reduce(client, router, args, sender)
+
+    const result = await client.dryRunTransactionBlock({
+      transactionBlock: await tx.build({ client }),
+    })
+
+    if (result.effects.status.error) {
+      throw new Error(result.effects.status.error)
+    }
+
+    const reductionEvent = result.events.find(e => isReductionInfo(e.type))
+    const reductionInfo = reductionEvent
+      ? ReductionInfo.fromBcs(fromBase64(reductionEvent.bcs))
+      : undefined
+    const repayDebtEvent = result.events.find(e => isRepayDebtInfo(e.type))
+    const repayDebtInfo = repayDebtEvent
+      ? RepayDebtInfo.fromBcs(fromBase64(repayDebtEvent.bcs))
+      : undefined
+
+    let finalX = 0n
+    let finalY = 0n
+    for (const balanceChange of result.balanceChanges) {
+      if (
+        typeof balanceChange.owner !== 'object' ||
+        !('AddressOwner' in balanceChange.owner) ||
+        normalizeSuiAddress(balanceChange.owner.AddressOwner) !== normalizeSuiAddress(sender)
+      ) {
+        continue
+      }
+
+      const { storageRebate, storageCost, computationCost } = result.effects.gasUsed
+
+      let amount = BigInt(balanceChange.amount)
+      if (compressSuiType(balanceChange.coinType) === SUI.typeName) {
+        amount = amount - (BigInt(storageRebate) - BigInt(storageCost) - BigInt(computationCost))
+      }
+
+      if (compressSuiType(balanceChange.coinType) === this.X.typeName) {
+        finalX = BigInt(amount)
+      } else if (compressSuiType(balanceChange.coinType) === this.Y.typeName) {
+        finalY = BigInt(amount)
+      }
+    }
+
+    const swapX = -(
+      (reductionInfo?.withdrawnX || 0n) -
+      (reductionInfo?.xRepaid || 0n) -
+      (repayDebtInfo?.xRepaid || 0n) -
+      finalX
+    )
+    const swapY = -(
+      (reductionInfo?.withdrawnY || 0n) -
+      (reductionInfo?.yRepaid || 0n) -
+      (repayDebtInfo?.yRepaid || 0n) -
+      finalY
+    )
+
+    return {
+      result,
+      reductionInfo,
+      swapX: this.X.newAmount(swapX),
+      swapY: this.Y.newAmount(swapY),
+      finalX: this.X.newAmount(finalX),
+      finalY: this.Y.newAmount(finalY),
+    }
   }
 
   calcF(p: Price<PhantomTypeArgument, PhantomTypeArgument>) {
@@ -2381,7 +2669,24 @@ export class Position<
     args: ReduceAndMaybeDeleteArgs,
     sender: string
   ) {
-    let tx = await this.reduce(client, router, args, sender)
+    const isCetusExploitedCheck = async () => {
+      const position = this as unknown as Position<
+        PhantomTypeArgument,
+        PhantomTypeArgument,
+        CetusPosition
+      >
+      return (
+        position.isCetus() &&
+        CetusRedemptionUtil.configIsAffected(position.configInfo) &&
+        (await CetusRedemptionUtil.positionIsCut(client, position))
+      )
+    }
+
+    // eslint-disable-next-line prefer-const
+    let [tx, isCetusExploited] = await Promise.all([
+      this.reduce(client, router, args, sender),
+      isCetusExploitedCheck(),
+    ])
     if (args.factor.lt(1)) {
       return tx
     }
@@ -2398,12 +2703,21 @@ export class Position<
         withdrawAllStashedRewardsResult,
         rewardResults: rewardResults,
         convertRewardsTo: args.convertRewardsTo,
-        slippage: args.slippage,
+        slippage: args.routerArgs.slippage,
       },
       sender
     )
 
-    this.deletePosition(tx, args)
+    if (isCetusExploited) {
+      CetusRedemptionUtil.destructCetusPositionAndTransferLp(
+        this as unknown as Position<PhantomTypeArgument, PhantomTypeArgument, CetusPosition>,
+        tx,
+        args.positionCapId,
+        sender
+      )
+    } else {
+      this.deletePosition(tx, args)
+    }
 
     return tx
   }

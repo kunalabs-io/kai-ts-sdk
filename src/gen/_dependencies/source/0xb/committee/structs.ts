@@ -14,7 +14,6 @@ import {
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { Vector } from '../../../../_framework/vector'
 import { VecMap } from '../../../../sui/vec-map/structs'
-import { PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
@@ -23,7 +22,7 @@ import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 export function isBlocklistValidatorEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::BlocklistValidatorEvent`
+  return type === `0xb::committee::BlocklistValidatorEvent`
 }
 
 export interface BlocklistValidatorEventFields {
@@ -39,12 +38,12 @@ export type BlocklistValidatorEventReified = Reified<
 export class BlocklistValidatorEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::BlocklistValidatorEvent`
+  static readonly $typeName = `0xb::committee::BlocklistValidatorEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BlocklistValidatorEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::BlocklistValidatorEvent`
+  readonly $fullTypeName: `0xb::committee::BlocklistValidatorEvent`
   readonly $typeArgs: []
   readonly $isPhantom = BlocklistValidatorEvent.$isPhantom
 
@@ -55,7 +54,7 @@ export class BlocklistValidatorEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       BlocklistValidatorEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::BlocklistValidatorEvent`
+    ) as `0xb::committee::BlocklistValidatorEvent`
     this.$typeArgs = typeArgs
 
     this.blocklisted = fields.blocklisted
@@ -68,7 +67,7 @@ export class BlocklistValidatorEvent implements StructClass {
       fullTypeName: composeSuiType(
         BlocklistValidatorEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::BlocklistValidatorEvent`,
+      ) as `0xb::committee::BlocklistValidatorEvent`,
       typeArgs: [] as [],
       isPhantom: BlocklistValidatorEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -207,7 +206,7 @@ export class BlocklistValidatorEvent implements StructClass {
 
 export function isBridgeCommittee(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::BridgeCommittee`
+  return type === `0xb::committee::BridgeCommittee`
 }
 
 export interface BridgeCommitteeFields {
@@ -221,12 +220,12 @@ export type BridgeCommitteeReified = Reified<BridgeCommittee, BridgeCommitteeFie
 export class BridgeCommittee implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::BridgeCommittee`
+  static readonly $typeName = `0xb::committee::BridgeCommittee`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeCommittee.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::BridgeCommittee`
+  readonly $fullTypeName: `0xb::committee::BridgeCommittee`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeCommittee.$isPhantom
 
@@ -238,7 +237,7 @@ export class BridgeCommittee implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeCommittee.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::BridgeCommittee`
+    ) as `0xb::committee::BridgeCommittee`
     this.$typeArgs = typeArgs
 
     this.members = fields.members
@@ -252,7 +251,7 @@ export class BridgeCommittee implements StructClass {
       fullTypeName: composeSuiType(
         BridgeCommittee.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::BridgeCommittee`,
+      ) as `0xb::committee::BridgeCommittee`,
       typeArgs: [] as [],
       isPhantom: BridgeCommittee.$isPhantom,
       reifiedTypeArgs: [],
@@ -413,7 +412,7 @@ export class BridgeCommittee implements StructClass {
 
 export function isCommitteeUpdateEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::CommitteeUpdateEvent`
+  return type === `0xb::committee::CommitteeUpdateEvent`
 }
 
 export interface CommitteeUpdateEventFields {
@@ -426,12 +425,12 @@ export type CommitteeUpdateEventReified = Reified<CommitteeUpdateEvent, Committe
 export class CommitteeUpdateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::CommitteeUpdateEvent`
+  static readonly $typeName = `0xb::committee::CommitteeUpdateEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = CommitteeUpdateEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::CommitteeUpdateEvent`
+  readonly $fullTypeName: `0xb::committee::CommitteeUpdateEvent`
   readonly $typeArgs: []
   readonly $isPhantom = CommitteeUpdateEvent.$isPhantom
 
@@ -442,7 +441,7 @@ export class CommitteeUpdateEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       CommitteeUpdateEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::CommitteeUpdateEvent`
+    ) as `0xb::committee::CommitteeUpdateEvent`
     this.$typeArgs = typeArgs
 
     this.members = fields.members
@@ -455,7 +454,7 @@ export class CommitteeUpdateEvent implements StructClass {
       fullTypeName: composeSuiType(
         CommitteeUpdateEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::CommitteeUpdateEvent`,
+      ) as `0xb::committee::CommitteeUpdateEvent`,
       typeArgs: [] as [],
       isPhantom: CommitteeUpdateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -601,7 +600,7 @@ export class CommitteeUpdateEvent implements StructClass {
 
 export function isCommitteeMemberUrlUpdateEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::CommitteeMemberUrlUpdateEvent`
+  return type === `0xb::committee::CommitteeMemberUrlUpdateEvent`
 }
 
 export interface CommitteeMemberUrlUpdateEventFields {
@@ -617,12 +616,12 @@ export type CommitteeMemberUrlUpdateEventReified = Reified<
 export class CommitteeMemberUrlUpdateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::CommitteeMemberUrlUpdateEvent`
+  static readonly $typeName = `0xb::committee::CommitteeMemberUrlUpdateEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = CommitteeMemberUrlUpdateEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::CommitteeMemberUrlUpdateEvent`
+  readonly $fullTypeName: `0xb::committee::CommitteeMemberUrlUpdateEvent`
   readonly $typeArgs: []
   readonly $isPhantom = CommitteeMemberUrlUpdateEvent.$isPhantom
 
@@ -633,7 +632,7 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       CommitteeMemberUrlUpdateEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::CommitteeMemberUrlUpdateEvent`
+    ) as `0xb::committee::CommitteeMemberUrlUpdateEvent`
     this.$typeArgs = typeArgs
 
     this.member = fields.member
@@ -646,7 +645,7 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
       fullTypeName: composeSuiType(
         CommitteeMemberUrlUpdateEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::CommitteeMemberUrlUpdateEvent`,
+      ) as `0xb::committee::CommitteeMemberUrlUpdateEvent`,
       typeArgs: [] as [],
       isPhantom: CommitteeMemberUrlUpdateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -786,7 +785,7 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
 
 export function isCommitteeMember(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::CommitteeMember`
+  return type === `0xb::committee::CommitteeMember`
 }
 
 export interface CommitteeMemberFields {
@@ -802,12 +801,12 @@ export type CommitteeMemberReified = Reified<CommitteeMember, CommitteeMemberFie
 export class CommitteeMember implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::CommitteeMember`
+  static readonly $typeName = `0xb::committee::CommitteeMember`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = CommitteeMember.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::CommitteeMember`
+  readonly $fullTypeName: `0xb::committee::CommitteeMember`
   readonly $typeArgs: []
   readonly $isPhantom = CommitteeMember.$isPhantom
 
@@ -821,7 +820,7 @@ export class CommitteeMember implements StructClass {
     this.$fullTypeName = composeSuiType(
       CommitteeMember.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::CommitteeMember`
+    ) as `0xb::committee::CommitteeMember`
     this.$typeArgs = typeArgs
 
     this.suiAddress = fields.suiAddress
@@ -837,7 +836,7 @@ export class CommitteeMember implements StructClass {
       fullTypeName: composeSuiType(
         CommitteeMember.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::CommitteeMember`,
+      ) as `0xb::committee::CommitteeMember`,
       typeArgs: [] as [],
       isPhantom: CommitteeMember.$isPhantom,
       reifiedTypeArgs: [],
@@ -987,7 +986,7 @@ export class CommitteeMember implements StructClass {
 
 export function isCommitteeMemberRegistration(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::committee::CommitteeMemberRegistration`
+  return type === `0xb::committee::CommitteeMemberRegistration`
 }
 
 export interface CommitteeMemberRegistrationFields {
@@ -1004,12 +1003,12 @@ export type CommitteeMemberRegistrationReified = Reified<
 export class CommitteeMemberRegistration implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::committee::CommitteeMemberRegistration`
+  static readonly $typeName = `0xb::committee::CommitteeMemberRegistration`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = CommitteeMemberRegistration.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::committee::CommitteeMemberRegistration`
+  readonly $fullTypeName: `0xb::committee::CommitteeMemberRegistration`
   readonly $typeArgs: []
   readonly $isPhantom = CommitteeMemberRegistration.$isPhantom
 
@@ -1021,7 +1020,7 @@ export class CommitteeMemberRegistration implements StructClass {
     this.$fullTypeName = composeSuiType(
       CommitteeMemberRegistration.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::committee::CommitteeMemberRegistration`
+    ) as `0xb::committee::CommitteeMemberRegistration`
     this.$typeArgs = typeArgs
 
     this.suiAddress = fields.suiAddress
@@ -1035,7 +1034,7 @@ export class CommitteeMemberRegistration implements StructClass {
       fullTypeName: composeSuiType(
         CommitteeMemberRegistration.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::committee::CommitteeMemberRegistration`,
+      ) as `0xb::committee::CommitteeMemberRegistration`,
       typeArgs: [] as [],
       isPhantom: CommitteeMemberRegistration.$isPhantom,
       reifiedTypeArgs: [],

@@ -19,7 +19,6 @@ import { Balance } from '../../../../sui/balance/structs'
 import { ID, UID } from '../../../../sui/object/structs'
 import { SUI } from '../../../../sui/sui/structs'
 import { Table } from '../../../../sui/table/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -28,7 +27,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isStakingPool(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::StakingPool`
+  return type === `0x3::staking_pool::StakingPool`
 }
 
 export interface StakingPoolFields {
@@ -50,12 +49,12 @@ export type StakingPoolReified = Reified<StakingPool, StakingPoolFields>
 export class StakingPool implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::StakingPool`
+  static readonly $typeName = `0x3::staking_pool::StakingPool`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = StakingPool.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::StakingPool`
+  readonly $fullTypeName: `0x3::staking_pool::StakingPool`
   readonly $typeArgs: []
   readonly $isPhantom = StakingPool.$isPhantom
 
@@ -75,7 +74,7 @@ export class StakingPool implements StructClass {
     this.$fullTypeName = composeSuiType(
       StakingPool.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::StakingPool`
+    ) as `0x3::staking_pool::StakingPool`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -97,7 +96,7 @@ export class StakingPool implements StructClass {
       fullTypeName: composeSuiType(
         StakingPool.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::staking_pool::StakingPool`,
+      ) as `0x3::staking_pool::StakingPool`,
       typeArgs: [] as [],
       isPhantom: StakingPool.$isPhantom,
       reifiedTypeArgs: [],
@@ -304,7 +303,7 @@ export class StakingPool implements StructClass {
 
 export function isPoolTokenExchangeRate(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::PoolTokenExchangeRate`
+  return type === `0x3::staking_pool::PoolTokenExchangeRate`
 }
 
 export interface PoolTokenExchangeRateFields {
@@ -320,12 +319,12 @@ export type PoolTokenExchangeRateReified = Reified<
 export class PoolTokenExchangeRate implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::PoolTokenExchangeRate`
+  static readonly $typeName = `0x3::staking_pool::PoolTokenExchangeRate`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = PoolTokenExchangeRate.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::PoolTokenExchangeRate`
+  readonly $fullTypeName: `0x3::staking_pool::PoolTokenExchangeRate`
   readonly $typeArgs: []
   readonly $isPhantom = PoolTokenExchangeRate.$isPhantom
 
@@ -336,7 +335,7 @@ export class PoolTokenExchangeRate implements StructClass {
     this.$fullTypeName = composeSuiType(
       PoolTokenExchangeRate.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::PoolTokenExchangeRate`
+    ) as `0x3::staking_pool::PoolTokenExchangeRate`
     this.$typeArgs = typeArgs
 
     this.suiAmount = fields.suiAmount
@@ -349,7 +348,7 @@ export class PoolTokenExchangeRate implements StructClass {
       fullTypeName: composeSuiType(
         PoolTokenExchangeRate.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::staking_pool::PoolTokenExchangeRate`,
+      ) as `0x3::staking_pool::PoolTokenExchangeRate`,
       typeArgs: [] as [],
       isPhantom: PoolTokenExchangeRate.$isPhantom,
       reifiedTypeArgs: [],
@@ -483,7 +482,7 @@ export class PoolTokenExchangeRate implements StructClass {
 
 export function isStakedSui(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::StakedSui`
+  return type === `0x3::staking_pool::StakedSui`
 }
 
 export interface StakedSuiFields {
@@ -498,12 +497,12 @@ export type StakedSuiReified = Reified<StakedSui, StakedSuiFields>
 export class StakedSui implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::StakedSui`
+  static readonly $typeName = `0x3::staking_pool::StakedSui`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = StakedSui.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::StakedSui`
+  readonly $fullTypeName: `0x3::staking_pool::StakedSui`
   readonly $typeArgs: []
   readonly $isPhantom = StakedSui.$isPhantom
 
@@ -516,7 +515,7 @@ export class StakedSui implements StructClass {
     this.$fullTypeName = composeSuiType(
       StakedSui.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::StakedSui`
+    ) as `0x3::staking_pool::StakedSui`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -528,10 +527,7 @@ export class StakedSui implements StructClass {
   static reified(): StakedSuiReified {
     return {
       typeName: StakedSui.$typeName,
-      fullTypeName: composeSuiType(
-        StakedSui.$typeName,
-        ...[]
-      ) as `${typeof PKG_V21}::staking_pool::StakedSui`,
+      fullTypeName: composeSuiType(StakedSui.$typeName, ...[]) as `0x3::staking_pool::StakedSui`,
       typeArgs: [] as [],
       isPhantom: StakedSui.$isPhantom,
       reifiedTypeArgs: [],
@@ -679,7 +675,7 @@ export class StakedSui implements StructClass {
 
 export function isFungibleStakedSui(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::FungibleStakedSui`
+  return type === `0x3::staking_pool::FungibleStakedSui`
 }
 
 export interface FungibleStakedSuiFields {
@@ -693,12 +689,12 @@ export type FungibleStakedSuiReified = Reified<FungibleStakedSui, FungibleStaked
 export class FungibleStakedSui implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::FungibleStakedSui`
+  static readonly $typeName = `0x3::staking_pool::FungibleStakedSui`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = FungibleStakedSui.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::FungibleStakedSui`
+  readonly $fullTypeName: `0x3::staking_pool::FungibleStakedSui`
   readonly $typeArgs: []
   readonly $isPhantom = FungibleStakedSui.$isPhantom
 
@@ -710,7 +706,7 @@ export class FungibleStakedSui implements StructClass {
     this.$fullTypeName = composeSuiType(
       FungibleStakedSui.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSui`
+    ) as `0x3::staking_pool::FungibleStakedSui`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -724,7 +720,7 @@ export class FungibleStakedSui implements StructClass {
       fullTypeName: composeSuiType(
         FungibleStakedSui.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSui`,
+      ) as `0x3::staking_pool::FungibleStakedSui`,
       typeArgs: [] as [],
       isPhantom: FungibleStakedSui.$isPhantom,
       reifiedTypeArgs: [],
@@ -858,7 +854,7 @@ export class FungibleStakedSui implements StructClass {
 
 export function isFungibleStakedSuiData(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::FungibleStakedSuiData`
+  return type === `0x3::staking_pool::FungibleStakedSuiData`
 }
 
 export interface FungibleStakedSuiDataFields {
@@ -875,12 +871,12 @@ export type FungibleStakedSuiDataReified = Reified<
 export class FungibleStakedSuiData implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::FungibleStakedSuiData`
+  static readonly $typeName = `0x3::staking_pool::FungibleStakedSuiData`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = FungibleStakedSuiData.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::FungibleStakedSuiData`
+  readonly $fullTypeName: `0x3::staking_pool::FungibleStakedSuiData`
   readonly $typeArgs: []
   readonly $isPhantom = FungibleStakedSuiData.$isPhantom
 
@@ -892,7 +888,7 @@ export class FungibleStakedSuiData implements StructClass {
     this.$fullTypeName = composeSuiType(
       FungibleStakedSuiData.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSuiData`
+    ) as `0x3::staking_pool::FungibleStakedSuiData`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -906,7 +902,7 @@ export class FungibleStakedSuiData implements StructClass {
       fullTypeName: composeSuiType(
         FungibleStakedSuiData.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSuiData`,
+      ) as `0x3::staking_pool::FungibleStakedSuiData`,
       typeArgs: [] as [],
       isPhantom: FungibleStakedSuiData.$isPhantom,
       reifiedTypeArgs: [],
@@ -1054,7 +1050,7 @@ export class FungibleStakedSuiData implements StructClass {
 
 export function isFungibleStakedSuiDataKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::staking_pool::FungibleStakedSuiDataKey`
+  return type === `0x3::staking_pool::FungibleStakedSuiDataKey`
 }
 
 export interface FungibleStakedSuiDataKeyFields {
@@ -1069,12 +1065,12 @@ export type FungibleStakedSuiDataKeyReified = Reified<
 export class FungibleStakedSuiDataKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::staking_pool::FungibleStakedSuiDataKey`
+  static readonly $typeName = `0x3::staking_pool::FungibleStakedSuiDataKey`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = FungibleStakedSuiDataKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::staking_pool::FungibleStakedSuiDataKey`
+  readonly $fullTypeName: `0x3::staking_pool::FungibleStakedSuiDataKey`
   readonly $typeArgs: []
   readonly $isPhantom = FungibleStakedSuiDataKey.$isPhantom
 
@@ -1084,7 +1080,7 @@ export class FungibleStakedSuiDataKey implements StructClass {
     this.$fullTypeName = composeSuiType(
       FungibleStakedSuiDataKey.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSuiDataKey`
+    ) as `0x3::staking_pool::FungibleStakedSuiDataKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -1096,7 +1092,7 @@ export class FungibleStakedSuiDataKey implements StructClass {
       fullTypeName: composeSuiType(
         FungibleStakedSuiDataKey.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::staking_pool::FungibleStakedSuiDataKey`,
+      ) as `0x3::staking_pool::FungibleStakedSuiDataKey`,
       typeArgs: [] as [],
       isPhantom: FungibleStakedSuiDataKey.$isPhantom,
       reifiedTypeArgs: [],

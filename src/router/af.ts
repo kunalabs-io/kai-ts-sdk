@@ -1,4 +1,4 @@
-import { Aftermath } from 'aftermath-ts-sdk'
+import { Aftermath, RouterProtocolName } from 'aftermath-ts-sdk'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { Price } from '../price'
 import Decimal from 'decimal.js'
@@ -17,9 +17,33 @@ import {
   SwapExactOutCoinResult,
 } from './adapter'
 
+export const AF_AGG_ALL_PROTOCOLS: RouterProtocolName[] = [
+  'Aftermath',
+  'BlueMove',
+  'Cetus',
+  'DeepBook',
+  'DeepBookV3',
+  'DoubleUpPump',
+  'FlowX',
+  'FlowXClmm',
+  'HopFun',
+  'Kriya',
+  'KriyaClmm',
+  'MovePump',
+  'SuiSwap',
+  'Turbos',
+  'SpringSui',
+  'Bluefin',
+  'TurbosFun',
+]
+
 export class AfRouterAdapter implements Router {
   private afSdk = new Aftermath('MAINNET')
   private router = this.afSdk.Router()
+
+  id(): string {
+    return 'aftermath-aggregator'
+  }
 
   async initialize() {}
 
@@ -43,6 +67,7 @@ export class AfRouterAdapter implements Router {
       amountIn: args.amountIn,
       sender: args.sender,
       slippage: args.slippage,
+      protocolDenylist: args.protocolDenylist,
     })
 
     const balanceOut = coin.intoBalance(tx, args.outInfo.typeName, coinOut)
@@ -64,7 +89,7 @@ export class AfRouterAdapter implements Router {
       coinInType: args.inInfo.typeName,
       coinOutType: args.outInfo.typeName,
       coinInAmount: args.amountIn,
-      // protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
+      protocolBlacklist: (args.protocolDenylist as RouterProtocolName[]) || [],
     })
 
     const { tx, coinOutId } = await this.router.addTransactionForCompleteTradeRoute({
@@ -96,7 +121,7 @@ export class AfRouterAdapter implements Router {
       coinInType,
       coinOutType,
       coinInAmount: args.amountIn,
-      // protocolWhitelist: ['Aftermath', 'Bluefin', 'DeepBook', 'DeepBookV3'],
+      protocolBlacklist: (args.protocolDenylist as RouterProtocolName[]) || [],
     })
 
     const spotPrice = new Decimal(route.spotPrice)
@@ -129,6 +154,7 @@ export class AfRouterAdapter implements Router {
       amountOut: args.amountOut,
       sender: args.sender,
       slippage: args.slippage,
+      protocolDenylist: args.protocolDenylist,
     })
 
     const balanceOut = coin.intoBalance(tx, args.outInfo.typeName, coinOut)
@@ -150,7 +176,7 @@ export class AfRouterAdapter implements Router {
       coinOutType: args.outInfo.typeName,
       coinOutAmount: args.amountOut,
       slippage: args.slippage,
-      // protocolWhitelist: ['Aftermath', 'Bluefin', 'Cetus', 'DeepBook', 'DeepBookV3'],
+      protocolBlacklist: (args.protocolDenylist as RouterProtocolName[]) || [],
     })
     const coinIn = coin.split(args.tx, args.inInfo.typeName, {
       self: args.coinIn,
@@ -170,5 +196,31 @@ export class AfRouterAdapter implements Router {
     }
 
     return { tx, coinOut: coinOutId }
+  }
+
+  static protocolList(): RouterProtocolName[] {
+    return [
+      'Aftermath',
+      'BlueMove',
+      'Cetus',
+      'DeepBook',
+      'DeepBookV3',
+      'DoubleUpPump',
+      'FlowX',
+      'FlowXClmm',
+      'HopFun',
+      'Kriya',
+      'KriyaClmm',
+      'MovePump',
+      'SuiSwap',
+      'Turbos',
+      'SpringSui',
+      'Bluefin',
+      'TurbosFun',
+    ]
+  }
+
+  protocolList(): RouterProtocolName[] {
+    return AfRouterAdapter.protocolList()
   }
 }

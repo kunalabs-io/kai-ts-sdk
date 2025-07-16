@@ -11,7 +11,6 @@ import {
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { UID } from '../../../../sui/object/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -20,7 +19,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isSuiSystemState(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::sui_system::SuiSystemState`
+  return type === `0x3::sui_system::SuiSystemState`
 }
 
 export interface SuiSystemStateFields {
@@ -33,12 +32,12 @@ export type SuiSystemStateReified = Reified<SuiSystemState, SuiSystemStateFields
 export class SuiSystemState implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::sui_system::SuiSystemState`
+  static readonly $typeName = `0x3::sui_system::SuiSystemState`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = SuiSystemState.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::sui_system::SuiSystemState`
+  readonly $fullTypeName: `0x3::sui_system::SuiSystemState`
   readonly $typeArgs: []
   readonly $isPhantom = SuiSystemState.$isPhantom
 
@@ -49,7 +48,7 @@ export class SuiSystemState implements StructClass {
     this.$fullTypeName = composeSuiType(
       SuiSystemState.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::sui_system::SuiSystemState`
+    ) as `0x3::sui_system::SuiSystemState`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -62,7 +61,7 @@ export class SuiSystemState implements StructClass {
       fullTypeName: composeSuiType(
         SuiSystemState.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::sui_system::SuiSystemState`,
+      ) as `0x3::sui_system::SuiSystemState`,
       typeArgs: [] as [],
       isPhantom: SuiSystemState.$isPhantom,
       reifiedTypeArgs: [],

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@cetusprotocol/aggregator-sdk':
-        specifier: 0.11.0
-        version: 0.11.0(@jest/transform@29.7.0)(@jest/types@29.6.3)(esbuild@0.24.2)(typescript@5.6.3)
+        specifier: 0.12.1
+        version: 0.12.1(@jest/transform@29.7.0)(@jest/types@29.6.3)(esbuild@0.24.2)(typescript@5.6.3)
       '@mysten/sui':
         specifier: 1.28.2
         version: 1.28.2(typescript@5.6.3)
@@ -24,8 +24,8 @@ importers:
         specifier: ^0.33.22
         version: 0.33.22
       aftermath-ts-sdk:
-        specifier: ^1.3.0
-        version: 1.3.1(@mysten/sui@1.28.2(typescript@5.6.3))
+        specifier: ^1.3.12
+        version: 1.3.14(@mysten/sui@1.28.2(typescript@5.6.3))
       bn.js:
         specifier: ^5.2.1
         version: 5.2.1
@@ -675,8 +675,8 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@cetusprotocol/aggregator-sdk@0.11.0':
-    resolution: {integrity: sha512-paVlO6Ka9p0MFkoLY1t4HqSq0aDaM6I0BcfpddQXsbdT9emw/TgloQ16LXwSFUPP3m3A+bF0eKyLum6H/6rbcg==}
+  '@cetusprotocol/aggregator-sdk@0.12.1':
+    resolution: {integrity: sha512-7QGtVaa/R0TSXXLdzu3/AlVRWgLpOm9SP2H7g9uGu62uD+8j+ncVdUjbrOmTm/uhgKDiV3hjGtY1B1tNMUEGtw==}
     peerDependencies:
       typescript: ^5.0.0
 
@@ -1333,10 +1333,10 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  aftermath-ts-sdk@1.3.1:
-    resolution: {integrity: sha512-AYOhIjdEOE/ZzbM6c3v5IAnvz+UwmoXazaT7P/jGlj6floBr4Mv+3uREnhDgfyD3haRy66fVSluK5rjGmqky5A==}
+  aftermath-ts-sdk@1.3.14:
+    resolution: {integrity: sha512-yyqMmZGMlRYG/XQQN8CaJR2s8pS9+ZUQXq6bEZiheSjUCV/EMqubvV4R1CaI2PNxeplnaHrB0a8y+Bh5WlQaQg==}
     peerDependencies:
-      '@mysten/sui': ^1.12.0
+      '@mysten/sui': ^1.30.5
 
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -1474,6 +1474,9 @@ packages:
 
   bn.js@5.2.1:
     resolution: {integrity: sha512-eXRvHzWyYPBuB4NBy0cmYQjGitUrtqwbvlzP3G6VFnNRbsZQIxQ10PbKKHt8gZ/HW/D/747aDl+QkDqg3KQLMQ==}
+
+  bn.js@5.2.2:
+    resolution: {integrity: sha512-v2YAxEmKaBLahNwE1mjp4WON6huMNeuDvagFZW+ASCuA/ku0bXR9hSMw0XpiqMoA3+rmnyck/tPRSFQkoC9Cuw==}
 
   brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -1947,10 +1950,6 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
 
-  i@0.3.7:
-    resolution: {integrity: sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==}
-    engines: {node: '>=0.4'}
-
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -2407,82 +2406,6 @@ packages:
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
-
-  npm@9.9.4:
-    resolution: {integrity: sha512-NzcQiLpqDuLhavdyJ2J3tGJ/ni/ebcqHVFZkv1C4/6lblraUPbPgCJ4Vhb4oa3FFhRa2Yj9gA58jGH/ztKueNQ==}
-    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-    hasBin: true
-    bundledDependencies:
-      - '@isaacs/string-locale-compare'
-      - '@npmcli/arborist'
-      - '@npmcli/config'
-      - '@npmcli/fs'
-      - '@npmcli/map-workspaces'
-      - '@npmcli/package-json'
-      - '@npmcli/promise-spawn'
-      - '@npmcli/run-script'
-      - abbrev
-      - archy
-      - cacache
-      - chalk
-      - ci-info
-      - cli-columns
-      - cli-table3
-      - columnify
-      - fastest-levenshtein
-      - fs-minipass
-      - glob
-      - graceful-fs
-      - hosted-git-info
-      - ini
-      - init-package-json
-      - is-cidr
-      - json-parse-even-better-errors
-      - libnpmaccess
-      - libnpmdiff
-      - libnpmexec
-      - libnpmfund
-      - libnpmhook
-      - libnpmorg
-      - libnpmpack
-      - libnpmpublish
-      - libnpmsearch
-      - libnpmteam
-      - libnpmversion
-      - make-fetch-happen
-      - minimatch
-      - minipass
-      - minipass-pipeline
-      - ms
-      - node-gyp
-      - nopt
-      - normalize-package-data
-      - npm-audit-report
-      - npm-install-checks
-      - npm-package-arg
-      - npm-pick-manifest
-      - npm-profile
-      - npm-registry-fetch
-      - npm-user-validate
-      - npmlog
-      - p-map
-      - pacote
-      - parse-conflict-json
-      - proc-log
-      - qrcode-terminal
-      - read
-      - semver
-      - sigstore
-      - spdx-expression-parse
-      - ssri
-      - supports-color
-      - tar
-      - text-table
-      - tiny-relative-date
-      - treeverse
-      - validate-npm-package-name
-      - which
-      - write-file-atomic
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -3882,7 +3805,7 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@cetusprotocol/aggregator-sdk@0.11.0(@jest/transform@29.7.0)(@jest/types@29.6.3)(esbuild@0.24.2)(typescript@5.6.3)':
+  '@cetusprotocol/aggregator-sdk@0.12.1(@jest/transform@29.7.0)(@jest/types@29.6.3)(esbuild@0.24.2)(typescript@5.6.3)':
     dependencies:
       '@babel/core': 7.26.7
       '@babel/preset-env': 7.26.7(@babel/core@7.26.7)
@@ -4683,15 +4606,13 @@ snapshots:
 
   acorn@8.14.0: {}
 
-  aftermath-ts-sdk@1.3.1(@mysten/sui@1.28.2(typescript@5.6.3)):
+  aftermath-ts-sdk@1.3.14(@mysten/sui@1.28.2(typescript@5.6.3)):
     dependencies:
       '@mysten/sui': 1.28.2(typescript@5.6.3)
       '@pythnetwork/pyth-sui-js': 1.2.5
-      bn.js: 5.2.1
+      bn.js: 5.2.2
       dayjs: 1.11.13
-      i: 0.3.7
       node-fetch: 3.3.2
-      npm: 9.9.4
       priority-queue-typescript: 1.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -4868,6 +4789,8 @@ snapshots:
       '@noble/hashes': 1.7.1
 
   bn.js@5.2.1: {}
+
+  bn.js@5.2.2: {}
 
   brace-expansion@1.1.11:
     dependencies:
@@ -5353,8 +5276,6 @@ snapshots:
   html-escaper@2.0.2: {}
 
   human-signals@2.1.0: {}
-
-  i@0.3.7: {}
 
   ieee754@1.2.1: {}
 
@@ -5978,8 +5899,6 @@ snapshots:
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
-
-  npm@9.9.4: {}
 
   object-assign@4.1.1: {}
 

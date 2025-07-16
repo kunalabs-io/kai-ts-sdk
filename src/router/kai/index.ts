@@ -178,6 +178,8 @@ export function swap(tx: Transaction, args: SwapArgs) {
 }
 
 export class KaiRouterAdapter implements Router {
+  id = () => 'kai'
+
   async initialize() {}
 
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
@@ -218,5 +220,9 @@ export class KaiRouterAdapter implements Router {
 
   async swapExactOutCoin(): Promise<SwapExactOutCoinResult> {
     throw new Error('not implemented')
+  }
+
+  protocolList(): Array<Protocol> {
+    return [...ALL_PROTOCOLS]
   }
 }

@@ -14,7 +14,6 @@ import {
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { Balance } from '../../../../sui/balance/structs'
 import { SUI } from '../../../../sui/sui/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -23,7 +22,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isStorageFund(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::storage_fund::StorageFund`
+  return type === `0x3::storage_fund::StorageFund`
 }
 
 export interface StorageFundFields {
@@ -36,12 +35,12 @@ export type StorageFundReified = Reified<StorageFund, StorageFundFields>
 export class StorageFund implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::storage_fund::StorageFund`
+  static readonly $typeName = `0x3::storage_fund::StorageFund`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = StorageFund.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::storage_fund::StorageFund`
+  readonly $fullTypeName: `0x3::storage_fund::StorageFund`
   readonly $typeArgs: []
   readonly $isPhantom = StorageFund.$isPhantom
 
@@ -52,7 +51,7 @@ export class StorageFund implements StructClass {
     this.$fullTypeName = composeSuiType(
       StorageFund.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::storage_fund::StorageFund`
+    ) as `0x3::storage_fund::StorageFund`
     this.$typeArgs = typeArgs
 
     this.totalObjectStorageRebates = fields.totalObjectStorageRebates
@@ -65,7 +64,7 @@ export class StorageFund implements StructClass {
       fullTypeName: composeSuiType(
         StorageFund.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::storage_fund::StorageFund`,
+      ) as `0x3::storage_fund::StorageFund`,
       typeArgs: [] as [],
       isPhantom: StorageFund.$isPhantom,
       reifiedTypeArgs: [],

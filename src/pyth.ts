@@ -1,7 +1,19 @@
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { PhantomTypeArgument } from './gen/_framework/reified'
 import { PriceInfoObject as PriceInfoObject_ } from './gen/pyth/price-info/structs'
-import { CoinInfo, SUI, suiUSDT, USDC, USDY, whUSDCe, whUSDTe, DEEP } from './coin-info'
+import {
+  CoinInfo,
+  SUI,
+  suiUSDT,
+  USDC,
+  USDY,
+  whUSDCe,
+  whUSDTe,
+  DEEP,
+  wBTC,
+  LBTC,
+  WAL,
+} from './coin-info'
 import { Price } from './price'
 import Decimal from 'decimal.js'
 
@@ -74,6 +86,24 @@ export const DEEPPioInfo = new PriceFeedInfo({
   priceFeedId: '0x29bdd5248234e33bd93d3b81100b5fa32eaa5997843847e2c2cb16d7c6d9f7ff',
   priceInfoObjectId: '0x8c7f3a322b94cc69db2a2ac575cbd94bf5766113324c3a3eceac91e3e88a51ed',
   T: DEEP,
+})
+
+export const WALPioInfo = new PriceFeedInfo({
+  priceFeedId: '0xeba0732395fae9dec4bae12e52760b35fc1c5671e2da8b449c9af4efe5d54341',
+  priceInfoObjectId: '0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d',
+  T: WAL,
+})
+
+export const wBTCPioInfo = new PriceFeedInfo({
+  priceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+  priceInfoObjectId: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+  T: wBTC,
+})
+
+export const LBTCPioInfo = new PriceFeedInfo({
+  priceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+  priceInfoObjectId: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+  T: LBTC,
 })
 
 export function getPriceFromPio(pioData: PriceInfoObject_) {

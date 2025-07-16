@@ -1,5 +1,6 @@
 import * as accessInit from './access-init/structs'
 import * as balanceBag from './balance-bag/structs'
+import * as cetus from './cetus/structs'
 import * as debtBag from './debt-bag/structs'
 import * as debtInfo from './debt-info/structs'
 import * as debt from './debt/structs'
@@ -14,6 +15,7 @@ import { StructClassLoader } from '../_framework/loader'
 export function registerClasses(loader: StructClassLoader) {
   loader.register(accessInit.ACCESS_INIT)
   loader.register(balanceBag.BalanceBag)
+  loader.register(cetus.AHandleExploitedPosition)
   loader.register(debt.DebtShareBalance)
   loader.register(debt.DebtRegistry)
   loader.register(debt.DebtTreasury)
@@ -39,6 +41,12 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(positionCoreClmm.PositionCap)
   loader.register(positionCoreClmm.PythConfig)
   loader.register(positionCoreClmm.PositionConfig)
+  loader.register(positionCoreClmm.LiquidationDisabledKey)
+  loader.register(positionCoreClmm.ReductionDisabledKey)
+  loader.register(positionCoreClmm.AddLiquidityDisabledKey)
+  loader.register(positionCoreClmm.OwnerCollectFeeDisabledKey)
+  loader.register(positionCoreClmm.OwnerCollectRewardDisabledKey)
+  loader.register(positionCoreClmm.DeletePositionDisabledKey)
   loader.register(positionCoreClmm.DeleverageTicket)
   loader.register(positionCoreClmm.ReductionRepaymentTicket)
   loader.register(positionCoreClmm.RebalanceReceipt)

@@ -11,7 +11,6 @@ import {
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { Versioned } from '../../../../sui/versioned/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -20,7 +19,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isValidatorWrapper(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::validator_wrapper::ValidatorWrapper`
+  return type === `0x3::validator_wrapper::ValidatorWrapper`
 }
 
 export interface ValidatorWrapperFields {
@@ -32,12 +31,12 @@ export type ValidatorWrapperReified = Reified<ValidatorWrapper, ValidatorWrapper
 export class ValidatorWrapper implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::validator_wrapper::ValidatorWrapper`
+  static readonly $typeName = `0x3::validator_wrapper::ValidatorWrapper`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = ValidatorWrapper.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::validator_wrapper::ValidatorWrapper`
+  readonly $fullTypeName: `0x3::validator_wrapper::ValidatorWrapper`
   readonly $typeArgs: []
   readonly $isPhantom = ValidatorWrapper.$isPhantom
 
@@ -47,7 +46,7 @@ export class ValidatorWrapper implements StructClass {
     this.$fullTypeName = composeSuiType(
       ValidatorWrapper.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::validator_wrapper::ValidatorWrapper`
+    ) as `0x3::validator_wrapper::ValidatorWrapper`
     this.$typeArgs = typeArgs
 
     this.inner = fields.inner
@@ -59,7 +58,7 @@ export class ValidatorWrapper implements StructClass {
       fullTypeName: composeSuiType(
         ValidatorWrapper.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::validator_wrapper::ValidatorWrapper`,
+      ) as `0x3::validator_wrapper::ValidatorWrapper`,
       typeArgs: [] as [],
       isPhantom: ValidatorWrapper.$isPhantom,
       reifiedTypeArgs: [],

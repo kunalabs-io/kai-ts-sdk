@@ -187,6 +187,39 @@ export const klSuiUSDT = new CoinInfo({
   displaySymbol: 'klSuiUSDT',
 })
 
+export const klWAL = new CoinInfo({
+  reified: phantom(
+    '0x59b208a81be1ed6f1d596d971abf358401304dfbacce30c8ffc637ba5b68f13::klwal::KLWAL'
+  ),
+  decimals: 9,
+  name: 'Kai Leverage WAL',
+  description: 'Kai Leverage WAL Supply Pool LP Token',
+  symbol: 'klWAL',
+  displaySymbol: 'klWAL',
+})
+
+export const klWBTC = new CoinInfo({
+  reified: phantom(
+    '0x4acb21bc82d09db099d89a5cf48f433d34fbc46c04fc7b79dda0b27e7f32fb20::klwbtc::KLWBTC'
+  ),
+  decimals: 8,
+  name: 'Kai Leverage WBTC',
+  description: 'Kai Leverage WBTC Supply Pool LP Token',
+  symbol: 'klWBTC',
+  displaySymbol: 'klWBTC',
+})
+
+export const klLBTC = new CoinInfo({
+  reified: phantom(
+    '0x390b72b290b407c1835c33442cbbdd68c24aeb84397ffdb953994456d020e2fd::kllbtc::KLLBTC'
+  ),
+  decimals: 8,
+  name: 'Kai Leverage LBTC',
+  description: 'Kai Leverage LBTC Supply Pool LP Token',
+  symbol: 'klLBTC',
+  displaySymbol: 'klLBTC',
+})
+
 export const USDC = new CoinInfo({
   reified: phantom(
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC'
@@ -363,6 +396,74 @@ export const DEEP = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270-deep-DEEP.svg',
 })
 
+export const WAL = new CoinInfo({
+  reified: phantom('0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL'),
+  decimals: 9,
+  name: 'WAL',
+  description: 'The native token for the Walrus protocol.',
+  symbol: 'WAL',
+  displaySymbol: 'WAL',
+  iconUrl:
+    'https://coinmeta.polymedia.app/img/coins/0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59-wal-WAL.svg',
+})
+
+export const wBTC = new CoinInfo({
+  reified: phantom('0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b::btc::BTC'),
+  decimals: 8,
+  name: 'Wrapped Bitcoin',
+  description: 'wBTC by Sui',
+  symbol: 'wBTC',
+  displaySymbol: 'wBTC',
+  iconUrl:
+    'https://coinmeta.polymedia.app/img/coins/0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b-btc-BTC.webp',
+})
+
+export const LBTC = new CoinInfo({
+  reified: phantom(
+    '0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC'
+  ),
+  decimals: 8,
+  name: 'Lombard Staked BTC',
+  description:
+    'Lombard connects Bitcoin to DeFi through LBTC, the Universal Liquid Bitcoin Standard. Backed 1:1 by BTC, LBTC is yield-bearing, cross-chain, and enables BTC holders to earn Babylon staking yields, trade, borrow, lend, and yield farm.',
+  symbol: 'LBTC',
+  displaySymbol: 'LBTC',
+  iconUrl: 'https://www.lombard.finance/lbtc/LBTC.png',
+})
+
+export const yWAL = new CoinInfo({
+  reified: phantom(
+    '0xdab19711df7a4eefc633b9426e15d23305c6815eed775247e477599c706ede98::ywal::YWAL'
+  ),
+  decimals: 9,
+  name: 'yWAL',
+  description: 'Kai WAL vault yield bearing token',
+  symbol: 'yWAL',
+  displaySymbol: 'yWAL',
+})
+
+export const yWBTC = new CoinInfo({
+  reified: phantom(
+    '0xe4ff5fcc935fddaf808e27017c994b9cd75eaac81cec4bd2b4b8fdeb05a71e07::ywbtc::YWBTC'
+  ),
+  decimals: 8,
+  name: 'yWBTC',
+  description: 'Kai WBTC vault yield bearing token',
+  symbol: 'yWBTC',
+  displaySymbol: 'yWBTC',
+})
+
+export const yLBTC = new CoinInfo({
+  reified: phantom(
+    '0x3e83d9c798902dbcde72b9ede9fa2997ea43b302f83e4894aa793e6791e95c9f::ylbtc::YLBTC'
+  ),
+  decimals: 8,
+  name: 'yLBTC',
+  description: 'Kai LBTC vault yield bearing token',
+  symbol: 'yLBTC',
+  displaySymbol: 'yLBTC',
+})
+
 export const COIN_INFOS = [
   SUI,
   whUSDCe,
@@ -374,6 +475,9 @@ export const COIN_INFOS = [
   paused_klSuiUSDT,
   klUSDC,
   klSuiUSDT,
+  klWAL,
+  klWBTC,
+  klLBTC,
   CETUS,
   USDC,
   yWHUSDCe,
@@ -392,6 +496,12 @@ export const COIN_INFOS = [
   DEEP,
   klDEEP,
   yDEEP,
+  WAL,
+  wBTC,
+  LBTC,
+  yWAL,
+  yWBTC,
+  yLBTC,
 ]
 
 export const COIN_INFO_MAP = new Map(COIN_INFOS.map(c => [compressSuiType(c.typeName), c]))

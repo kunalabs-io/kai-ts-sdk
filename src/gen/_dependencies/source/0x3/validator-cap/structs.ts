@@ -11,7 +11,6 @@ import {
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { UID } from '../../../../sui/object/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
@@ -20,7 +19,7 @@ import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 export function isUnverifiedValidatorOperationCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::validator_cap::UnverifiedValidatorOperationCap`
+  return type === `0x3::validator_cap::UnverifiedValidatorOperationCap`
 }
 
 export interface UnverifiedValidatorOperationCapFields {
@@ -36,12 +35,12 @@ export type UnverifiedValidatorOperationCapReified = Reified<
 export class UnverifiedValidatorOperationCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::validator_cap::UnverifiedValidatorOperationCap`
+  static readonly $typeName = `0x3::validator_cap::UnverifiedValidatorOperationCap`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = UnverifiedValidatorOperationCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::validator_cap::UnverifiedValidatorOperationCap`
+  readonly $fullTypeName: `0x3::validator_cap::UnverifiedValidatorOperationCap`
   readonly $typeArgs: []
   readonly $isPhantom = UnverifiedValidatorOperationCap.$isPhantom
 
@@ -52,7 +51,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
     this.$fullTypeName = composeSuiType(
       UnverifiedValidatorOperationCap.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::validator_cap::UnverifiedValidatorOperationCap`
+    ) as `0x3::validator_cap::UnverifiedValidatorOperationCap`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -65,7 +64,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
       fullTypeName: composeSuiType(
         UnverifiedValidatorOperationCap.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::validator_cap::UnverifiedValidatorOperationCap`,
+      ) as `0x3::validator_cap::UnverifiedValidatorOperationCap`,
       typeArgs: [] as [],
       isPhantom: UnverifiedValidatorOperationCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -214,7 +213,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
 
 export function isValidatorOperationCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::validator_cap::ValidatorOperationCap`
+  return type === `0x3::validator_cap::ValidatorOperationCap`
 }
 
 export interface ValidatorOperationCapFields {
@@ -229,12 +228,12 @@ export type ValidatorOperationCapReified = Reified<
 export class ValidatorOperationCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::validator_cap::ValidatorOperationCap`
+  static readonly $typeName = `0x3::validator_cap::ValidatorOperationCap`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = ValidatorOperationCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::validator_cap::ValidatorOperationCap`
+  readonly $fullTypeName: `0x3::validator_cap::ValidatorOperationCap`
   readonly $typeArgs: []
   readonly $isPhantom = ValidatorOperationCap.$isPhantom
 
@@ -244,7 +243,7 @@ export class ValidatorOperationCap implements StructClass {
     this.$fullTypeName = composeSuiType(
       ValidatorOperationCap.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::validator_cap::ValidatorOperationCap`
+    ) as `0x3::validator_cap::ValidatorOperationCap`
     this.$typeArgs = typeArgs
 
     this.authorizerValidatorAddress = fields.authorizerValidatorAddress
@@ -256,7 +255,7 @@ export class ValidatorOperationCap implements StructClass {
       fullTypeName: composeSuiType(
         ValidatorOperationCap.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::validator_cap::ValidatorOperationCap`,
+      ) as `0x3::validator_cap::ValidatorOperationCap`,
       typeArgs: [] as [],
       isPhantom: ValidatorOperationCap.$isPhantom,
       reifiedTypeArgs: [],

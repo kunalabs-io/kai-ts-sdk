@@ -15,7 +15,6 @@ import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_f
 import { Vector } from '../../../../_framework/vector'
 import { VecMap } from '../../../../sui/vec-map/structs'
 import { BridgeRoute } from '../chain-ids/structs'
-import { PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -24,7 +23,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isTransferLimiter(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::limiter::TransferLimiter`
+  return type === `0xb::limiter::TransferLimiter`
 }
 
 export interface TransferLimiterFields {
@@ -37,12 +36,12 @@ export type TransferLimiterReified = Reified<TransferLimiter, TransferLimiterFie
 export class TransferLimiter implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::limiter::TransferLimiter`
+  static readonly $typeName = `0xb::limiter::TransferLimiter`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TransferLimiter.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::limiter::TransferLimiter`
+  readonly $fullTypeName: `0xb::limiter::TransferLimiter`
   readonly $typeArgs: []
   readonly $isPhantom = TransferLimiter.$isPhantom
 
@@ -53,7 +52,7 @@ export class TransferLimiter implements StructClass {
     this.$fullTypeName = composeSuiType(
       TransferLimiter.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::limiter::TransferLimiter`
+    ) as `0xb::limiter::TransferLimiter`
     this.$typeArgs = typeArgs
 
     this.transferLimits = fields.transferLimits
@@ -66,7 +65,7 @@ export class TransferLimiter implements StructClass {
       fullTypeName: composeSuiType(
         TransferLimiter.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::limiter::TransferLimiter`,
+      ) as `0xb::limiter::TransferLimiter`,
       typeArgs: [] as [],
       isPhantom: TransferLimiter.$isPhantom,
       reifiedTypeArgs: [],
@@ -213,7 +212,7 @@ export class TransferLimiter implements StructClass {
 
 export function isTransferRecord(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::limiter::TransferRecord`
+  return type === `0xb::limiter::TransferRecord`
 }
 
 export interface TransferRecordFields {
@@ -228,12 +227,12 @@ export type TransferRecordReified = Reified<TransferRecord, TransferRecordFields
 export class TransferRecord implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::limiter::TransferRecord`
+  static readonly $typeName = `0xb::limiter::TransferRecord`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TransferRecord.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::limiter::TransferRecord`
+  readonly $fullTypeName: `0xb::limiter::TransferRecord`
   readonly $typeArgs: []
   readonly $isPhantom = TransferRecord.$isPhantom
 
@@ -246,7 +245,7 @@ export class TransferRecord implements StructClass {
     this.$fullTypeName = composeSuiType(
       TransferRecord.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::limiter::TransferRecord`
+    ) as `0xb::limiter::TransferRecord`
     this.$typeArgs = typeArgs
 
     this.hourHead = fields.hourHead
@@ -261,7 +260,7 @@ export class TransferRecord implements StructClass {
       fullTypeName: composeSuiType(
         TransferRecord.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::limiter::TransferRecord`,
+      ) as `0xb::limiter::TransferRecord`,
       typeArgs: [] as [],
       isPhantom: TransferRecord.$isPhantom,
       reifiedTypeArgs: [],
@@ -403,7 +402,7 @@ export class TransferRecord implements StructClass {
 
 export function isUpdateRouteLimitEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::limiter::UpdateRouteLimitEvent`
+  return type === `0xb::limiter::UpdateRouteLimitEvent`
 }
 
 export interface UpdateRouteLimitEventFields {
@@ -420,12 +419,12 @@ export type UpdateRouteLimitEventReified = Reified<
 export class UpdateRouteLimitEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::limiter::UpdateRouteLimitEvent`
+  static readonly $typeName = `0xb::limiter::UpdateRouteLimitEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = UpdateRouteLimitEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::limiter::UpdateRouteLimitEvent`
+  readonly $fullTypeName: `0xb::limiter::UpdateRouteLimitEvent`
   readonly $typeArgs: []
   readonly $isPhantom = UpdateRouteLimitEvent.$isPhantom
 
@@ -437,7 +436,7 @@ export class UpdateRouteLimitEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       UpdateRouteLimitEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::limiter::UpdateRouteLimitEvent`
+    ) as `0xb::limiter::UpdateRouteLimitEvent`
     this.$typeArgs = typeArgs
 
     this.sendingChain = fields.sendingChain
@@ -451,7 +450,7 @@ export class UpdateRouteLimitEvent implements StructClass {
       fullTypeName: composeSuiType(
         UpdateRouteLimitEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::limiter::UpdateRouteLimitEvent`,
+      ) as `0xb::limiter::UpdateRouteLimitEvent`,
       typeArgs: [] as [],
       isPhantom: UpdateRouteLimitEvent.$isPhantom,
       reifiedTypeArgs: [],

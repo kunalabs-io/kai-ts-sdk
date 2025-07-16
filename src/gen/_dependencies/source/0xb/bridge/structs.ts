@@ -20,7 +20,6 @@ import { UID } from '../../../../sui/object/structs'
 import { VecMap } from '../../../../sui/vec-map/structs'
 import { Versioned } from '../../../../sui/versioned/structs'
 import { BridgeCommittee } from '../committee/structs'
-import { PKG_V5 } from '../index'
 import { TransferLimiter } from '../limiter/structs'
 import { BridgeMessage, BridgeMessageKey } from '../message/structs'
 import { BridgeTreasury } from '../treasury/structs'
@@ -32,7 +31,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isBridge(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::Bridge`
+  return type === `0xb::bridge::Bridge`
 }
 
 export interface BridgeFields {
@@ -45,12 +44,12 @@ export type BridgeReified = Reified<Bridge, BridgeFields>
 export class Bridge implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::Bridge`
+  static readonly $typeName = `0xb::bridge::Bridge`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = Bridge.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::Bridge`
+  readonly $fullTypeName: `0xb::bridge::Bridge`
   readonly $typeArgs: []
   readonly $isPhantom = Bridge.$isPhantom
 
@@ -58,10 +57,7 @@ export class Bridge implements StructClass {
   readonly inner: ToField<Versioned>
 
   private constructor(typeArgs: [], fields: BridgeFields) {
-    this.$fullTypeName = composeSuiType(
-      Bridge.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::Bridge`
+    this.$fullTypeName = composeSuiType(Bridge.$typeName, ...typeArgs) as `0xb::bridge::Bridge`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -71,7 +67,7 @@ export class Bridge implements StructClass {
   static reified(): BridgeReified {
     return {
       typeName: Bridge.$typeName,
-      fullTypeName: composeSuiType(Bridge.$typeName, ...[]) as `${typeof PKG_V5}::bridge::Bridge`,
+      fullTypeName: composeSuiType(Bridge.$typeName, ...[]) as `0xb::bridge::Bridge`,
       typeArgs: [] as [],
       isPhantom: Bridge.$isPhantom,
       reifiedTypeArgs: [],
@@ -200,7 +196,7 @@ export class Bridge implements StructClass {
 
 export function isBridgeInner(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::BridgeInner`
+  return type === `0xb::bridge::BridgeInner`
 }
 
 export interface BridgeInnerFields {
@@ -220,12 +216,12 @@ export type BridgeInnerReified = Reified<BridgeInner, BridgeInnerFields>
 export class BridgeInner implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::BridgeInner`
+  static readonly $typeName = `0xb::bridge::BridgeInner`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeInner.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::BridgeInner`
+  readonly $fullTypeName: `0xb::bridge::BridgeInner`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeInner.$isPhantom
 
@@ -243,7 +239,7 @@ export class BridgeInner implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeInner.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::BridgeInner`
+    ) as `0xb::bridge::BridgeInner`
     this.$typeArgs = typeArgs
 
     this.bridgeVersion = fields.bridgeVersion
@@ -260,10 +256,7 @@ export class BridgeInner implements StructClass {
   static reified(): BridgeInnerReified {
     return {
       typeName: BridgeInner.$typeName,
-      fullTypeName: composeSuiType(
-        BridgeInner.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::bridge::BridgeInner`,
+      fullTypeName: composeSuiType(BridgeInner.$typeName, ...[]) as `0xb::bridge::BridgeInner`,
       typeArgs: [] as [],
       isPhantom: BridgeInner.$isPhantom,
       reifiedTypeArgs: [],
@@ -439,7 +432,7 @@ export class BridgeInner implements StructClass {
 
 export function isTokenDepositedEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenDepositedEvent`
+  return type === `0xb::bridge::TokenDepositedEvent`
 }
 
 export interface TokenDepositedEventFields {
@@ -457,12 +450,12 @@ export type TokenDepositedEventReified = Reified<TokenDepositedEvent, TokenDepos
 export class TokenDepositedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenDepositedEvent`
+  static readonly $typeName = `0xb::bridge::TokenDepositedEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenDepositedEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenDepositedEvent`
+  readonly $fullTypeName: `0xb::bridge::TokenDepositedEvent`
   readonly $typeArgs: []
   readonly $isPhantom = TokenDepositedEvent.$isPhantom
 
@@ -478,7 +471,7 @@ export class TokenDepositedEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenDepositedEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenDepositedEvent`
+    ) as `0xb::bridge::TokenDepositedEvent`
     this.$typeArgs = typeArgs
 
     this.seqNum = fields.seqNum
@@ -496,7 +489,7 @@ export class TokenDepositedEvent implements StructClass {
       fullTypeName: composeSuiType(
         TokenDepositedEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenDepositedEvent`,
+      ) as `0xb::bridge::TokenDepositedEvent`,
       typeArgs: [] as [],
       isPhantom: TokenDepositedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -650,7 +643,7 @@ export class TokenDepositedEvent implements StructClass {
 
 export function isEmergencyOpEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::EmergencyOpEvent`
+  return type === `0xb::bridge::EmergencyOpEvent`
 }
 
 export interface EmergencyOpEventFields {
@@ -662,12 +655,12 @@ export type EmergencyOpEventReified = Reified<EmergencyOpEvent, EmergencyOpEvent
 export class EmergencyOpEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::EmergencyOpEvent`
+  static readonly $typeName = `0xb::bridge::EmergencyOpEvent`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = EmergencyOpEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::EmergencyOpEvent`
+  readonly $fullTypeName: `0xb::bridge::EmergencyOpEvent`
   readonly $typeArgs: []
   readonly $isPhantom = EmergencyOpEvent.$isPhantom
 
@@ -677,7 +670,7 @@ export class EmergencyOpEvent implements StructClass {
     this.$fullTypeName = composeSuiType(
       EmergencyOpEvent.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::EmergencyOpEvent`
+    ) as `0xb::bridge::EmergencyOpEvent`
     this.$typeArgs = typeArgs
 
     this.frozen = fields.frozen
@@ -689,7 +682,7 @@ export class EmergencyOpEvent implements StructClass {
       fullTypeName: composeSuiType(
         EmergencyOpEvent.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::EmergencyOpEvent`,
+      ) as `0xb::bridge::EmergencyOpEvent`,
       typeArgs: [] as [],
       isPhantom: EmergencyOpEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -809,7 +802,7 @@ export class EmergencyOpEvent implements StructClass {
 
 export function isBridgeRecord(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::BridgeRecord`
+  return type === `0xb::bridge::BridgeRecord`
 }
 
 export interface BridgeRecordFields {
@@ -823,12 +816,12 @@ export type BridgeRecordReified = Reified<BridgeRecord, BridgeRecordFields>
 export class BridgeRecord implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::BridgeRecord`
+  static readonly $typeName = `0xb::bridge::BridgeRecord`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeRecord.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::BridgeRecord`
+  readonly $fullTypeName: `0xb::bridge::BridgeRecord`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeRecord.$isPhantom
 
@@ -840,7 +833,7 @@ export class BridgeRecord implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeRecord.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::BridgeRecord`
+    ) as `0xb::bridge::BridgeRecord`
     this.$typeArgs = typeArgs
 
     this.message = fields.message
@@ -851,10 +844,7 @@ export class BridgeRecord implements StructClass {
   static reified(): BridgeRecordReified {
     return {
       typeName: BridgeRecord.$typeName,
-      fullTypeName: composeSuiType(
-        BridgeRecord.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::bridge::BridgeRecord`,
+      fullTypeName: composeSuiType(BridgeRecord.$typeName, ...[]) as `0xb::bridge::BridgeRecord`,
       typeArgs: [] as [],
       isPhantom: BridgeRecord.$isPhantom,
       reifiedTypeArgs: [],
@@ -1000,7 +990,7 @@ export class BridgeRecord implements StructClass {
 
 export function isTokenTransferApproved(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenTransferApproved`
+  return type === `0xb::bridge::TokenTransferApproved`
 }
 
 export interface TokenTransferApprovedFields {
@@ -1015,12 +1005,12 @@ export type TokenTransferApprovedReified = Reified<
 export class TokenTransferApproved implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenTransferApproved`
+  static readonly $typeName = `0xb::bridge::TokenTransferApproved`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferApproved.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenTransferApproved`
+  readonly $fullTypeName: `0xb::bridge::TokenTransferApproved`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferApproved.$isPhantom
 
@@ -1030,7 +1020,7 @@ export class TokenTransferApproved implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferApproved.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenTransferApproved`
+    ) as `0xb::bridge::TokenTransferApproved`
     this.$typeArgs = typeArgs
 
     this.messageKey = fields.messageKey
@@ -1042,7 +1032,7 @@ export class TokenTransferApproved implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferApproved.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenTransferApproved`,
+      ) as `0xb::bridge::TokenTransferApproved`,
       typeArgs: [] as [],
       isPhantom: TokenTransferApproved.$isPhantom,
       reifiedTypeArgs: [],
@@ -1171,7 +1161,7 @@ export class TokenTransferApproved implements StructClass {
 
 export function isTokenTransferClaimed(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenTransferClaimed`
+  return type === `0xb::bridge::TokenTransferClaimed`
 }
 
 export interface TokenTransferClaimedFields {
@@ -1183,12 +1173,12 @@ export type TokenTransferClaimedReified = Reified<TokenTransferClaimed, TokenTra
 export class TokenTransferClaimed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenTransferClaimed`
+  static readonly $typeName = `0xb::bridge::TokenTransferClaimed`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferClaimed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenTransferClaimed`
+  readonly $fullTypeName: `0xb::bridge::TokenTransferClaimed`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferClaimed.$isPhantom
 
@@ -1198,7 +1188,7 @@ export class TokenTransferClaimed implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferClaimed.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenTransferClaimed`
+    ) as `0xb::bridge::TokenTransferClaimed`
     this.$typeArgs = typeArgs
 
     this.messageKey = fields.messageKey
@@ -1210,7 +1200,7 @@ export class TokenTransferClaimed implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferClaimed.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenTransferClaimed`,
+      ) as `0xb::bridge::TokenTransferClaimed`,
       typeArgs: [] as [],
       isPhantom: TokenTransferClaimed.$isPhantom,
       reifiedTypeArgs: [],
@@ -1339,7 +1329,7 @@ export class TokenTransferClaimed implements StructClass {
 
 export function isTokenTransferAlreadyApproved(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenTransferAlreadyApproved`
+  return type === `0xb::bridge::TokenTransferAlreadyApproved`
 }
 
 export interface TokenTransferAlreadyApprovedFields {
@@ -1354,12 +1344,12 @@ export type TokenTransferAlreadyApprovedReified = Reified<
 export class TokenTransferAlreadyApproved implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenTransferAlreadyApproved`
+  static readonly $typeName = `0xb::bridge::TokenTransferAlreadyApproved`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferAlreadyApproved.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenTransferAlreadyApproved`
+  readonly $fullTypeName: `0xb::bridge::TokenTransferAlreadyApproved`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferAlreadyApproved.$isPhantom
 
@@ -1369,7 +1359,7 @@ export class TokenTransferAlreadyApproved implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferAlreadyApproved.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenTransferAlreadyApproved`
+    ) as `0xb::bridge::TokenTransferAlreadyApproved`
     this.$typeArgs = typeArgs
 
     this.messageKey = fields.messageKey
@@ -1381,7 +1371,7 @@ export class TokenTransferAlreadyApproved implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferAlreadyApproved.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenTransferAlreadyApproved`,
+      ) as `0xb::bridge::TokenTransferAlreadyApproved`,
       typeArgs: [] as [],
       isPhantom: TokenTransferAlreadyApproved.$isPhantom,
       reifiedTypeArgs: [],
@@ -1516,7 +1506,7 @@ export class TokenTransferAlreadyApproved implements StructClass {
 
 export function isTokenTransferAlreadyClaimed(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenTransferAlreadyClaimed`
+  return type === `0xb::bridge::TokenTransferAlreadyClaimed`
 }
 
 export interface TokenTransferAlreadyClaimedFields {
@@ -1531,12 +1521,12 @@ export type TokenTransferAlreadyClaimedReified = Reified<
 export class TokenTransferAlreadyClaimed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenTransferAlreadyClaimed`
+  static readonly $typeName = `0xb::bridge::TokenTransferAlreadyClaimed`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferAlreadyClaimed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenTransferAlreadyClaimed`
+  readonly $fullTypeName: `0xb::bridge::TokenTransferAlreadyClaimed`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferAlreadyClaimed.$isPhantom
 
@@ -1546,7 +1536,7 @@ export class TokenTransferAlreadyClaimed implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferAlreadyClaimed.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenTransferAlreadyClaimed`
+    ) as `0xb::bridge::TokenTransferAlreadyClaimed`
     this.$typeArgs = typeArgs
 
     this.messageKey = fields.messageKey
@@ -1558,7 +1548,7 @@ export class TokenTransferAlreadyClaimed implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferAlreadyClaimed.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenTransferAlreadyClaimed`,
+      ) as `0xb::bridge::TokenTransferAlreadyClaimed`,
       typeArgs: [] as [],
       isPhantom: TokenTransferAlreadyClaimed.$isPhantom,
       reifiedTypeArgs: [],
@@ -1692,7 +1682,7 @@ export class TokenTransferAlreadyClaimed implements StructClass {
 
 export function isTokenTransferLimitExceed(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::bridge::TokenTransferLimitExceed`
+  return type === `0xb::bridge::TokenTransferLimitExceed`
 }
 
 export interface TokenTransferLimitExceedFields {
@@ -1707,12 +1697,12 @@ export type TokenTransferLimitExceedReified = Reified<
 export class TokenTransferLimitExceed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::bridge::TokenTransferLimitExceed`
+  static readonly $typeName = `0xb::bridge::TokenTransferLimitExceed`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferLimitExceed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::bridge::TokenTransferLimitExceed`
+  readonly $fullTypeName: `0xb::bridge::TokenTransferLimitExceed`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferLimitExceed.$isPhantom
 
@@ -1722,7 +1712,7 @@ export class TokenTransferLimitExceed implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferLimitExceed.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::bridge::TokenTransferLimitExceed`
+    ) as `0xb::bridge::TokenTransferLimitExceed`
     this.$typeArgs = typeArgs
 
     this.messageKey = fields.messageKey
@@ -1734,7 +1724,7 @@ export class TokenTransferLimitExceed implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferLimitExceed.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::bridge::TokenTransferLimitExceed`,
+      ) as `0xb::bridge::TokenTransferLimitExceed`,
       typeArgs: [] as [],
       isPhantom: TokenTransferLimitExceed.$isPhantom,
       reifiedTypeArgs: [],

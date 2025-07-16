@@ -14,7 +14,6 @@ import {
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { Vector } from '../../../../_framework/vector'
 import { Option } from '../../../../move-stdlib/option/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
@@ -23,7 +22,7 @@ import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 export function isGenesisValidatorMetadata(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::genesis::GenesisValidatorMetadata`
+  return type === `0x3::genesis::GenesisValidatorMetadata`
 }
 
 export interface GenesisValidatorMetadataFields {
@@ -52,12 +51,12 @@ export type GenesisValidatorMetadataReified = Reified<
 export class GenesisValidatorMetadata implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::genesis::GenesisValidatorMetadata`
+  static readonly $typeName = `0x3::genesis::GenesisValidatorMetadata`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = GenesisValidatorMetadata.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::genesis::GenesisValidatorMetadata`
+  readonly $fullTypeName: `0x3::genesis::GenesisValidatorMetadata`
   readonly $typeArgs: []
   readonly $isPhantom = GenesisValidatorMetadata.$isPhantom
 
@@ -81,7 +80,7 @@ export class GenesisValidatorMetadata implements StructClass {
     this.$fullTypeName = composeSuiType(
       GenesisValidatorMetadata.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::genesis::GenesisValidatorMetadata`
+    ) as `0x3::genesis::GenesisValidatorMetadata`
     this.$typeArgs = typeArgs
 
     this.name = fields.name
@@ -107,7 +106,7 @@ export class GenesisValidatorMetadata implements StructClass {
       fullTypeName: composeSuiType(
         GenesisValidatorMetadata.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::genesis::GenesisValidatorMetadata`,
+      ) as `0x3::genesis::GenesisValidatorMetadata`,
       typeArgs: [] as [],
       isPhantom: GenesisValidatorMetadata.$isPhantom,
       reifiedTypeArgs: [],
@@ -326,7 +325,7 @@ export class GenesisValidatorMetadata implements StructClass {
 
 export function isGenesisChainParameters(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::genesis::GenesisChainParameters`
+  return type === `0x3::genesis::GenesisChainParameters`
 }
 
 export interface GenesisChainParametersFields {
@@ -352,12 +351,12 @@ export type GenesisChainParametersReified = Reified<
 export class GenesisChainParameters implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::genesis::GenesisChainParameters`
+  static readonly $typeName = `0x3::genesis::GenesisChainParameters`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = GenesisChainParameters.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::genesis::GenesisChainParameters`
+  readonly $fullTypeName: `0x3::genesis::GenesisChainParameters`
   readonly $typeArgs: []
   readonly $isPhantom = GenesisChainParameters.$isPhantom
 
@@ -378,7 +377,7 @@ export class GenesisChainParameters implements StructClass {
     this.$fullTypeName = composeSuiType(
       GenesisChainParameters.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::genesis::GenesisChainParameters`
+    ) as `0x3::genesis::GenesisChainParameters`
     this.$typeArgs = typeArgs
 
     this.protocolVersion = fields.protocolVersion
@@ -401,7 +400,7 @@ export class GenesisChainParameters implements StructClass {
       fullTypeName: composeSuiType(
         GenesisChainParameters.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::genesis::GenesisChainParameters`,
+      ) as `0x3::genesis::GenesisChainParameters`,
       typeArgs: [] as [],
       isPhantom: GenesisChainParameters.$isPhantom,
       reifiedTypeArgs: [],
@@ -624,7 +623,7 @@ export class GenesisChainParameters implements StructClass {
 
 export function isTokenDistributionSchedule(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::genesis::TokenDistributionSchedule`
+  return type === `0x3::genesis::TokenDistributionSchedule`
 }
 
 export interface TokenDistributionScheduleFields {
@@ -640,12 +639,12 @@ export type TokenDistributionScheduleReified = Reified<
 export class TokenDistributionSchedule implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::genesis::TokenDistributionSchedule`
+  static readonly $typeName = `0x3::genesis::TokenDistributionSchedule`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenDistributionSchedule.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::genesis::TokenDistributionSchedule`
+  readonly $fullTypeName: `0x3::genesis::TokenDistributionSchedule`
   readonly $typeArgs: []
   readonly $isPhantom = TokenDistributionSchedule.$isPhantom
 
@@ -656,7 +655,7 @@ export class TokenDistributionSchedule implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenDistributionSchedule.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::genesis::TokenDistributionSchedule`
+    ) as `0x3::genesis::TokenDistributionSchedule`
     this.$typeArgs = typeArgs
 
     this.stakeSubsidyFundMist = fields.stakeSubsidyFundMist
@@ -669,7 +668,7 @@ export class TokenDistributionSchedule implements StructClass {
       fullTypeName: composeSuiType(
         TokenDistributionSchedule.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::genesis::TokenDistributionSchedule`,
+      ) as `0x3::genesis::TokenDistributionSchedule`,
       typeArgs: [] as [],
       isPhantom: TokenDistributionSchedule.$isPhantom,
       reifiedTypeArgs: [],
@@ -817,7 +816,7 @@ export class TokenDistributionSchedule implements StructClass {
 
 export function isTokenAllocation(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::genesis::TokenAllocation`
+  return type === `0x3::genesis::TokenAllocation`
 }
 
 export interface TokenAllocationFields {
@@ -831,12 +830,12 @@ export type TokenAllocationReified = Reified<TokenAllocation, TokenAllocationFie
 export class TokenAllocation implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::genesis::TokenAllocation`
+  static readonly $typeName = `0x3::genesis::TokenAllocation`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenAllocation.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::genesis::TokenAllocation`
+  readonly $fullTypeName: `0x3::genesis::TokenAllocation`
   readonly $typeArgs: []
   readonly $isPhantom = TokenAllocation.$isPhantom
 
@@ -848,7 +847,7 @@ export class TokenAllocation implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenAllocation.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::genesis::TokenAllocation`
+    ) as `0x3::genesis::TokenAllocation`
     this.$typeArgs = typeArgs
 
     this.recipientAddress = fields.recipientAddress
@@ -862,7 +861,7 @@ export class TokenAllocation implements StructClass {
       fullTypeName: composeSuiType(
         TokenAllocation.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::genesis::TokenAllocation`,
+      ) as `0x3::genesis::TokenAllocation`,
       typeArgs: [] as [],
       isPhantom: TokenAllocation.$isPhantom,
       reifiedTypeArgs: [],

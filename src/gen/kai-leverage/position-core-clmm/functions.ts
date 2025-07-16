@@ -593,6 +593,167 @@ export function setPositionCreationFeeSui(tx: Transaction, args: SetPositionCrea
   })
 }
 
+export interface SetConfigExtensionArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+  newValue: GenericArg
+}
+
+export function setConfigExtension(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SetConfigExtensionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_config_extension`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      generic(tx, `${typeArgs[0]}`, args.key),
+      generic(tx, `${typeArgs[1]}`, args.newValue),
+    ],
+  })
+}
+
+export interface GetConfigExtensionOrDefaultArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+  defaultValue: GenericArg
+}
+
+export function getConfigExtensionOrDefault(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GetConfigExtensionOrDefaultArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::get_config_extension_or_default`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      generic(tx, `${typeArgs[0]}`, args.key),
+      generic(tx, `${typeArgs[1]}`, args.defaultValue),
+    ],
+  })
+}
+
+export interface SetLiquidationDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setLiquidationDisabled(tx: Transaction, args: SetLiquidationDisabledArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_liquidation_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function liquidationDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::liquidation_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetReductionDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setReductionDisabled(tx: Transaction, args: SetReductionDisabledArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_reduction_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function reductionDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::reduction_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetAddLiquidityDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setAddLiquidityDisabled(tx: Transaction, args: SetAddLiquidityDisabledArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_add_liquidity_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function addLiquidityDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::add_liquidity_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetOwnerCollectFeeDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setOwnerCollectFeeDisabled(tx: Transaction, args: SetOwnerCollectFeeDisabledArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_owner_collect_fee_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function ownerCollectFeeDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::owner_collect_fee_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetOwnerCollectRewardDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setOwnerCollectRewardDisabled(
+  tx: Transaction,
+  args: SetOwnerCollectRewardDisabledArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_owner_collect_reward_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function ownerCollectRewardDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::owner_collect_reward_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetDeletePositionDisabledArgs {
+  config: TransactionObjectInput
+  disabled: boolean | TransactionArgument
+}
+
+export function setDeletePositionDisabled(tx: Transaction, args: SetDeletePositionDisabledArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_delete_position_disabled`,
+    arguments: [obj(tx, args.config), pure(tx, args.disabled, `bool`)],
+  })
+}
+
+export function deletePositionDisabled(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::delete_position_disabled`,
+    arguments: [obj(tx, config)],
+  })
+}
+
 export interface DeleverageTicketConstructorArgs {
   positionId: string | TransactionArgument
   canRepayX: boolean | TransactionArgument

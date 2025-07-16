@@ -15,7 +15,6 @@ import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_f
 import { Bag } from '../../../../sui/bag/structs'
 import { Balance } from '../../../../sui/balance/structs'
 import { SUI } from '../../../../sui/sui/structs'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -24,7 +23,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isStakeSubsidy(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::stake_subsidy::StakeSubsidy`
+  return type === `0x3::stake_subsidy::StakeSubsidy`
 }
 
 export interface StakeSubsidyFields {
@@ -41,12 +40,12 @@ export type StakeSubsidyReified = Reified<StakeSubsidy, StakeSubsidyFields>
 export class StakeSubsidy implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::stake_subsidy::StakeSubsidy`
+  static readonly $typeName = `0x3::stake_subsidy::StakeSubsidy`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = StakeSubsidy.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::stake_subsidy::StakeSubsidy`
+  readonly $fullTypeName: `0x3::stake_subsidy::StakeSubsidy`
   readonly $typeArgs: []
   readonly $isPhantom = StakeSubsidy.$isPhantom
 
@@ -61,7 +60,7 @@ export class StakeSubsidy implements StructClass {
     this.$fullTypeName = composeSuiType(
       StakeSubsidy.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::stake_subsidy::StakeSubsidy`
+    ) as `0x3::stake_subsidy::StakeSubsidy`
     this.$typeArgs = typeArgs
 
     this.balance = fields.balance
@@ -78,7 +77,7 @@ export class StakeSubsidy implements StructClass {
       fullTypeName: composeSuiType(
         StakeSubsidy.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::stake_subsidy::StakeSubsidy`,
+      ) as `0x3::stake_subsidy::StakeSubsidy`,
       typeArgs: [] as [],
       isPhantom: StakeSubsidy.$isPhantom,
       reifiedTypeArgs: [],

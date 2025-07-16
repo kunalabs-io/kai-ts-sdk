@@ -17,10 +17,14 @@ import * as coin from '../gen/sui/coin/functions'
 import Decimal from 'decimal.js'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { Price } from '../price'
-import { muldiv } from '../math'
+import * as agg from '@cetusprotocol/aggregator-sdk'
 
 export class CetusAggregatorAdapter implements Router {
   constructor(private readonly aggregator: AggregatorClient) {}
+
+  id(): string {
+    return 'cetus-aggregator'
+  }
 
   async initialize() {}
 
@@ -43,6 +47,7 @@ export class CetusAggregatorAdapter implements Router {
       amountIn: args.amountIn,
       sender: args.sender,
       slippage: args.slippage,
+      protocolDenylist: args.protocolDenylist,
     })
     const balanceOut = coin.intoBalance(args.tx, args.outInfo.typeName, coinOut.coinOut)
 
@@ -50,6 +55,10 @@ export class CetusAggregatorAdapter implements Router {
       tx: args.tx,
       balanceOut,
     }
+  }
+
+  private getProvidersFromDenylist(denylist: string[]): string[] {
+    return CetusAggregatorAdapter.protocolList().filter(protocol => !denylist.includes(protocol))
   }
 
   async swapCoin(args: RouterSwapCoinArgs): Promise<RouterSwapCoinResult> {
@@ -67,6 +76,7 @@ export class CetusAggregatorAdapter implements Router {
       target: args.outInfo.typeName,
       amount: new BN(args.amountIn.toString()),
       byAmountIn: true,
+      providers: this.getProvidersFromDenylist(args.protocolDenylist || []),
     })
     if (!route) {
       throw new Error('Route is null')
@@ -106,12 +116,13 @@ export class CetusAggregatorAdapter implements Router {
       target: args.Y.typeName,
       amount: new BN(args.amountIn.toString()),
       byAmountIn: true,
+      providers: this.getProvidersFromDenylist(args.protocolDenylist || []),
     })
     if (!route) {
       throw new Error('Route is null')
     }
 
-    const numeric = new Decimal(route.amountIn.toString()).div(route.amountOut.toString())
+    const numeric = new Decimal(route.amountOut.toString()).div(route.amountIn.toString())
     return Price.fromNumeric(args.X, args.Y, numeric)
   }
 
@@ -122,35 +133,35 @@ export class CetusAggregatorAdapter implements Router {
       return { tx: args.tx, balanceOut: args.balanceIn }
     }
 
-    const amountOut = muldiv(
-      args.amountOut,
-      10000n + BigInt((args.slippage * 100).toFixed(0)),
-      10000n
-    )
-
     const route = await this.aggregator.findRouters({
       from: args.inInfo.typeName,
       target: args.outInfo.typeName,
-      amount: new BN(amountOut.toString()),
+      amount: new BN(args.amountOut.toString()),
       byAmountIn: false,
+      providers: this.getProvidersFromDenylist(args.protocolDenylist || []),
     })
     if (!route) {
       throw new Error('Route is null')
     }
 
+    const amountIn = BigInt(
+      new Decimal(route.amountIn.toString())
+        .mul(new Decimal(1).add(new Decimal(args.slippage)))
+        .toFixed(0, Decimal.ROUND_CEIL)
+    )
     const coinIn = coin.fromBalance(
       args.tx,
       args.inInfo.typeName,
       balance.split(args.tx, args.inInfo.typeName, {
         self: args.balanceIn,
-        value: BigInt(route.amountIn.toString()),
+        value: amountIn,
       })
     )
 
     const coinOut = await this.aggregator.routerSwap({
       routers: route,
       inputCoin: coinIn,
-      slippage: 0,
+      slippage: args.slippage,
       txb: args.tx,
     })
 
@@ -172,14 +183,20 @@ export class CetusAggregatorAdapter implements Router {
       target: args.outInfo.typeName,
       amount: new BN(args.amountOut.toString()),
       byAmountIn: false,
+      providers: this.getProvidersFromDenylist(args.protocolDenylist || []),
     })
     if (!route) {
       throw new Error('Route is null')
     }
 
+    const amountIn = BigInt(
+      new Decimal(route.amountIn.toString())
+        .mul(new Decimal(1).add(new Decimal(args.slippage)))
+        .toFixed(0, Decimal.ROUND_CEIL)
+    )
     const coinIn = coin.split(args.tx, args.inInfo.typeName, {
       self: args.coinIn,
-      splitAmount: BigInt(route.amountIn.toString()),
+      splitAmount: amountIn,
     })
 
     const coinOut = await this.aggregator.routerSwap({
@@ -193,5 +210,39 @@ export class CetusAggregatorAdapter implements Router {
       tx: args.tx,
       coinOut,
     }
+  }
+
+  static protocolList(): string[] {
+    return [
+      agg.CETUS,
+      agg.DEEPBOOKV2,
+      agg.KRIYA,
+      agg.FLOWXV2,
+      agg.FLOWXV3,
+      agg.KRIYAV3,
+      agg.TURBOS,
+      agg.AFTERMATH,
+      agg.HAEDAL,
+      agg.VOLO,
+      agg.AFSUI,
+      agg.BLUEMOVE,
+      agg.DEEPBOOKV3,
+      agg.SCALLOP,
+      agg.SUILEND,
+      agg.BLUEFIN,
+      agg.HAEDALPMM,
+      agg.ALPHAFI,
+      agg.SPRINGSUI,
+      agg.STEAMM,
+      agg.METASTABLE,
+      agg.OBRIC,
+      agg.HAWAL,
+      agg.STEAMM_OMM,
+      agg.MOMENTUM,
+    ]
+  }
+
+  protocolList(): string[] {
+    return CetusAggregatorAdapter.protocolList()
   }
 }

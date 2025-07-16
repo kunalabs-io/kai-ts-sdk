@@ -40,8 +40,15 @@ import {
   yWHUSDTe,
   ysuiUSDT,
   yUSDC,
+  WAL,
+  wBTC,
+  LBTC,
+  yWAL,
+  yWBTC,
+  yLBTC,
 } from '../coin-info'
 import { SUPPLY_POOL_STRATEGY_INFOS } from './kai-leverage-supply-pool-strategy'
+import { compressSuiType } from '../gen/_framework/util'
 
 export interface VaultTargetWeightsItem {
   strategyAccessId: string
@@ -423,6 +430,9 @@ export type VaultInfoMap = {
     ToPhantomTypeArgument<typeof ysuiUSDT.p>
   >
   USDC: VaultInfo<ToPhantomTypeArgument<typeof USDC.p>, ToPhantomTypeArgument<typeof yUSDC.p>>
+  WAL: VaultInfo<ToPhantomTypeArgument<typeof WAL.p>, ToPhantomTypeArgument<typeof yWAL.p>>
+  wBTC: VaultInfo<ToPhantomTypeArgument<typeof wBTC.p>, ToPhantomTypeArgument<typeof yWBTC.p>>
+  LBTC: VaultInfo<ToPhantomTypeArgument<typeof LBTC.p>, ToPhantomTypeArgument<typeof yLBTC.p>>
 }
 
 export const VAULTS: VaultInfoMap = {
@@ -489,6 +499,27 @@ export const VAULTS: VaultInfoMap = {
     capId: '0xc9df4eb15095a6ace5d39430dc762e387e8842c907e78ea86445c51d62a0439d',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDC],
   }),
+  WAL: new VaultInfo({
+    T: WAL,
+    YT: yWAL,
+    id: '0x4ee20ca2594e137a1388d5de03c0b1f3dd7caddefb4c55b1c7bca15d0fe18c86',
+    capId: '0xa40fa41f31d9c7e89bf73591ce0d581d0732736c3cef447bbd07a62093d9077f',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.WAL],
+  }),
+  wBTC: new VaultInfo({
+    T: wBTC,
+    YT: yWBTC,
+    id: '0x5674aae155d38e09edaf3163f2e3f85fe77790f484485f0b480ca55915d7c446',
+    capId: '0x28928d9989dcf3dfb48f34d137e92b37fc495e7782fd825bc9a40474366a4653',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.wBTC],
+  }),
+  LBTC: new VaultInfo({
+    T: LBTC,
+    YT: yLBTC,
+    id: '0x362ce1fc1425ec0bdf958f2023b07cda52c924fa42e4ff88a9a48c595fd8437d',
+    capId: '0xbf8745d63ea078a5559325bb7c061625d3917cb5cc361fd6155596063d8741cc',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.LBTC],
+  }),
 }
 
 export function findVaultInfoById(
@@ -496,6 +527,16 @@ export function findVaultInfoById(
 ): VaultInfo<PhantomTypeArgument, PhantomTypeArgument> | undefined {
   const normalizedId = normalizeSuiObjectId(id)
   return Object.values(VAULTS).find(v => v.id === normalizedId) as VaultInfo<
+    PhantomTypeArgument,
+    PhantomTypeArgument
+  >
+}
+
+export function findVaultInfoByYtCoinType(
+  ytCoinType: string
+): VaultInfo<PhantomTypeArgument, PhantomTypeArgument> | undefined {
+  const normalizedYtCoinType = compressSuiType(ytCoinType)
+  return Object.values(VAULTS).find(v => v.YT.typeName === normalizedYtCoinType) as VaultInfo<
     PhantomTypeArgument,
     PhantomTypeArgument
   >

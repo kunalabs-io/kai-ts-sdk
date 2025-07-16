@@ -10,7 +10,6 @@ import {
   phantom,
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
-import { PKG_V21 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -19,7 +18,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isVotingPowerInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::voting_power::VotingPowerInfo`
+  return type === `0x3::voting_power::VotingPowerInfo`
 }
 
 export interface VotingPowerInfoFields {
@@ -32,12 +31,12 @@ export type VotingPowerInfoReified = Reified<VotingPowerInfo, VotingPowerInfoFie
 export class VotingPowerInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::voting_power::VotingPowerInfo`
+  static readonly $typeName = `0x3::voting_power::VotingPowerInfo`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = VotingPowerInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::voting_power::VotingPowerInfo`
+  readonly $fullTypeName: `0x3::voting_power::VotingPowerInfo`
   readonly $typeArgs: []
   readonly $isPhantom = VotingPowerInfo.$isPhantom
 
@@ -48,7 +47,7 @@ export class VotingPowerInfo implements StructClass {
     this.$fullTypeName = composeSuiType(
       VotingPowerInfo.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::voting_power::VotingPowerInfo`
+    ) as `0x3::voting_power::VotingPowerInfo`
     this.$typeArgs = typeArgs
 
     this.validatorIndex = fields.validatorIndex
@@ -61,7 +60,7 @@ export class VotingPowerInfo implements StructClass {
       fullTypeName: composeSuiType(
         VotingPowerInfo.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::voting_power::VotingPowerInfo`,
+      ) as `0x3::voting_power::VotingPowerInfo`,
       typeArgs: [] as [],
       isPhantom: VotingPowerInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -190,7 +189,7 @@ export class VotingPowerInfo implements StructClass {
 
 export function isVotingPowerInfoV2(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V21}::voting_power::VotingPowerInfoV2`
+  return type === `0x3::voting_power::VotingPowerInfoV2`
 }
 
 export interface VotingPowerInfoV2Fields {
@@ -204,12 +203,12 @@ export type VotingPowerInfoV2Reified = Reified<VotingPowerInfoV2, VotingPowerInf
 export class VotingPowerInfoV2 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V21}::voting_power::VotingPowerInfoV2`
+  static readonly $typeName = `0x3::voting_power::VotingPowerInfoV2`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = VotingPowerInfoV2.$typeName
-  readonly $fullTypeName: `${typeof PKG_V21}::voting_power::VotingPowerInfoV2`
+  readonly $fullTypeName: `0x3::voting_power::VotingPowerInfoV2`
   readonly $typeArgs: []
   readonly $isPhantom = VotingPowerInfoV2.$isPhantom
 
@@ -221,7 +220,7 @@ export class VotingPowerInfoV2 implements StructClass {
     this.$fullTypeName = composeSuiType(
       VotingPowerInfoV2.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V21}::voting_power::VotingPowerInfoV2`
+    ) as `0x3::voting_power::VotingPowerInfoV2`
     this.$typeArgs = typeArgs
 
     this.validatorIndex = fields.validatorIndex
@@ -235,7 +234,7 @@ export class VotingPowerInfoV2 implements StructClass {
       fullTypeName: composeSuiType(
         VotingPowerInfoV2.$typeName,
         ...[]
-      ) as `${typeof PKG_V21}::voting_power::VotingPowerInfoV2`,
+      ) as `0x3::voting_power::VotingPowerInfoV2`,
       typeArgs: [] as [],
       isPhantom: VotingPowerInfoV2.$isPhantom,
       reifiedTypeArgs: [],

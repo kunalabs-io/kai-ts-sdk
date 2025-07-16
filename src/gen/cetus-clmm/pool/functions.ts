@@ -1329,3 +1329,49 @@ export function stepSwapResultRemainderAmount(
     arguments: [obj(tx, stepSwapResult)],
   })
 }
+
+export function positionLiquiditySnapshot(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::position_liquidity_snapshot`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface IsAttackedPositionArgs {
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function isAttackedPosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: IsAttackedPositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::is_attacked_position`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
+export interface GetPositionSnapshotByPositionIdArgs {
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function getPositionSnapshotByPositionId(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GetPositionSnapshotByPositionIdArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::get_position_snapshot_by_position_id`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}

@@ -14,7 +14,6 @@ import {
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { Vector } from '../../../../_framework/vector'
 import { String } from '../../../../move-stdlib/ascii/structs'
-import { PKG_V5 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64 } from '@mysten/sui/utils'
@@ -23,7 +22,7 @@ import { fromB64 } from '@mysten/sui/utils'
 
 export function isBridgeMessage(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::BridgeMessage`
+  return type === `0xb::message::BridgeMessage`
 }
 
 export interface BridgeMessageFields {
@@ -39,12 +38,12 @@ export type BridgeMessageReified = Reified<BridgeMessage, BridgeMessageFields>
 export class BridgeMessage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::BridgeMessage`
+  static readonly $typeName = `0xb::message::BridgeMessage`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeMessage.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::BridgeMessage`
+  readonly $fullTypeName: `0xb::message::BridgeMessage`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeMessage.$isPhantom
 
@@ -58,7 +57,7 @@ export class BridgeMessage implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeMessage.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::BridgeMessage`
+    ) as `0xb::message::BridgeMessage`
     this.$typeArgs = typeArgs
 
     this.messageType = fields.messageType
@@ -71,10 +70,7 @@ export class BridgeMessage implements StructClass {
   static reified(): BridgeMessageReified {
     return {
       typeName: BridgeMessage.$typeName,
-      fullTypeName: composeSuiType(
-        BridgeMessage.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::message::BridgeMessage`,
+      fullTypeName: composeSuiType(BridgeMessage.$typeName, ...[]) as `0xb::message::BridgeMessage`,
       typeArgs: [] as [],
       isPhantom: BridgeMessage.$isPhantom,
       reifiedTypeArgs: [],
@@ -218,7 +214,7 @@ export class BridgeMessage implements StructClass {
 
 export function isBridgeMessageKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::BridgeMessageKey`
+  return type === `0xb::message::BridgeMessageKey`
 }
 
 export interface BridgeMessageKeyFields {
@@ -232,12 +228,12 @@ export type BridgeMessageKeyReified = Reified<BridgeMessageKey, BridgeMessageKey
 export class BridgeMessageKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::BridgeMessageKey`
+  static readonly $typeName = `0xb::message::BridgeMessageKey`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = BridgeMessageKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::BridgeMessageKey`
+  readonly $fullTypeName: `0xb::message::BridgeMessageKey`
   readonly $typeArgs: []
   readonly $isPhantom = BridgeMessageKey.$isPhantom
 
@@ -249,7 +245,7 @@ export class BridgeMessageKey implements StructClass {
     this.$fullTypeName = composeSuiType(
       BridgeMessageKey.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::BridgeMessageKey`
+    ) as `0xb::message::BridgeMessageKey`
     this.$typeArgs = typeArgs
 
     this.sourceChain = fields.sourceChain
@@ -263,7 +259,7 @@ export class BridgeMessageKey implements StructClass {
       fullTypeName: composeSuiType(
         BridgeMessageKey.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::message::BridgeMessageKey`,
+      ) as `0xb::message::BridgeMessageKey`,
       typeArgs: [] as [],
       isPhantom: BridgeMessageKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -397,7 +393,7 @@ export class BridgeMessageKey implements StructClass {
 
 export function isTokenTransferPayload(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::TokenTransferPayload`
+  return type === `0xb::message::TokenTransferPayload`
 }
 
 export interface TokenTransferPayloadFields {
@@ -413,12 +409,12 @@ export type TokenTransferPayloadReified = Reified<TokenTransferPayload, TokenTra
 export class TokenTransferPayload implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::TokenTransferPayload`
+  static readonly $typeName = `0xb::message::TokenTransferPayload`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = TokenTransferPayload.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::TokenTransferPayload`
+  readonly $fullTypeName: `0xb::message::TokenTransferPayload`
   readonly $typeArgs: []
   readonly $isPhantom = TokenTransferPayload.$isPhantom
 
@@ -432,7 +428,7 @@ export class TokenTransferPayload implements StructClass {
     this.$fullTypeName = composeSuiType(
       TokenTransferPayload.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::TokenTransferPayload`
+    ) as `0xb::message::TokenTransferPayload`
     this.$typeArgs = typeArgs
 
     this.senderAddress = fields.senderAddress
@@ -448,7 +444,7 @@ export class TokenTransferPayload implements StructClass {
       fullTypeName: composeSuiType(
         TokenTransferPayload.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::message::TokenTransferPayload`,
+      ) as `0xb::message::TokenTransferPayload`,
       typeArgs: [] as [],
       isPhantom: TokenTransferPayload.$isPhantom,
       reifiedTypeArgs: [],
@@ -597,7 +593,7 @@ export class TokenTransferPayload implements StructClass {
 
 export function isEmergencyOp(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::EmergencyOp`
+  return type === `0xb::message::EmergencyOp`
 }
 
 export interface EmergencyOpFields {
@@ -609,12 +605,12 @@ export type EmergencyOpReified = Reified<EmergencyOp, EmergencyOpFields>
 export class EmergencyOp implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::EmergencyOp`
+  static readonly $typeName = `0xb::message::EmergencyOp`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = EmergencyOp.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::EmergencyOp`
+  readonly $fullTypeName: `0xb::message::EmergencyOp`
   readonly $typeArgs: []
   readonly $isPhantom = EmergencyOp.$isPhantom
 
@@ -624,7 +620,7 @@ export class EmergencyOp implements StructClass {
     this.$fullTypeName = composeSuiType(
       EmergencyOp.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::EmergencyOp`
+    ) as `0xb::message::EmergencyOp`
     this.$typeArgs = typeArgs
 
     this.opType = fields.opType
@@ -633,10 +629,7 @@ export class EmergencyOp implements StructClass {
   static reified(): EmergencyOpReified {
     return {
       typeName: EmergencyOp.$typeName,
-      fullTypeName: composeSuiType(
-        EmergencyOp.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::message::EmergencyOp`,
+      fullTypeName: composeSuiType(EmergencyOp.$typeName, ...[]) as `0xb::message::EmergencyOp`,
       typeArgs: [] as [],
       isPhantom: EmergencyOp.$isPhantom,
       reifiedTypeArgs: [],
@@ -756,7 +749,7 @@ export class EmergencyOp implements StructClass {
 
 export function isBlocklist(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::Blocklist`
+  return type === `0xb::message::Blocklist`
 }
 
 export interface BlocklistFields {
@@ -769,12 +762,12 @@ export type BlocklistReified = Reified<Blocklist, BlocklistFields>
 export class Blocklist implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::Blocklist`
+  static readonly $typeName = `0xb::message::Blocklist`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = Blocklist.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::Blocklist`
+  readonly $fullTypeName: `0xb::message::Blocklist`
   readonly $typeArgs: []
   readonly $isPhantom = Blocklist.$isPhantom
 
@@ -785,7 +778,7 @@ export class Blocklist implements StructClass {
     this.$fullTypeName = composeSuiType(
       Blocklist.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::Blocklist`
+    ) as `0xb::message::Blocklist`
     this.$typeArgs = typeArgs
 
     this.blocklistType = fields.blocklistType
@@ -795,10 +788,7 @@ export class Blocklist implements StructClass {
   static reified(): BlocklistReified {
     return {
       typeName: Blocklist.$typeName,
-      fullTypeName: composeSuiType(
-        Blocklist.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::message::Blocklist`,
+      fullTypeName: composeSuiType(Blocklist.$typeName, ...[]) as `0xb::message::Blocklist`,
       typeArgs: [] as [],
       isPhantom: Blocklist.$isPhantom,
       reifiedTypeArgs: [],
@@ -939,7 +929,7 @@ export class Blocklist implements StructClass {
 
 export function isUpdateBridgeLimit(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::UpdateBridgeLimit`
+  return type === `0xb::message::UpdateBridgeLimit`
 }
 
 export interface UpdateBridgeLimitFields {
@@ -953,12 +943,12 @@ export type UpdateBridgeLimitReified = Reified<UpdateBridgeLimit, UpdateBridgeLi
 export class UpdateBridgeLimit implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::UpdateBridgeLimit`
+  static readonly $typeName = `0xb::message::UpdateBridgeLimit`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = UpdateBridgeLimit.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::UpdateBridgeLimit`
+  readonly $fullTypeName: `0xb::message::UpdateBridgeLimit`
   readonly $typeArgs: []
   readonly $isPhantom = UpdateBridgeLimit.$isPhantom
 
@@ -970,7 +960,7 @@ export class UpdateBridgeLimit implements StructClass {
     this.$fullTypeName = composeSuiType(
       UpdateBridgeLimit.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::UpdateBridgeLimit`
+    ) as `0xb::message::UpdateBridgeLimit`
     this.$typeArgs = typeArgs
 
     this.receivingChain = fields.receivingChain
@@ -984,7 +974,7 @@ export class UpdateBridgeLimit implements StructClass {
       fullTypeName: composeSuiType(
         UpdateBridgeLimit.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::message::UpdateBridgeLimit`,
+      ) as `0xb::message::UpdateBridgeLimit`,
       typeArgs: [] as [],
       isPhantom: UpdateBridgeLimit.$isPhantom,
       reifiedTypeArgs: [],
@@ -1118,7 +1108,7 @@ export class UpdateBridgeLimit implements StructClass {
 
 export function isUpdateAssetPrice(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::UpdateAssetPrice`
+  return type === `0xb::message::UpdateAssetPrice`
 }
 
 export interface UpdateAssetPriceFields {
@@ -1131,12 +1121,12 @@ export type UpdateAssetPriceReified = Reified<UpdateAssetPrice, UpdateAssetPrice
 export class UpdateAssetPrice implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::UpdateAssetPrice`
+  static readonly $typeName = `0xb::message::UpdateAssetPrice`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = UpdateAssetPrice.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::UpdateAssetPrice`
+  readonly $fullTypeName: `0xb::message::UpdateAssetPrice`
   readonly $typeArgs: []
   readonly $isPhantom = UpdateAssetPrice.$isPhantom
 
@@ -1147,7 +1137,7 @@ export class UpdateAssetPrice implements StructClass {
     this.$fullTypeName = composeSuiType(
       UpdateAssetPrice.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::UpdateAssetPrice`
+    ) as `0xb::message::UpdateAssetPrice`
     this.$typeArgs = typeArgs
 
     this.tokenId = fields.tokenId
@@ -1160,7 +1150,7 @@ export class UpdateAssetPrice implements StructClass {
       fullTypeName: composeSuiType(
         UpdateAssetPrice.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::message::UpdateAssetPrice`,
+      ) as `0xb::message::UpdateAssetPrice`,
       typeArgs: [] as [],
       isPhantom: UpdateAssetPrice.$isPhantom,
       reifiedTypeArgs: [],
@@ -1289,7 +1279,7 @@ export class UpdateAssetPrice implements StructClass {
 
 export function isAddTokenOnSui(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::AddTokenOnSui`
+  return type === `0xb::message::AddTokenOnSui`
 }
 
 export interface AddTokenOnSuiFields {
@@ -1304,12 +1294,12 @@ export type AddTokenOnSuiReified = Reified<AddTokenOnSui, AddTokenOnSuiFields>
 export class AddTokenOnSui implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::AddTokenOnSui`
+  static readonly $typeName = `0xb::message::AddTokenOnSui`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = AddTokenOnSui.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::AddTokenOnSui`
+  readonly $fullTypeName: `0xb::message::AddTokenOnSui`
   readonly $typeArgs: []
   readonly $isPhantom = AddTokenOnSui.$isPhantom
 
@@ -1322,7 +1312,7 @@ export class AddTokenOnSui implements StructClass {
     this.$fullTypeName = composeSuiType(
       AddTokenOnSui.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::AddTokenOnSui`
+    ) as `0xb::message::AddTokenOnSui`
     this.$typeArgs = typeArgs
 
     this.nativeToken = fields.nativeToken
@@ -1334,10 +1324,7 @@ export class AddTokenOnSui implements StructClass {
   static reified(): AddTokenOnSuiReified {
     return {
       typeName: AddTokenOnSui.$typeName,
-      fullTypeName: composeSuiType(
-        AddTokenOnSui.$typeName,
-        ...[]
-      ) as `${typeof PKG_V5}::message::AddTokenOnSui`,
+      fullTypeName: composeSuiType(AddTokenOnSui.$typeName, ...[]) as `0xb::message::AddTokenOnSui`,
       typeArgs: [] as [],
       isPhantom: AddTokenOnSui.$isPhantom,
       reifiedTypeArgs: [],
@@ -1482,7 +1469,7 @@ export class AddTokenOnSui implements StructClass {
 
 export function isParsedTokenTransferMessage(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V5}::message::ParsedTokenTransferMessage`
+  return type === `0xb::message::ParsedTokenTransferMessage`
 }
 
 export interface ParsedTokenTransferMessageFields {
@@ -1501,12 +1488,12 @@ export type ParsedTokenTransferMessageReified = Reified<
 export class ParsedTokenTransferMessage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V5}::message::ParsedTokenTransferMessage`
+  static readonly $typeName = `0xb::message::ParsedTokenTransferMessage`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = ParsedTokenTransferMessage.$typeName
-  readonly $fullTypeName: `${typeof PKG_V5}::message::ParsedTokenTransferMessage`
+  readonly $fullTypeName: `0xb::message::ParsedTokenTransferMessage`
   readonly $typeArgs: []
   readonly $isPhantom = ParsedTokenTransferMessage.$isPhantom
 
@@ -1520,7 +1507,7 @@ export class ParsedTokenTransferMessage implements StructClass {
     this.$fullTypeName = composeSuiType(
       ParsedTokenTransferMessage.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V5}::message::ParsedTokenTransferMessage`
+    ) as `0xb::message::ParsedTokenTransferMessage`
     this.$typeArgs = typeArgs
 
     this.messageVersion = fields.messageVersion
@@ -1536,7 +1523,7 @@ export class ParsedTokenTransferMessage implements StructClass {
       fullTypeName: composeSuiType(
         ParsedTokenTransferMessage.$typeName,
         ...[]
-      ) as `${typeof PKG_V5}::message::ParsedTokenTransferMessage`,
+      ) as `0xb::message::ParsedTokenTransferMessage`,
       typeArgs: [] as [],
       isPhantom: ParsedTokenTransferMessage.$isPhantom,
       reifiedTypeArgs: [],

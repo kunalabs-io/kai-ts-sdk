@@ -25,11 +25,14 @@ import {
   CETUS,
   CoinInfo,
   DEEP,
+  LBTC,
   stSUI,
   SUI,
   suiUSDT,
   USDC,
   USDY,
+  WAL,
+  wBTC,
   whUSDCe,
   whUSDTe,
 } from '../coin-info'
@@ -40,11 +43,14 @@ import { Price } from '../price'
 import { min } from '../math'
 import {
   DEEPPioInfo,
+  LBTCPioInfo,
   PriceFeedInfo,
   suiPioInfo,
   suiUsdtPioInfo,
   USDCPioInfo,
   USDYPioInfo,
+  WALPioInfo,
+  wBTCPioInfo,
   whUSDCePioInfo,
   whUSDTePioInfo,
 } from '../pyth'
@@ -1032,6 +1038,150 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     rewardCoins: [stSUI, BLUE],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin WAL/USDC',
+    configId: '0x08398431dc7e506cb127c15d69fedbb6965341c0990ce68965c2169d4bad4760',
+    poolObjectId: '0xbcc6909d2e85c06cf9cbfe5b292da36f5bfa0f314806474bbf6a0bf9744d37ce',
+    lendFacilCap: '0x5af3b604082b69e72ca4f2b4c743db341884918d9754b566b52625815cd2b807',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.WAL as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: WALPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(WAL.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(WAL.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [WAL, stSUI, BLUE],
+  }),
+  new PositionConfigInfo({
+    name: 'Cetus USDC/suiUSDT 0.01%',
+    configId: '0x356fe35a0c6a141ef81bd3b704d3f16ef1fd986a0ccf96f152bc6b7d8dfb5e5f',
+    poolObjectId: '0x7df346f8ef98ad20869ff6d2fc7c43c00403a524987509091b39ce61dde00957',
+    lendFacilCap: '0x9e7f9330b43c9f7d41e181eddd276e0be21314248526af30e5222e8115b40f82',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: USDCPioInfo,
+    pioInfoY: suiUsdtPioInfo,
+    positionReified: Position_.r(USDC.p, suiUSDT.p, CetusPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: CetusPool.r(USDC.p, suiUSDT.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: true,
+    rewardCoins: [SUI, CETUS],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin LBTC/wBTC',
+    configId: '0x9f51f0136c8e1765c5e355a8cfcc96826d55c0262da160388b90a5c7bbe7c19b',
+    poolObjectId: '0x715959c4a67cc6b8d2d4c0db628618d947a032041453a24c3a5315beb613331a',
+    lendFacilCap: '0x6e32076841fb14a688ec17be240f7fe98a681970c10d54027a656e84094e5374',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.LBTC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.wBTC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: LBTCPioInfo,
+    pioInfoY: wBTCPioInfo,
+    positionReified: Position_.r(LBTC.p, wBTC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(LBTC.p, wBTC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [DEEP, BLUE],
+  }),
+  new PositionConfigInfo({
+    name: 'Cetus USDC/SUI',
+    configId: '0xa53edf266e6cf5fce4f54089a6bf925fb802a1a913ac7b675fc7910aa5575856',
+    poolObjectId: '0xb8d7d9e66a60c239e7a60110efcf8de6c705580ed924d0dde141f4a0e2c90105',
+    lendFacilCap: '0x8b4b94dedfb3219aea5f0e58c1d8d7a9efe2627ab088d440a9611b073be27215',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: USDCPioInfo,
+    pioInfoY: suiPioInfo,
+    positionReified: Position_.r(USDC.p, SUI.p, CetusPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: CetusPool.r(USDC.p, SUI.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: true,
+    rewardCoins: [SUI, CETUS],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin WAL/SUI',
+    configId: '0xfcab5b82478b36fa6d272817f86227fbae0b0288a5a9ac04893a8eb1dafebdd2',
+    poolObjectId: '0xe60bc7ade245b9f35b49686dfab0a18e5ca9176d49bef1b90f60d67d06315ff0',
+    lendFacilCap: '0x4a12ed6323b93064082b38676023419dc3172481feb60eb34dd4d5ef2742606d',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.WAL as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: WALPioInfo,
+    pioInfoY: suiPioInfo,
+    positionReified: Position_.r(WAL.p, SUI.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(WAL.p, SUI.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [WAL, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Cetus USDC/suiUSDT 0.001%',
+    configId: '0x93604fae1c21dae08623884f3425c3f8a5c1e02480816ef17d8a194907cf943f',
+    poolObjectId: '0xb8a67c149fd1bc7f9aca1541c61e51ba13bdded64c273c278e50850ae3bff073',
+    lendFacilCap: '0x584368a2cc213d1a6a87a17983c2267821ee7ddf4384fe3b78730c80b2453c1d',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.suiUSDT as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: USDCPioInfo,
+    pioInfoY: suiUsdtPioInfo,
+    positionReified: Position_.r(USDC.p, suiUSDT.p, CetusPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: CetusPool.r(USDC.p, suiUSDT.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: true,
+    rewardCoins: [SUI, CETUS],
   }),
 ]
 

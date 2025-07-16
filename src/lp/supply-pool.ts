@@ -35,6 +35,12 @@ import {
   whUSDTe,
   klUSDC,
   klSuiUSDT,
+  klWAL,
+  klLBTC,
+  WAL,
+  wBTC,
+  LBTC,
+  klWBTC,
 } from '../coin-info'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
@@ -319,7 +325,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       .div(debtRegistry.supplyX64.toString())
       .div((1n << 64n).toString())
 
-    return Amount.fromInt(BigInt(amt.toFixed(0, Decimal.ROUND_DOWN)), this.T.decimals)
+    return Amount.fromInt(BigInt(amt.toFixed(0, Decimal.ROUND_UP)), this.T.decimals)
   }
 
   calcUtilizationAfterBorrow(borrowAmount: bigint, timestampMs?: number) {
@@ -394,5 +400,20 @@ export const SUPPLY_POOL_INFOS = {
     id: '0x366b4d73bd615c149bba8a8d6fbf69dabd0f55887f0bb6c3da5de12c566a614a',
     T: suiUSDT,
     ST: klSuiUSDT,
+  }),
+  WAL: new SupplyPoolInfo({
+    id: '0x5eee32a1961520c11dd87995a10c1042ab9357f5deaee754cd97da1a22afe4de',
+    T: WAL,
+    ST: klWAL,
+  }),
+  wBTC: new SupplyPoolInfo({
+    id: '0x3964bf55942f4e98064f1c291092d20f271e45674d53b12a0164c0e532877406',
+    T: wBTC,
+    ST: klWBTC,
+  }),
+  LBTC: new SupplyPoolInfo({
+    id: '0xae80d793d8fc9524ee98fde1bae80c2204819e66500a89f27021ef981f540d07',
+    T: LBTC,
+    ST: klLBTC,
   }),
 }

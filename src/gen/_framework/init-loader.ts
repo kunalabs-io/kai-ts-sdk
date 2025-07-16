@@ -6,15 +6,17 @@ import * as package_onchain_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d95
 import * as package_onchain_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa from '../_dependencies/onchain/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/init'
 import * as package_source_1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f from '../_dependencies/source/0x1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f/init'
 import * as package_source_1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6 from '../_dependencies/source/0x1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6/init'
-import * as package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d from '../_dependencies/source/0x25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d/init'
 import * as package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d from '../_dependencies/source/0x26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d/init'
 import * as package_source_3 from '../_dependencies/source/0x3/init'
+import * as package_source_356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59 from '../_dependencies/source/0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59/init'
+import * as package_source_3637b7b60978ef4389124f7683456f0050ab015a0590d52b6e6cadb342af34a from '../_dependencies/source/0x3637b7b60978ef4389124f7683456f0050ab015a0590d52b6e6cadb342af34a/init'
 import * as package_source_375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068 from '../_dependencies/source/0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068/init'
+import * as package_source_3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040 from '../_dependencies/source/0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040/init'
 import * as package_source_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/init'
 import * as package_source_5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf from '../_dependencies/source/0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf/init'
 import * as package_source_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162 from '../_dependencies/source/0x779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162/init'
-import * as package_source_91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1 from '../_dependencies/source/0x91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1/init'
 import * as package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb from '../_dependencies/source/0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb/init'
+import * as package_source_aafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b from '../_dependencies/source/0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b/init'
 import * as package_source_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f from '../_dependencies/source/0xad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f/init'
 import * as package_source_b from '../_dependencies/source/0xb/init'
 import * as package_source_b8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613 from '../_dependencies/source/0xb8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613/init'
@@ -49,6 +51,9 @@ function registerClassesSource(loader: StructClassLoader) {
   package_source_1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273.registerClasses(
     loader
   )
+  package_source_3637b7b60978ef4389124f7683456f0050ab015a0590d52b6e6cadb342af34a.registerClasses(
+    loader
+  )
   package_source_d9dd55ac7eb676dc78f7d0ae3bc5529d7fd6b52ac0d0edb2d7820c52d080026.registerClasses(
     loader
   )
@@ -64,16 +69,19 @@ function registerClassesSource(loader: StructClassLoader) {
   package_source_1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb.registerClasses(
     loader
   )
-  package_source_25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d.registerClasses(
-    loader
-  )
   package_source_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d.registerClasses(
     loader
   )
   package_source_3492c874c1e3b3e2984e8c41b589e642d4d0a5d6459e5a9cfc2d52fd7c89c267.registerClasses(
     loader
   )
+  package_source_356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59.registerClasses(
+    loader
+  )
   package_source_375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068.registerClasses(
+    loader
+  )
+  package_source_3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040.registerClasses(
     loader
   )
   package_source_51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523.registerClasses(
@@ -94,10 +102,10 @@ function registerClassesSource(loader: StructClassLoader) {
   package_source_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e.registerClasses(
     loader
   )
-  package_source_91bfbc386a41afcfd9b2533058d7e915a1d3829089cc268ff4333d54d6339ca1.registerClasses(
+  package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb.registerClasses(
     loader
   )
-  package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb.registerClasses(
+  package_source_aafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b.registerClasses(
     loader
   )
   package_source_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f.registerClasses(

@@ -1,4 +1,6 @@
 export const PACKAGE_ID = '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523'
-export const PUBLISHED_AT = '0x7afd8492de6e367d17c6a3056393ecf5544489eaf0234affcf2f5e9fff9240e3'
+export const PUBLISHED_AT = '0xdc0ec513ffa60ed67534393f885504222a12ca067313b4511ad26b7f17a0eded'
 export const PKG_V3 = '0xf6e43ba7dc3fdb1dad3fcc5b7d431b6527aa1bf877a1b24d6865becfa14f8d1'
+export const PKG_V11 = '0x49691904e57eff80e1409e6c71f643fecb5b7eeec97a1b4b97205a7317bed12a'
 export const PKG_V1 = '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523'
+export const PKG_V12 = '0x7afd8492de6e367d17c6a3056393ecf5544489eaf0234affcf2f5e9fff9240e3'

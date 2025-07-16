@@ -1,3 +1,4 @@
+import * as admin from './admin/structs'
 import * as config from './config/structs'
 import * as events from './events/structs'
 import * as oracle from './oracle/structs'
@@ -7,6 +8,8 @@ import * as tick from './tick/structs'
 import { StructClassLoader } from '../_framework/loader'
 
 export function registerClasses(loader: StructClassLoader) {
+  loader.register(admin.AdminCap)
+  loader.register(admin.ProtocolFeeCap)
   loader.register(config.GlobalConfig)
   loader.register(events.AdminCapTransferred)
   loader.register(events.ProtocolFeeCapTransferred)
