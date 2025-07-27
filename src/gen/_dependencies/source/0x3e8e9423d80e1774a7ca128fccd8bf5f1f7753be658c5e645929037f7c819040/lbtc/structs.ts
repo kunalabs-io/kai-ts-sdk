@@ -53,6 +53,7 @@ export class LBTC implements StructClass {
   }
 
   static reified(): LBTCReified {
+    const reifiedBcs = LBTC.bcs
     return {
       typeName: LBTC.$typeName,
       fullTypeName: composeSuiType(LBTC.$typeName, ...[]) as `${typeof PKG_V1}::lbtc::LBTC`,
@@ -61,8 +62,8 @@ export class LBTC implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LBTC.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LBTC.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LBTC.fromBcs(data),
-      bcs: LBTC.bcs,
+      fromBcs: (data: Uint8Array) => LBTC.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LBTC.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LBTC.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LBTC.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class LBTC implements StructClass {
     return LBTC.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LBTC', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LBTC.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LBTC.cachedBcs) {
+      LBTC.cachedBcs = LBTC.instantiateBcs()
+    }
+    return LBTC.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LBTC {

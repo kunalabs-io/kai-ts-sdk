@@ -147,6 +147,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     CoinTypeA: CoinTypeA,
     CoinTypeB: CoinTypeB
   ): PoolReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    const reifiedBcs = Pool.bcs
     return {
       typeName: Pool.$typeName,
       fullTypeName: composeSuiType(
@@ -162,8 +163,9 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       fromFields: (fields: Record<string, any>) => Pool.fromFields([CoinTypeA, CoinTypeB], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         Pool.fromFieldsWithTypes([CoinTypeA, CoinTypeB], item),
-      fromBcs: (data: Uint8Array) => Pool.fromBcs([CoinTypeA, CoinTypeB], data),
-      bcs: Pool.bcs,
+      fromBcs: (data: Uint8Array) =>
+        Pool.fromFields([CoinTypeA, CoinTypeB], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Pool.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) => Pool.fromJSON([CoinTypeA, CoinTypeB], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -200,7 +202,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     return Pool.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Pool', {
       id: UID.bcs,
       name: String.bcs,
@@ -223,6 +225,15 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       position_index: bcs.u128(),
       sequence_number: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Pool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Pool.cachedBcs) {
+      Pool.cachedBcs = Pool.instantiateBcs()
+    }
+    return Pool.cachedBcs
   }
 
   static fromFields<
@@ -532,6 +543,7 @@ export class PoolRewardInfo implements StructClass {
   }
 
   static reified(): PoolRewardInfoReified {
+    const reifiedBcs = PoolRewardInfo.bcs
     return {
       typeName: PoolRewardInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -543,8 +555,8 @@ export class PoolRewardInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PoolRewardInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PoolRewardInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolRewardInfo.fromBcs(data),
-      bcs: PoolRewardInfo.bcs,
+      fromBcs: (data: Uint8Array) => PoolRewardInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolRewardInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolRewardInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PoolRewardInfo.fromSuiParsedData(content),
@@ -568,7 +580,7 @@ export class PoolRewardInfo implements StructClass {
     return PoolRewardInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PoolRewardInfo', {
       reward_coin_symbol: String.bcs,
       reward_coin_decimals: bcs.u8(),
@@ -580,6 +592,15 @@ export class PoolRewardInfo implements StructClass {
       reward_per_seconds: bcs.u128(),
       reward_growth_global: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PoolRewardInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PoolRewardInfo.cachedBcs) {
+      PoolRewardInfo.cachedBcs = PoolRewardInfo.instantiateBcs()
+    }
+    return PoolRewardInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PoolRewardInfo {
@@ -780,6 +801,7 @@ export class SwapResult implements StructClass {
   }
 
   static reified(): SwapResultReified {
+    const reifiedBcs = SwapResult.bcs
     return {
       typeName: SwapResult.$typeName,
       fullTypeName: composeSuiType(
@@ -791,8 +813,8 @@ export class SwapResult implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SwapResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SwapResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwapResult.fromBcs(data),
-      bcs: SwapResult.bcs,
+      fromBcs: (data: Uint8Array) => SwapResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
@@ -816,7 +838,7 @@ export class SwapResult implements StructClass {
     return SwapResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SwapResult', {
       a2b: bcs.bool(),
       by_amount_in: bcs.bool(),
@@ -835,6 +857,15 @@ export class SwapResult implements StructClass {
       steps: bcs.u64(),
       step_results: bcs.vector(SwapStepResult.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SwapResult.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SwapResult.cachedBcs) {
+      SwapResult.cachedBcs = SwapResult.instantiateBcs()
+    }
+    return SwapResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SwapResult {
@@ -1048,6 +1079,7 @@ export class SwapStepResult implements StructClass {
   }
 
   static reified(): SwapStepResultReified {
+    const reifiedBcs = SwapStepResult.bcs
     return {
       typeName: SwapStepResult.$typeName,
       fullTypeName: composeSuiType(
@@ -1059,8 +1091,8 @@ export class SwapStepResult implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SwapStepResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SwapStepResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwapStepResult.fromBcs(data),
-      bcs: SwapStepResult.bcs,
+      fromBcs: (data: Uint8Array) => SwapStepResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapStepResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
@@ -1084,7 +1116,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SwapStepResult', {
       tick_index_next: I32.bcs,
       initialized: bcs.bool(),
@@ -1095,6 +1127,15 @@ export class SwapStepResult implements StructClass {
       fee_amount: bcs.u64(),
       remaining_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SwapStepResult.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SwapStepResult.cachedBcs) {
+      SwapStepResult.cachedBcs = SwapStepResult.instantiateBcs()
+    }
+    return SwapStepResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SwapStepResult {
@@ -1271,6 +1312,7 @@ export class FlashSwapReceipt<
     CoinTypeA: CoinTypeA,
     CoinTypeB: CoinTypeB
   ): FlashSwapReceiptReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    const reifiedBcs = FlashSwapReceipt.bcs
     return {
       typeName: FlashSwapReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -1287,8 +1329,9 @@ export class FlashSwapReceipt<
         FlashSwapReceipt.fromFields([CoinTypeA, CoinTypeB], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FlashSwapReceipt.fromFieldsWithTypes([CoinTypeA, CoinTypeB], item),
-      fromBcs: (data: Uint8Array) => FlashSwapReceipt.fromBcs([CoinTypeA, CoinTypeB], data),
-      bcs: FlashSwapReceipt.bcs,
+      fromBcs: (data: Uint8Array) =>
+        FlashSwapReceipt.fromFields([CoinTypeA, CoinTypeB], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FlashSwapReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) =>
         FlashSwapReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
@@ -1329,12 +1372,21 @@ export class FlashSwapReceipt<
     return FlashSwapReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FlashSwapReceipt', {
       pool_id: ID.bcs,
       a2b: bcs.bool(),
       pay_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FlashSwapReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FlashSwapReceipt.cachedBcs) {
+      FlashSwapReceipt.cachedBcs = FlashSwapReceipt.instantiateBcs()
+    }
+    return FlashSwapReceipt.cachedBcs
   }
 
   static fromFields<

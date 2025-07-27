@@ -65,6 +65,7 @@ export class Bridge implements StructClass {
   }
 
   static reified(): BridgeReified {
+    const reifiedBcs = Bridge.bcs
     return {
       typeName: Bridge.$typeName,
       fullTypeName: composeSuiType(Bridge.$typeName, ...[]) as `0xb::bridge::Bridge`,
@@ -73,8 +74,8 @@ export class Bridge implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Bridge.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Bridge.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Bridge.fromBcs(data),
-      bcs: Bridge.bcs,
+      fromBcs: (data: Uint8Array) => Bridge.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Bridge.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Bridge.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Bridge.fromSuiParsedData(content),
@@ -98,11 +99,20 @@ export class Bridge implements StructClass {
     return Bridge.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Bridge', {
       id: UID.bcs,
       inner: Versioned.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Bridge.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Bridge.cachedBcs) {
+      Bridge.cachedBcs = Bridge.instantiateBcs()
+    }
+    return Bridge.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Bridge {
@@ -254,6 +264,7 @@ export class BridgeInner implements StructClass {
   }
 
   static reified(): BridgeInnerReified {
+    const reifiedBcs = BridgeInner.bcs
     return {
       typeName: BridgeInner.$typeName,
       fullTypeName: composeSuiType(BridgeInner.$typeName, ...[]) as `0xb::bridge::BridgeInner`,
@@ -262,8 +273,8 @@ export class BridgeInner implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeInner.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeInner.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeInner.fromBcs(data),
-      bcs: BridgeInner.bcs,
+      fromBcs: (data: Uint8Array) => BridgeInner.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeInner.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeInner.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeInner.fromSuiParsedData(content),
@@ -287,7 +298,7 @@ export class BridgeInner implements StructClass {
     return BridgeInner.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeInner', {
       bridge_version: bcs.u64(),
       message_version: bcs.u8(),
@@ -299,6 +310,15 @@ export class BridgeInner implements StructClass {
       limiter: TransferLimiter.bcs,
       paused: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeInner.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeInner.cachedBcs) {
+      BridgeInner.cachedBcs = BridgeInner.instantiateBcs()
+    }
+    return BridgeInner.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeInner {
@@ -484,6 +504,7 @@ export class TokenDepositedEvent implements StructClass {
   }
 
   static reified(): TokenDepositedEventReified {
+    const reifiedBcs = TokenDepositedEvent.bcs
     return {
       typeName: TokenDepositedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -495,8 +516,8 @@ export class TokenDepositedEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TokenDepositedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TokenDepositedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenDepositedEvent.fromBcs(data),
-      bcs: TokenDepositedEvent.bcs,
+      fromBcs: (data: Uint8Array) => TokenDepositedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenDepositedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenDepositedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TokenDepositedEvent.fromSuiParsedData(content),
@@ -520,7 +541,7 @@ export class TokenDepositedEvent implements StructClass {
     return TokenDepositedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenDepositedEvent', {
       seq_num: bcs.u64(),
       source_chain: bcs.u8(),
@@ -530,6 +551,15 @@ export class TokenDepositedEvent implements StructClass {
       token_type: bcs.u8(),
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenDepositedEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenDepositedEvent.cachedBcs) {
+      TokenDepositedEvent.cachedBcs = TokenDepositedEvent.instantiateBcs()
+    }
+    return TokenDepositedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenDepositedEvent {
@@ -677,6 +707,7 @@ export class EmergencyOpEvent implements StructClass {
   }
 
   static reified(): EmergencyOpEventReified {
+    const reifiedBcs = EmergencyOpEvent.bcs
     return {
       typeName: EmergencyOpEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -688,8 +719,8 @@ export class EmergencyOpEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => EmergencyOpEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => EmergencyOpEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmergencyOpEvent.fromBcs(data),
-      bcs: EmergencyOpEvent.bcs,
+      fromBcs: (data: Uint8Array) => EmergencyOpEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmergencyOpEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmergencyOpEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmergencyOpEvent.fromSuiParsedData(content),
@@ -713,10 +744,19 @@ export class EmergencyOpEvent implements StructClass {
     return EmergencyOpEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmergencyOpEvent', {
       frozen: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmergencyOpEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmergencyOpEvent.cachedBcs) {
+      EmergencyOpEvent.cachedBcs = EmergencyOpEvent.instantiateBcs()
+    }
+    return EmergencyOpEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmergencyOpEvent {
@@ -842,6 +882,7 @@ export class BridgeRecord implements StructClass {
   }
 
   static reified(): BridgeRecordReified {
+    const reifiedBcs = BridgeRecord.bcs
     return {
       typeName: BridgeRecord.$typeName,
       fullTypeName: composeSuiType(BridgeRecord.$typeName, ...[]) as `0xb::bridge::BridgeRecord`,
@@ -850,8 +891,8 @@ export class BridgeRecord implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeRecord.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeRecord.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeRecord.fromBcs(data),
-      bcs: BridgeRecord.bcs,
+      fromBcs: (data: Uint8Array) => BridgeRecord.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeRecord.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeRecord.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeRecord.fromSuiParsedData(content),
@@ -875,12 +916,21 @@ export class BridgeRecord implements StructClass {
     return BridgeRecord.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeRecord', {
       message: BridgeMessage.bcs,
       verified_signatures: Option.bcs(bcs.vector(bcs.vector(bcs.u8()))),
       claimed: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeRecord.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeRecord.cachedBcs) {
+      BridgeRecord.cachedBcs = BridgeRecord.instantiateBcs()
+    }
+    return BridgeRecord.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeRecord {
@@ -1027,6 +1077,7 @@ export class TokenTransferApproved implements StructClass {
   }
 
   static reified(): TokenTransferApprovedReified {
+    const reifiedBcs = TokenTransferApproved.bcs
     return {
       typeName: TokenTransferApproved.$typeName,
       fullTypeName: composeSuiType(
@@ -1039,8 +1090,8 @@ export class TokenTransferApproved implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferApproved.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferApproved.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferApproved.fromBcs(data),
-      bcs: TokenTransferApproved.bcs,
+      fromBcs: (data: Uint8Array) => TokenTransferApproved.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferApproved.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferApproved.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1066,10 +1117,19 @@ export class TokenTransferApproved implements StructClass {
     return TokenTransferApproved.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferApproved', {
       message_key: BridgeMessageKey.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferApproved.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenTransferApproved.cachedBcs) {
+      TokenTransferApproved.cachedBcs = TokenTransferApproved.instantiateBcs()
+    }
+    return TokenTransferApproved.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferApproved {
@@ -1195,6 +1255,7 @@ export class TokenTransferClaimed implements StructClass {
   }
 
   static reified(): TokenTransferClaimedReified {
+    const reifiedBcs = TokenTransferClaimed.bcs
     return {
       typeName: TokenTransferClaimed.$typeName,
       fullTypeName: composeSuiType(
@@ -1207,8 +1268,8 @@ export class TokenTransferClaimed implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferClaimed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferClaimed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferClaimed.fromBcs(data),
-      bcs: TokenTransferClaimed.bcs,
+      fromBcs: (data: Uint8Array) => TokenTransferClaimed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferClaimed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferClaimed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1234,10 +1295,19 @@ export class TokenTransferClaimed implements StructClass {
     return TokenTransferClaimed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferClaimed', {
       message_key: BridgeMessageKey.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferClaimed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenTransferClaimed.cachedBcs) {
+      TokenTransferClaimed.cachedBcs = TokenTransferClaimed.instantiateBcs()
+    }
+    return TokenTransferClaimed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferClaimed {
@@ -1366,6 +1436,7 @@ export class TokenTransferAlreadyApproved implements StructClass {
   }
 
   static reified(): TokenTransferAlreadyApprovedReified {
+    const reifiedBcs = TokenTransferAlreadyApproved.bcs
     return {
       typeName: TokenTransferAlreadyApproved.$typeName,
       fullTypeName: composeSuiType(
@@ -1378,8 +1449,9 @@ export class TokenTransferAlreadyApproved implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferAlreadyApproved.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferAlreadyApproved.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferAlreadyApproved.fromBcs(data),
-      bcs: TokenTransferAlreadyApproved.bcs,
+      fromBcs: (data: Uint8Array) =>
+        TokenTransferAlreadyApproved.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferAlreadyApproved.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferAlreadyApproved.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1406,10 +1478,20 @@ export class TokenTransferAlreadyApproved implements StructClass {
     return TokenTransferAlreadyApproved.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferAlreadyApproved', {
       message_key: BridgeMessageKey.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferAlreadyApproved.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!TokenTransferAlreadyApproved.cachedBcs) {
+      TokenTransferAlreadyApproved.cachedBcs = TokenTransferAlreadyApproved.instantiateBcs()
+    }
+    return TokenTransferAlreadyApproved.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferAlreadyApproved {
@@ -1543,6 +1625,7 @@ export class TokenTransferAlreadyClaimed implements StructClass {
   }
 
   static reified(): TokenTransferAlreadyClaimedReified {
+    const reifiedBcs = TokenTransferAlreadyClaimed.bcs
     return {
       typeName: TokenTransferAlreadyClaimed.$typeName,
       fullTypeName: composeSuiType(
@@ -1555,8 +1638,8 @@ export class TokenTransferAlreadyClaimed implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferAlreadyClaimed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferAlreadyClaimed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferAlreadyClaimed.fromBcs(data),
-      bcs: TokenTransferAlreadyClaimed.bcs,
+      fromBcs: (data: Uint8Array) => TokenTransferAlreadyClaimed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferAlreadyClaimed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferAlreadyClaimed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1582,10 +1665,20 @@ export class TokenTransferAlreadyClaimed implements StructClass {
     return TokenTransferAlreadyClaimed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferAlreadyClaimed', {
       message_key: BridgeMessageKey.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferAlreadyClaimed.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!TokenTransferAlreadyClaimed.cachedBcs) {
+      TokenTransferAlreadyClaimed.cachedBcs = TokenTransferAlreadyClaimed.instantiateBcs()
+    }
+    return TokenTransferAlreadyClaimed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferAlreadyClaimed {
@@ -1719,6 +1812,7 @@ export class TokenTransferLimitExceed implements StructClass {
   }
 
   static reified(): TokenTransferLimitExceedReified {
+    const reifiedBcs = TokenTransferLimitExceed.bcs
     return {
       typeName: TokenTransferLimitExceed.$typeName,
       fullTypeName: composeSuiType(
@@ -1731,8 +1825,8 @@ export class TokenTransferLimitExceed implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferLimitExceed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferLimitExceed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferLimitExceed.fromBcs(data),
-      bcs: TokenTransferLimitExceed.bcs,
+      fromBcs: (data: Uint8Array) => TokenTransferLimitExceed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferLimitExceed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferLimitExceed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1758,10 +1852,19 @@ export class TokenTransferLimitExceed implements StructClass {
     return TokenTransferLimitExceed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferLimitExceed', {
       message_key: BridgeMessageKey.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferLimitExceed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenTransferLimitExceed.cachedBcs) {
+      TokenTransferLimitExceed.cachedBcs = TokenTransferLimitExceed.instantiateBcs()
+    }
+    return TokenTransferLimitExceed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferLimitExceed {

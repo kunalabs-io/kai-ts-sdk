@@ -101,6 +101,7 @@ export class Market implements StructClass {
   }
 
   static reified(): MarketReified {
+    const reifiedBcs = Market.bcs
     return {
       typeName: Market.$typeName,
       fullTypeName: composeSuiType(Market.$typeName, ...[]) as `${typeof PKG_V1}::market::Market`,
@@ -109,8 +110,8 @@ export class Market implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Market.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Market.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Market.fromBcs(data),
-      bcs: Market.bcs,
+      fromBcs: (data: Uint8Array) => Market.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Market.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Market.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Market.fromSuiParsedData(content),
@@ -134,7 +135,7 @@ export class Market implements StructClass {
     return Market.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Market', {
       id: UID.bcs,
       borrow_dynamics: WitTable.bcs(TypeName.bcs),
@@ -146,6 +147,15 @@ export class Market implements StructClass {
       asset_active_states: AssetActiveStates.bcs,
       vault: Reserve.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Market.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Market.cachedBcs) {
+      Market.cachedBcs = Market.instantiateBcs()
+    }
+    return Market.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Market {

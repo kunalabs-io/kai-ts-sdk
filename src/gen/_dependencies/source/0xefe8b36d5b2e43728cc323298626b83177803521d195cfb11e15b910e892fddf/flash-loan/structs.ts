@@ -60,6 +60,7 @@ export class BorrowFlashLoanEvent implements StructClass {
   }
 
   static reified(): BorrowFlashLoanEventReified {
+    const reifiedBcs = BorrowFlashLoanEvent.bcs
     return {
       typeName: BorrowFlashLoanEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -72,8 +73,8 @@ export class BorrowFlashLoanEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => BorrowFlashLoanEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BorrowFlashLoanEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowFlashLoanEvent.fromBcs(data),
-      bcs: BorrowFlashLoanEvent.bcs,
+      fromBcs: (data: Uint8Array) => BorrowFlashLoanEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFlashLoanEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFlashLoanEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -99,7 +100,7 @@ export class BorrowFlashLoanEvent implements StructClass {
     return BorrowFlashLoanEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowFlashLoanEvent', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -108,6 +109,15 @@ export class BorrowFlashLoanEvent implements StructClass {
       asset: TypeName.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowFlashLoanEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowFlashLoanEvent.cachedBcs) {
+      BorrowFlashLoanEvent.cachedBcs = BorrowFlashLoanEvent.instantiateBcs()
+    }
+    return BorrowFlashLoanEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowFlashLoanEvent {
@@ -247,6 +257,7 @@ export class RepayFlashLoanEvent implements StructClass {
   }
 
   static reified(): RepayFlashLoanEventReified {
+    const reifiedBcs = RepayFlashLoanEvent.bcs
     return {
       typeName: RepayFlashLoanEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -258,8 +269,8 @@ export class RepayFlashLoanEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RepayFlashLoanEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RepayFlashLoanEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RepayFlashLoanEvent.fromBcs(data),
-      bcs: RepayFlashLoanEvent.bcs,
+      fromBcs: (data: Uint8Array) => RepayFlashLoanEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayFlashLoanEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayFlashLoanEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RepayFlashLoanEvent.fromSuiParsedData(content),
@@ -283,7 +294,7 @@ export class RepayFlashLoanEvent implements StructClass {
     return RepayFlashLoanEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RepayFlashLoanEvent', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -292,6 +303,15 @@ export class RepayFlashLoanEvent implements StructClass {
       asset: TypeName.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RepayFlashLoanEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RepayFlashLoanEvent.cachedBcs) {
+      RepayFlashLoanEvent.cachedBcs = RepayFlashLoanEvent.instantiateBcs()
+    }
+    return RepayFlashLoanEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RepayFlashLoanEvent {
@@ -441,6 +461,7 @@ export class BorrowFlashLoanV2Event implements StructClass {
   }
 
   static reified(): BorrowFlashLoanV2EventReified {
+    const reifiedBcs = BorrowFlashLoanV2Event.bcs
     return {
       typeName: BorrowFlashLoanV2Event.$typeName,
       fullTypeName: composeSuiType(
@@ -453,8 +474,8 @@ export class BorrowFlashLoanV2Event implements StructClass {
       fromFields: (fields: Record<string, any>) => BorrowFlashLoanV2Event.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BorrowFlashLoanV2Event.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowFlashLoanV2Event.fromBcs(data),
-      bcs: BorrowFlashLoanV2Event.bcs,
+      fromBcs: (data: Uint8Array) => BorrowFlashLoanV2Event.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFlashLoanV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFlashLoanV2Event.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -480,7 +501,7 @@ export class BorrowFlashLoanV2Event implements StructClass {
     return BorrowFlashLoanV2Event.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowFlashLoanV2Event', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -492,6 +513,15 @@ export class BorrowFlashLoanV2Event implements StructClass {
       fee_discount_numerator: bcs.u64(),
       fee_discount_denominator: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowFlashLoanV2Event.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowFlashLoanV2Event.cachedBcs) {
+      BorrowFlashLoanV2Event.cachedBcs = BorrowFlashLoanV2Event.instantiateBcs()
+    }
+    return BorrowFlashLoanV2Event.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowFlashLoanV2Event {
@@ -652,6 +682,7 @@ export class RepayFlashLoanV2Event implements StructClass {
   }
 
   static reified(): RepayFlashLoanV2EventReified {
+    const reifiedBcs = RepayFlashLoanV2Event.bcs
     return {
       typeName: RepayFlashLoanV2Event.$typeName,
       fullTypeName: composeSuiType(
@@ -664,8 +695,8 @@ export class RepayFlashLoanV2Event implements StructClass {
       fromFields: (fields: Record<string, any>) => RepayFlashLoanV2Event.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RepayFlashLoanV2Event.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RepayFlashLoanV2Event.fromBcs(data),
-      bcs: RepayFlashLoanV2Event.bcs,
+      fromBcs: (data: Uint8Array) => RepayFlashLoanV2Event.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayFlashLoanV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayFlashLoanV2Event.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -691,7 +722,7 @@ export class RepayFlashLoanV2Event implements StructClass {
     return RepayFlashLoanV2Event.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RepayFlashLoanV2Event', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -701,6 +732,15 @@ export class RepayFlashLoanV2Event implements StructClass {
       amount: bcs.u64(),
       fee: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RepayFlashLoanV2Event.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RepayFlashLoanV2Event.cachedBcs) {
+      RepayFlashLoanV2Event.cachedBcs = RepayFlashLoanV2Event.instantiateBcs()
+    }
+    return RepayFlashLoanV2Event.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RepayFlashLoanV2Event {

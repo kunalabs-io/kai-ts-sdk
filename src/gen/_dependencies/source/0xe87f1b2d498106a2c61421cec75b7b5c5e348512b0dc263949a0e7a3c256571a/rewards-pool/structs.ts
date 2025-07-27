@@ -86,6 +86,7 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): RewardsPoolReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = RewardsPool.bcs
     return {
       typeName: RewardsPool.$typeName,
       fullTypeName: composeSuiType(
@@ -97,8 +98,8 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => RewardsPool.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewardsPool.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => RewardsPool.fromBcs(T0, data),
-      bcs: RewardsPool.bcs,
+      fromBcs: (data: Uint8Array) => RewardsPool.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardsPool.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => RewardsPool.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => RewardsPool.fromSuiParsedData(T0, content),
@@ -124,7 +125,7 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
     return RewardsPool.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardsPool', {
       id: UID.bcs,
       spool_id: ID.bcs,
@@ -133,6 +134,15 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
       rewards: Balance.bcs,
       claimed_rewards: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardsPool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewardsPool.cachedBcs) {
+      RewardsPool.cachedBcs = RewardsPool.instantiateBcs()
+    }
+    return RewardsPool.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -324,6 +334,7 @@ export class RewardsPoolFeeKey implements StructClass {
   }
 
   static reified(): RewardsPoolFeeKeyReified {
+    const reifiedBcs = RewardsPoolFeeKey.bcs
     return {
       typeName: RewardsPoolFeeKey.$typeName,
       fullTypeName: composeSuiType(
@@ -335,8 +346,8 @@ export class RewardsPoolFeeKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RewardsPoolFeeKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewardsPoolFeeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardsPoolFeeKey.fromBcs(data),
-      bcs: RewardsPoolFeeKey.bcs,
+      fromBcs: (data: Uint8Array) => RewardsPoolFeeKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardsPoolFeeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardsPoolFeeKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewardsPoolFeeKey.fromSuiParsedData(content),
@@ -360,10 +371,19 @@ export class RewardsPoolFeeKey implements StructClass {
     return RewardsPoolFeeKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardsPoolFeeKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardsPoolFeeKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewardsPoolFeeKey.cachedBcs) {
+      RewardsPoolFeeKey.cachedBcs = RewardsPoolFeeKey.instantiateBcs()
+    }
+    return RewardsPoolFeeKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewardsPoolFeeKey {
@@ -493,6 +513,7 @@ export class RewardsPoolFee implements StructClass {
   }
 
   static reified(): RewardsPoolFeeReified {
+    const reifiedBcs = RewardsPoolFee.bcs
     return {
       typeName: RewardsPoolFee.$typeName,
       fullTypeName: composeSuiType(
@@ -504,8 +525,8 @@ export class RewardsPoolFee implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RewardsPoolFee.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewardsPoolFee.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardsPoolFee.fromBcs(data),
-      bcs: RewardsPoolFee.bcs,
+      fromBcs: (data: Uint8Array) => RewardsPoolFee.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardsPoolFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardsPoolFee.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewardsPoolFee.fromSuiParsedData(content),
@@ -529,7 +550,7 @@ export class RewardsPoolFee implements StructClass {
     return RewardsPoolFee.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardsPoolFee', {
       fee_rate_numerator: bcs.u64(),
       fee_rate_denominator: bcs.u64(),
@@ -538,6 +559,15 @@ export class RewardsPoolFee implements StructClass {
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardsPoolFee.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewardsPoolFee.cachedBcs) {
+      RewardsPoolFee.cachedBcs = RewardsPoolFee.instantiateBcs()
+    }
+    return RewardsPoolFee.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewardsPoolFee {
@@ -672,6 +702,7 @@ export class RewardsPoolRewardsBalanceKey implements StructClass {
   }
 
   static reified(): RewardsPoolRewardsBalanceKeyReified {
+    const reifiedBcs = RewardsPoolRewardsBalanceKey.bcs
     return {
       typeName: RewardsPoolRewardsBalanceKey.$typeName,
       fullTypeName: composeSuiType(
@@ -684,8 +715,9 @@ export class RewardsPoolRewardsBalanceKey implements StructClass {
       fromFields: (fields: Record<string, any>) => RewardsPoolRewardsBalanceKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RewardsPoolRewardsBalanceKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardsPoolRewardsBalanceKey.fromBcs(data),
-      bcs: RewardsPoolRewardsBalanceKey.bcs,
+      fromBcs: (data: Uint8Array) =>
+        RewardsPoolRewardsBalanceKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardsPoolRewardsBalanceKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardsPoolRewardsBalanceKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -712,10 +744,20 @@ export class RewardsPoolRewardsBalanceKey implements StructClass {
     return RewardsPoolRewardsBalanceKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardsPoolRewardsBalanceKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardsPoolRewardsBalanceKey.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!RewardsPoolRewardsBalanceKey.cachedBcs) {
+      RewardsPoolRewardsBalanceKey.cachedBcs = RewardsPoolRewardsBalanceKey.instantiateBcs()
+    }
+    return RewardsPoolRewardsBalanceKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewardsPoolRewardsBalanceKey {

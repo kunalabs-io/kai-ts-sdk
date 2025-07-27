@@ -69,6 +69,7 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): WitnessGeneratorReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = WitnessGenerator.bcs
     return {
       typeName: WitnessGenerator.$typeName,
       fullTypeName: composeSuiType(
@@ -81,8 +82,8 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
       fromFields: (fields: Record<string, any>) => WitnessGenerator.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WitnessGenerator.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => WitnessGenerator.fromBcs(T0, data),
-      bcs: WitnessGenerator.bcs,
+      fromBcs: (data: Uint8Array) => WitnessGenerator.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WitnessGenerator.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => WitnessGenerator.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -110,10 +111,19 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     return WitnessGenerator.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WitnessGenerator', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WitnessGenerator.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WitnessGenerator.cachedBcs) {
+      WitnessGenerator.cachedBcs = WitnessGenerator.instantiateBcs()
+    }
+    return WitnessGenerator.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -284,6 +294,7 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): WitnessReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = Witness.bcs
     return {
       typeName: Witness.$typeName,
       fullTypeName: composeSuiType(
@@ -295,8 +306,8 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => Witness.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Witness.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Witness.fromBcs(T0, data),
-      bcs: Witness.bcs,
+      fromBcs: (data: Uint8Array) => Witness.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Witness.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => Witness.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => Witness.fromSuiParsedData(T0, content),
@@ -322,10 +333,19 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     return Witness.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Witness', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Witness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Witness.cachedBcs) {
+      Witness.cachedBcs = Witness.instantiateBcs()
+    }
+    return Witness.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

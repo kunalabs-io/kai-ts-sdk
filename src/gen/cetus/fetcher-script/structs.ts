@@ -64,6 +64,7 @@ export class FetchTicksResultEvent implements StructClass {
   }
 
   static reified(): FetchTicksResultEventReified {
+    const reifiedBcs = FetchTicksResultEvent.bcs
     return {
       typeName: FetchTicksResultEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -76,8 +77,8 @@ export class FetchTicksResultEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => FetchTicksResultEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FetchTicksResultEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchTicksResultEvent.fromBcs(data),
-      bcs: FetchTicksResultEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchTicksResultEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchTicksResultEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchTicksResultEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -103,10 +104,19 @@ export class FetchTicksResultEvent implements StructClass {
     return FetchTicksResultEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchTicksResultEvent', {
       ticks: bcs.vector(Tick.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchTicksResultEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FetchTicksResultEvent.cachedBcs) {
+      FetchTicksResultEvent.cachedBcs = FetchTicksResultEvent.instantiateBcs()
+    }
+    return FetchTicksResultEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchTicksResultEvent {
@@ -235,6 +245,7 @@ export class CalculatedSwapResultEvent implements StructClass {
   }
 
   static reified(): CalculatedSwapResultEventReified {
+    const reifiedBcs = CalculatedSwapResultEvent.bcs
     return {
       typeName: CalculatedSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -247,8 +258,8 @@ export class CalculatedSwapResultEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CalculatedSwapResultEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CalculatedSwapResultEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CalculatedSwapResultEvent.fromBcs(data),
-      bcs: CalculatedSwapResultEvent.bcs,
+      fromBcs: (data: Uint8Array) => CalculatedSwapResultEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CalculatedSwapResultEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CalculatedSwapResultEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -274,10 +285,20 @@ export class CalculatedSwapResultEvent implements StructClass {
     return CalculatedSwapResultEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CalculatedSwapResultEvent', {
       data: CalculatedSwapResult.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CalculatedSwapResultEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!CalculatedSwapResultEvent.cachedBcs) {
+      CalculatedSwapResultEvent.cachedBcs = CalculatedSwapResultEvent.instantiateBcs()
+    }
+    return CalculatedSwapResultEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CalculatedSwapResultEvent {
@@ -408,6 +429,7 @@ export class FetchPositionsEvent implements StructClass {
   }
 
   static reified(): FetchPositionsEventReified {
+    const reifiedBcs = FetchPositionsEvent.bcs
     return {
       typeName: FetchPositionsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -419,8 +441,8 @@ export class FetchPositionsEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FetchPositionsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FetchPositionsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionsEvent.fromBcs(data),
-      bcs: FetchPositionsEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchPositionsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchPositionsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchPositionsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FetchPositionsEvent.fromSuiParsedData(content),
@@ -444,10 +466,19 @@ export class FetchPositionsEvent implements StructClass {
     return FetchPositionsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchPositionsEvent', {
       positions: bcs.vector(PositionInfo.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchPositionsEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FetchPositionsEvent.cachedBcs) {
+      FetchPositionsEvent.cachedBcs = FetchPositionsEvent.instantiateBcs()
+    }
+    return FetchPositionsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchPositionsEvent {
@@ -577,6 +608,7 @@ export class FetchPoolsEvent implements StructClass {
   }
 
   static reified(): FetchPoolsEventReified {
+    const reifiedBcs = FetchPoolsEvent.bcs
     return {
       typeName: FetchPoolsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -588,8 +620,8 @@ export class FetchPoolsEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FetchPoolsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FetchPoolsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPoolsEvent.fromBcs(data),
-      bcs: FetchPoolsEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchPoolsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchPoolsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchPoolsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FetchPoolsEvent.fromSuiParsedData(content),
@@ -613,10 +645,19 @@ export class FetchPoolsEvent implements StructClass {
     return FetchPoolsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchPoolsEvent', {
       pools: bcs.vector(PoolSimpleInfo.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchPoolsEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FetchPoolsEvent.cachedBcs) {
+      FetchPoolsEvent.cachedBcs = FetchPoolsEvent.instantiateBcs()
+    }
+    return FetchPoolsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchPoolsEvent {
@@ -746,6 +787,7 @@ export class FetchPositionRewardsEvent implements StructClass {
   }
 
   static reified(): FetchPositionRewardsEventReified {
+    const reifiedBcs = FetchPositionRewardsEvent.bcs
     return {
       typeName: FetchPositionRewardsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -758,8 +800,8 @@ export class FetchPositionRewardsEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => FetchPositionRewardsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FetchPositionRewardsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionRewardsEvent.fromBcs(data),
-      bcs: FetchPositionRewardsEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchPositionRewardsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchPositionRewardsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchPositionRewardsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -785,11 +827,21 @@ export class FetchPositionRewardsEvent implements StructClass {
     return FetchPositionRewardsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchPositionRewardsEvent', {
       data: bcs.vector(bcs.u64()),
       position_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchPositionRewardsEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!FetchPositionRewardsEvent.cachedBcs) {
+      FetchPositionRewardsEvent.cachedBcs = FetchPositionRewardsEvent.instantiateBcs()
+    }
+    return FetchPositionRewardsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchPositionRewardsEvent {
@@ -933,6 +985,7 @@ export class FetchPositionFeesEvent implements StructClass {
   }
 
   static reified(): FetchPositionFeesEventReified {
+    const reifiedBcs = FetchPositionFeesEvent.bcs
     return {
       typeName: FetchPositionFeesEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -945,8 +998,8 @@ export class FetchPositionFeesEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => FetchPositionFeesEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FetchPositionFeesEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionFeesEvent.fromBcs(data),
-      bcs: FetchPositionFeesEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchPositionFeesEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchPositionFeesEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchPositionFeesEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -972,12 +1025,21 @@ export class FetchPositionFeesEvent implements StructClass {
     return FetchPositionFeesEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchPositionFeesEvent', {
       position_id: ID.bcs,
       fee_owned_a: bcs.u64(),
       fee_owned_b: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchPositionFeesEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FetchPositionFeesEvent.cachedBcs) {
+      FetchPositionFeesEvent.cachedBcs = FetchPositionFeesEvent.instantiateBcs()
+    }
+    return FetchPositionFeesEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchPositionFeesEvent {
@@ -1117,6 +1179,7 @@ export class FetchPositionPointsEvent implements StructClass {
   }
 
   static reified(): FetchPositionPointsEventReified {
+    const reifiedBcs = FetchPositionPointsEvent.bcs
     return {
       typeName: FetchPositionPointsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1129,8 +1192,8 @@ export class FetchPositionPointsEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => FetchPositionPointsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FetchPositionPointsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FetchPositionPointsEvent.fromBcs(data),
-      bcs: FetchPositionPointsEvent.bcs,
+      fromBcs: (data: Uint8Array) => FetchPositionPointsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FetchPositionPointsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FetchPositionPointsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1156,11 +1219,20 @@ export class FetchPositionPointsEvent implements StructClass {
     return FetchPositionPointsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FetchPositionPointsEvent', {
       position_id: ID.bcs,
       points_owned: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FetchPositionPointsEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FetchPositionPointsEvent.cachedBcs) {
+      FetchPositionPointsEvent.cachedBcs = FetchPositionPointsEvent.instantiateBcs()
+    }
+    return FetchPositionPointsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FetchPositionPointsEvent {

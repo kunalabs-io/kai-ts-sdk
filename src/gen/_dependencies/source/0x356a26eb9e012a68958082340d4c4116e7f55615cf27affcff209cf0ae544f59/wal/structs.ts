@@ -51,6 +51,7 @@ export class WAL implements StructClass {
   }
 
   static reified(): WALReified {
+    const reifiedBcs = WAL.bcs
     return {
       typeName: WAL.$typeName,
       fullTypeName: composeSuiType(WAL.$typeName, ...[]) as `${typeof PKG_V1}::wal::WAL`,
@@ -59,8 +60,8 @@ export class WAL implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WAL.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WAL.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WAL.fromBcs(data),
-      bcs: WAL.bcs,
+      fromBcs: (data: Uint8Array) => WAL.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WAL.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WAL.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WAL.fromSuiParsedData(content),
@@ -84,10 +85,19 @@ export class WAL implements StructClass {
     return WAL.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WAL', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WAL.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WAL.cachedBcs) {
+      WAL.cachedBcs = WAL.instantiateBcs()
+    }
+    return WAL.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WAL {
@@ -207,6 +217,7 @@ export class ProtectedTreasury implements StructClass {
   }
 
   static reified(): ProtectedTreasuryReified {
+    const reifiedBcs = ProtectedTreasury.bcs
     return {
       typeName: ProtectedTreasury.$typeName,
       fullTypeName: composeSuiType(
@@ -218,8 +229,8 @@ export class ProtectedTreasury implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ProtectedTreasury.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ProtectedTreasury.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ProtectedTreasury.fromBcs(data),
-      bcs: ProtectedTreasury.bcs,
+      fromBcs: (data: Uint8Array) => ProtectedTreasury.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ProtectedTreasury.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ProtectedTreasury.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ProtectedTreasury.fromSuiParsedData(content),
@@ -243,10 +254,19 @@ export class ProtectedTreasury implements StructClass {
     return ProtectedTreasury.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ProtectedTreasury', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ProtectedTreasury.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ProtectedTreasury.cachedBcs) {
+      ProtectedTreasury.cachedBcs = ProtectedTreasury.instantiateBcs()
+    }
+    return ProtectedTreasury.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ProtectedTreasury {
@@ -366,6 +386,7 @@ export class TreasuryCapKey implements StructClass {
   }
 
   static reified(): TreasuryCapKeyReified {
+    const reifiedBcs = TreasuryCapKey.bcs
     return {
       typeName: TreasuryCapKey.$typeName,
       fullTypeName: composeSuiType(
@@ -377,8 +398,8 @@ export class TreasuryCapKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TreasuryCapKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TreasuryCapKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TreasuryCapKey.fromBcs(data),
-      bcs: TreasuryCapKey.bcs,
+      fromBcs: (data: Uint8Array) => TreasuryCapKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TreasuryCapKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TreasuryCapKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TreasuryCapKey.fromSuiParsedData(content),
@@ -402,10 +423,19 @@ export class TreasuryCapKey implements StructClass {
     return TreasuryCapKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TreasuryCapKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TreasuryCapKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TreasuryCapKey.cachedBcs) {
+      TreasuryCapKey.cachedBcs = TreasuryCapKey.instantiateBcs()
+    }
+    return TreasuryCapKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TreasuryCapKey {

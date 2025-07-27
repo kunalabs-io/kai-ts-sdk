@@ -85,6 +85,7 @@ export class Spool implements StructClass {
   }
 
   static reified(): SpoolReified {
+    const reifiedBcs = Spool.bcs
     return {
       typeName: Spool.$typeName,
       fullTypeName: composeSuiType(Spool.$typeName, ...[]) as `${typeof PKG_V1}::spool::Spool`,
@@ -93,8 +94,8 @@ export class Spool implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Spool.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Spool.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Spool.fromBcs(data),
-      bcs: Spool.bcs,
+      fromBcs: (data: Uint8Array) => Spool.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Spool.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Spool.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Spool.fromSuiParsedData(content),
@@ -118,7 +119,7 @@ export class Spool implements StructClass {
     return Spool.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Spool', {
       id: UID.bcs,
       stake_type: TypeName.bcs,
@@ -132,6 +133,15 @@ export class Spool implements StructClass {
       last_update: bcs.u64(),
       created_at: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Spool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Spool.cachedBcs) {
+      Spool.cachedBcs = Spool.instantiateBcs()
+    }
+    return Spool.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Spool {

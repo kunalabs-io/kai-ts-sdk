@@ -53,6 +53,7 @@ export class GovernanceAction implements StructClass {
   }
 
   static reified(): GovernanceActionReified {
+    const reifiedBcs = GovernanceAction.bcs
     return {
       typeName: GovernanceAction.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class GovernanceAction implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GovernanceAction.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GovernanceAction.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceAction.fromBcs(data),
-      bcs: GovernanceAction.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceAction.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceAction.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceAction.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceAction.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class GovernanceAction implements StructClass {
     return GovernanceAction.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceAction', {
       value: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceAction.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceAction.cachedBcs) {
+      GovernanceAction.cachedBcs = GovernanceAction.instantiateBcs()
+    }
+    return GovernanceAction.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceAction {

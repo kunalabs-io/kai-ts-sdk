@@ -54,6 +54,7 @@ export class ExternalAddress implements StructClass {
   }
 
   static reified(): ExternalAddressReified {
+    const reifiedBcs = ExternalAddress.bcs
     return {
       typeName: ExternalAddress.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class ExternalAddress implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ExternalAddress.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ExternalAddress.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ExternalAddress.fromBcs(data),
-      bcs: ExternalAddress.bcs,
+      fromBcs: (data: Uint8Array) => ExternalAddress.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ExternalAddress.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExternalAddress.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ExternalAddress.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class ExternalAddress implements StructClass {
     return ExternalAddress.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ExternalAddress', {
       value: Bytes32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ExternalAddress.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ExternalAddress.cachedBcs) {
+      ExternalAddress.cachedBcs = ExternalAddress.instantiateBcs()
+    }
+    return ExternalAddress.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ExternalAddress {

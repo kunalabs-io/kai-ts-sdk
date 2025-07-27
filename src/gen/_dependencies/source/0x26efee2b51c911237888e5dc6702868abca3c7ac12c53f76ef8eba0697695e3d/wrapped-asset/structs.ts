@@ -82,6 +82,7 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): ForeignInfoReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = ForeignInfo.bcs
     return {
       typeName: ForeignInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -93,8 +94,8 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => ForeignInfo.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ForeignInfo.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => ForeignInfo.fromBcs(T0, data),
-      bcs: ForeignInfo.bcs,
+      fromBcs: (data: Uint8Array) => ForeignInfo.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ForeignInfo.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => ForeignInfo.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => ForeignInfo.fromSuiParsedData(T0, content),
@@ -120,13 +121,22 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     return ForeignInfo.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ForeignInfo', {
       token_chain: bcs.u16(),
       token_address: ExternalAddress.bcs,
       native_decimals: bcs.u8(),
       symbol: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ForeignInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ForeignInfo.cachedBcs) {
+      ForeignInfo.cachedBcs = ForeignInfo.instantiateBcs()
+    }
+    return ForeignInfo.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -321,6 +331,7 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): WrappedAssetReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = WrappedAsset.bcs
     return {
       typeName: WrappedAsset.$typeName,
       fullTypeName: composeSuiType(
@@ -332,8 +343,8 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => WrappedAsset.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WrappedAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => WrappedAsset.fromBcs(T0, data),
-      bcs: WrappedAsset.bcs,
+      fromBcs: (data: Uint8Array) => WrappedAsset.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedAsset.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => WrappedAsset.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => WrappedAsset.fromSuiParsedData(T0, content),
@@ -359,13 +370,22 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     return WrappedAsset.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WrappedAsset', {
       info: ForeignInfo.bcs,
       treasury_cap: TreasuryCap.bcs,
       decimals: bcs.u8(),
       upgrade_cap: UpgradeCap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WrappedAsset.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WrappedAsset.cachedBcs) {
+      WrappedAsset.cachedBcs = WrappedAsset.instantiateBcs()
+    }
+    return WrappedAsset.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

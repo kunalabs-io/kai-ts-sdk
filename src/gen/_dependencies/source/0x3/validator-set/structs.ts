@@ -88,6 +88,7 @@ export class ValidatorSet implements StructClass {
   }
 
   static reified(): ValidatorSetReified {
+    const reifiedBcs = ValidatorSet.bcs
     return {
       typeName: ValidatorSet.$typeName,
       fullTypeName: composeSuiType(
@@ -99,8 +100,8 @@ export class ValidatorSet implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ValidatorSet.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ValidatorSet.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorSet.fromBcs(data),
-      bcs: ValidatorSet.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorSet.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorSet.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorSet.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatorSet.fromSuiParsedData(content),
@@ -124,7 +125,7 @@ export class ValidatorSet implements StructClass {
     return ValidatorSet.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorSet', {
       total_stake: bcs.u64(),
       active_validators: bcs.vector(Validator.bcs),
@@ -142,6 +143,15 @@ export class ValidatorSet implements StructClass {
       ),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorSet.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorSet.cachedBcs) {
+      ValidatorSet.cachedBcs = ValidatorSet.instantiateBcs()
+    }
+    return ValidatorSet.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorSet {
@@ -387,6 +397,7 @@ export class ValidatorEpochInfoEvent implements StructClass {
   }
 
   static reified(): ValidatorEpochInfoEventReified {
+    const reifiedBcs = ValidatorEpochInfoEvent.bcs
     return {
       typeName: ValidatorEpochInfoEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -399,8 +410,8 @@ export class ValidatorEpochInfoEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => ValidatorEpochInfoEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ValidatorEpochInfoEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorEpochInfoEvent.fromBcs(data),
-      bcs: ValidatorEpochInfoEvent.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorEpochInfoEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorEpochInfoEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorEpochInfoEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -426,7 +437,7 @@ export class ValidatorEpochInfoEvent implements StructClass {
     return ValidatorEpochInfoEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorEpochInfoEvent', {
       epoch: bcs.u64(),
       validator_address: bcs.bytes(32).transform({
@@ -447,6 +458,15 @@ export class ValidatorEpochInfoEvent implements StructClass {
       ),
       tallying_rule_global_score: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorEpochInfoEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorEpochInfoEvent.cachedBcs) {
+      ValidatorEpochInfoEvent.cachedBcs = ValidatorEpochInfoEvent.instantiateBcs()
+    }
+    return ValidatorEpochInfoEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorEpochInfoEvent {
@@ -673,6 +693,7 @@ export class ValidatorEpochInfoEventV2 implements StructClass {
   }
 
   static reified(): ValidatorEpochInfoEventV2Reified {
+    const reifiedBcs = ValidatorEpochInfoEventV2.bcs
     return {
       typeName: ValidatorEpochInfoEventV2.$typeName,
       fullTypeName: composeSuiType(
@@ -685,8 +706,8 @@ export class ValidatorEpochInfoEventV2 implements StructClass {
       fromFields: (fields: Record<string, any>) => ValidatorEpochInfoEventV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ValidatorEpochInfoEventV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorEpochInfoEventV2.fromBcs(data),
-      bcs: ValidatorEpochInfoEventV2.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorEpochInfoEventV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorEpochInfoEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorEpochInfoEventV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -712,7 +733,7 @@ export class ValidatorEpochInfoEventV2 implements StructClass {
     return ValidatorEpochInfoEventV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorEpochInfoEventV2', {
       epoch: bcs.u64(),
       validator_address: bcs.bytes(32).transform({
@@ -734,6 +755,16 @@ export class ValidatorEpochInfoEventV2 implements StructClass {
       ),
       tallying_rule_global_score: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorEpochInfoEventV2.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!ValidatorEpochInfoEventV2.cachedBcs) {
+      ValidatorEpochInfoEventV2.cachedBcs = ValidatorEpochInfoEventV2.instantiateBcs()
+    }
+    return ValidatorEpochInfoEventV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorEpochInfoEventV2 {
@@ -940,6 +971,7 @@ export class ValidatorJoinEvent implements StructClass {
   }
 
   static reified(): ValidatorJoinEventReified {
+    const reifiedBcs = ValidatorJoinEvent.bcs
     return {
       typeName: ValidatorJoinEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -951,8 +983,8 @@ export class ValidatorJoinEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ValidatorJoinEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ValidatorJoinEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorJoinEvent.fromBcs(data),
-      bcs: ValidatorJoinEvent.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorJoinEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorJoinEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorJoinEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatorJoinEvent.fromSuiParsedData(content),
@@ -976,7 +1008,7 @@ export class ValidatorJoinEvent implements StructClass {
     return ValidatorJoinEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorJoinEvent', {
       epoch: bcs.u64(),
       validator_address: bcs.bytes(32).transform({
@@ -985,6 +1017,15 @@ export class ValidatorJoinEvent implements StructClass {
       }),
       staking_pool_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorJoinEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorJoinEvent.cachedBcs) {
+      ValidatorJoinEvent.cachedBcs = ValidatorJoinEvent.instantiateBcs()
+    }
+    return ValidatorJoinEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorJoinEvent {
@@ -1125,6 +1166,7 @@ export class ValidatorLeaveEvent implements StructClass {
   }
 
   static reified(): ValidatorLeaveEventReified {
+    const reifiedBcs = ValidatorLeaveEvent.bcs
     return {
       typeName: ValidatorLeaveEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1136,8 +1178,8 @@ export class ValidatorLeaveEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ValidatorLeaveEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ValidatorLeaveEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorLeaveEvent.fromBcs(data),
-      bcs: ValidatorLeaveEvent.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorLeaveEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorLeaveEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorLeaveEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatorLeaveEvent.fromSuiParsedData(content),
@@ -1161,7 +1203,7 @@ export class ValidatorLeaveEvent implements StructClass {
     return ValidatorLeaveEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorLeaveEvent', {
       epoch: bcs.u64(),
       validator_address: bcs.bytes(32).transform({
@@ -1171,6 +1213,15 @@ export class ValidatorLeaveEvent implements StructClass {
       staking_pool_id: ID.bcs,
       is_voluntary: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorLeaveEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorLeaveEvent.cachedBcs) {
+      ValidatorLeaveEvent.cachedBcs = ValidatorLeaveEvent.instantiateBcs()
+    }
+    return ValidatorLeaveEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorLeaveEvent {
@@ -1309,6 +1360,7 @@ export class VotingPowerAdmissionStartEpochKey implements StructClass {
   }
 
   static reified(): VotingPowerAdmissionStartEpochKeyReified {
+    const reifiedBcs = VotingPowerAdmissionStartEpochKey.bcs
     return {
       typeName: VotingPowerAdmissionStartEpochKey.$typeName,
       fullTypeName: composeSuiType(
@@ -1322,8 +1374,9 @@ export class VotingPowerAdmissionStartEpochKey implements StructClass {
         VotingPowerAdmissionStartEpochKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         VotingPowerAdmissionStartEpochKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VotingPowerAdmissionStartEpochKey.fromBcs(data),
-      bcs: VotingPowerAdmissionStartEpochKey.bcs,
+      fromBcs: (data: Uint8Array) =>
+        VotingPowerAdmissionStartEpochKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VotingPowerAdmissionStartEpochKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VotingPowerAdmissionStartEpochKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1350,10 +1403,22 @@ export class VotingPowerAdmissionStartEpochKey implements StructClass {
     return VotingPowerAdmissionStartEpochKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VotingPowerAdmissionStartEpochKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof VotingPowerAdmissionStartEpochKey.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!VotingPowerAdmissionStartEpochKey.cachedBcs) {
+      VotingPowerAdmissionStartEpochKey.cachedBcs =
+        VotingPowerAdmissionStartEpochKey.instantiateBcs()
+    }
+    return VotingPowerAdmissionStartEpochKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): VotingPowerAdmissionStartEpochKey {

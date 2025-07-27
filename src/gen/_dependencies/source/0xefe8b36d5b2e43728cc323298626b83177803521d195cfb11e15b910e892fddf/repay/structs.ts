@@ -67,6 +67,7 @@ export class RepayEvent implements StructClass {
   }
 
   static reified(): RepayEventReified {
+    const reifiedBcs = RepayEvent.bcs
     return {
       typeName: RepayEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -78,8 +79,8 @@ export class RepayEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RepayEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RepayEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RepayEvent.fromBcs(data),
-      bcs: RepayEvent.bcs,
+      fromBcs: (data: Uint8Array) => RepayEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RepayEvent.fromSuiParsedData(content),
@@ -103,7 +104,7 @@ export class RepayEvent implements StructClass {
     return RepayEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RepayEvent', {
       repayer: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -114,6 +115,15 @@ export class RepayEvent implements StructClass {
       amount: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RepayEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RepayEvent.cachedBcs) {
+      RepayEvent.cachedBcs = RepayEvent.instantiateBcs()
+    }
+    return RepayEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RepayEvent {

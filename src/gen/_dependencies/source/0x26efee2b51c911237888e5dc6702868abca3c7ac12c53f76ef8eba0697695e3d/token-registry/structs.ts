@@ -81,6 +81,7 @@ export class TokenRegistry implements StructClass {
   }
 
   static reified(): TokenRegistryReified {
+    const reifiedBcs = TokenRegistry.bcs
     return {
       typeName: TokenRegistry.$typeName,
       fullTypeName: composeSuiType(
@@ -92,8 +93,8 @@ export class TokenRegistry implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TokenRegistry.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TokenRegistry.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenRegistry.fromBcs(data),
-      bcs: TokenRegistry.bcs,
+      fromBcs: (data: Uint8Array) => TokenRegistry.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenRegistry.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenRegistry.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TokenRegistry.fromSuiParsedData(content),
@@ -117,13 +118,22 @@ export class TokenRegistry implements StructClass {
     return TokenRegistry.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenRegistry', {
       id: UID.bcs,
       num_wrapped: bcs.u64(),
       num_native: bcs.u64(),
       coin_types: Table.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenRegistry.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenRegistry.cachedBcs) {
+      TokenRegistry.cachedBcs = TokenRegistry.instantiateBcs()
+    }
+    return TokenRegistry.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenRegistry {
@@ -282,6 +292,7 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): VerifiedAssetReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = VerifiedAsset.bcs
     return {
       typeName: VerifiedAsset.$typeName,
       fullTypeName: composeSuiType(
@@ -293,8 +304,8 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => VerifiedAsset.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => VerifiedAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => VerifiedAsset.fromBcs(T0, data),
-      bcs: VerifiedAsset.bcs,
+      fromBcs: (data: Uint8Array) => VerifiedAsset.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VerifiedAsset.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => VerifiedAsset.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => VerifiedAsset.fromSuiParsedData(T0, content),
@@ -320,13 +331,22 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     return VerifiedAsset.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VerifiedAsset', {
       is_wrapped: bcs.bool(),
       chain: bcs.u16(),
       addr: ExternalAddress.bcs,
       coin_decimals: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof VerifiedAsset.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!VerifiedAsset.cachedBcs) {
+      VerifiedAsset.cachedBcs = VerifiedAsset.instantiateBcs()
+    }
+    return VerifiedAsset.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -509,6 +529,7 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): KeyReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = Key.bcs
     return {
       typeName: Key.$typeName,
       fullTypeName: composeSuiType(
@@ -520,8 +541,8 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => Key.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Key.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Key.fromBcs(T0, data),
-      bcs: Key.bcs,
+      fromBcs: (data: Uint8Array) => Key.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Key.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => Key.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(T0, content),
@@ -547,10 +568,19 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     return Key.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Key', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Key.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Key.cachedBcs) {
+      Key.cachedBcs = Key.instantiateBcs()
+    }
+    return Key.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -718,6 +748,7 @@ export class CoinTypeKey implements StructClass {
   }
 
   static reified(): CoinTypeKeyReified {
+    const reifiedBcs = CoinTypeKey.bcs
     return {
       typeName: CoinTypeKey.$typeName,
       fullTypeName: composeSuiType(
@@ -729,8 +760,8 @@ export class CoinTypeKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CoinTypeKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CoinTypeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CoinTypeKey.fromBcs(data),
-      bcs: CoinTypeKey.bcs,
+      fromBcs: (data: Uint8Array) => CoinTypeKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinTypeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinTypeKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CoinTypeKey.fromSuiParsedData(content),
@@ -754,11 +785,20 @@ export class CoinTypeKey implements StructClass {
     return CoinTypeKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CoinTypeKey', {
       chain: bcs.u16(),
       addr: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CoinTypeKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CoinTypeKey.cachedBcs) {
+      CoinTypeKey.cachedBcs = CoinTypeKey.instantiateBcs()
+    }
+    return CoinTypeKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CoinTypeKey {

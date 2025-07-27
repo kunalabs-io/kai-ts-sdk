@@ -68,6 +68,7 @@ export class BridgeMessage implements StructClass {
   }
 
   static reified(): BridgeMessageReified {
+    const reifiedBcs = BridgeMessage.bcs
     return {
       typeName: BridgeMessage.$typeName,
       fullTypeName: composeSuiType(BridgeMessage.$typeName, ...[]) as `0xb::message::BridgeMessage`,
@@ -76,8 +77,8 @@ export class BridgeMessage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeMessage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeMessage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeMessage.fromBcs(data),
-      bcs: BridgeMessage.bcs,
+      fromBcs: (data: Uint8Array) => BridgeMessage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeMessage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeMessage.fromSuiParsedData(content),
@@ -101,7 +102,7 @@ export class BridgeMessage implements StructClass {
     return BridgeMessage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeMessage', {
       message_type: bcs.u8(),
       message_version: bcs.u8(),
@@ -109,6 +110,15 @@ export class BridgeMessage implements StructClass {
       source_chain: bcs.u8(),
       payload: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeMessage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeMessage.cachedBcs) {
+      BridgeMessage.cachedBcs = BridgeMessage.instantiateBcs()
+    }
+    return BridgeMessage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeMessage {
@@ -254,6 +264,7 @@ export class BridgeMessageKey implements StructClass {
   }
 
   static reified(): BridgeMessageKeyReified {
+    const reifiedBcs = BridgeMessageKey.bcs
     return {
       typeName: BridgeMessageKey.$typeName,
       fullTypeName: composeSuiType(
@@ -265,8 +276,8 @@ export class BridgeMessageKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeMessageKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeMessageKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeMessageKey.fromBcs(data),
-      bcs: BridgeMessageKey.bcs,
+      fromBcs: (data: Uint8Array) => BridgeMessageKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeMessageKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeMessageKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeMessageKey.fromSuiParsedData(content),
@@ -290,12 +301,21 @@ export class BridgeMessageKey implements StructClass {
     return BridgeMessageKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeMessageKey', {
       source_chain: bcs.u8(),
       message_type: bcs.u8(),
       bridge_seq_num: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeMessageKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeMessageKey.cachedBcs) {
+      BridgeMessageKey.cachedBcs = BridgeMessageKey.instantiateBcs()
+    }
+    return BridgeMessageKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeMessageKey {
@@ -439,6 +459,7 @@ export class TokenTransferPayload implements StructClass {
   }
 
   static reified(): TokenTransferPayloadReified {
+    const reifiedBcs = TokenTransferPayload.bcs
     return {
       typeName: TokenTransferPayload.$typeName,
       fullTypeName: composeSuiType(
@@ -451,8 +472,8 @@ export class TokenTransferPayload implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenTransferPayload.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenTransferPayload.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenTransferPayload.fromBcs(data),
-      bcs: TokenTransferPayload.bcs,
+      fromBcs: (data: Uint8Array) => TokenTransferPayload.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenTransferPayload.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenTransferPayload.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -478,7 +499,7 @@ export class TokenTransferPayload implements StructClass {
     return TokenTransferPayload.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenTransferPayload', {
       sender_address: bcs.vector(bcs.u8()),
       target_chain: bcs.u8(),
@@ -486,6 +507,15 @@ export class TokenTransferPayload implements StructClass {
       token_type: bcs.u8(),
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenTransferPayload.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenTransferPayload.cachedBcs) {
+      TokenTransferPayload.cachedBcs = TokenTransferPayload.instantiateBcs()
+    }
+    return TokenTransferPayload.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenTransferPayload {
@@ -627,6 +657,7 @@ export class EmergencyOp implements StructClass {
   }
 
   static reified(): EmergencyOpReified {
+    const reifiedBcs = EmergencyOp.bcs
     return {
       typeName: EmergencyOp.$typeName,
       fullTypeName: composeSuiType(EmergencyOp.$typeName, ...[]) as `0xb::message::EmergencyOp`,
@@ -635,8 +666,8 @@ export class EmergencyOp implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => EmergencyOp.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => EmergencyOp.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmergencyOp.fromBcs(data),
-      bcs: EmergencyOp.bcs,
+      fromBcs: (data: Uint8Array) => EmergencyOp.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmergencyOp.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmergencyOp.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmergencyOp.fromSuiParsedData(content),
@@ -660,10 +691,19 @@ export class EmergencyOp implements StructClass {
     return EmergencyOp.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmergencyOp', {
       op_type: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmergencyOp.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmergencyOp.cachedBcs) {
+      EmergencyOp.cachedBcs = EmergencyOp.instantiateBcs()
+    }
+    return EmergencyOp.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmergencyOp {
@@ -786,6 +826,7 @@ export class Blocklist implements StructClass {
   }
 
   static reified(): BlocklistReified {
+    const reifiedBcs = Blocklist.bcs
     return {
       typeName: Blocklist.$typeName,
       fullTypeName: composeSuiType(Blocklist.$typeName, ...[]) as `0xb::message::Blocklist`,
@@ -794,8 +835,8 @@ export class Blocklist implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Blocklist.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Blocklist.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Blocklist.fromBcs(data),
-      bcs: Blocklist.bcs,
+      fromBcs: (data: Uint8Array) => Blocklist.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Blocklist.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Blocklist.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Blocklist.fromSuiParsedData(content),
@@ -819,11 +860,20 @@ export class Blocklist implements StructClass {
     return Blocklist.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Blocklist', {
       blocklist_type: bcs.u8(),
       validator_eth_addresses: bcs.vector(bcs.vector(bcs.u8())),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Blocklist.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Blocklist.cachedBcs) {
+      Blocklist.cachedBcs = Blocklist.instantiateBcs()
+    }
+    return Blocklist.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Blocklist {
@@ -969,6 +1019,7 @@ export class UpdateBridgeLimit implements StructClass {
   }
 
   static reified(): UpdateBridgeLimitReified {
+    const reifiedBcs = UpdateBridgeLimit.bcs
     return {
       typeName: UpdateBridgeLimit.$typeName,
       fullTypeName: composeSuiType(
@@ -980,8 +1031,8 @@ export class UpdateBridgeLimit implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateBridgeLimit.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateBridgeLimit.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateBridgeLimit.fromBcs(data),
-      bcs: UpdateBridgeLimit.bcs,
+      fromBcs: (data: Uint8Array) => UpdateBridgeLimit.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateBridgeLimit.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateBridgeLimit.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateBridgeLimit.fromSuiParsedData(content),
@@ -1005,12 +1056,21 @@ export class UpdateBridgeLimit implements StructClass {
     return UpdateBridgeLimit.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateBridgeLimit', {
       receiving_chain: bcs.u8(),
       sending_chain: bcs.u8(),
       limit: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateBridgeLimit.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateBridgeLimit.cachedBcs) {
+      UpdateBridgeLimit.cachedBcs = UpdateBridgeLimit.instantiateBcs()
+    }
+    return UpdateBridgeLimit.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateBridgeLimit {
@@ -1145,6 +1205,7 @@ export class UpdateAssetPrice implements StructClass {
   }
 
   static reified(): UpdateAssetPriceReified {
+    const reifiedBcs = UpdateAssetPrice.bcs
     return {
       typeName: UpdateAssetPrice.$typeName,
       fullTypeName: composeSuiType(
@@ -1156,8 +1217,8 @@ export class UpdateAssetPrice implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateAssetPrice.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateAssetPrice.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateAssetPrice.fromBcs(data),
-      bcs: UpdateAssetPrice.bcs,
+      fromBcs: (data: Uint8Array) => UpdateAssetPrice.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateAssetPrice.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateAssetPrice.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateAssetPrice.fromSuiParsedData(content),
@@ -1181,11 +1242,20 @@ export class UpdateAssetPrice implements StructClass {
     return UpdateAssetPrice.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateAssetPrice', {
       token_id: bcs.u8(),
       new_price: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateAssetPrice.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateAssetPrice.cachedBcs) {
+      UpdateAssetPrice.cachedBcs = UpdateAssetPrice.instantiateBcs()
+    }
+    return UpdateAssetPrice.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateAssetPrice {
@@ -1322,6 +1392,7 @@ export class AddTokenOnSui implements StructClass {
   }
 
   static reified(): AddTokenOnSuiReified {
+    const reifiedBcs = AddTokenOnSui.bcs
     return {
       typeName: AddTokenOnSui.$typeName,
       fullTypeName: composeSuiType(AddTokenOnSui.$typeName, ...[]) as `0xb::message::AddTokenOnSui`,
@@ -1330,8 +1401,8 @@ export class AddTokenOnSui implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddTokenOnSui.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddTokenOnSui.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddTokenOnSui.fromBcs(data),
-      bcs: AddTokenOnSui.bcs,
+      fromBcs: (data: Uint8Array) => AddTokenOnSui.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddTokenOnSui.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddTokenOnSui.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddTokenOnSui.fromSuiParsedData(content),
@@ -1355,13 +1426,22 @@ export class AddTokenOnSui implements StructClass {
     return AddTokenOnSui.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddTokenOnSui', {
       native_token: bcs.bool(),
       token_ids: bcs.vector(bcs.u8()),
       token_type_names: bcs.vector(String.bcs),
       token_prices: bcs.vector(bcs.u64()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddTokenOnSui.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddTokenOnSui.cachedBcs) {
+      AddTokenOnSui.cachedBcs = AddTokenOnSui.instantiateBcs()
+    }
+    return AddTokenOnSui.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddTokenOnSui {
@@ -1518,6 +1598,7 @@ export class ParsedTokenTransferMessage implements StructClass {
   }
 
   static reified(): ParsedTokenTransferMessageReified {
+    const reifiedBcs = ParsedTokenTransferMessage.bcs
     return {
       typeName: ParsedTokenTransferMessage.$typeName,
       fullTypeName: composeSuiType(
@@ -1530,8 +1611,8 @@ export class ParsedTokenTransferMessage implements StructClass {
       fromFields: (fields: Record<string, any>) => ParsedTokenTransferMessage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ParsedTokenTransferMessage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ParsedTokenTransferMessage.fromBcs(data),
-      bcs: ParsedTokenTransferMessage.bcs,
+      fromBcs: (data: Uint8Array) => ParsedTokenTransferMessage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ParsedTokenTransferMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ParsedTokenTransferMessage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1557,7 +1638,7 @@ export class ParsedTokenTransferMessage implements StructClass {
     return ParsedTokenTransferMessage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ParsedTokenTransferMessage', {
       message_version: bcs.u8(),
       seq_num: bcs.u64(),
@@ -1565,6 +1646,16 @@ export class ParsedTokenTransferMessage implements StructClass {
       payload: bcs.vector(bcs.u8()),
       parsed_payload: TokenTransferPayload.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ParsedTokenTransferMessage.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!ParsedTokenTransferMessage.cachedBcs) {
+      ParsedTokenTransferMessage.cachedBcs = ParsedTokenTransferMessage.instantiateBcs()
+    }
+    return ParsedTokenTransferMessage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ParsedTokenTransferMessage {

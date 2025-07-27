@@ -62,6 +62,7 @@ export class BlocklistValidatorEvent implements StructClass {
   }
 
   static reified(): BlocklistValidatorEventReified {
+    const reifiedBcs = BlocklistValidatorEvent.bcs
     return {
       typeName: BlocklistValidatorEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -74,8 +75,8 @@ export class BlocklistValidatorEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => BlocklistValidatorEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BlocklistValidatorEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BlocklistValidatorEvent.fromBcs(data),
-      bcs: BlocklistValidatorEvent.bcs,
+      fromBcs: (data: Uint8Array) => BlocklistValidatorEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BlocklistValidatorEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BlocklistValidatorEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -101,11 +102,20 @@ export class BlocklistValidatorEvent implements StructClass {
     return BlocklistValidatorEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BlocklistValidatorEvent', {
       blocklisted: bcs.bool(),
       public_keys: bcs.vector(bcs.vector(bcs.u8())),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BlocklistValidatorEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BlocklistValidatorEvent.cachedBcs) {
+      BlocklistValidatorEvent.cachedBcs = BlocklistValidatorEvent.instantiateBcs()
+    }
+    return BlocklistValidatorEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BlocklistValidatorEvent {
@@ -246,6 +256,7 @@ export class BridgeCommittee implements StructClass {
   }
 
   static reified(): BridgeCommitteeReified {
+    const reifiedBcs = BridgeCommittee.bcs
     return {
       typeName: BridgeCommittee.$typeName,
       fullTypeName: composeSuiType(
@@ -257,8 +268,8 @@ export class BridgeCommittee implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeCommittee.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeCommittee.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeCommittee.fromBcs(data),
-      bcs: BridgeCommittee.bcs,
+      fromBcs: (data: Uint8Array) => BridgeCommittee.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeCommittee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeCommittee.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeCommittee.fromSuiParsedData(content),
@@ -282,7 +293,7 @@ export class BridgeCommittee implements StructClass {
     return BridgeCommittee.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeCommittee', {
       members: VecMap.bcs(bcs.vector(bcs.u8()), CommitteeMember.bcs),
       member_registrations: VecMap.bcs(
@@ -294,6 +305,15 @@ export class BridgeCommittee implements StructClass {
       ),
       last_committee_update_epoch: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeCommittee.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeCommittee.cachedBcs) {
+      BridgeCommittee.cachedBcs = BridgeCommittee.instantiateBcs()
+    }
+    return BridgeCommittee.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeCommittee {
@@ -449,6 +469,7 @@ export class CommitteeUpdateEvent implements StructClass {
   }
 
   static reified(): CommitteeUpdateEventReified {
+    const reifiedBcs = CommitteeUpdateEvent.bcs
     return {
       typeName: CommitteeUpdateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -461,8 +482,8 @@ export class CommitteeUpdateEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CommitteeUpdateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CommitteeUpdateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CommitteeUpdateEvent.fromBcs(data),
-      bcs: CommitteeUpdateEvent.bcs,
+      fromBcs: (data: Uint8Array) => CommitteeUpdateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CommitteeUpdateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CommitteeUpdateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -488,11 +509,20 @@ export class CommitteeUpdateEvent implements StructClass {
     return CommitteeUpdateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CommitteeUpdateEvent', {
       members: VecMap.bcs(bcs.vector(bcs.u8()), CommitteeMember.bcs),
       stake_participation_percentage: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CommitteeUpdateEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CommitteeUpdateEvent.cachedBcs) {
+      CommitteeUpdateEvent.cachedBcs = CommitteeUpdateEvent.instantiateBcs()
+    }
+    return CommitteeUpdateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CommitteeUpdateEvent {
@@ -640,6 +670,7 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
   }
 
   static reified(): CommitteeMemberUrlUpdateEventReified {
+    const reifiedBcs = CommitteeMemberUrlUpdateEvent.bcs
     return {
       typeName: CommitteeMemberUrlUpdateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -652,8 +683,9 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CommitteeMemberUrlUpdateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CommitteeMemberUrlUpdateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CommitteeMemberUrlUpdateEvent.fromBcs(data),
-      bcs: CommitteeMemberUrlUpdateEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        CommitteeMemberUrlUpdateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CommitteeMemberUrlUpdateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CommitteeMemberUrlUpdateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -680,11 +712,21 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
     return CommitteeMemberUrlUpdateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CommitteeMemberUrlUpdateEvent', {
       member: bcs.vector(bcs.u8()),
       new_url: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CommitteeMemberUrlUpdateEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!CommitteeMemberUrlUpdateEvent.cachedBcs) {
+      CommitteeMemberUrlUpdateEvent.cachedBcs = CommitteeMemberUrlUpdateEvent.instantiateBcs()
+    }
+    return CommitteeMemberUrlUpdateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CommitteeMemberUrlUpdateEvent {
@@ -831,6 +873,7 @@ export class CommitteeMember implements StructClass {
   }
 
   static reified(): CommitteeMemberReified {
+    const reifiedBcs = CommitteeMember.bcs
     return {
       typeName: CommitteeMember.$typeName,
       fullTypeName: composeSuiType(
@@ -842,8 +885,8 @@ export class CommitteeMember implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CommitteeMember.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CommitteeMember.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CommitteeMember.fromBcs(data),
-      bcs: CommitteeMember.bcs,
+      fromBcs: (data: Uint8Array) => CommitteeMember.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CommitteeMember.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CommitteeMember.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CommitteeMember.fromSuiParsedData(content),
@@ -867,7 +910,7 @@ export class CommitteeMember implements StructClass {
     return CommitteeMember.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CommitteeMember', {
       sui_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -878,6 +921,15 @@ export class CommitteeMember implements StructClass {
       http_rest_url: bcs.vector(bcs.u8()),
       blocklisted: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CommitteeMember.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CommitteeMember.cachedBcs) {
+      CommitteeMember.cachedBcs = CommitteeMember.instantiateBcs()
+    }
+    return CommitteeMember.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CommitteeMember {
@@ -1029,6 +1081,7 @@ export class CommitteeMemberRegistration implements StructClass {
   }
 
   static reified(): CommitteeMemberRegistrationReified {
+    const reifiedBcs = CommitteeMemberRegistration.bcs
     return {
       typeName: CommitteeMemberRegistration.$typeName,
       fullTypeName: composeSuiType(
@@ -1041,8 +1094,8 @@ export class CommitteeMemberRegistration implements StructClass {
       fromFields: (fields: Record<string, any>) => CommitteeMemberRegistration.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CommitteeMemberRegistration.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CommitteeMemberRegistration.fromBcs(data),
-      bcs: CommitteeMemberRegistration.bcs,
+      fromBcs: (data: Uint8Array) => CommitteeMemberRegistration.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CommitteeMemberRegistration.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CommitteeMemberRegistration.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1068,7 +1121,7 @@ export class CommitteeMemberRegistration implements StructClass {
     return CommitteeMemberRegistration.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CommitteeMemberRegistration', {
       sui_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -1077,6 +1130,16 @@ export class CommitteeMemberRegistration implements StructClass {
       bridge_pubkey_bytes: bcs.vector(bcs.u8()),
       http_rest_url: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CommitteeMemberRegistration.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!CommitteeMemberRegistration.cachedBcs) {
+      CommitteeMemberRegistration.cachedBcs = CommitteeMemberRegistration.instantiateBcs()
+    }
+    return CommitteeMemberRegistration.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CommitteeMemberRegistration {

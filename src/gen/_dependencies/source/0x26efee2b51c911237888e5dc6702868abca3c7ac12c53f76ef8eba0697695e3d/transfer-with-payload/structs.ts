@@ -76,6 +76,7 @@ export class TransferWithPayload implements StructClass {
   }
 
   static reified(): TransferWithPayloadReified {
+    const reifiedBcs = TransferWithPayload.bcs
     return {
       typeName: TransferWithPayload.$typeName,
       fullTypeName: composeSuiType(
@@ -87,8 +88,8 @@ export class TransferWithPayload implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TransferWithPayload.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TransferWithPayload.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TransferWithPayload.fromBcs(data),
-      bcs: TransferWithPayload.bcs,
+      fromBcs: (data: Uint8Array) => TransferWithPayload.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferWithPayload.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferWithPayload.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TransferWithPayload.fromSuiParsedData(content),
@@ -112,7 +113,7 @@ export class TransferWithPayload implements StructClass {
     return TransferWithPayload.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TransferWithPayload', {
       amount: NormalizedAmount.bcs,
       token_address: ExternalAddress.bcs,
@@ -122,6 +123,15 @@ export class TransferWithPayload implements StructClass {
       sender: ExternalAddress.bcs,
       payload: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TransferWithPayload.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TransferWithPayload.cachedBcs) {
+      TransferWithPayload.cachedBcs = TransferWithPayload.instantiateBcs()
+    }
+    return TransferWithPayload.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TransferWithPayload {

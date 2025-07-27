@@ -53,6 +53,7 @@ export class YWHUSDTE implements StructClass {
   }
 
   static reified(): YWHUSDTEReified {
+    const reifiedBcs = YWHUSDTE.bcs
     return {
       typeName: YWHUSDTE.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class YWHUSDTE implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => YWHUSDTE.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => YWHUSDTE.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => YWHUSDTE.fromBcs(data),
-      bcs: YWHUSDTE.bcs,
+      fromBcs: (data: Uint8Array) => YWHUSDTE.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => YWHUSDTE.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => YWHUSDTE.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => YWHUSDTE.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class YWHUSDTE implements StructClass {
     return YWHUSDTE.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('YWHUSDTE', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof YWHUSDTE.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!YWHUSDTE.cachedBcs) {
+      YWHUSDTE.cachedBcs = YWHUSDTE.instantiateBcs()
+    }
+    return YWHUSDTE.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): YWHUSDTE {

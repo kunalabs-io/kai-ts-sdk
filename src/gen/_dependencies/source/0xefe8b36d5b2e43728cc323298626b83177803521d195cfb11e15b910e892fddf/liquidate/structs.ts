@@ -74,6 +74,7 @@ export class LiquidateEvent implements StructClass {
   }
 
   static reified(): LiquidateEventReified {
+    const reifiedBcs = LiquidateEvent.bcs
     return {
       typeName: LiquidateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -85,8 +86,8 @@ export class LiquidateEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LiquidateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LiquidateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LiquidateEvent.fromBcs(data),
-      bcs: LiquidateEvent.bcs,
+      fromBcs: (data: Uint8Array) => LiquidateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LiquidateEvent.fromSuiParsedData(content),
@@ -110,7 +111,7 @@ export class LiquidateEvent implements StructClass {
     return LiquidateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LiquidateEvent', {
       liquidator: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -123,6 +124,15 @@ export class LiquidateEvent implements StructClass {
       repay_revenue: bcs.u64(),
       liq_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LiquidateEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LiquidateEvent.cachedBcs) {
+      LiquidateEvent.cachedBcs = LiquidateEvent.instantiateBcs()
+    }
+    return LiquidateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LiquidateEvent {
@@ -297,6 +307,7 @@ export class LiquidateEventV2 implements StructClass {
   }
 
   static reified(): LiquidateEventV2Reified {
+    const reifiedBcs = LiquidateEventV2.bcs
     return {
       typeName: LiquidateEventV2.$typeName,
       fullTypeName: composeSuiType(
@@ -308,8 +319,8 @@ export class LiquidateEventV2 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LiquidateEventV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LiquidateEventV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LiquidateEventV2.fromBcs(data),
-      bcs: LiquidateEventV2.bcs,
+      fromBcs: (data: Uint8Array) => LiquidateEventV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidateEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidateEventV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LiquidateEventV2.fromSuiParsedData(content),
@@ -333,7 +344,7 @@ export class LiquidateEventV2 implements StructClass {
     return LiquidateEventV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LiquidateEventV2', {
       liquidator: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -349,6 +360,15 @@ export class LiquidateEventV2 implements StructClass {
       debt_price: FixedPoint32.bcs,
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LiquidateEventV2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LiquidateEventV2.cachedBcs) {
+      LiquidateEventV2.cachedBcs = LiquidateEventV2.instantiateBcs()
+    }
+    return LiquidateEventV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LiquidateEventV2 {

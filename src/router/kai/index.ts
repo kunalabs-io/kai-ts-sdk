@@ -3,7 +3,7 @@ import { Transaction, TransactionArgument, TransactionObjectInput } from '@myste
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 import * as balance from '../../gen/sui/balance/functions'
 import { compressSuiType } from '../../gen/_framework/util'
-import { CoinInfo, SUI, USDC } from '../../coin-info'
+import { CoinInfo } from '../../coin-info'
 import {
   Router,
   RouterSwapBalanceArgs,
@@ -20,7 +20,7 @@ import * as bluefin from './bluefin-swap'
 export const ALL_PROTOCOLS = ['cetus', 'bluefin', 'stsui'] as const
 export type Protocol = (typeof ALL_PROTOCOLS)[number]
 
-const DEFAULT_ALLOWED_PROTOCOLS: Array<Protocol> = ['bluefin', 'stsui']
+const DEFAULT_ALLOWED_PROTOCOLS: Array<Protocol> = ['bluefin', 'stsui', 'cetus']
 
 export function getSwapInfo(
   coinIn: CoinInfo<PhantomTypeArgument>,
@@ -91,50 +91,91 @@ export function findRouteStep(
   return { pool: poolInfo, a2b }
 }
 
+interface GraphEdge {
+  from: string
+  to: string
+  pool: PoolInfo
+  a2b: boolean
+}
+
+function buildGraph(allowedProtocols: Array<Protocol>): Map<string, GraphEdge[]> {
+  const graph = new Map<string, GraphEdge[]>()
+
+  for (const pool of ALL_POOL_INFOS) {
+    if (!allowedProtocols.includes(pool.protocol)) {
+      continue
+    }
+
+    const coinAType = compressSuiType(pool.coinA.typeName)
+    const coinBType = compressSuiType(pool.coinB.typeName)
+
+    // Add edge from A to B
+    if (!graph.has(coinAType)) {
+      graph.set(coinAType, [])
+    }
+    graph.get(coinAType)!.push({
+      from: coinAType,
+      to: coinBType,
+      pool,
+      a2b: true,
+    })
+
+    // Add edge from B to A
+    if (!graph.has(coinBType)) {
+      graph.set(coinBType, [])
+    }
+    graph.get(coinBType)!.push({
+      from: coinBType,
+      to: coinAType,
+      pool,
+      a2b: false,
+    })
+  }
+
+  return graph
+}
+
 export function findRoute(
   inInfo: CoinInfo<PhantomTypeArgument>,
   outInfo: CoinInfo<PhantomTypeArgument>,
   allowedProtocols: Array<Protocol> = DEFAULT_ALLOWED_PROTOCOLS
-) {
-  const route: Array<RouteStep> = []
+): Array<RouteStep> | undefined {
+  const graph = buildGraph(allowedProtocols)
 
-  // 1 step
-  {
-    const step = findRouteStep(inInfo, outInfo, allowedProtocols)
-    if (step) {
-      route.push(step)
-      return route
-    }
+  const startType = compressSuiType(inInfo.typeName)
+  const endType = compressSuiType(outInfo.typeName)
+
+  if (startType === endType) {
+    return []
   }
 
-  // 2 steps, through SUI
-  {
-    const toSuiStep = findRouteStep(inInfo, SUI, allowedProtocols)
-    const toOutStep = findRouteStep(SUI, outInfo, allowedProtocols)
-    if (toSuiStep && toOutStep) {
-      route.push(toSuiStep, toOutStep)
-      return route
-    }
-  }
+  // BFS to find shortest path
+  const queue: Array<{ node: string; path: GraphEdge[] }> = [{ node: startType, path: [] }]
+  const visited = new Set<string>()
 
-  // 2 steps, through USDC
-  {
-    const toUsdcStep = findRouteStep(inInfo, USDC, allowedProtocols)
-    const toOutStep = findRouteStep(USDC, outInfo, allowedProtocols)
-    if (toUsdcStep && toOutStep) {
-      route.push(toUsdcStep, toOutStep)
-      return route
-    }
-  }
+  while (queue.length > 0) {
+    const { node, path } = queue.shift()!
 
-  // 3 steps, through SUI then USDC
-  {
-    const toSuiStep = findRouteStep(inInfo, SUI, allowedProtocols)
-    const toUsdcStep = findRouteStep(SUI, USDC, allowedProtocols)
-    const toOutStep = findRouteStep(USDC, outInfo, allowedProtocols)
-    if (toSuiStep && toUsdcStep && toOutStep) {
-      route.push(toSuiStep, toUsdcStep, toOutStep)
-      return route
+    if (visited.has(node)) {
+      continue
+    }
+    visited.add(node)
+
+    if (node === endType) {
+      return path.map(edge => ({
+        pool: edge.pool,
+        a2b: edge.a2b,
+      }))
+    }
+
+    const edges = graph.get(node) || []
+    for (const edge of edges) {
+      if (!visited.has(edge.to)) {
+        queue.push({
+          node: edge.to,
+          path: [...path, edge],
+        })
+      }
     }
   }
 

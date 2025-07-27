@@ -75,6 +75,7 @@ export class PositionLiquiditySnapshot implements StructClass {
   }
 
   static reified(): PositionLiquiditySnapshotReified {
+    const reifiedBcs = PositionLiquiditySnapshot.bcs
     return {
       typeName: PositionLiquiditySnapshot.$typeName,
       fullTypeName: composeSuiType(
@@ -87,8 +88,8 @@ export class PositionLiquiditySnapshot implements StructClass {
       fromFields: (fields: Record<string, any>) => PositionLiquiditySnapshot.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PositionLiquiditySnapshot.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionLiquiditySnapshot.fromBcs(data),
-      bcs: PositionLiquiditySnapshot.bcs,
+      fromBcs: (data: Uint8Array) => PositionLiquiditySnapshot.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionLiquiditySnapshot.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionLiquiditySnapshot.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -114,7 +115,7 @@ export class PositionLiquiditySnapshot implements StructClass {
     return PositionLiquiditySnapshot.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionLiquiditySnapshot', {
       id: UID.bcs,
       current_sqrt_price: bcs.u128(),
@@ -122,6 +123,16 @@ export class PositionLiquiditySnapshot implements StructClass {
       total_value_cutted: bcs.u64(),
       snapshots: LinkedTable.bcs(ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionLiquiditySnapshot.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!PositionLiquiditySnapshot.cachedBcs) {
+      PositionLiquiditySnapshot.cachedBcs = PositionLiquiditySnapshot.instantiateBcs()
+    }
+    return PositionLiquiditySnapshot.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionLiquiditySnapshot {
@@ -298,6 +309,7 @@ export class PositionSnapshot implements StructClass {
   }
 
   static reified(): PositionSnapshotReified {
+    const reifiedBcs = PositionSnapshot.bcs
     return {
       typeName: PositionSnapshot.$typeName,
       fullTypeName: composeSuiType(
@@ -309,8 +321,8 @@ export class PositionSnapshot implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionSnapshot.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionSnapshot.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionSnapshot.fromBcs(data),
-      bcs: PositionSnapshot.bcs,
+      fromBcs: (data: Uint8Array) => PositionSnapshot.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionSnapshot.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionSnapshot.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionSnapshot.fromSuiParsedData(content),
@@ -334,7 +346,7 @@ export class PositionSnapshot implements StructClass {
     return PositionSnapshot.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionSnapshot', {
       position_id: ID.bcs,
       liquidity: bcs.u128(),
@@ -345,6 +357,15 @@ export class PositionSnapshot implements StructClass {
       rewards: bcs.vector(bcs.u64()),
       value_cutted: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionSnapshot.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionSnapshot.cachedBcs) {
+      PositionSnapshot.cachedBcs = PositionSnapshot.instantiateBcs()
+    }
+    return PositionSnapshot.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionSnapshot {

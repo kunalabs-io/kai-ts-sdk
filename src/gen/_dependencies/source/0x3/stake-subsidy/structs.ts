@@ -72,6 +72,7 @@ export class StakeSubsidy implements StructClass {
   }
 
   static reified(): StakeSubsidyReified {
+    const reifiedBcs = StakeSubsidy.bcs
     return {
       typeName: StakeSubsidy.$typeName,
       fullTypeName: composeSuiType(
@@ -83,8 +84,8 @@ export class StakeSubsidy implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StakeSubsidy.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StakeSubsidy.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StakeSubsidy.fromBcs(data),
-      bcs: StakeSubsidy.bcs,
+      fromBcs: (data: Uint8Array) => StakeSubsidy.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StakeSubsidy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StakeSubsidy.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StakeSubsidy.fromSuiParsedData(content),
@@ -108,7 +109,7 @@ export class StakeSubsidy implements StructClass {
     return StakeSubsidy.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StakeSubsidy', {
       balance: Balance.bcs,
       distribution_counter: bcs.u64(),
@@ -117,6 +118,15 @@ export class StakeSubsidy implements StructClass {
       stake_subsidy_decrease_rate: bcs.u16(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StakeSubsidy.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StakeSubsidy.cachedBcs) {
+      StakeSubsidy.cachedBcs = StakeSubsidy.instantiateBcs()
+    }
+    return StakeSubsidy.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StakeSubsidy {

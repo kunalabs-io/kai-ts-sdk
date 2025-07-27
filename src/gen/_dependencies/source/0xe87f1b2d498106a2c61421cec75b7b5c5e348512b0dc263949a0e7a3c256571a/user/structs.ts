@@ -67,6 +67,7 @@ export class CreateSpoolAccountEvent implements StructClass {
   }
 
   static reified(): CreateSpoolAccountEventReified {
+    const reifiedBcs = CreateSpoolAccountEvent.bcs
     return {
       typeName: CreateSpoolAccountEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -79,8 +80,8 @@ export class CreateSpoolAccountEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CreateSpoolAccountEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CreateSpoolAccountEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreateSpoolAccountEvent.fromBcs(data),
-      bcs: CreateSpoolAccountEvent.bcs,
+      fromBcs: (data: Uint8Array) => CreateSpoolAccountEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreateSpoolAccountEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreateSpoolAccountEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -106,13 +107,22 @@ export class CreateSpoolAccountEvent implements StructClass {
     return CreateSpoolAccountEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CreateSpoolAccountEvent', {
       spool_account_id: ID.bcs,
       spool_id: ID.bcs,
       staking_type: TypeName.bcs,
       created_at: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreateSpoolAccountEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreateSpoolAccountEvent.cachedBcs) {
+      CreateSpoolAccountEvent.cachedBcs = CreateSpoolAccountEvent.instantiateBcs()
+    }
+    return CreateSpoolAccountEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CreateSpoolAccountEvent {
@@ -270,6 +280,7 @@ export class SpoolAccountUnstakeEvent implements StructClass {
   }
 
   static reified(): SpoolAccountUnstakeEventReified {
+    const reifiedBcs = SpoolAccountUnstakeEvent.bcs
     return {
       typeName: SpoolAccountUnstakeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -282,8 +293,8 @@ export class SpoolAccountUnstakeEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => SpoolAccountUnstakeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SpoolAccountUnstakeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountUnstakeEvent.fromBcs(data),
-      bcs: SpoolAccountUnstakeEvent.bcs,
+      fromBcs: (data: Uint8Array) => SpoolAccountUnstakeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountUnstakeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountUnstakeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -309,7 +320,7 @@ export class SpoolAccountUnstakeEvent implements StructClass {
     return SpoolAccountUnstakeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SpoolAccountUnstakeEvent', {
       spool_account_id: ID.bcs,
       spool_id: ID.bcs,
@@ -318,6 +329,15 @@ export class SpoolAccountUnstakeEvent implements StructClass {
       remaining_amount: bcs.u64(),
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SpoolAccountUnstakeEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SpoolAccountUnstakeEvent.cachedBcs) {
+      SpoolAccountUnstakeEvent.cachedBcs = SpoolAccountUnstakeEvent.instantiateBcs()
+    }
+    return SpoolAccountUnstakeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SpoolAccountUnstakeEvent {
@@ -489,6 +509,7 @@ export class SpoolAccountStakeEvent implements StructClass {
   }
 
   static reified(): SpoolAccountStakeEventReified {
+    const reifiedBcs = SpoolAccountStakeEvent.bcs
     return {
       typeName: SpoolAccountStakeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -501,8 +522,8 @@ export class SpoolAccountStakeEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => SpoolAccountStakeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SpoolAccountStakeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountStakeEvent.fromBcs(data),
-      bcs: SpoolAccountStakeEvent.bcs,
+      fromBcs: (data: Uint8Array) => SpoolAccountStakeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountStakeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountStakeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -528,7 +549,7 @@ export class SpoolAccountStakeEvent implements StructClass {
     return SpoolAccountStakeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SpoolAccountStakeEvent', {
       sender: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -541,6 +562,15 @@ export class SpoolAccountStakeEvent implements StructClass {
       previous_amount: bcs.u64(),
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SpoolAccountStakeEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SpoolAccountStakeEvent.cachedBcs) {
+      SpoolAccountStakeEvent.cachedBcs = SpoolAccountStakeEvent.instantiateBcs()
+    }
+    return SpoolAccountStakeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SpoolAccountStakeEvent {
@@ -726,6 +756,7 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
   }
 
   static reified(): SpoolAccountRedeemRewardsEventReified {
+    const reifiedBcs = SpoolAccountRedeemRewardsEvent.bcs
     return {
       typeName: SpoolAccountRedeemRewardsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -739,8 +770,9 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
         SpoolAccountRedeemRewardsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SpoolAccountRedeemRewardsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountRedeemRewardsEvent.fromBcs(data),
-      bcs: SpoolAccountRedeemRewardsEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        SpoolAccountRedeemRewardsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountRedeemRewardsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountRedeemRewardsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -767,7 +799,7 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
     return SpoolAccountRedeemRewardsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SpoolAccountRedeemRewardsEvent', {
       sender: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -785,6 +817,17 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
       total_user_points: bcs.u64(),
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof SpoolAccountRedeemRewardsEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!SpoolAccountRedeemRewardsEvent.cachedBcs) {
+      SpoolAccountRedeemRewardsEvent.cachedBcs = SpoolAccountRedeemRewardsEvent.instantiateBcs()
+    }
+    return SpoolAccountRedeemRewardsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SpoolAccountRedeemRewardsEvent {
@@ -998,6 +1041,7 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
   }
 
   static reified(): SpoolAccountRedeemRewardsEventV2Reified {
+    const reifiedBcs = SpoolAccountRedeemRewardsEventV2.bcs
     return {
       typeName: SpoolAccountRedeemRewardsEventV2.$typeName,
       fullTypeName: composeSuiType(
@@ -1011,8 +1055,9 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
         SpoolAccountRedeemRewardsEventV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SpoolAccountRedeemRewardsEventV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SpoolAccountRedeemRewardsEventV2.fromBcs(data),
-      bcs: SpoolAccountRedeemRewardsEventV2.bcs,
+      fromBcs: (data: Uint8Array) =>
+        SpoolAccountRedeemRewardsEventV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountRedeemRewardsEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountRedeemRewardsEventV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1039,7 +1084,7 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
     return SpoolAccountRedeemRewardsEventV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SpoolAccountRedeemRewardsEventV2', {
       sender: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -1058,6 +1103,17 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
       total_user_points: bcs.u64(),
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof SpoolAccountRedeemRewardsEventV2.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!SpoolAccountRedeemRewardsEventV2.cachedBcs) {
+      SpoolAccountRedeemRewardsEventV2.cachedBcs = SpoolAccountRedeemRewardsEventV2.instantiateBcs()
+    }
+    return SpoolAccountRedeemRewardsEventV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SpoolAccountRedeemRewardsEventV2 {

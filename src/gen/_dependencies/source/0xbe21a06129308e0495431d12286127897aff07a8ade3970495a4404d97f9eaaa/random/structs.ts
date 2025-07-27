@@ -53,6 +53,7 @@ export class Random implements StructClass {
   }
 
   static reified(): RandomReified {
+    const reifiedBcs = Random.bcs
     return {
       typeName: Random.$typeName,
       fullTypeName: composeSuiType(Random.$typeName, ...[]) as `${typeof PKG_V1}::random::Random`,
@@ -61,8 +62,8 @@ export class Random implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Random.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Random.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Random.fromBcs(data),
-      bcs: Random.bcs,
+      fromBcs: (data: Uint8Array) => Random.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Random.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Random.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Random.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class Random implements StructClass {
     return Random.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Random', {
       seed: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Random.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Random.cachedBcs) {
+      Random.cachedBcs = Random.instantiateBcs()
+    }
+    return Random.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Random {

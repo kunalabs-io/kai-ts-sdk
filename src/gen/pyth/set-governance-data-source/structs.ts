@@ -60,6 +60,7 @@ export class GovernanceDataSource implements StructClass {
   }
 
   static reified(): GovernanceDataSourceReified {
+    const reifiedBcs = GovernanceDataSource.bcs
     return {
       typeName: GovernanceDataSource.$typeName,
       fullTypeName: composeSuiType(
@@ -72,8 +73,8 @@ export class GovernanceDataSource implements StructClass {
       fromFields: (fields: Record<string, any>) => GovernanceDataSource.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         GovernanceDataSource.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceDataSource.fromBcs(data),
-      bcs: GovernanceDataSource.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceDataSource.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceDataSource.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceDataSource.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -99,12 +100,21 @@ export class GovernanceDataSource implements StructClass {
     return GovernanceDataSource.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceDataSource', {
       emitter_chain_id: bcs.u64(),
       emitter_address: ExternalAddress.bcs,
       initial_sequence: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceDataSource.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceDataSource.cachedBcs) {
+      GovernanceDataSource.cachedBcs = GovernanceDataSource.instantiateBcs()
+    }
+    return GovernanceDataSource.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceDataSource {

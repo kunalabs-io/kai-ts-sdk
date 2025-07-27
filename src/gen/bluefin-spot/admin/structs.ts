@@ -54,6 +54,7 @@ export class AdminCap implements StructClass {
   }
 
   static reified(): AdminCapReified {
+    const reifiedBcs = AdminCap.bcs
     return {
       typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class AdminCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(data),
-      bcs: AdminCap.bcs,
+      fromBcs: (data: Uint8Array) => AdminCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class AdminCap implements StructClass {
     return AdminCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminCap.cachedBcs) {
+      AdminCap.cachedBcs = AdminCap.instantiateBcs()
+    }
+    return AdminCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AdminCap {
@@ -211,6 +221,7 @@ export class ProtocolFeeCap implements StructClass {
   }
 
   static reified(): ProtocolFeeCapReified {
+    const reifiedBcs = ProtocolFeeCap.bcs
     return {
       typeName: ProtocolFeeCap.$typeName,
       fullTypeName: composeSuiType(
@@ -222,8 +233,8 @@ export class ProtocolFeeCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ProtocolFeeCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ProtocolFeeCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ProtocolFeeCap.fromBcs(data),
-      bcs: ProtocolFeeCap.bcs,
+      fromBcs: (data: Uint8Array) => ProtocolFeeCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ProtocolFeeCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ProtocolFeeCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ProtocolFeeCap.fromSuiParsedData(content),
@@ -247,10 +258,19 @@ export class ProtocolFeeCap implements StructClass {
     return ProtocolFeeCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ProtocolFeeCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ProtocolFeeCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ProtocolFeeCap.cachedBcs) {
+      ProtocolFeeCap.cachedBcs = ProtocolFeeCap.instantiateBcs()
+    }
+    return ProtocolFeeCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ProtocolFeeCap {

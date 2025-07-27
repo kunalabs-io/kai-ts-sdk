@@ -60,6 +60,7 @@ export class TransferLimiter implements StructClass {
   }
 
   static reified(): TransferLimiterReified {
+    const reifiedBcs = TransferLimiter.bcs
     return {
       typeName: TransferLimiter.$typeName,
       fullTypeName: composeSuiType(
@@ -71,8 +72,8 @@ export class TransferLimiter implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TransferLimiter.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TransferLimiter.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TransferLimiter.fromBcs(data),
-      bcs: TransferLimiter.bcs,
+      fromBcs: (data: Uint8Array) => TransferLimiter.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferLimiter.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferLimiter.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TransferLimiter.fromSuiParsedData(content),
@@ -96,11 +97,20 @@ export class TransferLimiter implements StructClass {
     return TransferLimiter.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TransferLimiter', {
       transfer_limits: VecMap.bcs(BridgeRoute.bcs, bcs.u64()),
       transfer_records: VecMap.bcs(BridgeRoute.bcs, TransferRecord.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TransferLimiter.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TransferLimiter.cachedBcs) {
+      TransferLimiter.cachedBcs = TransferLimiter.instantiateBcs()
+    }
+    return TransferLimiter.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TransferLimiter {
@@ -255,6 +265,7 @@ export class TransferRecord implements StructClass {
   }
 
   static reified(): TransferRecordReified {
+    const reifiedBcs = TransferRecord.bcs
     return {
       typeName: TransferRecord.$typeName,
       fullTypeName: composeSuiType(
@@ -266,8 +277,8 @@ export class TransferRecord implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TransferRecord.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TransferRecord.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TransferRecord.fromBcs(data),
-      bcs: TransferRecord.bcs,
+      fromBcs: (data: Uint8Array) => TransferRecord.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferRecord.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferRecord.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TransferRecord.fromSuiParsedData(content),
@@ -291,13 +302,22 @@ export class TransferRecord implements StructClass {
     return TransferRecord.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TransferRecord', {
       hour_head: bcs.u64(),
       hour_tail: bcs.u64(),
       per_hour_amounts: bcs.vector(bcs.u64()),
       total_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TransferRecord.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TransferRecord.cachedBcs) {
+      TransferRecord.cachedBcs = TransferRecord.instantiateBcs()
+    }
+    return TransferRecord.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TransferRecord {
@@ -445,6 +465,7 @@ export class UpdateRouteLimitEvent implements StructClass {
   }
 
   static reified(): UpdateRouteLimitEventReified {
+    const reifiedBcs = UpdateRouteLimitEvent.bcs
     return {
       typeName: UpdateRouteLimitEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -457,8 +478,8 @@ export class UpdateRouteLimitEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateRouteLimitEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateRouteLimitEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateRouteLimitEvent.fromBcs(data),
-      bcs: UpdateRouteLimitEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateRouteLimitEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateRouteLimitEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateRouteLimitEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -484,12 +505,21 @@ export class UpdateRouteLimitEvent implements StructClass {
     return UpdateRouteLimitEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateRouteLimitEvent', {
       sending_chain: bcs.u8(),
       receiving_chain: bcs.u8(),
       new_limit: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateRouteLimitEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateRouteLimitEvent.cachedBcs) {
+      UpdateRouteLimitEvent.cachedBcs = UpdateRouteLimitEvent.instantiateBcs()
+    }
+    return UpdateRouteLimitEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateRouteLimitEvent {

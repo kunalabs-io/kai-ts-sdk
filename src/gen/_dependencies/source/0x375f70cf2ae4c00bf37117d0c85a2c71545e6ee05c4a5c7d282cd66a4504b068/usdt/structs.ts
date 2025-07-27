@@ -53,6 +53,7 @@ export class USDT implements StructClass {
   }
 
   static reified(): USDTReified {
+    const reifiedBcs = USDT.bcs
     return {
       typeName: USDT.$typeName,
       fullTypeName: composeSuiType(USDT.$typeName, ...[]) as `${typeof PKG_V1}::usdt::USDT`,
@@ -61,8 +62,8 @@ export class USDT implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => USDT.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => USDT.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => USDT.fromBcs(data),
-      bcs: USDT.bcs,
+      fromBcs: (data: Uint8Array) => USDT.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => USDT.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => USDT.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => USDT.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class USDT implements StructClass {
     return USDT.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('USDT', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof USDT.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!USDT.cachedBcs) {
+      USDT.cachedBcs = USDT.instantiateBcs()
+    }
+    return USDT.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): USDT {

@@ -55,6 +55,7 @@ export class RiskModels implements StructClass {
   }
 
   static reified(): RiskModelsReified {
+    const reifiedBcs = RiskModels.bcs
     return {
       typeName: RiskModels.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class RiskModels implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RiskModels.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModels.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModels.fromBcs(data),
-      bcs: RiskModels.bcs,
+      fromBcs: (data: Uint8Array) => RiskModels.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModels.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModels.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RiskModels.fromSuiParsedData(content),
@@ -91,10 +92,19 @@ export class RiskModels implements StructClass {
     return RiskModels.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RiskModels', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RiskModels.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RiskModels.cachedBcs) {
+      RiskModels.cachedBcs = RiskModels.instantiateBcs()
+    }
+    return RiskModels.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RiskModels {
@@ -232,6 +242,7 @@ export class RiskModel implements StructClass {
   }
 
   static reified(): RiskModelReified {
+    const reifiedBcs = RiskModel.bcs
     return {
       typeName: RiskModel.$typeName,
       fullTypeName: composeSuiType(
@@ -243,8 +254,8 @@ export class RiskModel implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RiskModel.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModel.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModel.fromBcs(data),
-      bcs: RiskModel.bcs,
+      fromBcs: (data: Uint8Array) => RiskModel.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModel.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModel.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RiskModel.fromSuiParsedData(content),
@@ -268,7 +279,7 @@ export class RiskModel implements StructClass {
     return RiskModel.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RiskModel', {
       type: TypeName.bcs,
       collateral_factor: FixedPoint32.bcs,
@@ -278,6 +289,15 @@ export class RiskModel implements StructClass {
       liquidation_revenue_factor: FixedPoint32.bcs,
       max_collateral_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RiskModel.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RiskModel.cachedBcs) {
+      RiskModel.cachedBcs = RiskModel.instantiateBcs()
+    }
+    return RiskModel.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RiskModel {
@@ -458,6 +478,7 @@ export class RiskModelChangeCreated implements StructClass {
   }
 
   static reified(): RiskModelChangeCreatedReified {
+    const reifiedBcs = RiskModelChangeCreated.bcs
     return {
       typeName: RiskModelChangeCreated.$typeName,
       fullTypeName: composeSuiType(
@@ -470,8 +491,8 @@ export class RiskModelChangeCreated implements StructClass {
       fromFields: (fields: Record<string, any>) => RiskModelChangeCreated.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RiskModelChangeCreated.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModelChangeCreated.fromBcs(data),
-      bcs: RiskModelChangeCreated.bcs,
+      fromBcs: (data: Uint8Array) => RiskModelChangeCreated.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModelChangeCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModelChangeCreated.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -497,13 +518,22 @@ export class RiskModelChangeCreated implements StructClass {
     return RiskModelChangeCreated.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RiskModelChangeCreated', {
       risk_model: RiskModel.bcs,
       current_epoch: bcs.u64(),
       delay_epoches: bcs.u64(),
       effective_epoches: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RiskModelChangeCreated.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RiskModelChangeCreated.cachedBcs) {
+      RiskModelChangeCreated.cachedBcs = RiskModelChangeCreated.instantiateBcs()
+    }
+    return RiskModelChangeCreated.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RiskModelChangeCreated {
@@ -644,6 +674,7 @@ export class RiskModelAdded implements StructClass {
   }
 
   static reified(): RiskModelAddedReified {
+    const reifiedBcs = RiskModelAdded.bcs
     return {
       typeName: RiskModelAdded.$typeName,
       fullTypeName: composeSuiType(
@@ -655,8 +686,8 @@ export class RiskModelAdded implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RiskModelAdded.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RiskModelAdded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RiskModelAdded.fromBcs(data),
-      bcs: RiskModelAdded.bcs,
+      fromBcs: (data: Uint8Array) => RiskModelAdded.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModelAdded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModelAdded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RiskModelAdded.fromSuiParsedData(content),
@@ -680,11 +711,20 @@ export class RiskModelAdded implements StructClass {
     return RiskModelAdded.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RiskModelAdded', {
       risk_model: RiskModel.bcs,
       current_epoch: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RiskModelAdded.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RiskModelAdded.cachedBcs) {
+      RiskModelAdded.cachedBcs = RiskModelAdded.instantiateBcs()
+    }
+    return RiskModelAdded.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RiskModelAdded {

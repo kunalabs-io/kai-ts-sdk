@@ -69,6 +69,7 @@ export class MintEvent implements StructClass {
   }
 
   static reified(): MintEventReified {
+    const reifiedBcs = MintEvent.bcs
     return {
       typeName: MintEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -80,8 +81,8 @@ export class MintEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => MintEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => MintEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => MintEvent.fromBcs(data),
-      bcs: MintEvent.bcs,
+      fromBcs: (data: Uint8Array) => MintEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => MintEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MintEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => MintEvent.fromSuiParsedData(content),
@@ -105,7 +106,7 @@ export class MintEvent implements StructClass {
     return MintEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('MintEvent', {
       minter: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -117,6 +118,15 @@ export class MintEvent implements StructClass {
       mint_amount: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof MintEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!MintEvent.cachedBcs) {
+      MintEvent.cachedBcs = MintEvent.instantiateBcs()
+    }
+    return MintEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): MintEvent {

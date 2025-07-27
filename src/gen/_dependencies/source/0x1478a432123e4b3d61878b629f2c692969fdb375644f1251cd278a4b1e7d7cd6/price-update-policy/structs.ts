@@ -82,6 +82,7 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): PriceUpdateRequestReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = PriceUpdateRequest.bcs
     return {
       typeName: PriceUpdateRequest.$typeName,
       fullTypeName: composeSuiType(
@@ -94,8 +95,8 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
       fromFields: (fields: Record<string, any>) => PriceUpdateRequest.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PriceUpdateRequest.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => PriceUpdateRequest.fromBcs(T0, data),
-      bcs: PriceUpdateRequest.bcs,
+      fromBcs: (data: Uint8Array) => PriceUpdateRequest.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdateRequest.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => PriceUpdateRequest.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -123,12 +124,21 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     return PriceUpdateRequest.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceUpdateRequest', {
       for: ID.bcs,
       receipts: VecSet.bcs(TypeName.bcs),
       price_feeds: bcs.vector(PriceFeed.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceUpdateRequest.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceUpdateRequest.cachedBcs) {
+      PriceUpdateRequest.cachedBcs = PriceUpdateRequest.instantiateBcs()
+    }
+    return PriceUpdateRequest.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -311,6 +321,7 @@ export class PriceUpdatePolicy implements StructClass {
   }
 
   static reified(): PriceUpdatePolicyReified {
+    const reifiedBcs = PriceUpdatePolicy.bcs
     return {
       typeName: PriceUpdatePolicy.$typeName,
       fullTypeName: composeSuiType(
@@ -322,8 +333,8 @@ export class PriceUpdatePolicy implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PriceUpdatePolicy.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PriceUpdatePolicy.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PriceUpdatePolicy.fromBcs(data),
-      bcs: PriceUpdatePolicy.bcs,
+      fromBcs: (data: Uint8Array) => PriceUpdatePolicy.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdatePolicy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceUpdatePolicy.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PriceUpdatePolicy.fromSuiParsedData(content),
@@ -347,11 +358,20 @@ export class PriceUpdatePolicy implements StructClass {
     return PriceUpdatePolicy.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceUpdatePolicy', {
       id: UID.bcs,
       rules: VecSet.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceUpdatePolicy.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceUpdatePolicy.cachedBcs) {
+      PriceUpdatePolicy.cachedBcs = PriceUpdatePolicy.instantiateBcs()
+    }
+    return PriceUpdatePolicy.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PriceUpdatePolicy {
@@ -482,6 +502,7 @@ export class PriceUpdatePolicyCap implements StructClass {
   }
 
   static reified(): PriceUpdatePolicyCapReified {
+    const reifiedBcs = PriceUpdatePolicyCap.bcs
     return {
       typeName: PriceUpdatePolicyCap.$typeName,
       fullTypeName: composeSuiType(
@@ -494,8 +515,8 @@ export class PriceUpdatePolicyCap implements StructClass {
       fromFields: (fields: Record<string, any>) => PriceUpdatePolicyCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PriceUpdatePolicyCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PriceUpdatePolicyCap.fromBcs(data),
-      bcs: PriceUpdatePolicyCap.bcs,
+      fromBcs: (data: Uint8Array) => PriceUpdatePolicyCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdatePolicyCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceUpdatePolicyCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -521,11 +542,20 @@ export class PriceUpdatePolicyCap implements StructClass {
     return PriceUpdatePolicyCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceUpdatePolicyCap', {
       id: UID.bcs,
       for: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceUpdatePolicyCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceUpdatePolicyCap.cachedBcs) {
+      PriceUpdatePolicyCap.cachedBcs = PriceUpdatePolicyCap.instantiateBcs()
+    }
+    return PriceUpdatePolicyCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PriceUpdatePolicyCap {

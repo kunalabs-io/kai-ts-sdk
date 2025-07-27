@@ -53,6 +53,7 @@ export class CollateralStats implements StructClass {
   }
 
   static reified(): CollateralStatsReified {
+    const reifiedBcs = CollateralStats.bcs
     return {
       typeName: CollateralStats.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class CollateralStats implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CollateralStats.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CollateralStats.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CollateralStats.fromBcs(data),
-      bcs: CollateralStats.bcs,
+      fromBcs: (data: Uint8Array) => CollateralStats.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralStats.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralStats.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CollateralStats.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class CollateralStats implements StructClass {
     return CollateralStats.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollateralStats', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollateralStats.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollateralStats.cachedBcs) {
+      CollateralStats.cachedBcs = CollateralStats.instantiateBcs()
+    }
+    return CollateralStats.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CollateralStats {
@@ -216,6 +226,7 @@ export class CollateralStat implements StructClass {
   }
 
   static reified(): CollateralStatReified {
+    const reifiedBcs = CollateralStat.bcs
     return {
       typeName: CollateralStat.$typeName,
       fullTypeName: composeSuiType(
@@ -227,8 +238,8 @@ export class CollateralStat implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CollateralStat.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CollateralStat.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CollateralStat.fromBcs(data),
-      bcs: CollateralStat.bcs,
+      fromBcs: (data: Uint8Array) => CollateralStat.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralStat.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralStat.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CollateralStat.fromSuiParsedData(content),
@@ -252,10 +263,19 @@ export class CollateralStat implements StructClass {
     return CollateralStat.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollateralStat', {
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollateralStat.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollateralStat.cachedBcs) {
+      CollateralStat.cachedBcs = CollateralStat.instantiateBcs()
+    }
+    return CollateralStat.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CollateralStat {

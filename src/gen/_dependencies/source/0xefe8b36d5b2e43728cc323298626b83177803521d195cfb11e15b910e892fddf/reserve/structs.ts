@@ -71,6 +71,7 @@ export class BalanceSheets implements StructClass {
   }
 
   static reified(): BalanceSheetsReified {
+    const reifiedBcs = BalanceSheets.bcs
     return {
       typeName: BalanceSheets.$typeName,
       fullTypeName: composeSuiType(
@@ -82,8 +83,8 @@ export class BalanceSheets implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BalanceSheets.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BalanceSheets.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BalanceSheets.fromBcs(data),
-      bcs: BalanceSheets.bcs,
+      fromBcs: (data: Uint8Array) => BalanceSheets.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BalanceSheets.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BalanceSheets.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BalanceSheets.fromSuiParsedData(content),
@@ -107,10 +108,19 @@ export class BalanceSheets implements StructClass {
     return BalanceSheets.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BalanceSheets', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BalanceSheets.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BalanceSheets.cachedBcs) {
+      BalanceSheets.cachedBcs = BalanceSheets.instantiateBcs()
+    }
+    return BalanceSheets.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BalanceSheets {
@@ -241,6 +251,7 @@ export class BalanceSheet implements StructClass {
   }
 
   static reified(): BalanceSheetReified {
+    const reifiedBcs = BalanceSheet.bcs
     return {
       typeName: BalanceSheet.$typeName,
       fullTypeName: composeSuiType(
@@ -252,8 +263,8 @@ export class BalanceSheet implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BalanceSheet.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BalanceSheet.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BalanceSheet.fromBcs(data),
-      bcs: BalanceSheet.bcs,
+      fromBcs: (data: Uint8Array) => BalanceSheet.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BalanceSheet.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BalanceSheet.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BalanceSheet.fromSuiParsedData(content),
@@ -277,13 +288,22 @@ export class BalanceSheet implements StructClass {
     return BalanceSheet.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BalanceSheet', {
       cash: bcs.u64(),
       debt: bcs.u64(),
       revenue: bcs.u64(),
       market_coin_supply: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BalanceSheet.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BalanceSheet.cachedBcs) {
+      BalanceSheet.cachedBcs = BalanceSheet.instantiateBcs()
+    }
+    return BalanceSheet.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BalanceSheet {
@@ -419,6 +439,7 @@ export class FlashLoanFees implements StructClass {
   }
 
   static reified(): FlashLoanFeesReified {
+    const reifiedBcs = FlashLoanFees.bcs
     return {
       typeName: FlashLoanFees.$typeName,
       fullTypeName: composeSuiType(
@@ -430,8 +451,8 @@ export class FlashLoanFees implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FlashLoanFees.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoanFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FlashLoanFees.fromBcs(data),
-      bcs: FlashLoanFees.bcs,
+      fromBcs: (data: Uint8Array) => FlashLoanFees.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FlashLoanFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FlashLoanFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FlashLoanFees.fromSuiParsedData(content),
@@ -455,10 +476,19 @@ export class FlashLoanFees implements StructClass {
     return FlashLoanFees.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FlashLoanFees', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FlashLoanFees.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FlashLoanFees.cachedBcs) {
+      FlashLoanFees.cachedBcs = FlashLoanFees.instantiateBcs()
+    }
+    return FlashLoanFees.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FlashLoanFees {
@@ -588,6 +618,7 @@ export class FlashLoan<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): FlashLoanReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = FlashLoan.bcs
     return {
       typeName: FlashLoan.$typeName,
       fullTypeName: composeSuiType(
@@ -599,8 +630,8 @@ export class FlashLoan<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => FlashLoan.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FlashLoan.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => FlashLoan.fromBcs(T0, data),
-      bcs: FlashLoan.bcs,
+      fromBcs: (data: Uint8Array) => FlashLoan.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FlashLoan.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => FlashLoan.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => FlashLoan.fromSuiParsedData(T0, content),
@@ -626,11 +657,20 @@ export class FlashLoan<T0 extends PhantomTypeArgument> implements StructClass {
     return FlashLoan.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FlashLoan', {
       loan_amount: bcs.u64(),
       fee: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FlashLoan.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FlashLoan.cachedBcs) {
+      FlashLoan.cachedBcs = FlashLoan.instantiateBcs()
+    }
+    return FlashLoan.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -808,6 +848,7 @@ export class MarketCoin<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): MarketCoinReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = MarketCoin.bcs
     return {
       typeName: MarketCoin.$typeName,
       fullTypeName: composeSuiType(
@@ -819,8 +860,8 @@ export class MarketCoin<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => MarketCoin.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => MarketCoin.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => MarketCoin.fromBcs(T0, data),
-      bcs: MarketCoin.bcs,
+      fromBcs: (data: Uint8Array) => MarketCoin.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => MarketCoin.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => MarketCoin.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => MarketCoin.fromSuiParsedData(T0, content),
@@ -846,10 +887,19 @@ export class MarketCoin<T0 extends PhantomTypeArgument> implements StructClass {
     return MarketCoin.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('MarketCoin', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof MarketCoin.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!MarketCoin.cachedBcs) {
+      MarketCoin.cachedBcs = MarketCoin.instantiateBcs()
+    }
+    return MarketCoin.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -1032,6 +1082,7 @@ export class Reserve implements StructClass {
   }
 
   static reified(): ReserveReified {
+    const reifiedBcs = Reserve.bcs
     return {
       typeName: Reserve.$typeName,
       fullTypeName: composeSuiType(
@@ -1043,8 +1094,8 @@ export class Reserve implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Reserve.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Reserve.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Reserve.fromBcs(data),
-      bcs: Reserve.bcs,
+      fromBcs: (data: Uint8Array) => Reserve.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Reserve.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Reserve.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Reserve.fromSuiParsedData(content),
@@ -1068,7 +1119,7 @@ export class Reserve implements StructClass {
     return Reserve.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Reserve', {
       id: UID.bcs,
       market_coin_supplies: SupplyBag.bcs,
@@ -1076,6 +1127,15 @@ export class Reserve implements StructClass {
       balance_sheets: WitTable.bcs(TypeName.bcs),
       flash_loan_fees: WitTable.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Reserve.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Reserve.cachedBcs) {
+      Reserve.cachedBcs = Reserve.instantiateBcs()
+    }
+    return Reserve.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Reserve {

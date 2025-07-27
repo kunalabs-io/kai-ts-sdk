@@ -116,6 +116,18 @@ export function getShareTypeForAsset(
   })
 }
 
+export function shareTypeMatchesAssetIfAnyExists(
+  tx: Transaction,
+  typeArgs: [string, string],
+  self: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::debt_bag::share_type_matches_asset_if_any_exists`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, self)],
+  })
+}
+
 export function isEmpty(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::is_empty`, arguments: [obj(tx, self)] })
 }

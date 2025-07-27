@@ -82,7 +82,24 @@ export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeA
   let apr = 0
   const unlockPerYear = unlockPerSecond * 60n * 60n * 24n * 365n
   if (tvl.int > 0n) {
-    apr = Number(unlockPerYear) / Number(tvl.int)
+    // caulcate average for BTC vaults because of satoshi rounding
+    if (['wBTC', 'LBTC', 'xBTC'].includes(vault.T.symbol)) {
+      const unlockPerSecond =
+        Number(vaultData.timeLockedProfit.unlockPerSecond) *
+        (1 - Number(vaultData.performanceFeeBps) / 10000)
+      const unlockDurationSec = Number(
+        vaultData.timeLockedProfit.finalUnlockTsSec - vaultData.timeLockedProfit.unlockStartTsSec
+      )
+      const normUnlockPerSecond =
+        (unlockPerSecond * Math.min(unlockDurationSec, 30 * 60)) / (30 * 60)
+
+      const unlockPerYear = normUnlockPerSecond * 60 * 60 * 24 * 365
+
+      apr = Number(unlockPerYear) / Number(tvl.int)
+    } else {
+      apr = Number(unlockPerYear) / Number(tvl.int)
+    }
+
     apy = calcContinuousApy(apr, 365)
   }
 

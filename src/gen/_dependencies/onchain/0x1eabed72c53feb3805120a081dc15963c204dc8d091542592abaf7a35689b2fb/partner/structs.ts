@@ -60,6 +60,7 @@ export class Partners implements StructClass {
   }
 
   static reified(): PartnersReified {
+    const reifiedBcs = Partners.bcs
     return {
       typeName: Partners.$typeName,
       fullTypeName: composeSuiType(
@@ -71,8 +72,8 @@ export class Partners implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Partners.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Partners.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Partners.fromBcs(data),
-      bcs: Partners.bcs,
+      fromBcs: (data: Uint8Array) => Partners.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Partners.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Partners.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Partners.fromSuiParsedData(content),
@@ -96,11 +97,20 @@ export class Partners implements StructClass {
     return Partners.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Partners', {
       id: UID.bcs,
       partners: VecMap.bcs(String.bcs, ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Partners.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Partners.cachedBcs) {
+      Partners.cachedBcs = Partners.instantiateBcs()
+    }
+    return Partners.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Partners {
@@ -237,6 +247,7 @@ export class PartnerCap implements StructClass {
   }
 
   static reified(): PartnerCapReified {
+    const reifiedBcs = PartnerCap.bcs
     return {
       typeName: PartnerCap.$typeName,
       fullTypeName: composeSuiType(
@@ -248,8 +259,8 @@ export class PartnerCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PartnerCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PartnerCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PartnerCap.fromBcs(data),
-      bcs: PartnerCap.bcs,
+      fromBcs: (data: Uint8Array) => PartnerCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PartnerCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PartnerCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PartnerCap.fromSuiParsedData(content),
@@ -273,12 +284,21 @@ export class PartnerCap implements StructClass {
     return PartnerCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PartnerCap', {
       id: UID.bcs,
       name: String.bcs,
       partner_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PartnerCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PartnerCap.cachedBcs) {
+      PartnerCap.cachedBcs = PartnerCap.instantiateBcs()
+    }
+    return PartnerCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PartnerCap {
@@ -425,6 +445,7 @@ export class Partner implements StructClass {
   }
 
   static reified(): PartnerReified {
+    const reifiedBcs = Partner.bcs
     return {
       typeName: Partner.$typeName,
       fullTypeName: composeSuiType(
@@ -436,8 +457,8 @@ export class Partner implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Partner.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Partner.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Partner.fromBcs(data),
-      bcs: Partner.bcs,
+      fromBcs: (data: Uint8Array) => Partner.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Partner.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Partner.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Partner.fromSuiParsedData(content),
@@ -461,7 +482,7 @@ export class Partner implements StructClass {
     return Partner.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Partner', {
       id: UID.bcs,
       name: String.bcs,
@@ -470,6 +491,15 @@ export class Partner implements StructClass {
       end_time: bcs.u64(),
       balances: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Partner.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Partner.cachedBcs) {
+      Partner.cachedBcs = Partner.instantiateBcs()
+    }
+    return Partner.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Partner {
@@ -613,6 +643,7 @@ export class InitPartnerEvent implements StructClass {
   }
 
   static reified(): InitPartnerEventReified {
+    const reifiedBcs = InitPartnerEvent.bcs
     return {
       typeName: InitPartnerEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -624,8 +655,8 @@ export class InitPartnerEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => InitPartnerEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => InitPartnerEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InitPartnerEvent.fromBcs(data),
-      bcs: InitPartnerEvent.bcs,
+      fromBcs: (data: Uint8Array) => InitPartnerEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InitPartnerEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InitPartnerEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => InitPartnerEvent.fromSuiParsedData(content),
@@ -649,10 +680,19 @@ export class InitPartnerEvent implements StructClass {
     return InitPartnerEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InitPartnerEvent', {
       partners_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InitPartnerEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InitPartnerEvent.cachedBcs) {
+      InitPartnerEvent.cachedBcs = InitPartnerEvent.instantiateBcs()
+    }
+    return InitPartnerEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InitPartnerEvent {
@@ -794,6 +834,7 @@ export class CreatePartnerEvent implements StructClass {
   }
 
   static reified(): CreatePartnerEventReified {
+    const reifiedBcs = CreatePartnerEvent.bcs
     return {
       typeName: CreatePartnerEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -805,8 +846,8 @@ export class CreatePartnerEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CreatePartnerEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CreatePartnerEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreatePartnerEvent.fromBcs(data),
-      bcs: CreatePartnerEvent.bcs,
+      fromBcs: (data: Uint8Array) => CreatePartnerEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreatePartnerEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreatePartnerEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CreatePartnerEvent.fromSuiParsedData(content),
@@ -830,7 +871,7 @@ export class CreatePartnerEvent implements StructClass {
     return CreatePartnerEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CreatePartnerEvent', {
       recipient: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -843,6 +884,15 @@ export class CreatePartnerEvent implements StructClass {
       start_time: bcs.u64(),
       end_time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreatePartnerEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreatePartnerEvent.cachedBcs) {
+      CreatePartnerEvent.cachedBcs = CreatePartnerEvent.instantiateBcs()
+    }
+    return CreatePartnerEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CreatePartnerEvent {
@@ -999,6 +1049,7 @@ export class UpdateRefFeeRateEvent implements StructClass {
   }
 
   static reified(): UpdateRefFeeRateEventReified {
+    const reifiedBcs = UpdateRefFeeRateEvent.bcs
     return {
       typeName: UpdateRefFeeRateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1011,8 +1062,8 @@ export class UpdateRefFeeRateEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateRefFeeRateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateRefFeeRateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateRefFeeRateEvent.fromBcs(data),
-      bcs: UpdateRefFeeRateEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateRefFeeRateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateRefFeeRateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateRefFeeRateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1038,12 +1089,21 @@ export class UpdateRefFeeRateEvent implements StructClass {
     return UpdateRefFeeRateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateRefFeeRateEvent', {
       partner_id: ID.bcs,
       old_fee_rate: bcs.u64(),
       new_fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateRefFeeRateEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateRefFeeRateEvent.cachedBcs) {
+      UpdateRefFeeRateEvent.cachedBcs = UpdateRefFeeRateEvent.instantiateBcs()
+    }
+    return UpdateRefFeeRateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateRefFeeRateEvent {
@@ -1183,6 +1243,7 @@ export class UpdateTimeRangeEvent implements StructClass {
   }
 
   static reified(): UpdateTimeRangeEventReified {
+    const reifiedBcs = UpdateTimeRangeEvent.bcs
     return {
       typeName: UpdateTimeRangeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1195,8 +1256,8 @@ export class UpdateTimeRangeEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateTimeRangeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateTimeRangeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateTimeRangeEvent.fromBcs(data),
-      bcs: UpdateTimeRangeEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateTimeRangeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateTimeRangeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateTimeRangeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1222,12 +1283,21 @@ export class UpdateTimeRangeEvent implements StructClass {
     return UpdateTimeRangeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateTimeRangeEvent', {
       partner_id: ID.bcs,
       start_time: bcs.u64(),
       end_time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateTimeRangeEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateTimeRangeEvent.cachedBcs) {
+      UpdateTimeRangeEvent.cachedBcs = UpdateTimeRangeEvent.instantiateBcs()
+    }
+    return UpdateTimeRangeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateTimeRangeEvent {
@@ -1367,6 +1437,7 @@ export class ReceiveRefFeeEvent implements StructClass {
   }
 
   static reified(): ReceiveRefFeeEventReified {
+    const reifiedBcs = ReceiveRefFeeEvent.bcs
     return {
       typeName: ReceiveRefFeeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1378,8 +1449,8 @@ export class ReceiveRefFeeEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ReceiveRefFeeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ReceiveRefFeeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ReceiveRefFeeEvent.fromBcs(data),
-      bcs: ReceiveRefFeeEvent.bcs,
+      fromBcs: (data: Uint8Array) => ReceiveRefFeeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ReceiveRefFeeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReceiveRefFeeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ReceiveRefFeeEvent.fromSuiParsedData(content),
@@ -1403,12 +1474,21 @@ export class ReceiveRefFeeEvent implements StructClass {
     return ReceiveRefFeeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ReceiveRefFeeEvent', {
       partner_id: ID.bcs,
       amount: bcs.u64(),
       type_name: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ReceiveRefFeeEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ReceiveRefFeeEvent.cachedBcs) {
+      ReceiveRefFeeEvent.cachedBcs = ReceiveRefFeeEvent.instantiateBcs()
+    }
+    return ReceiveRefFeeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ReceiveRefFeeEvent {
@@ -1546,6 +1626,7 @@ export class ClaimRefFeeEvent implements StructClass {
   }
 
   static reified(): ClaimRefFeeEventReified {
+    const reifiedBcs = ClaimRefFeeEvent.bcs
     return {
       typeName: ClaimRefFeeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1557,8 +1638,8 @@ export class ClaimRefFeeEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ClaimRefFeeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ClaimRefFeeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ClaimRefFeeEvent.fromBcs(data),
-      bcs: ClaimRefFeeEvent.bcs,
+      fromBcs: (data: Uint8Array) => ClaimRefFeeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ClaimRefFeeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ClaimRefFeeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ClaimRefFeeEvent.fromSuiParsedData(content),
@@ -1582,12 +1663,21 @@ export class ClaimRefFeeEvent implements StructClass {
     return ClaimRefFeeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ClaimRefFeeEvent', {
       partner_id: ID.bcs,
       amount: bcs.u64(),
       type_name: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ClaimRefFeeEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ClaimRefFeeEvent.cachedBcs) {
+      ClaimRefFeeEvent.cachedBcs = ClaimRefFeeEvent.instantiateBcs()
+    }
+    return ClaimRefFeeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ClaimRefFeeEvent {

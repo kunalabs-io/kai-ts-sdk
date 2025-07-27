@@ -73,6 +73,7 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): OwnershipReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = Ownership.bcs
     return {
       typeName: Ownership.$typeName,
       fullTypeName: composeSuiType(
@@ -84,8 +85,8 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => Ownership.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Ownership.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Ownership.fromBcs(T0, data),
-      bcs: Ownership.bcs,
+      fromBcs: (data: Uint8Array) => Ownership.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Ownership.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => Ownership.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => Ownership.fromSuiParsedData(T0, content),
@@ -111,11 +112,20 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     return Ownership.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Ownership', {
       id: UID.bcs,
       of: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Ownership.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Ownership.cachedBcs) {
+      Ownership.cachedBcs = Ownership.instantiateBcs()
+    }
+    return Ownership.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

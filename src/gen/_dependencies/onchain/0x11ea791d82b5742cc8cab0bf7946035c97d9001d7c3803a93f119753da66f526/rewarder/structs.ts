@@ -71,6 +71,7 @@ export class PoolRewarderInfo implements StructClass {
   }
 
   static reified(): PoolRewarderInfoReified {
+    const reifiedBcs = PoolRewarderInfo.bcs
     return {
       typeName: PoolRewarderInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -82,8 +83,8 @@ export class PoolRewarderInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PoolRewarderInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PoolRewarderInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolRewarderInfo.fromBcs(data),
-      bcs: PoolRewarderInfo.bcs,
+      fromBcs: (data: Uint8Array) => PoolRewarderInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolRewarderInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolRewarderInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PoolRewarderInfo.fromSuiParsedData(content),
@@ -107,7 +108,7 @@ export class PoolRewarderInfo implements StructClass {
     return PoolRewarderInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PoolRewarderInfo', {
       allocate_point: bcs.u64(),
       acc_per_share: bcs.u128(),
@@ -115,6 +116,15 @@ export class PoolRewarderInfo implements StructClass {
       reward_released: bcs.u128(),
       reward_harvested: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PoolRewarderInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PoolRewarderInfo.cachedBcs) {
+      PoolRewarderInfo.cachedBcs = PoolRewarderInfo.instantiateBcs()
+    }
+    return PoolRewarderInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PoolRewarderInfo {
@@ -272,6 +282,7 @@ export class Rewarder implements StructClass {
   }
 
   static reified(): RewarderReified {
+    const reifiedBcs = Rewarder.bcs
     return {
       typeName: Rewarder.$typeName,
       fullTypeName: composeSuiType(
@@ -283,8 +294,8 @@ export class Rewarder implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Rewarder.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Rewarder.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Rewarder.fromBcs(data),
-      bcs: Rewarder.bcs,
+      fromBcs: (data: Uint8Array) => Rewarder.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Rewarder.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Rewarder.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Rewarder.fromSuiParsedData(content),
@@ -308,7 +319,7 @@ export class Rewarder implements StructClass {
     return Rewarder.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Rewarder', {
       reward_coin: TypeName.bcs,
       total_allocate_point: bcs.u64(),
@@ -318,6 +329,15 @@ export class Rewarder implements StructClass {
       total_reward_harvested: bcs.u64(),
       pools: LinkedTable.bcs(ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Rewarder.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Rewarder.cachedBcs) {
+      Rewarder.cachedBcs = Rewarder.instantiateBcs()
+    }
+    return Rewarder.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Rewarder {
@@ -483,6 +503,7 @@ export class RewarderManager implements StructClass {
   }
 
   static reified(): RewarderManagerReified {
+    const reifiedBcs = RewarderManager.bcs
     return {
       typeName: RewarderManager.$typeName,
       fullTypeName: composeSuiType(
@@ -494,8 +515,8 @@ export class RewarderManager implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RewarderManager.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewarderManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewarderManager.fromBcs(data),
-      bcs: RewarderManager.bcs,
+      fromBcs: (data: Uint8Array) => RewarderManager.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewarderManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewarderManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewarderManager.fromSuiParsedData(content),
@@ -519,13 +540,22 @@ export class RewarderManager implements StructClass {
     return RewarderManager.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewarderManager', {
       id: UID.bcs,
       vault: Bag.bcs,
       pool_shares: LinkedTable.bcs(ID.bcs),
       rewarders: LinkedTable.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewarderManager.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewarderManager.cachedBcs) {
+      RewarderManager.cachedBcs = RewarderManager.instantiateBcs()
+    }
+    return RewarderManager.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewarderManager {
@@ -682,6 +712,7 @@ export class InitRewarderManagerEvent implements StructClass {
   }
 
   static reified(): InitRewarderManagerEventReified {
+    const reifiedBcs = InitRewarderManagerEvent.bcs
     return {
       typeName: InitRewarderManagerEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -694,8 +725,8 @@ export class InitRewarderManagerEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => InitRewarderManagerEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         InitRewarderManagerEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InitRewarderManagerEvent.fromBcs(data),
-      bcs: InitRewarderManagerEvent.bcs,
+      fromBcs: (data: Uint8Array) => InitRewarderManagerEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InitRewarderManagerEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InitRewarderManagerEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -721,10 +752,19 @@ export class InitRewarderManagerEvent implements StructClass {
     return InitRewarderManagerEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InitRewarderManagerEvent', {
       id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InitRewarderManagerEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InitRewarderManagerEvent.cachedBcs) {
+      InitRewarderManagerEvent.cachedBcs = InitRewarderManagerEvent.instantiateBcs()
+    }
+    return InitRewarderManagerEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InitRewarderManagerEvent {
@@ -856,6 +896,7 @@ export class CreateRewarderEvent implements StructClass {
   }
 
   static reified(): CreateRewarderEventReified {
+    const reifiedBcs = CreateRewarderEvent.bcs
     return {
       typeName: CreateRewarderEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -867,8 +908,8 @@ export class CreateRewarderEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CreateRewarderEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CreateRewarderEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreateRewarderEvent.fromBcs(data),
-      bcs: CreateRewarderEvent.bcs,
+      fromBcs: (data: Uint8Array) => CreateRewarderEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreateRewarderEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreateRewarderEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CreateRewarderEvent.fromSuiParsedData(content),
@@ -892,11 +933,20 @@ export class CreateRewarderEvent implements StructClass {
     return CreateRewarderEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CreateRewarderEvent', {
       reward_coin: TypeName.bcs,
       emission_per_second: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreateRewarderEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreateRewarderEvent.cachedBcs) {
+      CreateRewarderEvent.cachedBcs = CreateRewarderEvent.instantiateBcs()
+    }
+    return CreateRewarderEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CreateRewarderEvent {
@@ -1027,6 +1077,7 @@ export class UpdateRewarderEvent implements StructClass {
   }
 
   static reified(): UpdateRewarderEventReified {
+    const reifiedBcs = UpdateRewarderEvent.bcs
     return {
       typeName: UpdateRewarderEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1038,8 +1089,8 @@ export class UpdateRewarderEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateRewarderEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateRewarderEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateRewarderEvent.fromBcs(data),
-      bcs: UpdateRewarderEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateRewarderEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateRewarderEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateRewarderEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateRewarderEvent.fromSuiParsedData(content),
@@ -1063,11 +1114,20 @@ export class UpdateRewarderEvent implements StructClass {
     return UpdateRewarderEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateRewarderEvent', {
       reward_coin: TypeName.bcs,
       emission_per_second: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateRewarderEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateRewarderEvent.cachedBcs) {
+      UpdateRewarderEvent.cachedBcs = UpdateRewarderEvent.instantiateBcs()
+    }
+    return UpdateRewarderEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateRewarderEvent {
@@ -1201,6 +1261,7 @@ export class DepositEvent implements StructClass {
   }
 
   static reified(): DepositEventReified {
+    const reifiedBcs = DepositEvent.bcs
     return {
       typeName: DepositEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1212,8 +1273,8 @@ export class DepositEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DepositEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DepositEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DepositEvent.fromBcs(data),
-      bcs: DepositEvent.bcs,
+      fromBcs: (data: Uint8Array) => DepositEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DepositEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
@@ -1237,12 +1298,21 @@ export class DepositEvent implements StructClass {
     return DepositEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DepositEvent', {
       reward_type: TypeName.bcs,
       deposit_amount: bcs.u64(),
       after_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DepositEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DepositEvent.cachedBcs) {
+      DepositEvent.cachedBcs = DepositEvent.instantiateBcs()
+    }
+    return DepositEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DepositEvent {
@@ -1383,6 +1453,7 @@ export class EmergentWithdrawEvent implements StructClass {
   }
 
   static reified(): EmergentWithdrawEventReified {
+    const reifiedBcs = EmergentWithdrawEvent.bcs
     return {
       typeName: EmergentWithdrawEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1395,8 +1466,8 @@ export class EmergentWithdrawEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => EmergentWithdrawEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         EmergentWithdrawEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmergentWithdrawEvent.fromBcs(data),
-      bcs: EmergentWithdrawEvent.bcs,
+      fromBcs: (data: Uint8Array) => EmergentWithdrawEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmergentWithdrawEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmergentWithdrawEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1422,12 +1493,21 @@ export class EmergentWithdrawEvent implements StructClass {
     return EmergentWithdrawEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmergentWithdrawEvent', {
       reward_type: TypeName.bcs,
       withdraw_amount: bcs.u64(),
       after_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmergentWithdrawEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmergentWithdrawEvent.cachedBcs) {
+      EmergentWithdrawEvent.cachedBcs = EmergentWithdrawEvent.instantiateBcs()
+    }
+    return EmergentWithdrawEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmergentWithdrawEvent {

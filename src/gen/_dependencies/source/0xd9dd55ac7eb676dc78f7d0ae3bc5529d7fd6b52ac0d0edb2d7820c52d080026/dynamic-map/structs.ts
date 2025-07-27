@@ -73,6 +73,7 @@ export class DynamicMap<K extends PhantomTypeArgument> implements StructClass {
   static reified<K extends PhantomReified<PhantomTypeArgument>>(
     K: K
   ): DynamicMapReified<ToPhantomTypeArgument<K>> {
+    const reifiedBcs = DynamicMap.bcs
     return {
       typeName: DynamicMap.$typeName,
       fullTypeName: composeSuiType(
@@ -84,8 +85,8 @@ export class DynamicMap<K extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [K],
       fromFields: (fields: Record<string, any>) => DynamicMap.fromFields(K, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DynamicMap.fromFieldsWithTypes(K, item),
-      fromBcs: (data: Uint8Array) => DynamicMap.fromBcs(K, data),
-      bcs: DynamicMap.bcs,
+      fromBcs: (data: Uint8Array) => DynamicMap.fromFields(K, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DynamicMap.fromJSONField(K, field),
       fromJSON: (json: Record<string, any>) => DynamicMap.fromJSON(K, json),
       fromSuiParsedData: (content: SuiParsedData) => DynamicMap.fromSuiParsedData(K, content),
@@ -111,11 +112,20 @@ export class DynamicMap<K extends PhantomTypeArgument> implements StructClass {
     return DynamicMap.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DynamicMap', {
       id: UID.bcs,
       size: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DynamicMap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DynamicMap.cachedBcs) {
+      DynamicMap.cachedBcs = DynamicMap.instantiateBcs()
+    }
+    return DynamicMap.cachedBcs
   }
 
   static fromFields<K extends PhantomReified<PhantomTypeArgument>>(

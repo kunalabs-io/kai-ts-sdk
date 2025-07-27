@@ -69,6 +69,7 @@ export class Unit implements StructClass {
   }
 
   static reified(): UnitReified {
+    const reifiedBcs = Unit.bcs
     return {
       typeName: Unit.$typeName,
       fullTypeName: composeSuiType(Unit.$typeName, ...[]) as `${typeof PKG_V1}::set::Unit`,
@@ -77,8 +78,8 @@ export class Unit implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Unit.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Unit.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Unit.fromBcs(data),
-      bcs: Unit.bcs,
+      fromBcs: (data: Uint8Array) => Unit.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Unit.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Unit.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Unit.fromSuiParsedData(content),
@@ -102,10 +103,19 @@ export class Unit implements StructClass {
     return Unit.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Unit', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Unit.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Unit.cachedBcs) {
+      Unit.cachedBcs = Unit.instantiateBcs()
+    }
+    return Unit.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Unit {
@@ -228,6 +238,7 @@ export class Set<A extends TypeArgument> implements StructClass {
   }
 
   static reified<A extends Reified<TypeArgument, any>>(A: A): SetReified<ToTypeArgument<A>> {
+    const reifiedBcs = Set.bcs(toBcs(A))
     return {
       typeName: Set.$typeName,
       fullTypeName: composeSuiType(
@@ -239,8 +250,8 @@ export class Set<A extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [A],
       fromFields: (fields: Record<string, any>) => Set.fromFields(A, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Set.fromFieldsWithTypes(A, item),
-      fromBcs: (data: Uint8Array) => Set.fromBcs(A, data),
-      bcs: Set.bcs(toBcs(A)),
+      fromBcs: (data: Uint8Array) => Set.fromFields(A, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Set.fromJSONField(A, field),
       fromJSON: (json: Record<string, any>) => Set.fromJSON(A, json),
       fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(A, content),
@@ -266,12 +277,21 @@ export class Set<A extends TypeArgument> implements StructClass {
     return Set.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <A extends BcsType<any>>(A: A) =>
       bcs.struct(`Set<${A.name}>`, {
         keys: bcs.vector(A),
         elems: Table.bcs,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof Set.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Set.cachedBcs) {
+      Set.cachedBcs = Set.instantiateBcs()
+    }
+    return Set.cachedBcs
   }
 
   static fromFields<A extends Reified<TypeArgument, any>>(

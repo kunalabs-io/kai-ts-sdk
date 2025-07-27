@@ -67,6 +67,7 @@ export class CollateralDepositEvent implements StructClass {
   }
 
   static reified(): CollateralDepositEventReified {
+    const reifiedBcs = CollateralDepositEvent.bcs
     return {
       typeName: CollateralDepositEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -79,8 +80,8 @@ export class CollateralDepositEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CollateralDepositEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CollateralDepositEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CollateralDepositEvent.fromBcs(data),
-      bcs: CollateralDepositEvent.bcs,
+      fromBcs: (data: Uint8Array) => CollateralDepositEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralDepositEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralDepositEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -106,7 +107,7 @@ export class CollateralDepositEvent implements StructClass {
     return CollateralDepositEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollateralDepositEvent', {
       provider: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -116,6 +117,15 @@ export class CollateralDepositEvent implements StructClass {
       deposit_asset: TypeName.bcs,
       deposit_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollateralDepositEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollateralDepositEvent.cachedBcs) {
+      CollateralDepositEvent.cachedBcs = CollateralDepositEvent.instantiateBcs()
+    }
+    return CollateralDepositEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CollateralDepositEvent {

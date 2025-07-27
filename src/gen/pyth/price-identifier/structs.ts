@@ -56,6 +56,7 @@ export class PriceIdentifier implements StructClass {
   }
 
   static reified(): PriceIdentifierReified {
+    const reifiedBcs = PriceIdentifier.bcs
     return {
       typeName: PriceIdentifier.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class PriceIdentifier implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PriceIdentifier.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PriceIdentifier.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PriceIdentifier.fromBcs(data),
-      bcs: PriceIdentifier.bcs,
+      fromBcs: (data: Uint8Array) => PriceIdentifier.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceIdentifier.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceIdentifier.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PriceIdentifier.fromSuiParsedData(content),
@@ -92,10 +93,19 @@ export class PriceIdentifier implements StructClass {
     return PriceIdentifier.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceIdentifier', {
       bytes: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceIdentifier.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceIdentifier.cachedBcs) {
+      PriceIdentifier.cachedBcs = PriceIdentifier.instantiateBcs()
+    }
+    return PriceIdentifier.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PriceIdentifier {

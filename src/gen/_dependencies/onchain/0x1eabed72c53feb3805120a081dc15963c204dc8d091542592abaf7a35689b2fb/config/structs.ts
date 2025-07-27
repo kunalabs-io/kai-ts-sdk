@@ -56,6 +56,7 @@ export class AdminCap implements StructClass {
   }
 
   static reified(): AdminCapReified {
+    const reifiedBcs = AdminCap.bcs
     return {
       typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class AdminCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(data),
-      bcs: AdminCap.bcs,
+      fromBcs: (data: Uint8Array) => AdminCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
@@ -92,10 +93,19 @@ export class AdminCap implements StructClass {
     return AdminCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminCap.cachedBcs) {
+      AdminCap.cachedBcs = AdminCap.instantiateBcs()
+    }
+    return AdminCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AdminCap {
@@ -213,6 +223,7 @@ export class ProtocolFeeClaimCap implements StructClass {
   }
 
   static reified(): ProtocolFeeClaimCapReified {
+    const reifiedBcs = ProtocolFeeClaimCap.bcs
     return {
       typeName: ProtocolFeeClaimCap.$typeName,
       fullTypeName: composeSuiType(
@@ -224,8 +235,8 @@ export class ProtocolFeeClaimCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ProtocolFeeClaimCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ProtocolFeeClaimCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ProtocolFeeClaimCap.fromBcs(data),
-      bcs: ProtocolFeeClaimCap.bcs,
+      fromBcs: (data: Uint8Array) => ProtocolFeeClaimCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ProtocolFeeClaimCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ProtocolFeeClaimCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ProtocolFeeClaimCap.fromSuiParsedData(content),
@@ -249,10 +260,19 @@ export class ProtocolFeeClaimCap implements StructClass {
     return ProtocolFeeClaimCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ProtocolFeeClaimCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ProtocolFeeClaimCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ProtocolFeeClaimCap.cachedBcs) {
+      ProtocolFeeClaimCap.cachedBcs = ProtocolFeeClaimCap.instantiateBcs()
+    }
+    return ProtocolFeeClaimCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ProtocolFeeClaimCap {
@@ -375,6 +395,7 @@ export class FeeTier implements StructClass {
   }
 
   static reified(): FeeTierReified {
+    const reifiedBcs = FeeTier.bcs
     return {
       typeName: FeeTier.$typeName,
       fullTypeName: composeSuiType(FeeTier.$typeName, ...[]) as `${typeof PKG_V1}::config::FeeTier`,
@@ -383,8 +404,8 @@ export class FeeTier implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FeeTier.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FeeTier.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FeeTier.fromBcs(data),
-      bcs: FeeTier.bcs,
+      fromBcs: (data: Uint8Array) => FeeTier.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FeeTier.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FeeTier.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FeeTier.fromSuiParsedData(content),
@@ -408,11 +429,20 @@ export class FeeTier implements StructClass {
     return FeeTier.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FeeTier', {
       tick_spacing: bcs.u32(),
       fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FeeTier.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FeeTier.cachedBcs) {
+      FeeTier.cachedBcs = FeeTier.instantiateBcs()
+    }
+    return FeeTier.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FeeTier {
@@ -552,6 +582,7 @@ export class GlobalConfig implements StructClass {
   }
 
   static reified(): GlobalConfigReified {
+    const reifiedBcs = GlobalConfig.bcs
     return {
       typeName: GlobalConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -563,8 +594,8 @@ export class GlobalConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GlobalConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GlobalConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GlobalConfig.fromBcs(data),
-      bcs: GlobalConfig.bcs,
+      fromBcs: (data: Uint8Array) => GlobalConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GlobalConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GlobalConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GlobalConfig.fromSuiParsedData(content),
@@ -588,7 +619,7 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GlobalConfig', {
       id: UID.bcs,
       protocol_fee_rate: bcs.u64(),
@@ -596,6 +627,15 @@ export class GlobalConfig implements StructClass {
       acl: ACL.bcs,
       package_version: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GlobalConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GlobalConfig.cachedBcs) {
+      GlobalConfig.cachedBcs = GlobalConfig.instantiateBcs()
+    }
+    return GlobalConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GlobalConfig {
@@ -741,6 +781,7 @@ export class InitConfigEvent implements StructClass {
   }
 
   static reified(): InitConfigEventReified {
+    const reifiedBcs = InitConfigEvent.bcs
     return {
       typeName: InitConfigEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -752,8 +793,8 @@ export class InitConfigEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => InitConfigEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => InitConfigEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InitConfigEvent.fromBcs(data),
-      bcs: InitConfigEvent.bcs,
+      fromBcs: (data: Uint8Array) => InitConfigEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InitConfigEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InitConfigEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => InitConfigEvent.fromSuiParsedData(content),
@@ -777,11 +818,20 @@ export class InitConfigEvent implements StructClass {
     return InitConfigEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InitConfigEvent', {
       admin_cap_id: ID.bcs,
       global_config_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InitConfigEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InitConfigEvent.cachedBcs) {
+      InitConfigEvent.cachedBcs = InitConfigEvent.instantiateBcs()
+    }
+    return InitConfigEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InitConfigEvent {
@@ -912,6 +962,7 @@ export class UpdateFeeRateEvent implements StructClass {
   }
 
   static reified(): UpdateFeeRateEventReified {
+    const reifiedBcs = UpdateFeeRateEvent.bcs
     return {
       typeName: UpdateFeeRateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -923,8 +974,8 @@ export class UpdateFeeRateEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateFeeRateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateFeeRateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateFeeRateEvent.fromBcs(data),
-      bcs: UpdateFeeRateEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateFeeRateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateFeeRateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateFeeRateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFeeRateEvent.fromSuiParsedData(content),
@@ -948,11 +999,20 @@ export class UpdateFeeRateEvent implements StructClass {
     return UpdateFeeRateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateFeeRateEvent', {
       old_fee_rate: bcs.u64(),
       new_fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateFeeRateEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateFeeRateEvent.cachedBcs) {
+      UpdateFeeRateEvent.cachedBcs = UpdateFeeRateEvent.instantiateBcs()
+    }
+    return UpdateFeeRateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateFeeRateEvent {
@@ -1083,6 +1143,7 @@ export class AddFeeTierEvent implements StructClass {
   }
 
   static reified(): AddFeeTierEventReified {
+    const reifiedBcs = AddFeeTierEvent.bcs
     return {
       typeName: AddFeeTierEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1094,8 +1155,8 @@ export class AddFeeTierEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddFeeTierEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddFeeTierEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddFeeTierEvent.fromBcs(data),
-      bcs: AddFeeTierEvent.bcs,
+      fromBcs: (data: Uint8Array) => AddFeeTierEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddFeeTierEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddFeeTierEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddFeeTierEvent.fromSuiParsedData(content),
@@ -1119,11 +1180,20 @@ export class AddFeeTierEvent implements StructClass {
     return AddFeeTierEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddFeeTierEvent', {
       tick_spacing: bcs.u32(),
       fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddFeeTierEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddFeeTierEvent.cachedBcs) {
+      AddFeeTierEvent.cachedBcs = AddFeeTierEvent.instantiateBcs()
+    }
+    return AddFeeTierEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddFeeTierEvent {
@@ -1257,6 +1327,7 @@ export class UpdateFeeTierEvent implements StructClass {
   }
 
   static reified(): UpdateFeeTierEventReified {
+    const reifiedBcs = UpdateFeeTierEvent.bcs
     return {
       typeName: UpdateFeeTierEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1268,8 +1339,8 @@ export class UpdateFeeTierEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateFeeTierEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateFeeTierEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateFeeTierEvent.fromBcs(data),
-      bcs: UpdateFeeTierEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateFeeTierEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateFeeTierEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateFeeTierEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFeeTierEvent.fromSuiParsedData(content),
@@ -1293,12 +1364,21 @@ export class UpdateFeeTierEvent implements StructClass {
     return UpdateFeeTierEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateFeeTierEvent', {
       tick_spacing: bcs.u32(),
       old_fee_rate: bcs.u64(),
       new_fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateFeeTierEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateFeeTierEvent.cachedBcs) {
+      UpdateFeeTierEvent.cachedBcs = UpdateFeeTierEvent.instantiateBcs()
+    }
+    return UpdateFeeTierEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateFeeTierEvent {
@@ -1433,6 +1513,7 @@ export class DeleteFeeTierEvent implements StructClass {
   }
 
   static reified(): DeleteFeeTierEventReified {
+    const reifiedBcs = DeleteFeeTierEvent.bcs
     return {
       typeName: DeleteFeeTierEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1444,8 +1525,8 @@ export class DeleteFeeTierEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DeleteFeeTierEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DeleteFeeTierEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeleteFeeTierEvent.fromBcs(data),
-      bcs: DeleteFeeTierEvent.bcs,
+      fromBcs: (data: Uint8Array) => DeleteFeeTierEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeleteFeeTierEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeleteFeeTierEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeleteFeeTierEvent.fromSuiParsedData(content),
@@ -1469,11 +1550,20 @@ export class DeleteFeeTierEvent implements StructClass {
     return DeleteFeeTierEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeleteFeeTierEvent', {
       tick_spacing: bcs.u32(),
       fee_rate: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeleteFeeTierEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DeleteFeeTierEvent.cachedBcs) {
+      DeleteFeeTierEvent.cachedBcs = DeleteFeeTierEvent.instantiateBcs()
+    }
+    return DeleteFeeTierEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeleteFeeTierEvent {
@@ -1604,6 +1694,7 @@ export class SetRolesEvent implements StructClass {
   }
 
   static reified(): SetRolesEventReified {
+    const reifiedBcs = SetRolesEvent.bcs
     return {
       typeName: SetRolesEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1615,8 +1706,8 @@ export class SetRolesEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SetRolesEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SetRolesEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SetRolesEvent.fromBcs(data),
-      bcs: SetRolesEvent.bcs,
+      fromBcs: (data: Uint8Array) => SetRolesEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SetRolesEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetRolesEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SetRolesEvent.fromSuiParsedData(content),
@@ -1640,7 +1731,7 @@ export class SetRolesEvent implements StructClass {
     return SetRolesEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SetRolesEvent', {
       member: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -1648,6 +1739,15 @@ export class SetRolesEvent implements StructClass {
       }),
       roles: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SetRolesEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SetRolesEvent.cachedBcs) {
+      SetRolesEvent.cachedBcs = SetRolesEvent.instantiateBcs()
+    }
+    return SetRolesEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SetRolesEvent {
@@ -1778,6 +1878,7 @@ export class AddRoleEvent implements StructClass {
   }
 
   static reified(): AddRoleEventReified {
+    const reifiedBcs = AddRoleEvent.bcs
     return {
       typeName: AddRoleEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1789,8 +1890,8 @@ export class AddRoleEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddRoleEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddRoleEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddRoleEvent.fromBcs(data),
-      bcs: AddRoleEvent.bcs,
+      fromBcs: (data: Uint8Array) => AddRoleEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddRoleEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddRoleEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddRoleEvent.fromSuiParsedData(content),
@@ -1814,7 +1915,7 @@ export class AddRoleEvent implements StructClass {
     return AddRoleEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddRoleEvent', {
       member: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -1822,6 +1923,15 @@ export class AddRoleEvent implements StructClass {
       }),
       role: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddRoleEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddRoleEvent.cachedBcs) {
+      AddRoleEvent.cachedBcs = AddRoleEvent.instantiateBcs()
+    }
+    return AddRoleEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddRoleEvent {
@@ -1952,6 +2062,7 @@ export class RemoveRoleEvent implements StructClass {
   }
 
   static reified(): RemoveRoleEventReified {
+    const reifiedBcs = RemoveRoleEvent.bcs
     return {
       typeName: RemoveRoleEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1963,8 +2074,8 @@ export class RemoveRoleEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RemoveRoleEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveRoleEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RemoveRoleEvent.fromBcs(data),
-      bcs: RemoveRoleEvent.bcs,
+      fromBcs: (data: Uint8Array) => RemoveRoleEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveRoleEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveRoleEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RemoveRoleEvent.fromSuiParsedData(content),
@@ -1988,7 +2099,7 @@ export class RemoveRoleEvent implements StructClass {
     return RemoveRoleEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RemoveRoleEvent', {
       member: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -1996,6 +2107,15 @@ export class RemoveRoleEvent implements StructClass {
       }),
       role: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RemoveRoleEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RemoveRoleEvent.cachedBcs) {
+      RemoveRoleEvent.cachedBcs = RemoveRoleEvent.instantiateBcs()
+    }
+    return RemoveRoleEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RemoveRoleEvent {
@@ -2123,6 +2243,7 @@ export class RemoveMemberEvent implements StructClass {
   }
 
   static reified(): RemoveMemberEventReified {
+    const reifiedBcs = RemoveMemberEvent.bcs
     return {
       typeName: RemoveMemberEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -2134,8 +2255,8 @@ export class RemoveMemberEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RemoveMemberEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RemoveMemberEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RemoveMemberEvent.fromBcs(data),
-      bcs: RemoveMemberEvent.bcs,
+      fromBcs: (data: Uint8Array) => RemoveMemberEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveMemberEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveMemberEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RemoveMemberEvent.fromSuiParsedData(content),
@@ -2159,13 +2280,22 @@ export class RemoveMemberEvent implements StructClass {
     return RemoveMemberEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RemoveMemberEvent', {
       member: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RemoveMemberEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RemoveMemberEvent.cachedBcs) {
+      RemoveMemberEvent.cachedBcs = RemoveMemberEvent.instantiateBcs()
+    }
+    return RemoveMemberEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RemoveMemberEvent {
@@ -2288,6 +2418,7 @@ export class SetPackageVersion implements StructClass {
   }
 
   static reified(): SetPackageVersionReified {
+    const reifiedBcs = SetPackageVersion.bcs
     return {
       typeName: SetPackageVersion.$typeName,
       fullTypeName: composeSuiType(
@@ -2299,8 +2430,8 @@ export class SetPackageVersion implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SetPackageVersion.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SetPackageVersion.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SetPackageVersion.fromBcs(data),
-      bcs: SetPackageVersion.bcs,
+      fromBcs: (data: Uint8Array) => SetPackageVersion.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SetPackageVersion.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetPackageVersion.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SetPackageVersion.fromSuiParsedData(content),
@@ -2324,11 +2455,20 @@ export class SetPackageVersion implements StructClass {
     return SetPackageVersion.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SetPackageVersion', {
       new_version: bcs.u64(),
       old_version: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SetPackageVersion.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SetPackageVersion.cachedBcs) {
+      SetPackageVersion.cachedBcs = SetPackageVersion.instantiateBcs()
+    }
+    return SetPackageVersion.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SetPackageVersion {

@@ -54,6 +54,7 @@ export class MigrateComplete implements StructClass {
   }
 
   static reified(): MigrateCompleteReified {
+    const reifiedBcs = MigrateComplete.bcs
     return {
       typeName: MigrateComplete.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class MigrateComplete implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => MigrateComplete.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => MigrateComplete.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => MigrateComplete.fromBcs(data),
-      bcs: MigrateComplete.bcs,
+      fromBcs: (data: Uint8Array) => MigrateComplete.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => MigrateComplete.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MigrateComplete.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => MigrateComplete.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class MigrateComplete implements StructClass {
     return MigrateComplete.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('MigrateComplete', {
       package: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof MigrateComplete.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!MigrateComplete.cachedBcs) {
+      MigrateComplete.cachedBcs = MigrateComplete.instantiateBcs()
+    }
+    return MigrateComplete.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): MigrateComplete {

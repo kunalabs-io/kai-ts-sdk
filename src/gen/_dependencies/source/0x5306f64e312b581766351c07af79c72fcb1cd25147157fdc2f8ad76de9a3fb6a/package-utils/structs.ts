@@ -55,6 +55,7 @@ export class CurrentVersion implements StructClass {
   }
 
   static reified(): CurrentVersionReified {
+    const reifiedBcs = CurrentVersion.bcs
     return {
       typeName: CurrentVersion.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class CurrentVersion implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CurrentVersion.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CurrentVersion.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CurrentVersion.fromBcs(data),
-      bcs: CurrentVersion.bcs,
+      fromBcs: (data: Uint8Array) => CurrentVersion.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CurrentVersion.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CurrentVersion.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CurrentVersion.fromSuiParsedData(content),
@@ -91,10 +92,19 @@ export class CurrentVersion implements StructClass {
     return CurrentVersion.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CurrentVersion', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CurrentVersion.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CurrentVersion.cachedBcs) {
+      CurrentVersion.cachedBcs = CurrentVersion.instantiateBcs()
+    }
+    return CurrentVersion.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CurrentVersion {
@@ -218,6 +228,7 @@ export class CurrentPackage implements StructClass {
   }
 
   static reified(): CurrentPackageReified {
+    const reifiedBcs = CurrentPackage.bcs
     return {
       typeName: CurrentPackage.$typeName,
       fullTypeName: composeSuiType(
@@ -229,8 +240,8 @@ export class CurrentPackage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CurrentPackage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CurrentPackage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CurrentPackage.fromBcs(data),
-      bcs: CurrentPackage.bcs,
+      fromBcs: (data: Uint8Array) => CurrentPackage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CurrentPackage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CurrentPackage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CurrentPackage.fromSuiParsedData(content),
@@ -254,10 +265,19 @@ export class CurrentPackage implements StructClass {
     return CurrentPackage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CurrentPackage', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CurrentPackage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CurrentPackage.cachedBcs) {
+      CurrentPackage.cachedBcs = CurrentPackage.instantiateBcs()
+    }
+    return CurrentPackage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CurrentPackage {
@@ -381,6 +401,7 @@ export class PendingPackage implements StructClass {
   }
 
   static reified(): PendingPackageReified {
+    const reifiedBcs = PendingPackage.bcs
     return {
       typeName: PendingPackage.$typeName,
       fullTypeName: composeSuiType(
@@ -392,8 +413,8 @@ export class PendingPackage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PendingPackage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PendingPackage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PendingPackage.fromBcs(data),
-      bcs: PendingPackage.bcs,
+      fromBcs: (data: Uint8Array) => PendingPackage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PendingPackage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PendingPackage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PendingPackage.fromSuiParsedData(content),
@@ -417,10 +438,19 @@ export class PendingPackage implements StructClass {
     return PendingPackage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PendingPackage', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PendingPackage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PendingPackage.cachedBcs) {
+      PendingPackage.cachedBcs = PendingPackage.instantiateBcs()
+    }
+    return PendingPackage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PendingPackage {
@@ -547,6 +577,7 @@ export class PackageInfo implements StructClass {
   }
 
   static reified(): PackageInfoReified {
+    const reifiedBcs = PackageInfo.bcs
     return {
       typeName: PackageInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -558,8 +589,8 @@ export class PackageInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PackageInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PackageInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PackageInfo.fromBcs(data),
-      bcs: PackageInfo.bcs,
+      fromBcs: (data: Uint8Array) => PackageInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PackageInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PackageInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PackageInfo.fromSuiParsedData(content),
@@ -583,11 +614,20 @@ export class PackageInfo implements StructClass {
     return PackageInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PackageInfo', {
       package: ID.bcs,
       digest: Bytes32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PackageInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PackageInfo.cachedBcs) {
+      PackageInfo.cachedBcs = PackageInfo.instantiateBcs()
+    }
+    return PackageInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PackageInfo {

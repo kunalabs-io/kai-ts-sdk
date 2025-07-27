@@ -55,6 +55,7 @@ export class BridgeRoute implements StructClass {
   }
 
   static reified(): BridgeRouteReified {
+    const reifiedBcs = BridgeRoute.bcs
     return {
       typeName: BridgeRoute.$typeName,
       fullTypeName: composeSuiType(BridgeRoute.$typeName, ...[]) as `0xb::chain_ids::BridgeRoute`,
@@ -63,8 +64,8 @@ export class BridgeRoute implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeRoute.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeRoute.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeRoute.fromBcs(data),
-      bcs: BridgeRoute.bcs,
+      fromBcs: (data: Uint8Array) => BridgeRoute.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeRoute.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeRoute.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeRoute.fromSuiParsedData(content),
@@ -88,11 +89,20 @@ export class BridgeRoute implements StructClass {
     return BridgeRoute.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeRoute', {
       source: bcs.u8(),
       destination: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeRoute.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeRoute.cachedBcs) {
+      BridgeRoute.cachedBcs = BridgeRoute.instantiateBcs()
+    }
+    return BridgeRoute.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeRoute {

@@ -54,6 +54,7 @@ export class Guardian implements StructClass {
   }
 
   static reified(): GuardianReified {
+    const reifiedBcs = Guardian.bcs
     return {
       typeName: Guardian.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class Guardian implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Guardian.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Guardian.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Guardian.fromBcs(data),
-      bcs: Guardian.bcs,
+      fromBcs: (data: Uint8Array) => Guardian.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Guardian.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Guardian.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Guardian.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class Guardian implements StructClass {
     return Guardian.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Guardian', {
       pubkey: Bytes20.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Guardian.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Guardian.cachedBcs) {
+      Guardian.cachedBcs = Guardian.instantiateBcs()
+    }
+    return Guardian.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Guardian {

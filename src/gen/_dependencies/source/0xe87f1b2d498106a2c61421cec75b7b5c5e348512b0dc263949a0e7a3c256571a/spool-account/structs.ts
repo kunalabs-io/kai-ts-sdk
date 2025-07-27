@@ -90,6 +90,7 @@ export class SpoolAccount<T0 extends PhantomTypeArgument> implements StructClass
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): SpoolAccountReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = SpoolAccount.bcs
     return {
       typeName: SpoolAccount.$typeName,
       fullTypeName: composeSuiType(
@@ -101,8 +102,8 @@ export class SpoolAccount<T0 extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => SpoolAccount.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SpoolAccount.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => SpoolAccount.fromBcs(T0, data),
-      bcs: SpoolAccount.bcs,
+      fromBcs: (data: Uint8Array) => SpoolAccount.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccount.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => SpoolAccount.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => SpoolAccount.fromSuiParsedData(T0, content),
@@ -128,7 +129,7 @@ export class SpoolAccount<T0 extends PhantomTypeArgument> implements StructClass
     return SpoolAccount.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SpoolAccount', {
       id: UID.bcs,
       spool_id: ID.bcs,
@@ -138,6 +139,15 @@ export class SpoolAccount<T0 extends PhantomTypeArgument> implements StructClass
       total_points: bcs.u64(),
       index: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SpoolAccount.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SpoolAccount.cachedBcs) {
+      SpoolAccount.cachedBcs = SpoolAccount.instantiateBcs()
+    }
+    return SpoolAccount.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

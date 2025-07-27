@@ -53,6 +53,7 @@ export class StalePriceThreshold implements StructClass {
   }
 
   static reified(): StalePriceThresholdReified {
+    const reifiedBcs = StalePriceThreshold.bcs
     return {
       typeName: StalePriceThreshold.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class StalePriceThreshold implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StalePriceThreshold.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StalePriceThreshold.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StalePriceThreshold.fromBcs(data),
-      bcs: StalePriceThreshold.bcs,
+      fromBcs: (data: Uint8Array) => StalePriceThreshold.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StalePriceThreshold.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StalePriceThreshold.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StalePriceThreshold.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class StalePriceThreshold implements StructClass {
     return StalePriceThreshold.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StalePriceThreshold', {
       threshold: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StalePriceThreshold.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StalePriceThreshold.cachedBcs) {
+      StalePriceThreshold.cachedBcs = StalePriceThreshold.instantiateBcs()
+    }
+    return StalePriceThreshold.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StalePriceThreshold {

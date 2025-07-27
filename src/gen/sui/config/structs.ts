@@ -74,6 +74,7 @@ export class Config<WriteCap extends PhantomTypeArgument> implements StructClass
   static reified<WriteCap extends PhantomReified<PhantomTypeArgument>>(
     WriteCap: WriteCap
   ): ConfigReified<ToPhantomTypeArgument<WriteCap>> {
+    const reifiedBcs = Config.bcs
     return {
       typeName: Config.$typeName,
       fullTypeName: composeSuiType(
@@ -85,8 +86,8 @@ export class Config<WriteCap extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [WriteCap],
       fromFields: (fields: Record<string, any>) => Config.fromFields(WriteCap, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Config.fromFieldsWithTypes(WriteCap, item),
-      fromBcs: (data: Uint8Array) => Config.fromBcs(WriteCap, data),
-      bcs: Config.bcs,
+      fromBcs: (data: Uint8Array) => Config.fromFields(WriteCap, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Config.fromJSONField(WriteCap, field),
       fromJSON: (json: Record<string, any>) => Config.fromJSON(WriteCap, json),
       fromSuiParsedData: (content: SuiParsedData) => Config.fromSuiParsedData(WriteCap, content),
@@ -112,10 +113,19 @@ export class Config<WriteCap extends PhantomTypeArgument> implements StructClass
     return Config.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Config', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Config.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Config.cachedBcs) {
+      Config.cachedBcs = Config.instantiateBcs()
+    }
+    return Config.cachedBcs
   }
 
   static fromFields<WriteCap extends PhantomReified<PhantomTypeArgument>>(
@@ -285,6 +295,7 @@ export class Setting<Value extends TypeArgument> implements StructClass {
   static reified<Value extends Reified<TypeArgument, any>>(
     Value: Value
   ): SettingReified<ToTypeArgument<Value>> {
+    const reifiedBcs = Setting.bcs(toBcs(Value))
     return {
       typeName: Setting.$typeName,
       fullTypeName: composeSuiType(
@@ -296,8 +307,8 @@ export class Setting<Value extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [Value],
       fromFields: (fields: Record<string, any>) => Setting.fromFields(Value, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Setting.fromFieldsWithTypes(Value, item),
-      fromBcs: (data: Uint8Array) => Setting.fromBcs(Value, data),
-      bcs: Setting.bcs(toBcs(Value)),
+      fromBcs: (data: Uint8Array) => Setting.fromFields(Value, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Setting.fromJSONField(Value, field),
       fromJSON: (json: Record<string, any>) => Setting.fromJSON(Value, json),
       fromSuiParsedData: (content: SuiParsedData) => Setting.fromSuiParsedData(Value, content),
@@ -323,11 +334,20 @@ export class Setting<Value extends TypeArgument> implements StructClass {
     return Setting.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <Value extends BcsType<any>>(Value: Value) =>
       bcs.struct(`Setting<${Value.name}>`, {
         data: Option.bcs(SettingData.bcs(Value)),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof Setting.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Setting.cachedBcs) {
+      Setting.cachedBcs = Setting.instantiateBcs()
+    }
+    return Setting.cachedBcs
   }
 
   static fromFields<Value extends Reified<TypeArgument, any>>(
@@ -515,6 +535,7 @@ export class SettingData<Value extends TypeArgument> implements StructClass {
   static reified<Value extends Reified<TypeArgument, any>>(
     Value: Value
   ): SettingDataReified<ToTypeArgument<Value>> {
+    const reifiedBcs = SettingData.bcs(toBcs(Value))
     return {
       typeName: SettingData.$typeName,
       fullTypeName: composeSuiType(
@@ -526,8 +547,8 @@ export class SettingData<Value extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [Value],
       fromFields: (fields: Record<string, any>) => SettingData.fromFields(Value, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SettingData.fromFieldsWithTypes(Value, item),
-      fromBcs: (data: Uint8Array) => SettingData.fromBcs(Value, data),
-      bcs: SettingData.bcs(toBcs(Value)),
+      fromBcs: (data: Uint8Array) => SettingData.fromFields(Value, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SettingData.fromJSONField(Value, field),
       fromJSON: (json: Record<string, any>) => SettingData.fromJSON(Value, json),
       fromSuiParsedData: (content: SuiParsedData) => SettingData.fromSuiParsedData(Value, content),
@@ -553,13 +574,22 @@ export class SettingData<Value extends TypeArgument> implements StructClass {
     return SettingData.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <Value extends BcsType<any>>(Value: Value) =>
       bcs.struct(`SettingData<${Value.name}>`, {
         newer_value_epoch: bcs.u64(),
         newer_value: Option.bcs(Value),
         older_value_opt: Option.bcs(Value),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof SettingData.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SettingData.cachedBcs) {
+      SettingData.cachedBcs = SettingData.instantiateBcs()
+    }
+    return SettingData.cachedBcs
   }
 
   static fromFields<Value extends Reified<TypeArgument, any>>(

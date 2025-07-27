@@ -67,6 +67,7 @@ export class AssetMeta implements StructClass {
   }
 
   static reified(): AssetMetaReified {
+    const reifiedBcs = AssetMeta.bcs
     return {
       typeName: AssetMeta.$typeName,
       fullTypeName: composeSuiType(
@@ -78,8 +79,8 @@ export class AssetMeta implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AssetMeta.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AssetMeta.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AssetMeta.fromBcs(data),
-      bcs: AssetMeta.bcs,
+      fromBcs: (data: Uint8Array) => AssetMeta.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AssetMeta.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AssetMeta.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AssetMeta.fromSuiParsedData(content),
@@ -103,7 +104,7 @@ export class AssetMeta implements StructClass {
     return AssetMeta.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AssetMeta', {
       token_address: ExternalAddress.bcs,
       token_chain: bcs.u16(),
@@ -111,6 +112,15 @@ export class AssetMeta implements StructClass {
       symbol: String.bcs,
       name: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AssetMeta.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AssetMeta.cachedBcs) {
+      AssetMeta.cachedBcs = AssetMeta.instantiateBcs()
+    }
+    return AssetMeta.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AssetMeta {

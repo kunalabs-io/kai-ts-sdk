@@ -62,6 +62,7 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
   }
 
   static reified(): COIN_DECIMALS_REGISTRYReified {
+    const reifiedBcs = COIN_DECIMALS_REGISTRY.bcs
     return {
       typeName: COIN_DECIMALS_REGISTRY.$typeName,
       fullTypeName: composeSuiType(
@@ -74,8 +75,8 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
       fromFields: (fields: Record<string, any>) => COIN_DECIMALS_REGISTRY.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         COIN_DECIMALS_REGISTRY.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => COIN_DECIMALS_REGISTRY.fromBcs(data),
-      bcs: COIN_DECIMALS_REGISTRY.bcs,
+      fromBcs: (data: Uint8Array) => COIN_DECIMALS_REGISTRY.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => COIN_DECIMALS_REGISTRY.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => COIN_DECIMALS_REGISTRY.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -101,10 +102,19 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
     return COIN_DECIMALS_REGISTRY.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('COIN_DECIMALS_REGISTRY', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof COIN_DECIMALS_REGISTRY.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!COIN_DECIMALS_REGISTRY.cachedBcs) {
+      COIN_DECIMALS_REGISTRY.cachedBcs = COIN_DECIMALS_REGISTRY.instantiateBcs()
+    }
+    return COIN_DECIMALS_REGISTRY.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): COIN_DECIMALS_REGISTRY {
@@ -233,6 +243,7 @@ export class CoinDecimalsRegistry implements StructClass {
   }
 
   static reified(): CoinDecimalsRegistryReified {
+    const reifiedBcs = CoinDecimalsRegistry.bcs
     return {
       typeName: CoinDecimalsRegistry.$typeName,
       fullTypeName: composeSuiType(
@@ -245,8 +256,8 @@ export class CoinDecimalsRegistry implements StructClass {
       fromFields: (fields: Record<string, any>) => CoinDecimalsRegistry.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CoinDecimalsRegistry.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CoinDecimalsRegistry.fromBcs(data),
-      bcs: CoinDecimalsRegistry.bcs,
+      fromBcs: (data: Uint8Array) => CoinDecimalsRegistry.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinDecimalsRegistry.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinDecimalsRegistry.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -272,11 +283,20 @@ export class CoinDecimalsRegistry implements StructClass {
     return CoinDecimalsRegistry.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CoinDecimalsRegistry', {
       id: UID.bcs,
       table: Table.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CoinDecimalsRegistry.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CoinDecimalsRegistry.cachedBcs) {
+      CoinDecimalsRegistry.cachedBcs = CoinDecimalsRegistry.instantiateBcs()
+    }
+    return CoinDecimalsRegistry.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CoinDecimalsRegistry {
@@ -424,6 +444,7 @@ export class CoinDecimalsRegistered implements StructClass {
   }
 
   static reified(): CoinDecimalsRegisteredReified {
+    const reifiedBcs = CoinDecimalsRegistered.bcs
     return {
       typeName: CoinDecimalsRegistered.$typeName,
       fullTypeName: composeSuiType(
@@ -436,8 +457,8 @@ export class CoinDecimalsRegistered implements StructClass {
       fromFields: (fields: Record<string, any>) => CoinDecimalsRegistered.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CoinDecimalsRegistered.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CoinDecimalsRegistered.fromBcs(data),
-      bcs: CoinDecimalsRegistered.bcs,
+      fromBcs: (data: Uint8Array) => CoinDecimalsRegistered.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinDecimalsRegistered.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinDecimalsRegistered.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -463,7 +484,7 @@ export class CoinDecimalsRegistered implements StructClass {
     return CoinDecimalsRegistered.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CoinDecimalsRegistered', {
       registry: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -472,6 +493,15 @@ export class CoinDecimalsRegistered implements StructClass {
       coin_type: String.bcs,
       decimals: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CoinDecimalsRegistered.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CoinDecimalsRegistered.cachedBcs) {
+      CoinDecimalsRegistered.cachedBcs = CoinDecimalsRegistered.instantiateBcs()
+    }
+    return CoinDecimalsRegistered.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CoinDecimalsRegistered {

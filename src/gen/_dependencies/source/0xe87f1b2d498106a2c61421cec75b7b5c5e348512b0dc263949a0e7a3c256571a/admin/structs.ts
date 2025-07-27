@@ -55,6 +55,7 @@ export class AdminCap implements StructClass {
   }
 
   static reified(): AdminCapReified {
+    const reifiedBcs = AdminCap.bcs
     return {
       typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class AdminCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(data),
-      bcs: AdminCap.bcs,
+      fromBcs: (data: Uint8Array) => AdminCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
@@ -91,10 +92,19 @@ export class AdminCap implements StructClass {
     return AdminCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminCap.cachedBcs) {
+      AdminCap.cachedBcs = AdminCap.instantiateBcs()
+    }
+    return AdminCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AdminCap {
@@ -230,6 +240,7 @@ export class CreateSpoolEvent implements StructClass {
   }
 
   static reified(): CreateSpoolEventReified {
+    const reifiedBcs = CreateSpoolEvent.bcs
     return {
       typeName: CreateSpoolEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -241,8 +252,8 @@ export class CreateSpoolEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CreateSpoolEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CreateSpoolEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreateSpoolEvent.fromBcs(data),
-      bcs: CreateSpoolEvent.bcs,
+      fromBcs: (data: Uint8Array) => CreateSpoolEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreateSpoolEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreateSpoolEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CreateSpoolEvent.fromSuiParsedData(content),
@@ -266,7 +277,7 @@ export class CreateSpoolEvent implements StructClass {
     return CreateSpoolEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CreateSpoolEvent', {
       spool_id: ID.bcs,
       staking_type: TypeName.bcs,
@@ -276,6 +287,15 @@ export class CreateSpoolEvent implements StructClass {
       max_stakes: bcs.u64(),
       created_at: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreateSpoolEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreateSpoolEvent.cachedBcs) {
+      CreateSpoolEvent.cachedBcs = CreateSpoolEvent.instantiateBcs()
+    }
+    return CreateSpoolEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CreateSpoolEvent {
@@ -444,6 +464,7 @@ export class UpdateSpoolConfigEvent implements StructClass {
   }
 
   static reified(): UpdateSpoolConfigEventReified {
+    const reifiedBcs = UpdateSpoolConfigEvent.bcs
     return {
       typeName: UpdateSpoolConfigEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -456,8 +477,8 @@ export class UpdateSpoolConfigEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateSpoolConfigEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateSpoolConfigEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateSpoolConfigEvent.fromBcs(data),
-      bcs: UpdateSpoolConfigEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateSpoolConfigEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateSpoolConfigEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateSpoolConfigEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -483,7 +504,7 @@ export class UpdateSpoolConfigEvent implements StructClass {
     return UpdateSpoolConfigEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateSpoolConfigEvent', {
       spool_id: ID.bcs,
       distributed_point_per_period: bcs.u64(),
@@ -492,6 +513,15 @@ export class UpdateSpoolConfigEvent implements StructClass {
       max_stakes: bcs.u64(),
       updated_at: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateSpoolConfigEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateSpoolConfigEvent.cachedBcs) {
+      UpdateSpoolConfigEvent.cachedBcs = UpdateSpoolConfigEvent.instantiateBcs()
+    }
+    return UpdateSpoolConfigEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateSpoolConfigEvent {

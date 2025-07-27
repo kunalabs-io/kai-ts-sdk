@@ -79,6 +79,7 @@ export class VAA implements StructClass {
   }
 
   static reified(): VAAReified {
+    const reifiedBcs = VAA.bcs
     return {
       typeName: VAA.$typeName,
       fullTypeName: composeSuiType(VAA.$typeName, ...[]) as `${typeof PKG_V1}::vaa::VAA`,
@@ -87,8 +88,8 @@ export class VAA implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => VAA.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => VAA.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VAA.fromBcs(data),
-      bcs: VAA.bcs,
+      fromBcs: (data: Uint8Array) => VAA.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VAA.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VAA.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VAA.fromSuiParsedData(content),
@@ -112,7 +113,7 @@ export class VAA implements StructClass {
     return VAA.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VAA', {
       guardian_set_index: bcs.u32(),
       timestamp: bcs.u32(),
@@ -124,6 +125,15 @@ export class VAA implements StructClass {
       payload: bcs.vector(bcs.u8()),
       digest: Bytes32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof VAA.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!VAA.cachedBcs) {
+      VAA.cachedBcs = VAA.instantiateBcs()
+    }
+    return VAA.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): VAA {

@@ -53,6 +53,7 @@ export class Collateral implements StructClass {
   }
 
   static reified(): CollateralReified {
+    const reifiedBcs = Collateral.bcs
     return {
       typeName: Collateral.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class Collateral implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Collateral.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Collateral.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Collateral.fromBcs(data),
-      bcs: Collateral.bcs,
+      fromBcs: (data: Uint8Array) => Collateral.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Collateral.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Collateral.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Collateral.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class Collateral implements StructClass {
     return Collateral.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Collateral', {
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Collateral.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Collateral.cachedBcs) {
+      Collateral.cachedBcs = Collateral.instantiateBcs()
+    }
+    return Collateral.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Collateral {
@@ -215,6 +225,7 @@ export class ObligationCollaterals implements StructClass {
   }
 
   static reified(): ObligationCollateralsReified {
+    const reifiedBcs = ObligationCollaterals.bcs
     return {
       typeName: ObligationCollaterals.$typeName,
       fullTypeName: composeSuiType(
@@ -227,8 +238,8 @@ export class ObligationCollaterals implements StructClass {
       fromFields: (fields: Record<string, any>) => ObligationCollaterals.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ObligationCollaterals.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationCollaterals.fromBcs(data),
-      bcs: ObligationCollaterals.bcs,
+      fromBcs: (data: Uint8Array) => ObligationCollaterals.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationCollaterals.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationCollaterals.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -254,10 +265,19 @@ export class ObligationCollaterals implements StructClass {
     return ObligationCollaterals.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationCollaterals', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationCollaterals.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationCollaterals.cachedBcs) {
+      ObligationCollaterals.cachedBcs = ObligationCollaterals.instantiateBcs()
+    }
+    return ObligationCollaterals.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationCollaterals {

@@ -72,6 +72,7 @@ export class TransferRedeemed implements StructClass {
   }
 
   static reified(): TransferRedeemedReified {
+    const reifiedBcs = TransferRedeemed.bcs
     return {
       typeName: TransferRedeemed.$typeName,
       fullTypeName: composeSuiType(
@@ -83,8 +84,8 @@ export class TransferRedeemed implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TransferRedeemed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TransferRedeemed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TransferRedeemed.fromBcs(data),
-      bcs: TransferRedeemed.bcs,
+      fromBcs: (data: Uint8Array) => TransferRedeemed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferRedeemed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferRedeemed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TransferRedeemed.fromSuiParsedData(content),
@@ -108,12 +109,21 @@ export class TransferRedeemed implements StructClass {
     return TransferRedeemed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TransferRedeemed', {
       emitter_chain: bcs.u16(),
       emitter_address: ExternalAddress.bcs,
       sequence: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TransferRedeemed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TransferRedeemed.cachedBcs) {
+      TransferRedeemed.cachedBcs = TransferRedeemed.instantiateBcs()
+    }
+    return TransferRedeemed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TransferRedeemed {
@@ -253,6 +263,7 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): RelayerReceiptReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = RelayerReceipt.bcs
     return {
       typeName: RelayerReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -264,8 +275,8 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => RelayerReceipt.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RelayerReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => RelayerReceipt.fromBcs(T0, data),
-      bcs: RelayerReceipt.bcs,
+      fromBcs: (data: Uint8Array) => RelayerReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RelayerReceipt.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => RelayerReceipt.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => RelayerReceipt.fromSuiParsedData(T0, content),
@@ -291,10 +302,19 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     return RelayerReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RelayerReceipt', {
       payout: Coin.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RelayerReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RelayerReceipt.cachedBcs) {
+      RelayerReceipt.cachedBcs = RelayerReceipt.instantiateBcs()
+    }
+    return RelayerReceipt.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

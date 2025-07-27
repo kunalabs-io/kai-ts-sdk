@@ -56,6 +56,7 @@ export class Debt implements StructClass {
   }
 
   static reified(): DebtReified {
+    const reifiedBcs = Debt.bcs
     return {
       typeName: Debt.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class Debt implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Debt.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Debt.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Debt.fromBcs(data),
-      bcs: Debt.bcs,
+      fromBcs: (data: Uint8Array) => Debt.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Debt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Debt.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Debt.fromSuiParsedData(content),
@@ -92,11 +93,20 @@ export class Debt implements StructClass {
     return Debt.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Debt', {
       amount: bcs.u64(),
       borrow_index: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Debt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Debt.cachedBcs) {
+      Debt.cachedBcs = Debt.instantiateBcs()
+    }
+    return Debt.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Debt {
@@ -224,6 +234,7 @@ export class ObligationDebts implements StructClass {
   }
 
   static reified(): ObligationDebtsReified {
+    const reifiedBcs = ObligationDebts.bcs
     return {
       typeName: ObligationDebts.$typeName,
       fullTypeName: composeSuiType(
@@ -235,8 +246,8 @@ export class ObligationDebts implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationDebts.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationDebts.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationDebts.fromBcs(data),
-      bcs: ObligationDebts.bcs,
+      fromBcs: (data: Uint8Array) => ObligationDebts.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationDebts.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationDebts.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationDebts.fromSuiParsedData(content),
@@ -260,10 +271,19 @@ export class ObligationDebts implements StructClass {
     return ObligationDebts.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationDebts', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationDebts.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationDebts.cachedBcs) {
+      ObligationDebts.cachedBcs = ObligationDebts.instantiateBcs()
+    }
+    return ObligationDebts.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationDebts {

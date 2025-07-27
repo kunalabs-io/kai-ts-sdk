@@ -77,6 +77,7 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): NativeAssetReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = NativeAsset.bcs
     return {
       typeName: NativeAsset.$typeName,
       fullTypeName: composeSuiType(
@@ -88,8 +89,8 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => NativeAsset.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => NativeAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => NativeAsset.fromBcs(T0, data),
-      bcs: NativeAsset.bcs,
+      fromBcs: (data: Uint8Array) => NativeAsset.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => NativeAsset.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => NativeAsset.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => NativeAsset.fromSuiParsedData(T0, content),
@@ -115,12 +116,21 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     return NativeAsset.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('NativeAsset', {
       custody: Balance.bcs,
       token_address: ExternalAddress.bcs,
       decimals: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof NativeAsset.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!NativeAsset.cachedBcs) {
+      NativeAsset.cachedBcs = NativeAsset.instantiateBcs()
+    }
+    return NativeAsset.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

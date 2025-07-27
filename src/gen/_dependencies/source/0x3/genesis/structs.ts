@@ -101,6 +101,7 @@ export class GenesisValidatorMetadata implements StructClass {
   }
 
   static reified(): GenesisValidatorMetadataReified {
+    const reifiedBcs = GenesisValidatorMetadata.bcs
     return {
       typeName: GenesisValidatorMetadata.$typeName,
       fullTypeName: composeSuiType(
@@ -113,8 +114,8 @@ export class GenesisValidatorMetadata implements StructClass {
       fromFields: (fields: Record<string, any>) => GenesisValidatorMetadata.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         GenesisValidatorMetadata.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GenesisValidatorMetadata.fromBcs(data),
-      bcs: GenesisValidatorMetadata.bcs,
+      fromBcs: (data: Uint8Array) => GenesisValidatorMetadata.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GenesisValidatorMetadata.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GenesisValidatorMetadata.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -140,7 +141,7 @@ export class GenesisValidatorMetadata implements StructClass {
     return GenesisValidatorMetadata.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GenesisValidatorMetadata', {
       name: bcs.vector(bcs.u8()),
       description: bcs.vector(bcs.u8()),
@@ -161,6 +162,15 @@ export class GenesisValidatorMetadata implements StructClass {
       primary_address: bcs.vector(bcs.u8()),
       worker_address: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GenesisValidatorMetadata.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GenesisValidatorMetadata.cachedBcs) {
+      GenesisValidatorMetadata.cachedBcs = GenesisValidatorMetadata.instantiateBcs()
+    }
+    return GenesisValidatorMetadata.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GenesisValidatorMetadata {
@@ -395,6 +405,7 @@ export class GenesisChainParameters implements StructClass {
   }
 
   static reified(): GenesisChainParametersReified {
+    const reifiedBcs = GenesisChainParameters.bcs
     return {
       typeName: GenesisChainParameters.$typeName,
       fullTypeName: composeSuiType(
@@ -407,8 +418,8 @@ export class GenesisChainParameters implements StructClass {
       fromFields: (fields: Record<string, any>) => GenesisChainParameters.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         GenesisChainParameters.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GenesisChainParameters.fromBcs(data),
-      bcs: GenesisChainParameters.bcs,
+      fromBcs: (data: Uint8Array) => GenesisChainParameters.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GenesisChainParameters.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GenesisChainParameters.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -434,7 +445,7 @@ export class GenesisChainParameters implements StructClass {
     return GenesisChainParameters.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GenesisChainParameters', {
       protocol_version: bcs.u64(),
       chain_start_timestamp_ms: bcs.u64(),
@@ -449,6 +460,15 @@ export class GenesisChainParameters implements StructClass {
       validator_very_low_stake_threshold: bcs.u64(),
       validator_low_stake_grace_period: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GenesisChainParameters.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GenesisChainParameters.cachedBcs) {
+      GenesisChainParameters.cachedBcs = GenesisChainParameters.instantiateBcs()
+    }
+    return GenesisChainParameters.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GenesisChainParameters {
@@ -663,6 +683,7 @@ export class TokenDistributionSchedule implements StructClass {
   }
 
   static reified(): TokenDistributionScheduleReified {
+    const reifiedBcs = TokenDistributionSchedule.bcs
     return {
       typeName: TokenDistributionSchedule.$typeName,
       fullTypeName: composeSuiType(
@@ -675,8 +696,8 @@ export class TokenDistributionSchedule implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenDistributionSchedule.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenDistributionSchedule.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenDistributionSchedule.fromBcs(data),
-      bcs: TokenDistributionSchedule.bcs,
+      fromBcs: (data: Uint8Array) => TokenDistributionSchedule.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenDistributionSchedule.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenDistributionSchedule.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -702,11 +723,21 @@ export class TokenDistributionSchedule implements StructClass {
     return TokenDistributionSchedule.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenDistributionSchedule', {
       stake_subsidy_fund_mist: bcs.u64(),
       allocations: bcs.vector(TokenAllocation.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenDistributionSchedule.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!TokenDistributionSchedule.cachedBcs) {
+      TokenDistributionSchedule.cachedBcs = TokenDistributionSchedule.instantiateBcs()
+    }
+    return TokenDistributionSchedule.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenDistributionSchedule {
@@ -856,6 +887,7 @@ export class TokenAllocation implements StructClass {
   }
 
   static reified(): TokenAllocationReified {
+    const reifiedBcs = TokenAllocation.bcs
     return {
       typeName: TokenAllocation.$typeName,
       fullTypeName: composeSuiType(
@@ -867,8 +899,8 @@ export class TokenAllocation implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TokenAllocation.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TokenAllocation.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenAllocation.fromBcs(data),
-      bcs: TokenAllocation.bcs,
+      fromBcs: (data: Uint8Array) => TokenAllocation.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenAllocation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenAllocation.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TokenAllocation.fromSuiParsedData(content),
@@ -892,7 +924,7 @@ export class TokenAllocation implements StructClass {
     return TokenAllocation.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenAllocation', {
       recipient_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -906,6 +938,15 @@ export class TokenAllocation implements StructClass {
         })
       ),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenAllocation.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenAllocation.cachedBcs) {
+      TokenAllocation.cachedBcs = TokenAllocation.instantiateBcs()
+    }
+    return TokenAllocation.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenAllocation {

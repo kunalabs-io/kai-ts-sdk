@@ -67,6 +67,7 @@ export class TickManager implements StructClass {
   }
 
   static reified(): TickManagerReified {
+    const reifiedBcs = TickManager.bcs
     return {
       typeName: TickManager.$typeName,
       fullTypeName: composeSuiType(
@@ -78,8 +79,8 @@ export class TickManager implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TickManager.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TickManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TickManager.fromBcs(data),
-      bcs: TickManager.bcs,
+      fromBcs: (data: Uint8Array) => TickManager.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TickManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TickManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TickManager.fromSuiParsedData(content),
@@ -103,12 +104,21 @@ export class TickManager implements StructClass {
     return TickManager.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TickManager', {
       tick_spacing: bcs.u32(),
       ticks: Table.bcs,
       bitmap: Table.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TickManager.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TickManager.cachedBcs) {
+      TickManager.cachedBcs = TickManager.instantiateBcs()
+    }
+    return TickManager.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TickManager {
@@ -285,6 +295,7 @@ export class TickInfo implements StructClass {
   }
 
   static reified(): TickInfoReified {
+    const reifiedBcs = TickInfo.bcs
     return {
       typeName: TickInfo.$typeName,
       fullTypeName: composeSuiType(TickInfo.$typeName, ...[]) as `${typeof PKG_V1}::tick::TickInfo`,
@@ -293,8 +304,8 @@ export class TickInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TickInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TickInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TickInfo.fromBcs(data),
-      bcs: TickInfo.bcs,
+      fromBcs: (data: Uint8Array) => TickInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TickInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TickInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TickInfo.fromSuiParsedData(content),
@@ -318,7 +329,7 @@ export class TickInfo implements StructClass {
     return TickInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TickInfo', {
       index: I32.bcs,
       sqrt_price: bcs.u128(),
@@ -331,6 +342,15 @@ export class TickInfo implements StructClass {
       seconds_out_side: bcs.u64(),
       reward_growths_outside: bcs.vector(bcs.u128()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TickInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TickInfo.cachedBcs) {
+      TickInfo.cachedBcs = TickInfo.instantiateBcs()
+    }
+    return TickInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TickInfo {

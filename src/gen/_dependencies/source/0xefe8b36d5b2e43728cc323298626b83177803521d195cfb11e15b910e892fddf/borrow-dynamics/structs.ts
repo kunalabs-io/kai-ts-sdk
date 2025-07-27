@@ -54,6 +54,7 @@ export class BorrowDynamics implements StructClass {
   }
 
   static reified(): BorrowDynamicsReified {
+    const reifiedBcs = BorrowDynamics.bcs
     return {
       typeName: BorrowDynamics.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class BorrowDynamics implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowDynamics.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowDynamics.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowDynamics.fromBcs(data),
-      bcs: BorrowDynamics.bcs,
+      fromBcs: (data: Uint8Array) => BorrowDynamics.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowDynamics.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowDynamics.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowDynamics.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class BorrowDynamics implements StructClass {
     return BorrowDynamics.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowDynamics', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowDynamics.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowDynamics.cachedBcs) {
+      BorrowDynamics.cachedBcs = BorrowDynamics.instantiateBcs()
+    }
+    return BorrowDynamics.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowDynamics {
@@ -226,6 +236,7 @@ export class BorrowDynamic implements StructClass {
   }
 
   static reified(): BorrowDynamicReified {
+    const reifiedBcs = BorrowDynamic.bcs
     return {
       typeName: BorrowDynamic.$typeName,
       fullTypeName: composeSuiType(
@@ -237,8 +248,8 @@ export class BorrowDynamic implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowDynamic.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowDynamic.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowDynamic.fromBcs(data),
-      bcs: BorrowDynamic.bcs,
+      fromBcs: (data: Uint8Array) => BorrowDynamic.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowDynamic.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowDynamic.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowDynamic.fromSuiParsedData(content),
@@ -262,13 +273,22 @@ export class BorrowDynamic implements StructClass {
     return BorrowDynamic.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowDynamic', {
       interest_rate: FixedPoint32.bcs,
       interest_rate_scale: bcs.u64(),
       borrow_index: bcs.u64(),
       last_updated: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowDynamic.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowDynamic.cachedBcs) {
+      BorrowDynamic.cachedBcs = BorrowDynamic.instantiateBcs()
+    }
+    return BorrowDynamic.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowDynamic {

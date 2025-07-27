@@ -77,6 +77,7 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): RedeemerReceiptReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = RedeemerReceipt.bcs
     return {
       typeName: RedeemerReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -88,8 +89,8 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => RedeemerReceipt.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RedeemerReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => RedeemerReceipt.fromBcs(T0, data),
-      bcs: RedeemerReceipt.bcs,
+      fromBcs: (data: Uint8Array) => RedeemerReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RedeemerReceipt.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => RedeemerReceipt.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => RedeemerReceipt.fromSuiParsedData(T0, content),
@@ -115,12 +116,21 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     return RedeemerReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RedeemerReceipt', {
       source_chain: bcs.u16(),
       parsed: TransferWithPayload.bcs,
       bridged_out: Coin.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RedeemerReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RedeemerReceipt.cachedBcs) {
+      RedeemerReceipt.cachedBcs = RedeemerReceipt.instantiateBcs()
+    }
+    return RedeemerReceipt.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

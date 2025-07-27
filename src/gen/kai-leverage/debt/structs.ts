@@ -70,6 +70,7 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): DebtShareBalanceReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = DebtShareBalance.bcs
     return {
       typeName: DebtShareBalance.$typeName,
       fullTypeName: composeSuiType(
@@ -81,8 +82,8 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtShareBalance.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DebtShareBalance.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => DebtShareBalance.fromBcs(T, data),
-      bcs: DebtShareBalance.bcs,
+      fromBcs: (data: Uint8Array) => DebtShareBalance.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtShareBalance.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtShareBalance.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => DebtShareBalance.fromSuiParsedData(T, content),
@@ -108,10 +109,19 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
     return DebtShareBalance.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DebtShareBalance', {
       value_x64: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DebtShareBalance.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DebtShareBalance.cachedBcs) {
+      DebtShareBalance.cachedBcs = DebtShareBalance.instantiateBcs()
+    }
+    return DebtShareBalance.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -288,6 +298,7 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): DebtRegistryReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = DebtRegistry.bcs
     return {
       typeName: DebtRegistry.$typeName,
       fullTypeName: composeSuiType(
@@ -299,8 +310,8 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtRegistry.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DebtRegistry.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => DebtRegistry.fromBcs(T, data),
-      bcs: DebtRegistry.bcs,
+      fromBcs: (data: Uint8Array) => DebtRegistry.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtRegistry.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtRegistry.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => DebtRegistry.fromSuiParsedData(T, content),
@@ -326,11 +337,20 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
     return DebtRegistry.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DebtRegistry', {
       supply_x64: bcs.u128(),
       liability_value_x64: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DebtRegistry.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DebtRegistry.cachedBcs) {
+      DebtRegistry.cachedBcs = DebtRegistry.instantiateBcs()
+    }
+    return DebtRegistry.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -511,6 +531,7 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): DebtTreasuryReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = DebtTreasury.bcs
     return {
       typeName: DebtTreasury.$typeName,
       fullTypeName: composeSuiType(
@@ -522,8 +543,8 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtTreasury.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DebtTreasury.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => DebtTreasury.fromBcs(T, data),
-      bcs: DebtTreasury.bcs,
+      fromBcs: (data: Uint8Array) => DebtTreasury.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtTreasury.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtTreasury.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => DebtTreasury.fromSuiParsedData(T, content),
@@ -549,11 +570,20 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
     return DebtTreasury.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DebtTreasury', {
       registry: DebtRegistry.bcs,
       cap: TreasuryCap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DebtTreasury.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DebtTreasury.cachedBcs) {
+      DebtTreasury.cachedBcs = DebtTreasury.instantiateBcs()
+    }
+    return DebtTreasury.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(

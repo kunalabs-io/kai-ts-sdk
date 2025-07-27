@@ -68,6 +68,7 @@ export class PositionManager implements StructClass {
   }
 
   static reified(): PositionManagerReified {
+    const reifiedBcs = PositionManager.bcs
     return {
       typeName: PositionManager.$typeName,
       fullTypeName: composeSuiType(
@@ -79,8 +80,8 @@ export class PositionManager implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionManager.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionManager.fromBcs(data),
-      bcs: PositionManager.bcs,
+      fromBcs: (data: Uint8Array) => PositionManager.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionManager.fromSuiParsedData(content),
@@ -104,12 +105,21 @@ export class PositionManager implements StructClass {
     return PositionManager.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionManager', {
       tick_spacing: bcs.u32(),
       position_index: bcs.u64(),
       positions: LinkedTable.bcs(ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionManager.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionManager.cachedBcs) {
+      PositionManager.cachedBcs = PositionManager.instantiateBcs()
+    }
+    return PositionManager.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionManager {
@@ -250,6 +260,7 @@ export class POSITION implements StructClass {
   }
 
   static reified(): POSITIONReified {
+    const reifiedBcs = POSITION.bcs
     return {
       typeName: POSITION.$typeName,
       fullTypeName: composeSuiType(
@@ -261,8 +272,8 @@ export class POSITION implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => POSITION.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => POSITION.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => POSITION.fromBcs(data),
-      bcs: POSITION.bcs,
+      fromBcs: (data: Uint8Array) => POSITION.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => POSITION.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => POSITION.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => POSITION.fromSuiParsedData(content),
@@ -286,10 +297,19 @@ export class POSITION implements StructClass {
     return POSITION.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('POSITION', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof POSITION.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!POSITION.cachedBcs) {
+      POSITION.cachedBcs = POSITION.instantiateBcs()
+    }
+    return POSITION.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): POSITION {
@@ -439,6 +459,7 @@ export class Position implements StructClass {
   }
 
   static reified(): PositionReified {
+    const reifiedBcs = Position.bcs
     return {
       typeName: Position.$typeName,
       fullTypeName: composeSuiType(
@@ -450,8 +471,8 @@ export class Position implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Position.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Position.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Position.fromBcs(data),
-      bcs: Position.bcs,
+      fromBcs: (data: Uint8Array) => Position.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Position.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Position.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Position.fromSuiParsedData(content),
@@ -475,7 +496,7 @@ export class Position implements StructClass {
     return Position.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Position', {
       id: UID.bcs,
       pool: ID.bcs,
@@ -489,6 +510,15 @@ export class Position implements StructClass {
       tick_upper_index: I32.bcs,
       liquidity: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Position.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Position.cachedBcs) {
+      Position.cachedBcs = Position.instantiateBcs()
+    }
+    return Position.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Position {
@@ -682,6 +712,7 @@ export class PositionInfo implements StructClass {
   }
 
   static reified(): PositionInfoReified {
+    const reifiedBcs = PositionInfo.bcs
     return {
       typeName: PositionInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -693,8 +724,8 @@ export class PositionInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionInfo.fromBcs(data),
-      bcs: PositionInfo.bcs,
+      fromBcs: (data: Uint8Array) => PositionInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionInfo.fromSuiParsedData(content),
@@ -718,7 +749,7 @@ export class PositionInfo implements StructClass {
     return PositionInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionInfo', {
       position_id: ID.bcs,
       liquidity: bcs.u128(),
@@ -732,6 +763,15 @@ export class PositionInfo implements StructClass {
       points_growth_inside: bcs.u128(),
       rewards: bcs.vector(PositionReward.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionInfo.cachedBcs) {
+      PositionInfo.cachedBcs = PositionInfo.instantiateBcs()
+    }
+    return PositionInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionInfo {
@@ -904,6 +944,7 @@ export class PositionReward implements StructClass {
   }
 
   static reified(): PositionRewardReified {
+    const reifiedBcs = PositionReward.bcs
     return {
       typeName: PositionReward.$typeName,
       fullTypeName: composeSuiType(
@@ -915,8 +956,8 @@ export class PositionReward implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionReward.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionReward.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionReward.fromBcs(data),
-      bcs: PositionReward.bcs,
+      fromBcs: (data: Uint8Array) => PositionReward.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionReward.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionReward.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionReward.fromSuiParsedData(content),
@@ -940,11 +981,20 @@ export class PositionReward implements StructClass {
     return PositionReward.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionReward', {
       growth_inside: bcs.u128(),
       amount_owned: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionReward.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionReward.cachedBcs) {
+      PositionReward.cachedBcs = PositionReward.instantiateBcs()
+    }
+    return PositionReward.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionReward {

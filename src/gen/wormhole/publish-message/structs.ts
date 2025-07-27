@@ -72,6 +72,7 @@ export class WormholeMessage implements StructClass {
   }
 
   static reified(): WormholeMessageReified {
+    const reifiedBcs = WormholeMessage.bcs
     return {
       typeName: WormholeMessage.$typeName,
       fullTypeName: composeSuiType(
@@ -83,8 +84,8 @@ export class WormholeMessage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WormholeMessage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WormholeMessage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WormholeMessage.fromBcs(data),
-      bcs: WormholeMessage.bcs,
+      fromBcs: (data: Uint8Array) => WormholeMessage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WormholeMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WormholeMessage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WormholeMessage.fromSuiParsedData(content),
@@ -108,7 +109,7 @@ export class WormholeMessage implements StructClass {
     return WormholeMessage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WormholeMessage', {
       sender: ID.bcs,
       sequence: bcs.u64(),
@@ -117,6 +118,15 @@ export class WormholeMessage implements StructClass {
       consistency_level: bcs.u8(),
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WormholeMessage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WormholeMessage.cachedBcs) {
+      WormholeMessage.cachedBcs = WormholeMessage.instantiateBcs()
+    }
+    return WormholeMessage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WormholeMessage {
@@ -269,6 +279,7 @@ export class MessageTicket implements StructClass {
   }
 
   static reified(): MessageTicketReified {
+    const reifiedBcs = MessageTicket.bcs
     return {
       typeName: MessageTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -280,8 +291,8 @@ export class MessageTicket implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => MessageTicket.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => MessageTicket.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => MessageTicket.fromBcs(data),
-      bcs: MessageTicket.bcs,
+      fromBcs: (data: Uint8Array) => MessageTicket.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => MessageTicket.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MessageTicket.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => MessageTicket.fromSuiParsedData(content),
@@ -305,13 +316,22 @@ export class MessageTicket implements StructClass {
     return MessageTicket.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('MessageTicket', {
       sender: ID.bcs,
       sequence: bcs.u64(),
       nonce: bcs.u32(),
       payload: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof MessageTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!MessageTicket.cachedBcs) {
+      MessageTicket.cachedBcs = MessageTicket.instantiateBcs()
+    }
+    return MessageTicket.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): MessageTicket {

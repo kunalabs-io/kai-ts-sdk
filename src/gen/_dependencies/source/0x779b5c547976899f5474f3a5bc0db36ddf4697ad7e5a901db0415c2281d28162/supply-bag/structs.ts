@@ -58,6 +58,7 @@ export class SupplyBag implements StructClass {
   }
 
   static reified(): SupplyBagReified {
+    const reifiedBcs = SupplyBag.bcs
     return {
       typeName: SupplyBag.$typeName,
       fullTypeName: composeSuiType(
@@ -69,8 +70,8 @@ export class SupplyBag implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SupplyBag.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyBag.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SupplyBag.fromBcs(data),
-      bcs: SupplyBag.bcs,
+      fromBcs: (data: Uint8Array) => SupplyBag.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SupplyBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyBag.fromSuiParsedData(content),
@@ -94,11 +95,20 @@ export class SupplyBag implements StructClass {
     return SupplyBag.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SupplyBag', {
       id: UID.bcs,
       bag: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SupplyBag.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SupplyBag.cachedBcs) {
+      SupplyBag.cachedBcs = SupplyBag.instantiateBcs()
+    }
+    return SupplyBag.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SupplyBag {

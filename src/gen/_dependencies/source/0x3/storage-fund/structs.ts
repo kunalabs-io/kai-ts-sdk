@@ -59,6 +59,7 @@ export class StorageFund implements StructClass {
   }
 
   static reified(): StorageFundReified {
+    const reifiedBcs = StorageFund.bcs
     return {
       typeName: StorageFund.$typeName,
       fullTypeName: composeSuiType(
@@ -70,8 +71,8 @@ export class StorageFund implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StorageFund.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StorageFund.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StorageFund.fromBcs(data),
-      bcs: StorageFund.bcs,
+      fromBcs: (data: Uint8Array) => StorageFund.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StorageFund.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StorageFund.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StorageFund.fromSuiParsedData(content),
@@ -95,11 +96,20 @@ export class StorageFund implements StructClass {
     return StorageFund.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StorageFund', {
       total_object_storage_rebates: Balance.bcs,
       non_refundable_balance: Balance.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StorageFund.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StorageFund.cachedBcs) {
+      StorageFund.cachedBcs = StorageFund.instantiateBcs()
+    }
+    return StorageFund.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StorageFund {

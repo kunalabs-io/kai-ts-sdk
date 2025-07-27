@@ -50,6 +50,7 @@ export class I32 implements StructClass {
   }
 
   static reified(): I32Reified {
+    const reifiedBcs = I32.bcs
     return {
       typeName: I32.$typeName,
       fullTypeName: composeSuiType(I32.$typeName, ...[]) as `${typeof PKG_V1}::i32::I32`,
@@ -58,8 +59,8 @@ export class I32 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => I32.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => I32.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => I32.fromBcs(data),
-      bcs: I32.bcs,
+      fromBcs: (data: Uint8Array) => I32.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => I32.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I32.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => I32.fromSuiParsedData(content),
@@ -83,10 +84,19 @@ export class I32 implements StructClass {
     return I32.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('I32', {
       bits: bcs.u32(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof I32.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!I32.cachedBcs) {
+      I32.cachedBcs = I32.instantiateBcs()
+    }
+    return I32.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): I32 {

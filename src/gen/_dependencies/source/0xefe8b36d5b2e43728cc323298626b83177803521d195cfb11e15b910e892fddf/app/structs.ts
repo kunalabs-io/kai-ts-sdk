@@ -56,6 +56,7 @@ export class APP implements StructClass {
   }
 
   static reified(): APPReified {
+    const reifiedBcs = APP.bcs
     return {
       typeName: APP.$typeName,
       fullTypeName: composeSuiType(APP.$typeName, ...[]) as `${typeof PKG_V1}::app::APP`,
@@ -64,8 +65,8 @@ export class APP implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => APP.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => APP.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => APP.fromBcs(data),
-      bcs: APP.bcs,
+      fromBcs: (data: Uint8Array) => APP.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => APP.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => APP.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => APP.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class APP implements StructClass {
     return APP.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('APP', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof APP.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!APP.cachedBcs) {
+      APP.cachedBcs = APP.instantiateBcs()
+    }
+    return APP.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): APP {
@@ -227,6 +237,7 @@ export class AdminCap implements StructClass {
   }
 
   static reified(): AdminCapReified {
+    const reifiedBcs = AdminCap.bcs
     return {
       typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(AdminCap.$typeName, ...[]) as `${typeof PKG_V1}::app::AdminCap`,
@@ -235,8 +246,8 @@ export class AdminCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(data),
-      bcs: AdminCap.bcs,
+      fromBcs: (data: Uint8Array) => AdminCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
@@ -260,7 +271,7 @@ export class AdminCap implements StructClass {
     return AdminCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminCap', {
       id: UID.bcs,
       interest_model_cap: AcTableCap.bcs,
@@ -269,6 +280,15 @@ export class AdminCap implements StructClass {
       risk_model_change_delay: bcs.u64(),
       limiter_change_delay: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminCap.cachedBcs) {
+      AdminCap.cachedBcs = AdminCap.instantiateBcs()
+    }
+    return AdminCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AdminCap {

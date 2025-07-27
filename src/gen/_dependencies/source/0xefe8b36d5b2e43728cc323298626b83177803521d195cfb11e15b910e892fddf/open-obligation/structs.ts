@@ -54,6 +54,7 @@ export class ObligationHotPotato implements StructClass {
   }
 
   static reified(): ObligationHotPotatoReified {
+    const reifiedBcs = ObligationHotPotato.bcs
     return {
       typeName: ObligationHotPotato.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class ObligationHotPotato implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationHotPotato.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationHotPotato.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationHotPotato.fromBcs(data),
-      bcs: ObligationHotPotato.bcs,
+      fromBcs: (data: Uint8Array) => ObligationHotPotato.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationHotPotato.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationHotPotato.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationHotPotato.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class ObligationHotPotato implements StructClass {
     return ObligationHotPotato.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationHotPotato', {
       obligation_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationHotPotato.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationHotPotato.cachedBcs) {
+      ObligationHotPotato.cachedBcs = ObligationHotPotato.instantiateBcs()
+    }
+    return ObligationHotPotato.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationHotPotato {
@@ -226,6 +236,7 @@ export class ObligationCreatedEvent implements StructClass {
   }
 
   static reified(): ObligationCreatedEventReified {
+    const reifiedBcs = ObligationCreatedEvent.bcs
     return {
       typeName: ObligationCreatedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -238,8 +249,8 @@ export class ObligationCreatedEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => ObligationCreatedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ObligationCreatedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationCreatedEvent.fromBcs(data),
-      bcs: ObligationCreatedEvent.bcs,
+      fromBcs: (data: Uint8Array) => ObligationCreatedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationCreatedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -265,7 +276,7 @@ export class ObligationCreatedEvent implements StructClass {
     return ObligationCreatedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationCreatedEvent', {
       sender: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -274,6 +285,15 @@ export class ObligationCreatedEvent implements StructClass {
       obligation: ID.bcs,
       obligation_key: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationCreatedEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationCreatedEvent.cachedBcs) {
+      ObligationCreatedEvent.cachedBcs = ObligationCreatedEvent.instantiateBcs()
+    }
+    return ObligationCreatedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationCreatedEvent {

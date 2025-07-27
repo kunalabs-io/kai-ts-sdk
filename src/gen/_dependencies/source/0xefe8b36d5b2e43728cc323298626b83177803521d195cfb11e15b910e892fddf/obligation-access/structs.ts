@@ -65,6 +65,7 @@ export class ObligationAccessStore implements StructClass {
   }
 
   static reified(): ObligationAccessStoreReified {
+    const reifiedBcs = ObligationAccessStore.bcs
     return {
       typeName: ObligationAccessStore.$typeName,
       fullTypeName: composeSuiType(
@@ -77,8 +78,8 @@ export class ObligationAccessStore implements StructClass {
       fromFields: (fields: Record<string, any>) => ObligationAccessStore.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ObligationAccessStore.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationAccessStore.fromBcs(data),
-      bcs: ObligationAccessStore.bcs,
+      fromBcs: (data: Uint8Array) => ObligationAccessStore.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationAccessStore.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationAccessStore.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -104,12 +105,21 @@ export class ObligationAccessStore implements StructClass {
     return ObligationAccessStore.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationAccessStore', {
       id: UID.bcs,
       lock_keys: VecSet.bcs(TypeName.bcs),
       reward_keys: VecSet.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationAccessStore.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationAccessStore.cachedBcs) {
+      ObligationAccessStore.cachedBcs = ObligationAccessStore.instantiateBcs()
+    }
+    return ObligationAccessStore.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationAccessStore {

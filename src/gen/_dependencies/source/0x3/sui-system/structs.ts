@@ -56,6 +56,7 @@ export class SuiSystemState implements StructClass {
   }
 
   static reified(): SuiSystemStateReified {
+    const reifiedBcs = SuiSystemState.bcs
     return {
       typeName: SuiSystemState.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class SuiSystemState implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SuiSystemState.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SuiSystemState.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SuiSystemState.fromBcs(data),
-      bcs: SuiSystemState.bcs,
+      fromBcs: (data: Uint8Array) => SuiSystemState.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SuiSystemState.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SuiSystemState.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SuiSystemState.fromSuiParsedData(content),
@@ -92,11 +93,20 @@ export class SuiSystemState implements StructClass {
     return SuiSystemState.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SuiSystemState', {
       id: UID.bcs,
       version: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SuiSystemState.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SuiSystemState.cachedBcs) {
+      SuiSystemState.cachedBcs = SuiSystemState.instantiateBcs()
+    }
+    return SuiSystemState.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SuiSystemState {

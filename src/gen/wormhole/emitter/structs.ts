@@ -54,6 +54,7 @@ export class EmitterCreated implements StructClass {
   }
 
   static reified(): EmitterCreatedReified {
+    const reifiedBcs = EmitterCreated.bcs
     return {
       typeName: EmitterCreated.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class EmitterCreated implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => EmitterCreated.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => EmitterCreated.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmitterCreated.fromBcs(data),
-      bcs: EmitterCreated.bcs,
+      fromBcs: (data: Uint8Array) => EmitterCreated.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterCreated.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCreated.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class EmitterCreated implements StructClass {
     return EmitterCreated.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmitterCreated', {
       emitter_cap: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmitterCreated.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmitterCreated.cachedBcs) {
+      EmitterCreated.cachedBcs = EmitterCreated.instantiateBcs()
+    }
+    return EmitterCreated.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmitterCreated {
@@ -217,6 +227,7 @@ export class EmitterDestroyed implements StructClass {
   }
 
   static reified(): EmitterDestroyedReified {
+    const reifiedBcs = EmitterDestroyed.bcs
     return {
       typeName: EmitterDestroyed.$typeName,
       fullTypeName: composeSuiType(
@@ -228,8 +239,8 @@ export class EmitterDestroyed implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => EmitterDestroyed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => EmitterDestroyed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmitterDestroyed.fromBcs(data),
-      bcs: EmitterDestroyed.bcs,
+      fromBcs: (data: Uint8Array) => EmitterDestroyed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterDestroyed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterDestroyed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterDestroyed.fromSuiParsedData(content),
@@ -253,10 +264,19 @@ export class EmitterDestroyed implements StructClass {
     return EmitterDestroyed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmitterDestroyed', {
       emitter_cap: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmitterDestroyed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmitterDestroyed.cachedBcs) {
+      EmitterDestroyed.cachedBcs = EmitterDestroyed.instantiateBcs()
+    }
+    return EmitterDestroyed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmitterDestroyed {
@@ -383,6 +403,7 @@ export class EmitterCap implements StructClass {
   }
 
   static reified(): EmitterCapReified {
+    const reifiedBcs = EmitterCap.bcs
     return {
       typeName: EmitterCap.$typeName,
       fullTypeName: composeSuiType(
@@ -394,8 +415,8 @@ export class EmitterCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => EmitterCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => EmitterCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => EmitterCap.fromBcs(data),
-      bcs: EmitterCap.bcs,
+      fromBcs: (data: Uint8Array) => EmitterCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCap.fromSuiParsedData(content),
@@ -419,11 +440,20 @@ export class EmitterCap implements StructClass {
     return EmitterCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('EmitterCap', {
       id: UID.bcs,
       sequence: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof EmitterCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!EmitterCap.cachedBcs) {
+      EmitterCap.cachedBcs = EmitterCap.instantiateBcs()
+    }
+    return EmitterCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): EmitterCap {

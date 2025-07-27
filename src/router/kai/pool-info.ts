@@ -13,6 +13,7 @@ import {
   LBTC,
   wBTC,
   WAL,
+  xBTC,
 } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 
@@ -63,11 +64,6 @@ export const CETUS_POOL_INFOS: Array<DexInfo> = [
     coinA: USDC,
     coinB: SUI,
     poolId: '0xb8d7d9e66a60c239e7a60110efcf8de6c705580ed924d0dde141f4a0e2c90105',
-  },
-  {
-    coinA: BLUE,
-    coinB: SUI,
-    poolId: '0x040dc6a93bd4f26ea9507c70f19eb1a060fd5cb9c3718db372f4ae711ffbbb29',
   },
   {
     coinA: USDC,
@@ -142,6 +138,26 @@ export const BLUEFIN_POOL_INFOS: Array<DexInfo> = [
     coinB: USDC,
     poolId: '0xbcc6909d2e85c06cf9cbfe5b292da36f5bfa0f314806474bbf6a0bf9744d37ce',
   },
+  {
+    coinA: SUI,
+    coinB: LBTC,
+    poolId: '0xa0153768c7ed857ffd8bad4708da873fb7825a6878e5f4c83f5df4c091933e56',
+  },
+  {
+    coinA: wBTC,
+    coinB: USDC,
+    poolId: '0xf0e4772e80800550368973d1f8ab2c9a7241ace8df8770452ee2bf3e3e67b8a1',
+  },
+  {
+    coinA: xBTC,
+    coinB: wBTC,
+    poolId: '0x6490f12f357a95dd5cb2415258efc3377a73ef0979a3f785a05ab67351ed4a98',
+  },
+  {
+    coinA: xBTC,
+    coinB: USDC,
+    poolId: '0x1b0cc1c66185ceb8eccbc807c73243ce957f0053dfa1026149265bb2ff704a07',
+  },
 ].map(p => ({ ...p, type: 'dex', protocol: 'bluefin' }))
 
 export const STAKING_INFOS: Array<StakingInfo> = [
@@ -154,7 +170,7 @@ export const STAKING_INFOS: Array<StakingInfo> = [
 ]
 
 export const ALL_POOL_INFOS: Array<PoolInfo> = [
-  ...CETUS_POOL_INFOS,
   ...BLUEFIN_POOL_INFOS,
   ...STAKING_INFOS,
+  ...CETUS_POOL_INFOS,
 ]

@@ -56,6 +56,7 @@ export class OptionU128 implements StructClass {
   }
 
   static reified(): OptionU128Reified {
+    const reifiedBcs = OptionU128.bcs
     return {
       typeName: OptionU128.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class OptionU128 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => OptionU128.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => OptionU128.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => OptionU128.fromBcs(data),
-      bcs: OptionU128.bcs,
+      fromBcs: (data: Uint8Array) => OptionU128.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OptionU128.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OptionU128.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => OptionU128.fromSuiParsedData(content),
@@ -92,11 +93,20 @@ export class OptionU128 implements StructClass {
     return OptionU128.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OptionU128', {
       is_none: bcs.bool(),
       v: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OptionU128.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!OptionU128.cachedBcs) {
+      OptionU128.cachedBcs = OptionU128.instantiateBcs()
+    }
+    return OptionU128.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): OptionU128 {

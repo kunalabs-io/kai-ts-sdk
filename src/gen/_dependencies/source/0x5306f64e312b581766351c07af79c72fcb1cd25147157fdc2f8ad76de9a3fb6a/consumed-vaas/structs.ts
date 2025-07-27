@@ -57,6 +57,7 @@ export class ConsumedVAAs implements StructClass {
   }
 
   static reified(): ConsumedVAAsReified {
+    const reifiedBcs = ConsumedVAAs.bcs
     return {
       typeName: ConsumedVAAs.$typeName,
       fullTypeName: composeSuiType(
@@ -68,8 +69,8 @@ export class ConsumedVAAs implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ConsumedVAAs.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ConsumedVAAs.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ConsumedVAAs.fromBcs(data),
-      bcs: ConsumedVAAs.bcs,
+      fromBcs: (data: Uint8Array) => ConsumedVAAs.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ConsumedVAAs.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ConsumedVAAs.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ConsumedVAAs.fromSuiParsedData(content),
@@ -93,10 +94,19 @@ export class ConsumedVAAs implements StructClass {
     return ConsumedVAAs.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ConsumedVAAs', {
       hashes: Set.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ConsumedVAAs.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ConsumedVAAs.cachedBcs) {
+      ConsumedVAAs.cachedBcs = ConsumedVAAs.instantiateBcs()
+    }
+    return ConsumedVAAs.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ConsumedVAAs {

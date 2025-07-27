@@ -54,6 +54,7 @@ export class BorrowFeeKey implements StructClass {
   }
 
   static reified(): BorrowFeeKeyReified {
+    const reifiedBcs = BorrowFeeKey.bcs
     return {
       typeName: BorrowFeeKey.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class BorrowFeeKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowFeeKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowFeeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowFeeKey.fromBcs(data),
-      bcs: BorrowFeeKey.bcs,
+      fromBcs: (data: Uint8Array) => BorrowFeeKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFeeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFeeKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowFeeKey.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class BorrowFeeKey implements StructClass {
     return BorrowFeeKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowFeeKey', {
       type: TypeName.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowFeeKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowFeeKey.cachedBcs) {
+      BorrowFeeKey.cachedBcs = BorrowFeeKey.instantiateBcs()
+    }
+    return BorrowFeeKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowFeeKey {
@@ -216,6 +226,7 @@ export class BorrowFeeRecipientKey implements StructClass {
   }
 
   static reified(): BorrowFeeRecipientKeyReified {
+    const reifiedBcs = BorrowFeeRecipientKey.bcs
     return {
       typeName: BorrowFeeRecipientKey.$typeName,
       fullTypeName: composeSuiType(
@@ -228,8 +239,8 @@ export class BorrowFeeRecipientKey implements StructClass {
       fromFields: (fields: Record<string, any>) => BorrowFeeRecipientKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BorrowFeeRecipientKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowFeeRecipientKey.fromBcs(data),
-      bcs: BorrowFeeRecipientKey.bcs,
+      fromBcs: (data: Uint8Array) => BorrowFeeRecipientKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFeeRecipientKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFeeRecipientKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -255,10 +266,19 @@ export class BorrowFeeRecipientKey implements StructClass {
     return BorrowFeeRecipientKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowFeeRecipientKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowFeeRecipientKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowFeeRecipientKey.cachedBcs) {
+      BorrowFeeRecipientKey.cachedBcs = BorrowFeeRecipientKey.instantiateBcs()
+    }
+    return BorrowFeeRecipientKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowFeeRecipientKey {
@@ -384,6 +404,7 @@ export class SupplyLimitKey implements StructClass {
   }
 
   static reified(): SupplyLimitKeyReified {
+    const reifiedBcs = SupplyLimitKey.bcs
     return {
       typeName: SupplyLimitKey.$typeName,
       fullTypeName: composeSuiType(
@@ -395,8 +416,8 @@ export class SupplyLimitKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SupplyLimitKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyLimitKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SupplyLimitKey.fromBcs(data),
-      bcs: SupplyLimitKey.bcs,
+      fromBcs: (data: Uint8Array) => SupplyLimitKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyLimitKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SupplyLimitKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyLimitKey.fromSuiParsedData(content),
@@ -420,10 +441,19 @@ export class SupplyLimitKey implements StructClass {
     return SupplyLimitKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SupplyLimitKey', {
       type: TypeName.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SupplyLimitKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SupplyLimitKey.cachedBcs) {
+      SupplyLimitKey.cachedBcs = SupplyLimitKey.instantiateBcs()
+    }
+    return SupplyLimitKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SupplyLimitKey {

@@ -50,6 +50,7 @@ export class BTC implements StructClass {
   }
 
   static reified(): BTCReified {
+    const reifiedBcs = BTC.bcs
     return {
       typeName: BTC.$typeName,
       fullTypeName: composeSuiType(BTC.$typeName, ...[]) as `${typeof PKG_V1}::btc::BTC`,
@@ -58,8 +59,8 @@ export class BTC implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BTC.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BTC.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BTC.fromBcs(data),
-      bcs: BTC.bcs,
+      fromBcs: (data: Uint8Array) => BTC.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BTC.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BTC.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BTC.fromSuiParsedData(content),
@@ -83,10 +84,19 @@ export class BTC implements StructClass {
     return BTC.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BTC', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BTC.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BTC.cachedBcs) {
+      BTC.cachedBcs = BTC.instantiateBcs()
+    }
+    return BTC.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BTC {

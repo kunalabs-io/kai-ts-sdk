@@ -96,6 +96,7 @@ export class Obligation implements StructClass {
   }
 
   static reified(): ObligationReified {
+    const reifiedBcs = Obligation.bcs
     return {
       typeName: Obligation.$typeName,
       fullTypeName: composeSuiType(
@@ -107,8 +108,8 @@ export class Obligation implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Obligation.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Obligation.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Obligation.fromBcs(data),
-      bcs: Obligation.bcs,
+      fromBcs: (data: Uint8Array) => Obligation.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Obligation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Obligation.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Obligation.fromSuiParsedData(content),
@@ -132,7 +133,7 @@ export class Obligation implements StructClass {
     return Obligation.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Obligation', {
       id: UID.bcs,
       balances: BalanceBag.bcs,
@@ -146,6 +147,15 @@ export class Obligation implements StructClass {
       withdraw_collateral_locked: bcs.bool(),
       liquidate_locked: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Obligation.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Obligation.cachedBcs) {
+      Obligation.cachedBcs = Obligation.instantiateBcs()
+    }
+    return Obligation.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Obligation {
@@ -360,6 +370,7 @@ export class ObligationOwnership implements StructClass {
   }
 
   static reified(): ObligationOwnershipReified {
+    const reifiedBcs = ObligationOwnership.bcs
     return {
       typeName: ObligationOwnership.$typeName,
       fullTypeName: composeSuiType(
@@ -371,8 +382,8 @@ export class ObligationOwnership implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationOwnership.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationOwnership.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationOwnership.fromBcs(data),
-      bcs: ObligationOwnership.bcs,
+      fromBcs: (data: Uint8Array) => ObligationOwnership.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationOwnership.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationOwnership.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationOwnership.fromSuiParsedData(content),
@@ -396,10 +407,19 @@ export class ObligationOwnership implements StructClass {
     return ObligationOwnership.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationOwnership', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationOwnership.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationOwnership.cachedBcs) {
+      ObligationOwnership.cachedBcs = ObligationOwnership.instantiateBcs()
+    }
+    return ObligationOwnership.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationOwnership {
@@ -526,6 +546,7 @@ export class ObligationKey implements StructClass {
   }
 
   static reified(): ObligationKeyReified {
+    const reifiedBcs = ObligationKey.bcs
     return {
       typeName: ObligationKey.$typeName,
       fullTypeName: composeSuiType(
@@ -537,8 +558,8 @@ export class ObligationKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationKey.fromBcs(data),
-      bcs: ObligationKey.bcs,
+      fromBcs: (data: Uint8Array) => ObligationKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationKey.fromSuiParsedData(content),
@@ -562,11 +583,20 @@ export class ObligationKey implements StructClass {
     return ObligationKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationKey', {
       id: UID.bcs,
       ownership: Ownership.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationKey.cachedBcs) {
+      ObligationKey.cachedBcs = ObligationKey.instantiateBcs()
+    }
+    return ObligationKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationKey {
@@ -712,6 +742,7 @@ export class ObligationRewardsPointRedeemed implements StructClass {
   }
 
   static reified(): ObligationRewardsPointRedeemedReified {
+    const reifiedBcs = ObligationRewardsPointRedeemed.bcs
     return {
       typeName: ObligationRewardsPointRedeemed.$typeName,
       fullTypeName: composeSuiType(
@@ -725,8 +756,9 @@ export class ObligationRewardsPointRedeemed implements StructClass {
         ObligationRewardsPointRedeemed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ObligationRewardsPointRedeemed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationRewardsPointRedeemed.fromBcs(data),
-      bcs: ObligationRewardsPointRedeemed.bcs,
+      fromBcs: (data: Uint8Array) =>
+        ObligationRewardsPointRedeemed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationRewardsPointRedeemed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationRewardsPointRedeemed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -753,12 +785,23 @@ export class ObligationRewardsPointRedeemed implements StructClass {
     return ObligationRewardsPointRedeemed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationRewardsPointRedeemed', {
       obligation: ID.bcs,
       witness: TypeName.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof ObligationRewardsPointRedeemed.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!ObligationRewardsPointRedeemed.cachedBcs) {
+      ObligationRewardsPointRedeemed.cachedBcs = ObligationRewardsPointRedeemed.instantiateBcs()
+    }
+    return ObligationRewardsPointRedeemed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationRewardsPointRedeemed {
@@ -915,6 +958,7 @@ export class ObligationLocked implements StructClass {
   }
 
   static reified(): ObligationLockedReified {
+    const reifiedBcs = ObligationLocked.bcs
     return {
       typeName: ObligationLocked.$typeName,
       fullTypeName: composeSuiType(
@@ -926,8 +970,8 @@ export class ObligationLocked implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationLocked.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationLocked.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationLocked.fromBcs(data),
-      bcs: ObligationLocked.bcs,
+      fromBcs: (data: Uint8Array) => ObligationLocked.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationLocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationLocked.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationLocked.fromSuiParsedData(content),
@@ -951,7 +995,7 @@ export class ObligationLocked implements StructClass {
     return ObligationLocked.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationLocked', {
       obligation: ID.bcs,
       witness: TypeName.bcs,
@@ -961,6 +1005,15 @@ export class ObligationLocked implements StructClass {
       withdraw_collateral_locked: bcs.bool(),
       liquidate_locked: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationLocked.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationLocked.cachedBcs) {
+      ObligationLocked.cachedBcs = ObligationLocked.instantiateBcs()
+    }
+    return ObligationLocked.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationLocked {
@@ -1117,6 +1170,7 @@ export class ObligationUnlocked implements StructClass {
   }
 
   static reified(): ObligationUnlockedReified {
+    const reifiedBcs = ObligationUnlocked.bcs
     return {
       typeName: ObligationUnlocked.$typeName,
       fullTypeName: composeSuiType(
@@ -1128,8 +1182,8 @@ export class ObligationUnlocked implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObligationUnlocked.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationUnlocked.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationUnlocked.fromBcs(data),
-      bcs: ObligationUnlocked.bcs,
+      fromBcs: (data: Uint8Array) => ObligationUnlocked.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationUnlocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationUnlocked.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObligationUnlocked.fromSuiParsedData(content),
@@ -1153,11 +1207,20 @@ export class ObligationUnlocked implements StructClass {
     return ObligationUnlocked.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationUnlocked', {
       obligation: ID.bcs,
       witness: TypeName.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationUnlocked.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObligationUnlocked.cachedBcs) {
+      ObligationUnlocked.cachedBcs = ObligationUnlocked.instantiateBcs()
+    }
+    return ObligationUnlocked.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationUnlocked {

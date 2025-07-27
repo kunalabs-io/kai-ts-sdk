@@ -85,6 +85,7 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): TimeLockedBalanceReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = TimeLockedBalance.bcs
     return {
       typeName: TimeLockedBalance.$typeName,
       fullTypeName: composeSuiType(
@@ -97,8 +98,8 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
       fromFields: (fields: Record<string, any>) => TimeLockedBalance.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TimeLockedBalance.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => TimeLockedBalance.fromBcs(T, data),
-      bcs: TimeLockedBalance.bcs,
+      fromBcs: (data: Uint8Array) => TimeLockedBalance.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TimeLockedBalance.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TimeLockedBalance.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -126,7 +127,7 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
     return TimeLockedBalance.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TimeLockedBalance', {
       locked_balance: Balance.bcs,
       unlock_start_ts_sec: bcs.u64(),
@@ -135,6 +136,15 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
       final_unlock_ts_sec: bcs.u64(),
       previous_unlock_at: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TimeLockedBalance.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TimeLockedBalance.cachedBcs) {
+      TimeLockedBalance.cachedBcs = TimeLockedBalance.instantiateBcs()
+    }
+    return TimeLockedBalance.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(

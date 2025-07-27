@@ -72,6 +72,7 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
   static reified<T extends Reified<TypeArgument, any>>(
     T: T
   ): HotPotatoVectorReified<ToTypeArgument<T>> {
+    const reifiedBcs = HotPotatoVector.bcs(toBcs(T))
     return {
       typeName: HotPotatoVector.$typeName,
       fullTypeName: composeSuiType(
@@ -83,8 +84,8 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => HotPotatoVector.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => HotPotatoVector.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => HotPotatoVector.fromBcs(T, data),
-      bcs: HotPotatoVector.bcs(toBcs(T)),
+      fromBcs: (data: Uint8Array) => HotPotatoVector.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => HotPotatoVector.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => HotPotatoVector.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => HotPotatoVector.fromSuiParsedData(T, content),
@@ -110,11 +111,20 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
     return HotPotatoVector.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T extends BcsType<any>>(T: T) =>
       bcs.struct(`HotPotatoVector<${T.name}>`, {
         contents: bcs.vector(T),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof HotPotatoVector.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!HotPotatoVector.cachedBcs) {
+      HotPotatoVector.cachedBcs = HotPotatoVector.instantiateBcs()
+    }
+    return HotPotatoVector.cachedBcs
   }
 
   static fromFields<T extends Reified<TypeArgument, any>>(

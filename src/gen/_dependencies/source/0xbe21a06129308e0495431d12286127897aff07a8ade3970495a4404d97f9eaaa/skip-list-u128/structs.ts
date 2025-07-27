@@ -93,6 +93,7 @@ export class SkipList<V extends TypeArgument> implements StructClass {
   }
 
   static reified<V extends Reified<TypeArgument, any>>(V: V): SkipListReified<ToTypeArgument<V>> {
+    const reifiedBcs = SkipList.bcs(toBcs(V))
     return {
       typeName: SkipList.$typeName,
       fullTypeName: composeSuiType(
@@ -104,8 +105,8 @@ export class SkipList<V extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [V],
       fromFields: (fields: Record<string, any>) => SkipList.fromFields(V, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SkipList.fromFieldsWithTypes(V, item),
-      fromBcs: (data: Uint8Array) => SkipList.fromBcs(V, data),
-      bcs: SkipList.bcs(toBcs(V)),
+      fromBcs: (data: Uint8Array) => SkipList.fromFields(V, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SkipList.fromJSONField(V, field),
       fromJSON: (json: Record<string, any>) => SkipList.fromJSON(V, json),
       fromSuiParsedData: (content: SuiParsedData) => SkipList.fromSuiParsedData(V, content),
@@ -131,7 +132,7 @@ export class SkipList<V extends TypeArgument> implements StructClass {
     return SkipList.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <V extends BcsType<any>>(V: V) =>
       bcs.struct(`SkipList<${V.name}>`, {
         id: UID.bcs,
@@ -143,6 +144,15 @@ export class SkipList<V extends TypeArgument> implements StructClass {
         random: Random.bcs,
         inner: Table.bcs,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof SkipList.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SkipList.cachedBcs) {
+      SkipList.cachedBcs = SkipList.instantiateBcs()
+    }
+    return SkipList.cachedBcs
   }
 
   static fromFields<V extends Reified<TypeArgument, any>>(
@@ -364,6 +374,7 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
   static reified<V extends Reified<TypeArgument, any>>(
     V: V
   ): SkipListNodeReified<ToTypeArgument<V>> {
+    const reifiedBcs = SkipListNode.bcs(toBcs(V))
     return {
       typeName: SkipListNode.$typeName,
       fullTypeName: composeSuiType(
@@ -375,8 +386,8 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [V],
       fromFields: (fields: Record<string, any>) => SkipListNode.fromFields(V, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SkipListNode.fromFieldsWithTypes(V, item),
-      fromBcs: (data: Uint8Array) => SkipListNode.fromBcs(V, data),
-      bcs: SkipListNode.bcs(toBcs(V)),
+      fromBcs: (data: Uint8Array) => SkipListNode.fromFields(V, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SkipListNode.fromJSONField(V, field),
       fromJSON: (json: Record<string, any>) => SkipListNode.fromJSON(V, json),
       fromSuiParsedData: (content: SuiParsedData) => SkipListNode.fromSuiParsedData(V, content),
@@ -402,7 +413,7 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
     return SkipListNode.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <V extends BcsType<any>>(V: V) =>
       bcs.struct(`SkipListNode<${V.name}>`, {
         score: bcs.u128(),
@@ -410,6 +421,15 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
         prev: OptionU128.bcs,
         value: V,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof SkipListNode.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SkipListNode.cachedBcs) {
+      SkipListNode.cachedBcs = SkipListNode.instantiateBcs()
+    }
+    return SkipListNode.cachedBcs
   }
 
   static fromFields<V extends Reified<TypeArgument, any>>(
@@ -598,6 +618,7 @@ export class Item implements StructClass {
   }
 
   static reified(): ItemReified {
+    const reifiedBcs = Item.bcs
     return {
       typeName: Item.$typeName,
       fullTypeName: composeSuiType(
@@ -609,8 +630,8 @@ export class Item implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Item.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Item.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Item.fromBcs(data),
-      bcs: Item.bcs,
+      fromBcs: (data: Uint8Array) => Item.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Item.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Item.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Item.fromSuiParsedData(content),
@@ -634,12 +655,21 @@ export class Item implements StructClass {
     return Item.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Item', {
       n: bcs.u64(),
       score: bcs.u64(),
       finded: OptionU128.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Item.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Item.cachedBcs) {
+      Item.cachedBcs = Item.instantiateBcs()
+    }
+    return Item.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Item {

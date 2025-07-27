@@ -85,6 +85,7 @@ export class InterestModel implements StructClass {
   }
 
   static reified(): InterestModelReified {
+    const reifiedBcs = InterestModel.bcs
     return {
       typeName: InterestModel.$typeName,
       fullTypeName: composeSuiType(
@@ -96,8 +97,8 @@ export class InterestModel implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => InterestModel.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => InterestModel.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InterestModel.fromBcs(data),
-      bcs: InterestModel.bcs,
+      fromBcs: (data: Uint8Array) => InterestModel.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModel.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModel.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => InterestModel.fromSuiParsedData(content),
@@ -121,7 +122,7 @@ export class InterestModel implements StructClass {
     return InterestModel.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InterestModel', {
       type: TypeName.bcs,
       base_borrow_rate_per_sec: FixedPoint32.bcs,
@@ -135,6 +136,15 @@ export class InterestModel implements StructClass {
       borrow_weight: FixedPoint32.bcs,
       min_borrow_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InterestModel.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InterestModel.cachedBcs) {
+      InterestModel.cachedBcs = InterestModel.instantiateBcs()
+    }
+    return InterestModel.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InterestModel {
@@ -325,6 +335,7 @@ export class InterestModelChangeCreated implements StructClass {
   }
 
   static reified(): InterestModelChangeCreatedReified {
+    const reifiedBcs = InterestModelChangeCreated.bcs
     return {
       typeName: InterestModelChangeCreated.$typeName,
       fullTypeName: composeSuiType(
@@ -337,8 +348,8 @@ export class InterestModelChangeCreated implements StructClass {
       fromFields: (fields: Record<string, any>) => InterestModelChangeCreated.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         InterestModelChangeCreated.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InterestModelChangeCreated.fromBcs(data),
-      bcs: InterestModelChangeCreated.bcs,
+      fromBcs: (data: Uint8Array) => InterestModelChangeCreated.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModelChangeCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModelChangeCreated.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -364,13 +375,23 @@ export class InterestModelChangeCreated implements StructClass {
     return InterestModelChangeCreated.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InterestModelChangeCreated', {
       interest_model: InterestModel.bcs,
       current_epoch: bcs.u64(),
       delay_epoches: bcs.u64(),
       effective_epoches: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InterestModelChangeCreated.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!InterestModelChangeCreated.cachedBcs) {
+      InterestModelChangeCreated.cachedBcs = InterestModelChangeCreated.instantiateBcs()
+    }
+    return InterestModelChangeCreated.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InterestModelChangeCreated {
@@ -516,6 +537,7 @@ export class InterestModelAdded implements StructClass {
   }
 
   static reified(): InterestModelAddedReified {
+    const reifiedBcs = InterestModelAdded.bcs
     return {
       typeName: InterestModelAdded.$typeName,
       fullTypeName: composeSuiType(
@@ -527,8 +549,8 @@ export class InterestModelAdded implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => InterestModelAdded.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => InterestModelAdded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InterestModelAdded.fromBcs(data),
-      bcs: InterestModelAdded.bcs,
+      fromBcs: (data: Uint8Array) => InterestModelAdded.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModelAdded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModelAdded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => InterestModelAdded.fromSuiParsedData(content),
@@ -552,11 +574,20 @@ export class InterestModelAdded implements StructClass {
     return InterestModelAdded.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InterestModelAdded', {
       interest_model: InterestModel.bcs,
       current_epoch: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InterestModelAdded.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InterestModelAdded.cachedBcs) {
+      InterestModelAdded.cachedBcs = InterestModelAdded.instantiateBcs()
+    }
+    return InterestModelAdded.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InterestModelAdded {
@@ -684,6 +715,7 @@ export class InterestModels implements StructClass {
   }
 
   static reified(): InterestModelsReified {
+    const reifiedBcs = InterestModels.bcs
     return {
       typeName: InterestModels.$typeName,
       fullTypeName: composeSuiType(
@@ -695,8 +727,8 @@ export class InterestModels implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => InterestModels.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => InterestModels.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => InterestModels.fromBcs(data),
-      bcs: InterestModels.bcs,
+      fromBcs: (data: Uint8Array) => InterestModels.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModels.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModels.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => InterestModels.fromSuiParsedData(content),
@@ -720,10 +752,19 @@ export class InterestModels implements StructClass {
     return InterestModels.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('InterestModels', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof InterestModels.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!InterestModels.cachedBcs) {
+      InterestModels.cachedBcs = InterestModels.instantiateBcs()
+    }
+    return InterestModels.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): InterestModels {

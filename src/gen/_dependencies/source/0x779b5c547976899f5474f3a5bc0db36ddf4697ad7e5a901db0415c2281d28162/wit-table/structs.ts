@@ -107,6 +107,7 @@ export class WitTable<
     T1: T1,
     T2: T2
   ): WitTableReified<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+    const reifiedBcs = WitTable.bcs(toBcs(T1))
     return {
       typeName: WitTable.$typeName,
       fullTypeName: composeSuiType(
@@ -123,8 +124,8 @@ export class WitTable<
       fromFields: (fields: Record<string, any>) => WitTable.fromFields([T0, T1, T2], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WitTable.fromFieldsWithTypes([T0, T1, T2], item),
-      fromBcs: (data: Uint8Array) => WitTable.fromBcs([T0, T1, T2], data),
-      bcs: WitTable.bcs(toBcs(T1)),
+      fromBcs: (data: Uint8Array) => WitTable.fromFields([T0, T1, T2], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WitTable.fromJSONField([T0, T1, T2], field),
       fromJSON: (json: Record<string, any>) => WitTable.fromJSON([T0, T1, T2], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -166,7 +167,7 @@ export class WitTable<
     return WitTable.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T1 extends BcsType<any>>(T1: T1) =>
       bcs.struct(`WitTable<${T1.name}>`, {
         id: UID.bcs,
@@ -174,6 +175,15 @@ export class WitTable<
         keys: Option.bcs(VecSet.bcs(T1)),
         with_keys: bcs.bool(),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof WitTable.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WitTable.cachedBcs) {
+      WitTable.cachedBcs = WitTable.instantiateBcs()
+    }
+    return WitTable.cachedBcs
   }
 
   static fromFields<

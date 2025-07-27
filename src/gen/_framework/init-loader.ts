@@ -15,6 +15,7 @@ import * as package_source_3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e6459290
 import * as package_source_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/init'
 import * as package_source_5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf from '../_dependencies/source/0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf/init'
 import * as package_source_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162 from '../_dependencies/source/0x779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162/init'
+import * as package_source_876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50 from '../_dependencies/source/0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50/init'
 import * as package_source_960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb from '../_dependencies/source/0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb/init'
 import * as package_source_aafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b from '../_dependencies/source/0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b/init'
 import * as package_source_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f from '../_dependencies/source/0xad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f/init'
@@ -97,6 +98,9 @@ function registerClassesSource(loader: StructClassLoader) {
     loader
   )
   package_source_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162.registerClasses(
+    loader
+  )
+  package_source_876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50.registerClasses(
     loader
   )
   package_source_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e.registerClasses(

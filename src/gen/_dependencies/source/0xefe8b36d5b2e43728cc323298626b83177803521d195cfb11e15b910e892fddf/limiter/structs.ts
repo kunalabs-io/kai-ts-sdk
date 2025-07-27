@@ -66,6 +66,7 @@ export class Limiter implements StructClass {
   }
 
   static reified(): LimiterReified {
+    const reifiedBcs = Limiter.bcs
     return {
       typeName: Limiter.$typeName,
       fullTypeName: composeSuiType(
@@ -77,8 +78,8 @@ export class Limiter implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Limiter.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Limiter.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Limiter.fromBcs(data),
-      bcs: Limiter.bcs,
+      fromBcs: (data: Uint8Array) => Limiter.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Limiter.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Limiter.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Limiter.fromSuiParsedData(content),
@@ -102,13 +103,22 @@ export class Limiter implements StructClass {
     return Limiter.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Limiter', {
       outflow_limit: bcs.u64(),
       outflow_cycle_duration: bcs.u32(),
       outflow_segment_duration: bcs.u32(),
       outflow_segments: bcs.vector(Segment.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Limiter.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Limiter.cachedBcs) {
+      Limiter.cachedBcs = Limiter.instantiateBcs()
+    }
+    return Limiter.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Limiter {
@@ -256,6 +266,7 @@ export class Limiters implements StructClass {
   }
 
   static reified(): LimitersReified {
+    const reifiedBcs = Limiters.bcs
     return {
       typeName: Limiters.$typeName,
       fullTypeName: composeSuiType(
@@ -267,8 +278,8 @@ export class Limiters implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Limiters.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Limiters.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Limiters.fromBcs(data),
-      bcs: Limiters.bcs,
+      fromBcs: (data: Uint8Array) => Limiters.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Limiters.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Limiters.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Limiters.fromSuiParsedData(content),
@@ -292,10 +303,19 @@ export class Limiters implements StructClass {
     return Limiters.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Limiters', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Limiters.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Limiters.cachedBcs) {
+      Limiters.cachedBcs = Limiters.instantiateBcs()
+    }
+    return Limiters.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Limiters {
@@ -418,6 +438,7 @@ export class Segment implements StructClass {
   }
 
   static reified(): SegmentReified {
+    const reifiedBcs = Segment.bcs
     return {
       typeName: Segment.$typeName,
       fullTypeName: composeSuiType(
@@ -429,8 +450,8 @@ export class Segment implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Segment.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Segment.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Segment.fromBcs(data),
-      bcs: Segment.bcs,
+      fromBcs: (data: Uint8Array) => Segment.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Segment.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Segment.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Segment.fromSuiParsedData(content),
@@ -454,11 +475,20 @@ export class Segment implements StructClass {
     return Segment.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Segment', {
       index: bcs.u64(),
       value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Segment.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Segment.cachedBcs) {
+      Segment.cachedBcs = Segment.instantiateBcs()
+    }
+    return Segment.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Segment {
@@ -598,6 +628,7 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
   }
 
   static reified(): LimiterUpdateLimitChangeCreatedEventReified {
+    const reifiedBcs = LimiterUpdateLimitChangeCreatedEvent.bcs
     return {
       typeName: LimiterUpdateLimitChangeCreatedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -611,8 +642,9 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
         LimiterUpdateLimitChangeCreatedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateLimitChangeCreatedEvent.fromBcs(data),
-      bcs: LimiterUpdateLimitChangeCreatedEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateLimitChangeCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChangeCreatedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -639,13 +671,25 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
     return LimiterUpdateLimitChangeCreatedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterUpdateLimitChangeCreatedEvent', {
       changes: LimiterUpdateLimitChange.bcs,
       current_epoch: bcs.u64(),
       delay_epoches: bcs.u64(),
       effective_epoches: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof LimiterUpdateLimitChangeCreatedEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!LimiterUpdateLimitChangeCreatedEvent.cachedBcs) {
+      LimiterUpdateLimitChangeCreatedEvent.cachedBcs =
+        LimiterUpdateLimitChangeCreatedEvent.instantiateBcs()
+    }
+    return LimiterUpdateLimitChangeCreatedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterUpdateLimitChangeCreatedEvent {
@@ -805,6 +849,7 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
   }
 
   static reified(): LimiterUpdateParamsChangeCreatedEventReified {
+    const reifiedBcs = LimiterUpdateParamsChangeCreatedEvent.bcs
     return {
       typeName: LimiterUpdateParamsChangeCreatedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -818,8 +863,9 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
         LimiterUpdateParamsChangeCreatedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateParamsChangeCreatedEvent.fromBcs(data),
-      bcs: LimiterUpdateParamsChangeCreatedEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateParamsChangeCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChangeCreatedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -846,13 +892,25 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
     return LimiterUpdateParamsChangeCreatedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterUpdateParamsChangeCreatedEvent', {
       changes: LimiterUpdateParamsChange.bcs,
       current_epoch: bcs.u64(),
       delay_epoches: bcs.u64(),
       effective_epoches: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof LimiterUpdateParamsChangeCreatedEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!LimiterUpdateParamsChangeCreatedEvent.cachedBcs) {
+      LimiterUpdateParamsChangeCreatedEvent.cachedBcs =
+        LimiterUpdateParamsChangeCreatedEvent.instantiateBcs()
+    }
+    return LimiterUpdateParamsChangeCreatedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterUpdateParamsChangeCreatedEvent {
@@ -1009,6 +1067,7 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
   }
 
   static reified(): LimiterLimitChangeAppliedEventReified {
+    const reifiedBcs = LimiterLimitChangeAppliedEvent.bcs
     return {
       typeName: LimiterLimitChangeAppliedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1022,8 +1081,9 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
         LimiterLimitChangeAppliedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterLimitChangeAppliedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterLimitChangeAppliedEvent.fromBcs(data),
-      bcs: LimiterLimitChangeAppliedEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        LimiterLimitChangeAppliedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterLimitChangeAppliedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterLimitChangeAppliedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1050,11 +1110,22 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
     return LimiterLimitChangeAppliedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterLimitChangeAppliedEvent', {
       changes: LimiterUpdateLimitChange.bcs,
       current_epoch: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof LimiterLimitChangeAppliedEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!LimiterLimitChangeAppliedEvent.cachedBcs) {
+      LimiterLimitChangeAppliedEvent.cachedBcs = LimiterLimitChangeAppliedEvent.instantiateBcs()
+    }
+    return LimiterLimitChangeAppliedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterLimitChangeAppliedEvent {
@@ -1195,6 +1266,7 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
   }
 
   static reified(): LimiterParamsChangeAppliedEventReified {
+    const reifiedBcs = LimiterParamsChangeAppliedEvent.bcs
     return {
       typeName: LimiterParamsChangeAppliedEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1208,8 +1280,9 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
         LimiterParamsChangeAppliedEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterParamsChangeAppliedEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterParamsChangeAppliedEvent.fromBcs(data),
-      bcs: LimiterParamsChangeAppliedEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        LimiterParamsChangeAppliedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterParamsChangeAppliedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterParamsChangeAppliedEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1236,11 +1309,22 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
     return LimiterParamsChangeAppliedEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterParamsChangeAppliedEvent', {
       changes: LimiterUpdateParamsChange.bcs,
       current_epoch: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof LimiterParamsChangeAppliedEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!LimiterParamsChangeAppliedEvent.cachedBcs) {
+      LimiterParamsChangeAppliedEvent.cachedBcs = LimiterParamsChangeAppliedEvent.instantiateBcs()
+    }
+    return LimiterParamsChangeAppliedEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterParamsChangeAppliedEvent {
@@ -1383,6 +1467,7 @@ export class LimiterUpdateLimitChange implements StructClass {
   }
 
   static reified(): LimiterUpdateLimitChangeReified {
+    const reifiedBcs = LimiterUpdateLimitChange.bcs
     return {
       typeName: LimiterUpdateLimitChange.$typeName,
       fullTypeName: composeSuiType(
@@ -1395,8 +1480,8 @@ export class LimiterUpdateLimitChange implements StructClass {
       fromFields: (fields: Record<string, any>) => LimiterUpdateLimitChange.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterUpdateLimitChange.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateLimitChange.fromBcs(data),
-      bcs: LimiterUpdateLimitChange.bcs,
+      fromBcs: (data: Uint8Array) => LimiterUpdateLimitChange.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateLimitChange.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChange.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1422,11 +1507,20 @@ export class LimiterUpdateLimitChange implements StructClass {
     return LimiterUpdateLimitChange.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterUpdateLimitChange', {
       coin_type: TypeName.bcs,
       outflow_limit: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LimiterUpdateLimitChange.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LimiterUpdateLimitChange.cachedBcs) {
+      LimiterUpdateLimitChange.cachedBcs = LimiterUpdateLimitChange.instantiateBcs()
+    }
+    return LimiterUpdateLimitChange.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterUpdateLimitChange {
@@ -1570,6 +1664,7 @@ export class LimiterUpdateParamsChange implements StructClass {
   }
 
   static reified(): LimiterUpdateParamsChangeReified {
+    const reifiedBcs = LimiterUpdateParamsChange.bcs
     return {
       typeName: LimiterUpdateParamsChange.$typeName,
       fullTypeName: composeSuiType(
@@ -1582,8 +1677,8 @@ export class LimiterUpdateParamsChange implements StructClass {
       fromFields: (fields: Record<string, any>) => LimiterUpdateParamsChange.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LimiterUpdateParamsChange.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LimiterUpdateParamsChange.fromBcs(data),
-      bcs: LimiterUpdateParamsChange.bcs,
+      fromBcs: (data: Uint8Array) => LimiterUpdateParamsChange.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateParamsChange.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChange.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1609,12 +1704,22 @@ export class LimiterUpdateParamsChange implements StructClass {
     return LimiterUpdateParamsChange.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LimiterUpdateParamsChange', {
       coin_type: TypeName.bcs,
       outflow_cycle_duration: bcs.u32(),
       outflow_segment_duration: bcs.u32(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LimiterUpdateParamsChange.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!LimiterUpdateParamsChange.cachedBcs) {
+      LimiterUpdateParamsChange.cachedBcs = LimiterUpdateParamsChange.instantiateBcs()
+    }
+    return LimiterUpdateParamsChange.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LimiterUpdateParamsChange {

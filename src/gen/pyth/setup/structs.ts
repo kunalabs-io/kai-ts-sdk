@@ -54,6 +54,7 @@ export class DeployerCap implements StructClass {
   }
 
   static reified(): DeployerCapReified {
+    const reifiedBcs = DeployerCap.bcs
     return {
       typeName: DeployerCap.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class DeployerCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DeployerCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DeployerCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeployerCap.fromBcs(data),
-      bcs: DeployerCap.bcs,
+      fromBcs: (data: Uint8Array) => DeployerCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeployerCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeployerCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeployerCap.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class DeployerCap implements StructClass {
     return DeployerCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeployerCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeployerCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DeployerCap.cachedBcs) {
+      DeployerCap.cachedBcs = DeployerCap.instantiateBcs()
+    }
+    return DeployerCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeployerCap {

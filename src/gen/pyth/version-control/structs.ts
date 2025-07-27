@@ -53,6 +53,7 @@ export class V__0_1_2 implements StructClass {
   }
 
   static reified(): V__0_1_2Reified {
+    const reifiedBcs = V__0_1_2.bcs
     return {
       typeName: V__0_1_2.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class V__0_1_2 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => V__0_1_2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => V__0_1_2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => V__0_1_2.fromBcs(data),
-      bcs: V__0_1_2.bcs,
+      fromBcs: (data: Uint8Array) => V__0_1_2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => V__0_1_2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => V__0_1_2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__0_1_2.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class V__0_1_2 implements StructClass {
     return V__0_1_2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('V__0_1_2', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof V__0_1_2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!V__0_1_2.cachedBcs) {
+      V__0_1_2.cachedBcs = V__0_1_2.instantiateBcs()
+    }
+    return V__0_1_2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): V__0_1_2 {
@@ -212,6 +222,7 @@ export class V__0_1_1 implements StructClass {
   }
 
   static reified(): V__0_1_1Reified {
+    const reifiedBcs = V__0_1_1.bcs
     return {
       typeName: V__0_1_1.$typeName,
       fullTypeName: composeSuiType(
@@ -223,8 +234,8 @@ export class V__0_1_1 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => V__0_1_1.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => V__0_1_1.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => V__0_1_1.fromBcs(data),
-      bcs: V__0_1_1.bcs,
+      fromBcs: (data: Uint8Array) => V__0_1_1.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => V__0_1_1.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => V__0_1_1.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__0_1_1.fromSuiParsedData(content),
@@ -248,10 +259,19 @@ export class V__0_1_1 implements StructClass {
     return V__0_1_1.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('V__0_1_1', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof V__0_1_1.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!V__0_1_1.cachedBcs) {
+      V__0_1_1.cachedBcs = V__0_1_1.instantiateBcs()
+    }
+    return V__0_1_1.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): V__0_1_1 {
@@ -371,6 +391,7 @@ export class V__DUMMY implements StructClass {
   }
 
   static reified(): V__DUMMYReified {
+    const reifiedBcs = V__DUMMY.bcs
     return {
       typeName: V__DUMMY.$typeName,
       fullTypeName: composeSuiType(
@@ -382,8 +403,8 @@ export class V__DUMMY implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => V__DUMMY.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => V__DUMMY.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => V__DUMMY.fromBcs(data),
-      bcs: V__DUMMY.bcs,
+      fromBcs: (data: Uint8Array) => V__DUMMY.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => V__DUMMY.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => V__DUMMY.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__DUMMY.fromSuiParsedData(content),
@@ -407,10 +428,19 @@ export class V__DUMMY implements StructClass {
     return V__DUMMY.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('V__DUMMY', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof V__DUMMY.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!V__DUMMY.cachedBcs) {
+      V__DUMMY.cachedBcs = V__DUMMY.instantiateBcs()
+    }
+    return V__DUMMY.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): V__DUMMY {

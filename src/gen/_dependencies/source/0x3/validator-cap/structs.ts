@@ -59,6 +59,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
   }
 
   static reified(): UnverifiedValidatorOperationCapReified {
+    const reifiedBcs = UnverifiedValidatorOperationCap.bcs
     return {
       typeName: UnverifiedValidatorOperationCap.$typeName,
       fullTypeName: composeSuiType(
@@ -72,8 +73,9 @@ export class UnverifiedValidatorOperationCap implements StructClass {
         UnverifiedValidatorOperationCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UnverifiedValidatorOperationCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UnverifiedValidatorOperationCap.fromBcs(data),
-      bcs: UnverifiedValidatorOperationCap.bcs,
+      fromBcs: (data: Uint8Array) =>
+        UnverifiedValidatorOperationCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UnverifiedValidatorOperationCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UnverifiedValidatorOperationCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -100,7 +102,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
     return UnverifiedValidatorOperationCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UnverifiedValidatorOperationCap', {
       id: UID.bcs,
       authorizer_validator_address: bcs.bytes(32).transform({
@@ -108,6 +110,17 @@ export class UnverifiedValidatorOperationCap implements StructClass {
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof UnverifiedValidatorOperationCap.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!UnverifiedValidatorOperationCap.cachedBcs) {
+      UnverifiedValidatorOperationCap.cachedBcs = UnverifiedValidatorOperationCap.instantiateBcs()
+    }
+    return UnverifiedValidatorOperationCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UnverifiedValidatorOperationCap {
@@ -250,6 +263,7 @@ export class ValidatorOperationCap implements StructClass {
   }
 
   static reified(): ValidatorOperationCapReified {
+    const reifiedBcs = ValidatorOperationCap.bcs
     return {
       typeName: ValidatorOperationCap.$typeName,
       fullTypeName: composeSuiType(
@@ -262,8 +276,8 @@ export class ValidatorOperationCap implements StructClass {
       fromFields: (fields: Record<string, any>) => ValidatorOperationCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ValidatorOperationCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorOperationCap.fromBcs(data),
-      bcs: ValidatorOperationCap.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorOperationCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorOperationCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorOperationCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -289,13 +303,22 @@ export class ValidatorOperationCap implements StructClass {
     return ValidatorOperationCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorOperationCap', {
       authorizer_validator_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorOperationCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorOperationCap.cachedBcs) {
+      ValidatorOperationCap.cachedBcs = ValidatorOperationCap.instantiateBcs()
+    }
+    return ValidatorOperationCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorOperationCap {

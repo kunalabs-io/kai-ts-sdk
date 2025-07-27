@@ -62,6 +62,7 @@ export class LatestOnly implements StructClass {
   }
 
   static reified(): LatestOnlyReified {
+    const reifiedBcs = LatestOnly.bcs
     return {
       typeName: LatestOnly.$typeName,
       fullTypeName: composeSuiType(
@@ -73,8 +74,8 @@ export class LatestOnly implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LatestOnly.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LatestOnly.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LatestOnly.fromBcs(data),
-      bcs: LatestOnly.bcs,
+      fromBcs: (data: Uint8Array) => LatestOnly.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LatestOnly.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LatestOnly.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LatestOnly.fromSuiParsedData(content),
@@ -98,10 +99,19 @@ export class LatestOnly implements StructClass {
     return LatestOnly.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LatestOnly', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LatestOnly.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LatestOnly.cachedBcs) {
+      LatestOnly.cachedBcs = LatestOnly.instantiateBcs()
+    }
+    return LatestOnly.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LatestOnly {
@@ -242,6 +252,7 @@ export class State implements StructClass {
   }
 
   static reified(): StateReified {
+    const reifiedBcs = State.bcs
     return {
       typeName: State.$typeName,
       fullTypeName: composeSuiType(State.$typeName, ...[]) as `${typeof PKG_V1}::state::State`,
@@ -250,8 +261,8 @@ export class State implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => State.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => State.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => State.fromBcs(data),
-      bcs: State.bcs,
+      fromBcs: (data: Uint8Array) => State.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => State.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => State.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => State.fromSuiParsedData(content),
@@ -275,7 +286,7 @@ export class State implements StructClass {
     return State.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('State', {
       id: UID.bcs,
       governance_chain: bcs.u16(),
@@ -286,6 +297,15 @@ export class State implements StructClass {
       token_registry: TokenRegistry.bcs,
       upgrade_cap: UpgradeCap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof State.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!State.cachedBcs) {
+      State.cachedBcs = State.instantiateBcs()
+    }
+    return State.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): State {

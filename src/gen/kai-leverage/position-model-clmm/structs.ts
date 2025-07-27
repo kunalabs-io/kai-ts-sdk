@@ -71,6 +71,7 @@ export class PositionModel implements StructClass {
   }
 
   static reified(): PositionModelReified {
+    const reifiedBcs = PositionModel.bcs
     return {
       typeName: PositionModel.$typeName,
       fullTypeName: composeSuiType(
@@ -82,8 +83,8 @@ export class PositionModel implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionModel.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionModel.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionModel.fromBcs(data),
-      bcs: PositionModel.bcs,
+      fromBcs: (data: Uint8Array) => PositionModel.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionModel.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionModel.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionModel.fromSuiParsedData(content),
@@ -107,7 +108,7 @@ export class PositionModel implements StructClass {
     return PositionModel.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionModel', {
       sqrt_pa_x64: bcs.u128(),
       sqrt_pb_x64: bcs.u128(),
@@ -117,6 +118,15 @@ export class PositionModel implements StructClass {
       dx: bcs.u64(),
       dy: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionModel.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionModel.cachedBcs) {
+      PositionModel.cachedBcs = PositionModel.instantiateBcs()
+    }
+    return PositionModel.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionModel {

@@ -86,6 +86,7 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): DecreeTicketReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = DecreeTicket.bcs
     return {
       typeName: DecreeTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -97,8 +98,8 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => DecreeTicket.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeTicket.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => DecreeTicket.fromBcs(T0, data),
-      bcs: DecreeTicket.bcs,
+      fromBcs: (data: Uint8Array) => DecreeTicket.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DecreeTicket.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => DecreeTicket.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => DecreeTicket.fromSuiParsedData(T0, content),
@@ -124,7 +125,7 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     return DecreeTicket.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DecreeTicket', {
       governance_chain: bcs.u16(),
       governance_contract: ExternalAddress.bcs,
@@ -132,6 +133,15 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
       action: bcs.u8(),
       global: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DecreeTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DecreeTicket.cachedBcs) {
+      DecreeTicket.cachedBcs = DecreeTicket.instantiateBcs()
+    }
+    return DecreeTicket.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -330,6 +340,7 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): DecreeReceiptReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = DecreeReceipt.bcs
     return {
       typeName: DecreeReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -341,8 +352,8 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => DecreeReceipt.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => DecreeReceipt.fromBcs(T0, data),
-      bcs: DecreeReceipt.bcs,
+      fromBcs: (data: Uint8Array) => DecreeReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DecreeReceipt.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => DecreeReceipt.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => DecreeReceipt.fromSuiParsedData(T0, content),
@@ -368,12 +379,21 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     return DecreeReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DecreeReceipt', {
       payload: bcs.vector(bcs.u8()),
       digest: Bytes32.bcs,
       sequence: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DecreeReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DecreeReceipt.cachedBcs) {
+      DecreeReceipt.cachedBcs = DecreeReceipt.instantiateBcs()
+    }
+    return DecreeReceipt.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

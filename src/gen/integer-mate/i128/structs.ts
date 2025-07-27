@@ -53,6 +53,7 @@ export class I128 implements StructClass {
   }
 
   static reified(): I128Reified {
+    const reifiedBcs = I128.bcs
     return {
       typeName: I128.$typeName,
       fullTypeName: composeSuiType(I128.$typeName, ...[]) as `${typeof PKG_V1}::i128::I128`,
@@ -61,8 +62,8 @@ export class I128 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => I128.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => I128.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => I128.fromBcs(data),
-      bcs: I128.bcs,
+      fromBcs: (data: Uint8Array) => I128.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => I128.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I128.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => I128.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class I128 implements StructClass {
     return I128.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('I128', {
       bits: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof I128.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!I128.cachedBcs) {
+      I128.cachedBcs = I128.instantiateBcs()
+    }
+    return I128.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): I128 {

@@ -67,6 +67,7 @@ export class Empty implements StructClass {
   }
 
   static reified(): EmptyReified {
+    const reifiedBcs = Empty.bcs
     return {
       typeName: Empty.$typeName,
       fullTypeName: composeSuiType(Empty.$typeName, ...[]) as `${typeof PKG_V1}::set::Empty`,
@@ -75,8 +76,8 @@ export class Empty implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Empty.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Empty.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Empty.fromBcs(data),
-      bcs: Empty.bcs,
+      fromBcs: (data: Uint8Array) => Empty.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Empty.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Empty.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Empty.fromSuiParsedData(content),
@@ -100,10 +101,19 @@ export class Empty implements StructClass {
     return Empty.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Empty', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Empty.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Empty.cachedBcs) {
+      Empty.cachedBcs = Empty.instantiateBcs()
+    }
+    return Empty.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Empty {
@@ -225,6 +235,7 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): SetReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = Set.bcs
     return {
       typeName: Set.$typeName,
       fullTypeName: composeSuiType(
@@ -236,8 +247,8 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => Set.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Set.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Set.fromBcs(T0, data),
-      bcs: Set.bcs,
+      fromBcs: (data: Uint8Array) => Set.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Set.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => Set.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(T0, content),
@@ -263,10 +274,19 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     return Set.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Set', {
       items: Table.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Set.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Set.cachedBcs) {
+      Set.cachedBcs = Set.instantiateBcs()
+    }
+    return Set.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

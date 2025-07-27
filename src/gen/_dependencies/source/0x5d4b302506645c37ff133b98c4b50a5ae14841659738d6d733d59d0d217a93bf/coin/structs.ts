@@ -53,6 +53,7 @@ export class COIN implements StructClass {
   }
 
   static reified(): COINReified {
+    const reifiedBcs = COIN.bcs
     return {
       typeName: COIN.$typeName,
       fullTypeName: composeSuiType(COIN.$typeName, ...[]) as `${typeof PKG_V1}::coin::COIN`,
@@ -61,8 +62,8 @@ export class COIN implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => COIN.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => COIN.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => COIN.fromBcs(data),
-      bcs: COIN.bcs,
+      fromBcs: (data: Uint8Array) => COIN.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => COIN.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => COIN.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => COIN.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class COIN implements StructClass {
     return COIN.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('COIN', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof COIN.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!COIN.cachedBcs) {
+      COIN.cachedBcs = COIN.instantiateBcs()
+    }
+    return COIN.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): COIN {

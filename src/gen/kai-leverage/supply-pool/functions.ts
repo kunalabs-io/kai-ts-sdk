@@ -555,6 +555,18 @@ export function fdbGetShareAmountByShareType(
   })
 }
 
+export function fdbShareTypeMatchesAssetIfAnyExists(
+  tx: Transaction,
+  typeArgs: [string, string],
+  self: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::fdb_share_type_matches_asset_if_any_exists`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, self)],
+  })
+}
+
 export function fdbGetShareTypeForAsset(
   tx: Transaction,
   typeArg: string,

@@ -53,6 +53,7 @@ export class PythFeeRecipient implements StructClass {
   }
 
   static reified(): PythFeeRecipientReified {
+    const reifiedBcs = PythFeeRecipient.bcs
     return {
       typeName: PythFeeRecipient.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class PythFeeRecipient implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PythFeeRecipient.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PythFeeRecipient.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PythFeeRecipient.fromBcs(data),
-      bcs: PythFeeRecipient.bcs,
+      fromBcs: (data: Uint8Array) => PythFeeRecipient.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PythFeeRecipient.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythFeeRecipient.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythFeeRecipient.fromSuiParsedData(content),
@@ -89,13 +90,22 @@ export class PythFeeRecipient implements StructClass {
     return PythFeeRecipient.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PythFeeRecipient', {
       recipient: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PythFeeRecipient.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PythFeeRecipient.cachedBcs) {
+      PythFeeRecipient.cachedBcs = PythFeeRecipient.instantiateBcs()
+    }
+    return PythFeeRecipient.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PythFeeRecipient {

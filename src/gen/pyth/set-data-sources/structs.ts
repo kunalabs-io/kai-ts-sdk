@@ -57,6 +57,7 @@ export class DataSources implements StructClass {
   }
 
   static reified(): DataSourcesReified {
+    const reifiedBcs = DataSources.bcs
     return {
       typeName: DataSources.$typeName,
       fullTypeName: composeSuiType(
@@ -68,8 +69,8 @@ export class DataSources implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DataSources.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DataSources.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DataSources.fromBcs(data),
-      bcs: DataSources.bcs,
+      fromBcs: (data: Uint8Array) => DataSources.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DataSources.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DataSources.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DataSources.fromSuiParsedData(content),
@@ -93,10 +94,19 @@ export class DataSources implements StructClass {
     return DataSources.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DataSources', {
       sources: bcs.vector(DataSource.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DataSources.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DataSources.cachedBcs) {
+      DataSources.cachedBcs = DataSources.instantiateBcs()
+    }
+    return DataSources.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DataSources {

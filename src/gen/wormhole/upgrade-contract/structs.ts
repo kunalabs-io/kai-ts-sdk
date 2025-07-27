@@ -55,6 +55,7 @@ export class GovernanceWitness implements StructClass {
   }
 
   static reified(): GovernanceWitnessReified {
+    const reifiedBcs = GovernanceWitness.bcs
     return {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class GovernanceWitness implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GovernanceWitness.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GovernanceWitness.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceWitness.fromBcs(data),
-      bcs: GovernanceWitness.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceWitness.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
@@ -91,10 +92,19 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceWitness', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceWitness.cachedBcs) {
+      GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
+    }
+    return GovernanceWitness.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceWitness {
@@ -221,6 +231,7 @@ export class ContractUpgraded implements StructClass {
   }
 
   static reified(): ContractUpgradedReified {
+    const reifiedBcs = ContractUpgraded.bcs
     return {
       typeName: ContractUpgraded.$typeName,
       fullTypeName: composeSuiType(
@@ -232,8 +243,8 @@ export class ContractUpgraded implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ContractUpgraded.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ContractUpgraded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ContractUpgraded.fromBcs(data),
-      bcs: ContractUpgraded.bcs,
+      fromBcs: (data: Uint8Array) => ContractUpgraded.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ContractUpgraded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ContractUpgraded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ContractUpgraded.fromSuiParsedData(content),
@@ -257,11 +268,20 @@ export class ContractUpgraded implements StructClass {
     return ContractUpgraded.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ContractUpgraded', {
       old_contract: ID.bcs,
       new_contract: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ContractUpgraded.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ContractUpgraded.cachedBcs) {
+      ContractUpgraded.cachedBcs = ContractUpgraded.instantiateBcs()
+    }
+    return ContractUpgraded.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ContractUpgraded {
@@ -389,6 +409,7 @@ export class UpgradeContract implements StructClass {
   }
 
   static reified(): UpgradeContractReified {
+    const reifiedBcs = UpgradeContract.bcs
     return {
       typeName: UpgradeContract.$typeName,
       fullTypeName: composeSuiType(
@@ -400,8 +421,8 @@ export class UpgradeContract implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpgradeContract.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpgradeContract.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpgradeContract.fromBcs(data),
-      bcs: UpgradeContract.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeContract.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeContract.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpgradeContract.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpgradeContract.fromSuiParsedData(content),
@@ -425,10 +446,19 @@ export class UpgradeContract implements StructClass {
     return UpgradeContract.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeContract', {
       digest: Bytes32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeContract.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeContract.cachedBcs) {
+      UpgradeContract.cachedBcs = UpgradeContract.instantiateBcs()
+    }
+    return UpgradeContract.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpgradeContract {

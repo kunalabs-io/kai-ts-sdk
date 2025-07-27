@@ -53,6 +53,7 @@ export class YSUI implements StructClass {
   }
 
   static reified(): YSUIReified {
+    const reifiedBcs = YSUI.bcs
     return {
       typeName: YSUI.$typeName,
       fullTypeName: composeSuiType(YSUI.$typeName, ...[]) as `${typeof PKG_V4}::ysui::YSUI`,
@@ -61,8 +62,8 @@ export class YSUI implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => YSUI.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => YSUI.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => YSUI.fromBcs(data),
-      bcs: YSUI.bcs,
+      fromBcs: (data: Uint8Array) => YSUI.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => YSUI.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => YSUI.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => YSUI.fromSuiParsedData(content),
@@ -86,10 +87,19 @@ export class YSUI implements StructClass {
     return YSUI.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('YSUI', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof YSUI.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!YSUI.cachedBcs) {
+      YSUI.cachedBcs = YSUI.instantiateBcs()
+    }
+    return YSUI.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): YSUI {

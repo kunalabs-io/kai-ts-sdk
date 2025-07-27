@@ -65,6 +65,7 @@ export class POOL implements StructClass {
   }
 
   static reified(): POOLReified {
+    const reifiedBcs = POOL.bcs
     return {
       typeName: POOL.$typeName,
       fullTypeName: composeSuiType(POOL.$typeName, ...[]) as `${typeof PKG_V1}::pool::POOL`,
@@ -73,8 +74,8 @@ export class POOL implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => POOL.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => POOL.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => POOL.fromBcs(data),
-      bcs: POOL.bcs,
+      fromBcs: (data: Uint8Array) => POOL.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => POOL.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => POOL.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => POOL.fromSuiParsedData(content),
@@ -98,10 +99,19 @@ export class POOL implements StructClass {
     return POOL.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('POOL', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof POOL.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!POOL.cachedBcs) {
+      POOL.cachedBcs = POOL.instantiateBcs()
+    }
+    return POOL.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): POOL {
@@ -230,6 +240,7 @@ export class WrappedPositionNFT implements StructClass {
   }
 
   static reified(): WrappedPositionNFTReified {
+    const reifiedBcs = WrappedPositionNFT.bcs
     return {
       typeName: WrappedPositionNFT.$typeName,
       fullTypeName: composeSuiType(
@@ -241,8 +252,8 @@ export class WrappedPositionNFT implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WrappedPositionNFT.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WrappedPositionNFT.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WrappedPositionNFT.fromBcs(data),
-      bcs: WrappedPositionNFT.bcs,
+      fromBcs: (data: Uint8Array) => WrappedPositionNFT.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedPositionNFT.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WrappedPositionNFT.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WrappedPositionNFT.fromSuiParsedData(content),
@@ -266,13 +277,22 @@ export class WrappedPositionNFT implements StructClass {
     return WrappedPositionNFT.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WrappedPositionNFT', {
       id: UID.bcs,
       pool_id: ID.bcs,
       clmm_postion: Position.bcs,
       url: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WrappedPositionNFT.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WrappedPositionNFT.cachedBcs) {
+      WrappedPositionNFT.cachedBcs = WrappedPositionNFT.instantiateBcs()
+    }
+    return WrappedPositionNFT.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WrappedPositionNFT {
@@ -414,6 +434,7 @@ export class PositionRewardInfo implements StructClass {
   }
 
   static reified(): PositionRewardInfoReified {
+    const reifiedBcs = PositionRewardInfo.bcs
     return {
       typeName: PositionRewardInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -425,8 +446,8 @@ export class PositionRewardInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionRewardInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionRewardInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromBcs(data),
-      bcs: PositionRewardInfo.bcs,
+      fromBcs: (data: Uint8Array) => PositionRewardInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
@@ -450,12 +471,21 @@ export class PositionRewardInfo implements StructClass {
     return PositionRewardInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionRewardInfo', {
       reward: bcs.u128(),
       reward_debt: bcs.u128(),
       reward_harvested: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionRewardInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionRewardInfo.cachedBcs) {
+      PositionRewardInfo.cachedBcs = PositionRewardInfo.instantiateBcs()
+    }
+    return PositionRewardInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionRewardInfo {
@@ -620,6 +650,7 @@ export class WrappedPositionInfo implements StructClass {
   }
 
   static reified(): WrappedPositionInfoReified {
+    const reifiedBcs = WrappedPositionInfo.bcs
     return {
       typeName: WrappedPositionInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -631,8 +662,8 @@ export class WrappedPositionInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WrappedPositionInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WrappedPositionInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WrappedPositionInfo.fromBcs(data),
-      bcs: WrappedPositionInfo.bcs,
+      fromBcs: (data: Uint8Array) => WrappedPositionInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedPositionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WrappedPositionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WrappedPositionInfo.fromSuiParsedData(content),
@@ -656,7 +687,7 @@ export class WrappedPositionInfo implements StructClass {
     return WrappedPositionInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WrappedPositionInfo', {
       id: ID.bcs,
       pool_id: ID.bcs,
@@ -671,6 +702,15 @@ export class WrappedPositionInfo implements StructClass {
       share: bcs.u128(),
       rewards: VecMap.bcs(TypeName.bcs, PositionRewardInfo.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WrappedPositionInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WrappedPositionInfo.cachedBcs) {
+      WrappedPositionInfo.cachedBcs = WrappedPositionInfo.instantiateBcs()
+    }
+    return WrappedPositionInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WrappedPositionInfo {
@@ -874,6 +914,7 @@ export class Pool implements StructClass {
   }
 
   static reified(): PoolReified {
+    const reifiedBcs = Pool.bcs
     return {
       typeName: Pool.$typeName,
       fullTypeName: composeSuiType(Pool.$typeName, ...[]) as `${typeof PKG_V1}::pool::Pool`,
@@ -882,8 +923,8 @@ export class Pool implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Pool.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Pool.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Pool.fromBcs(data),
-      bcs: Pool.bcs,
+      fromBcs: (data: Uint8Array) => Pool.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Pool.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Pool.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Pool.fromSuiParsedData(content),
@@ -907,7 +948,7 @@ export class Pool implements StructClass {
     return Pool.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Pool', {
       id: UID.bcs,
       clmm_pool_id: ID.bcs,
@@ -918,6 +959,15 @@ export class Pool implements StructClass {
       rewarders: bcs.vector(TypeName.bcs),
       positions: LinkedTable.bcs(ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Pool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Pool.cachedBcs) {
+      Pool.cachedBcs = Pool.instantiateBcs()
+    }
+    return Pool.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Pool {
@@ -1099,6 +1149,7 @@ export class CreatePoolEvent implements StructClass {
   }
 
   static reified(): CreatePoolEventReified {
+    const reifiedBcs = CreatePoolEvent.bcs
     return {
       typeName: CreatePoolEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1110,8 +1161,8 @@ export class CreatePoolEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => CreatePoolEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CreatePoolEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CreatePoolEvent.fromBcs(data),
-      bcs: CreatePoolEvent.bcs,
+      fromBcs: (data: Uint8Array) => CreatePoolEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreatePoolEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreatePoolEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CreatePoolEvent.fromSuiParsedData(content),
@@ -1135,7 +1186,7 @@ export class CreatePoolEvent implements StructClass {
     return CreatePoolEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CreatePoolEvent', {
       pool_id: ID.bcs,
       clmm_pool_id: ID.bcs,
@@ -1143,6 +1194,15 @@ export class CreatePoolEvent implements StructClass {
       effective_tick_lower: I32.bcs,
       effective_tick_upper: I32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreatePoolEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreatePoolEvent.cachedBcs) {
+      CreatePoolEvent.cachedBcs = CreatePoolEvent.instantiateBcs()
+    }
+    return CreatePoolEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CreatePoolEvent {
@@ -1312,6 +1372,7 @@ export class UpdateEffectiveTickRangeEvent implements StructClass {
   }
 
   static reified(): UpdateEffectiveTickRangeEventReified {
+    const reifiedBcs = UpdateEffectiveTickRangeEvent.bcs
     return {
       typeName: UpdateEffectiveTickRangeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1324,8 +1385,9 @@ export class UpdateEffectiveTickRangeEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateEffectiveTickRangeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateEffectiveTickRangeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateEffectiveTickRangeEvent.fromBcs(data),
-      bcs: UpdateEffectiveTickRangeEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        UpdateEffectiveTickRangeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateEffectiveTickRangeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateEffectiveTickRangeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1352,7 +1414,7 @@ export class UpdateEffectiveTickRangeEvent implements StructClass {
     return UpdateEffectiveTickRangeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateEffectiveTickRangeEvent', {
       pool_id: ID.bcs,
       clmm_pool_id: ID.bcs,
@@ -1363,6 +1425,16 @@ export class UpdateEffectiveTickRangeEvent implements StructClass {
       end: Option.bcs(ID.bcs),
       limit: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateEffectiveTickRangeEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!UpdateEffectiveTickRangeEvent.cachedBcs) {
+      UpdateEffectiveTickRangeEvent.cachedBcs = UpdateEffectiveTickRangeEvent.instantiateBcs()
+    }
+    return UpdateEffectiveTickRangeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateEffectiveTickRangeEvent {
@@ -1536,6 +1608,7 @@ export class AddRewardEvent implements StructClass {
   }
 
   static reified(): AddRewardEventReified {
+    const reifiedBcs = AddRewardEvent.bcs
     return {
       typeName: AddRewardEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1547,8 +1620,8 @@ export class AddRewardEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddRewardEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddRewardEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddRewardEvent.fromBcs(data),
-      bcs: AddRewardEvent.bcs,
+      fromBcs: (data: Uint8Array) => AddRewardEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddRewardEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddRewardEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddRewardEvent.fromSuiParsedData(content),
@@ -1572,13 +1645,22 @@ export class AddRewardEvent implements StructClass {
     return AddRewardEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddRewardEvent', {
       pool_id: ID.bcs,
       clmm_pool_id: ID.bcs,
       rewarder: TypeName.bcs,
       allocate_point: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddRewardEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddRewardEvent.cachedBcs) {
+      AddRewardEvent.cachedBcs = AddRewardEvent.instantiateBcs()
+    }
+    return AddRewardEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddRewardEvent {
@@ -1726,6 +1808,7 @@ export class UpdatePoolAllocatePointEvent implements StructClass {
   }
 
   static reified(): UpdatePoolAllocatePointEventReified {
+    const reifiedBcs = UpdatePoolAllocatePointEvent.bcs
     return {
       typeName: UpdatePoolAllocatePointEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1738,8 +1821,9 @@ export class UpdatePoolAllocatePointEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdatePoolAllocatePointEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdatePoolAllocatePointEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdatePoolAllocatePointEvent.fromBcs(data),
-      bcs: UpdatePoolAllocatePointEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        UpdatePoolAllocatePointEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdatePoolAllocatePointEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdatePoolAllocatePointEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1766,13 +1850,23 @@ export class UpdatePoolAllocatePointEvent implements StructClass {
     return UpdatePoolAllocatePointEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdatePoolAllocatePointEvent', {
       pool_id: ID.bcs,
       clmm_pool_id: ID.bcs,
       old_allocate_point: bcs.u64(),
       new_allocate_point: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdatePoolAllocatePointEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!UpdatePoolAllocatePointEvent.cachedBcs) {
+      UpdatePoolAllocatePointEvent.cachedBcs = UpdatePoolAllocatePointEvent.instantiateBcs()
+    }
+    return UpdatePoolAllocatePointEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdatePoolAllocatePointEvent {
@@ -1942,6 +2036,7 @@ export class DepositEvent implements StructClass {
   }
 
   static reified(): DepositEventReified {
+    const reifiedBcs = DepositEvent.bcs
     return {
       typeName: DepositEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1953,8 +2048,8 @@ export class DepositEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DepositEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DepositEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DepositEvent.fromBcs(data),
-      bcs: DepositEvent.bcs,
+      fromBcs: (data: Uint8Array) => DepositEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DepositEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
@@ -1978,7 +2073,7 @@ export class DepositEvent implements StructClass {
     return DepositEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DepositEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -1991,6 +2086,15 @@ export class DepositEvent implements StructClass {
       share: bcs.u128(),
       pool_total_share: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DepositEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DepositEvent.cachedBcs) {
+      DepositEvent.cachedBcs = DepositEvent.instantiateBcs()
+    }
+    return DepositEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DepositEvent {
@@ -2168,6 +2272,7 @@ export class WithdrawEvent implements StructClass {
   }
 
   static reified(): WithdrawEventReified {
+    const reifiedBcs = WithdrawEvent.bcs
     return {
       typeName: WithdrawEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -2179,8 +2284,8 @@ export class WithdrawEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WithdrawEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WithdrawEvent.fromBcs(data),
-      bcs: WithdrawEvent.bcs,
+      fromBcs: (data: Uint8Array) => WithdrawEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WithdrawEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WithdrawEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WithdrawEvent.fromSuiParsedData(content),
@@ -2204,7 +2309,7 @@ export class WithdrawEvent implements StructClass {
     return WithdrawEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WithdrawEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -2212,6 +2317,15 @@ export class WithdrawEvent implements StructClass {
       clmm_position_id: ID.bcs,
       share: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WithdrawEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WithdrawEvent.cachedBcs) {
+      WithdrawEvent.cachedBcs = WithdrawEvent.instantiateBcs()
+    }
+    return WithdrawEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WithdrawEvent {
@@ -2366,6 +2480,7 @@ export class HarvestEvent implements StructClass {
   }
 
   static reified(): HarvestEventReified {
+    const reifiedBcs = HarvestEvent.bcs
     return {
       typeName: HarvestEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -2377,8 +2492,8 @@ export class HarvestEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => HarvestEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => HarvestEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => HarvestEvent.fromBcs(data),
-      bcs: HarvestEvent.bcs,
+      fromBcs: (data: Uint8Array) => HarvestEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => HarvestEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => HarvestEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => HarvestEvent.fromSuiParsedData(content),
@@ -2402,7 +2517,7 @@ export class HarvestEvent implements StructClass {
     return HarvestEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('HarvestEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -2411,6 +2526,15 @@ export class HarvestEvent implements StructClass {
       rewarder_type: TypeName.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof HarvestEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!HarvestEvent.cachedBcs) {
+      HarvestEvent.cachedBcs = HarvestEvent.instantiateBcs()
+    }
+    return HarvestEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): HarvestEvent {
@@ -2566,6 +2690,7 @@ export class AccumulatedPositionRewardsEvent implements StructClass {
   }
 
   static reified(): AccumulatedPositionRewardsEventReified {
+    const reifiedBcs = AccumulatedPositionRewardsEvent.bcs
     return {
       typeName: AccumulatedPositionRewardsEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -2579,8 +2704,9 @@ export class AccumulatedPositionRewardsEvent implements StructClass {
         AccumulatedPositionRewardsEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AccumulatedPositionRewardsEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AccumulatedPositionRewardsEvent.fromBcs(data),
-      bcs: AccumulatedPositionRewardsEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        AccumulatedPositionRewardsEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AccumulatedPositionRewardsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AccumulatedPositionRewardsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -2607,13 +2733,24 @@ export class AccumulatedPositionRewardsEvent implements StructClass {
     return AccumulatedPositionRewardsEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AccumulatedPositionRewardsEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
       clmm_position_id: ID.bcs,
       rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof AccumulatedPositionRewardsEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!AccumulatedPositionRewardsEvent.cachedBcs) {
+      AccumulatedPositionRewardsEvent.cachedBcs = AccumulatedPositionRewardsEvent.instantiateBcs()
+    }
+    return AccumulatedPositionRewardsEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AccumulatedPositionRewardsEvent {
@@ -2791,6 +2928,7 @@ export class AddLiquidityEvent implements StructClass {
   }
 
   static reified(): AddLiquidityEventReified {
+    const reifiedBcs = AddLiquidityEvent.bcs
     return {
       typeName: AddLiquidityEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -2802,8 +2940,8 @@ export class AddLiquidityEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddLiquidityEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddLiquidityEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddLiquidityEvent.fromBcs(data),
-      bcs: AddLiquidityEvent.bcs,
+      fromBcs: (data: Uint8Array) => AddLiquidityEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityEvent.fromSuiParsedData(content),
@@ -2827,7 +2965,7 @@ export class AddLiquidityEvent implements StructClass {
     return AddLiquidityEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddLiquidityEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -2841,6 +2979,15 @@ export class AddLiquidityEvent implements StructClass {
       old_share: bcs.u128(),
       new_share: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddLiquidityEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddLiquidityEvent.cachedBcs) {
+      AddLiquidityEvent.cachedBcs = AddLiquidityEvent.instantiateBcs()
+    }
+    return AddLiquidityEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddLiquidityEvent {
@@ -3043,6 +3190,7 @@ export class AddLiquidityFixCoinEvent implements StructClass {
   }
 
   static reified(): AddLiquidityFixCoinEventReified {
+    const reifiedBcs = AddLiquidityFixCoinEvent.bcs
     return {
       typeName: AddLiquidityFixCoinEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -3055,8 +3203,8 @@ export class AddLiquidityFixCoinEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => AddLiquidityFixCoinEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AddLiquidityFixCoinEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddLiquidityFixCoinEvent.fromBcs(data),
-      bcs: AddLiquidityFixCoinEvent.bcs,
+      fromBcs: (data: Uint8Array) => AddLiquidityFixCoinEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityFixCoinEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityFixCoinEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3082,7 +3230,7 @@ export class AddLiquidityFixCoinEvent implements StructClass {
     return AddLiquidityFixCoinEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddLiquidityFixCoinEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -3096,6 +3244,15 @@ export class AddLiquidityFixCoinEvent implements StructClass {
       old_share: bcs.u128(),
       new_share: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddLiquidityFixCoinEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddLiquidityFixCoinEvent.cachedBcs) {
+      AddLiquidityFixCoinEvent.cachedBcs = AddLiquidityFixCoinEvent.instantiateBcs()
+    }
+    return AddLiquidityFixCoinEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddLiquidityFixCoinEvent {
@@ -3302,6 +3459,7 @@ export class RemoveLiquidityEvent implements StructClass {
   }
 
   static reified(): RemoveLiquidityEventReified {
+    const reifiedBcs = RemoveLiquidityEvent.bcs
     return {
       typeName: RemoveLiquidityEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -3314,8 +3472,8 @@ export class RemoveLiquidityEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => RemoveLiquidityEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RemoveLiquidityEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RemoveLiquidityEvent.fromBcs(data),
-      bcs: RemoveLiquidityEvent.bcs,
+      fromBcs: (data: Uint8Array) => RemoveLiquidityEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveLiquidityEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveLiquidityEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3341,7 +3499,7 @@ export class RemoveLiquidityEvent implements StructClass {
     return RemoveLiquidityEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RemoveLiquidityEvent', {
       pool_id: ID.bcs,
       wrapped_position_id: ID.bcs,
@@ -3355,6 +3513,15 @@ export class RemoveLiquidityEvent implements StructClass {
       old_share: bcs.u128(),
       new_share: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RemoveLiquidityEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RemoveLiquidityEvent.cachedBcs) {
+      RemoveLiquidityEvent.cachedBcs = RemoveLiquidityEvent.instantiateBcs()
+    }
+    return RemoveLiquidityEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RemoveLiquidityEvent {

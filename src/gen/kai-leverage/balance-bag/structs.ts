@@ -63,6 +63,7 @@ export class BalanceBag implements StructClass {
   }
 
   static reified(): BalanceBagReified {
+    const reifiedBcs = BalanceBag.bcs
     return {
       typeName: BalanceBag.$typeName,
       fullTypeName: composeSuiType(
@@ -74,8 +75,8 @@ export class BalanceBag implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BalanceBag.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BalanceBag.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BalanceBag.fromBcs(data),
-      bcs: BalanceBag.bcs,
+      fromBcs: (data: Uint8Array) => BalanceBag.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BalanceBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BalanceBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BalanceBag.fromSuiParsedData(content),
@@ -99,12 +100,21 @@ export class BalanceBag implements StructClass {
     return BalanceBag.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BalanceBag', {
       id: UID.bcs,
       amounts: VecMap.bcs(TypeName.bcs, bcs.u64()),
       inner: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BalanceBag.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BalanceBag.cachedBcs) {
+      BalanceBag.cachedBcs = BalanceBag.instantiateBcs()
+    }
+    return BalanceBag.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BalanceBag {

@@ -124,6 +124,7 @@ export class ValidatorMetadata implements StructClass {
   }
 
   static reified(): ValidatorMetadataReified {
+    const reifiedBcs = ValidatorMetadata.bcs
     return {
       typeName: ValidatorMetadata.$typeName,
       fullTypeName: composeSuiType(
@@ -135,8 +136,8 @@ export class ValidatorMetadata implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ValidatorMetadata.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ValidatorMetadata.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorMetadata.fromBcs(data),
-      bcs: ValidatorMetadata.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorMetadata.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorMetadata.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorMetadata.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatorMetadata.fromSuiParsedData(content),
@@ -160,7 +161,7 @@ export class ValidatorMetadata implements StructClass {
     return ValidatorMetadata.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorMetadata', {
       sui_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -188,6 +189,15 @@ export class ValidatorMetadata implements StructClass {
       next_epoch_worker_address: Option.bcs(String.bcs),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorMetadata.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorMetadata.cachedBcs) {
+      ValidatorMetadata.cachedBcs = ValidatorMetadata.instantiateBcs()
+    }
+    return ValidatorMetadata.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorMetadata {
@@ -530,6 +540,7 @@ export class Validator implements StructClass {
   }
 
   static reified(): ValidatorReified {
+    const reifiedBcs = Validator.bcs
     return {
       typeName: Validator.$typeName,
       fullTypeName: composeSuiType(Validator.$typeName, ...[]) as `0x3::validator::Validator`,
@@ -538,8 +549,8 @@ export class Validator implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Validator.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Validator.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Validator.fromBcs(data),
-      bcs: Validator.bcs,
+      fromBcs: (data: Uint8Array) => Validator.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Validator.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Validator.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Validator.fromSuiParsedData(content),
@@ -563,7 +574,7 @@ export class Validator implements StructClass {
     return Validator.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Validator', {
       metadata: ValidatorMetadata.bcs,
       voting_power: bcs.u64(),
@@ -576,6 +587,15 @@ export class Validator implements StructClass {
       next_epoch_commission_rate: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Validator.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Validator.cachedBcs) {
+      Validator.cachedBcs = Validator.instantiateBcs()
+    }
+    return Validator.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Validator {
@@ -750,6 +770,7 @@ export class StakingRequestEvent implements StructClass {
   }
 
   static reified(): StakingRequestEventReified {
+    const reifiedBcs = StakingRequestEvent.bcs
     return {
       typeName: StakingRequestEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -761,8 +782,8 @@ export class StakingRequestEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StakingRequestEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StakingRequestEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StakingRequestEvent.fromBcs(data),
-      bcs: StakingRequestEvent.bcs,
+      fromBcs: (data: Uint8Array) => StakingRequestEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StakingRequestEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StakingRequestEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StakingRequestEvent.fromSuiParsedData(content),
@@ -786,7 +807,7 @@ export class StakingRequestEvent implements StructClass {
     return StakingRequestEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StakingRequestEvent', {
       pool_id: ID.bcs,
       validator_address: bcs.bytes(32).transform({
@@ -800,6 +821,15 @@ export class StakingRequestEvent implements StructClass {
       epoch: bcs.u64(),
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StakingRequestEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StakingRequestEvent.cachedBcs) {
+      StakingRequestEvent.cachedBcs = StakingRequestEvent.instantiateBcs()
+    }
+    return StakingRequestEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StakingRequestEvent {
@@ -960,6 +990,7 @@ export class UnstakingRequestEvent implements StructClass {
   }
 
   static reified(): UnstakingRequestEventReified {
+    const reifiedBcs = UnstakingRequestEvent.bcs
     return {
       typeName: UnstakingRequestEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -972,8 +1003,8 @@ export class UnstakingRequestEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UnstakingRequestEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UnstakingRequestEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UnstakingRequestEvent.fromBcs(data),
-      bcs: UnstakingRequestEvent.bcs,
+      fromBcs: (data: Uint8Array) => UnstakingRequestEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UnstakingRequestEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UnstakingRequestEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -999,7 +1030,7 @@ export class UnstakingRequestEvent implements StructClass {
     return UnstakingRequestEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UnstakingRequestEvent', {
       pool_id: ID.bcs,
       validator_address: bcs.bytes(32).transform({
@@ -1015,6 +1046,15 @@ export class UnstakingRequestEvent implements StructClass {
       principal_amount: bcs.u64(),
       reward_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UnstakingRequestEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UnstakingRequestEvent.cachedBcs) {
+      UnstakingRequestEvent.cachedBcs = UnstakingRequestEvent.instantiateBcs()
+    }
+    return UnstakingRequestEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UnstakingRequestEvent {
@@ -1176,6 +1216,7 @@ export class ConvertingToFungibleStakedSuiEvent implements StructClass {
   }
 
   static reified(): ConvertingToFungibleStakedSuiEventReified {
+    const reifiedBcs = ConvertingToFungibleStakedSuiEvent.bcs
     return {
       typeName: ConvertingToFungibleStakedSuiEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1189,8 +1230,9 @@ export class ConvertingToFungibleStakedSuiEvent implements StructClass {
         ConvertingToFungibleStakedSuiEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ConvertingToFungibleStakedSuiEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ConvertingToFungibleStakedSuiEvent.fromBcs(data),
-      bcs: ConvertingToFungibleStakedSuiEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        ConvertingToFungibleStakedSuiEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ConvertingToFungibleStakedSuiEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ConvertingToFungibleStakedSuiEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1217,13 +1259,25 @@ export class ConvertingToFungibleStakedSuiEvent implements StructClass {
     return ConvertingToFungibleStakedSuiEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ConvertingToFungibleStakedSuiEvent', {
       pool_id: ID.bcs,
       stake_activation_epoch: bcs.u64(),
       staked_sui_principal_amount: bcs.u64(),
       fungible_staked_sui_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof ConvertingToFungibleStakedSuiEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!ConvertingToFungibleStakedSuiEvent.cachedBcs) {
+      ConvertingToFungibleStakedSuiEvent.cachedBcs =
+        ConvertingToFungibleStakedSuiEvent.instantiateBcs()
+    }
+    return ConvertingToFungibleStakedSuiEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ConvertingToFungibleStakedSuiEvent {
@@ -1386,6 +1440,7 @@ export class RedeemingFungibleStakedSuiEvent implements StructClass {
   }
 
   static reified(): RedeemingFungibleStakedSuiEventReified {
+    const reifiedBcs = RedeemingFungibleStakedSuiEvent.bcs
     return {
       typeName: RedeemingFungibleStakedSuiEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1399,8 +1454,9 @@ export class RedeemingFungibleStakedSuiEvent implements StructClass {
         RedeemingFungibleStakedSuiEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RedeemingFungibleStakedSuiEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RedeemingFungibleStakedSuiEvent.fromBcs(data),
-      bcs: RedeemingFungibleStakedSuiEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        RedeemingFungibleStakedSuiEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RedeemingFungibleStakedSuiEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RedeemingFungibleStakedSuiEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1427,12 +1483,23 @@ export class RedeemingFungibleStakedSuiEvent implements StructClass {
     return RedeemingFungibleStakedSuiEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RedeemingFungibleStakedSuiEvent', {
       pool_id: ID.bcs,
       fungible_staked_sui_amount: bcs.u64(),
       sui_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof RedeemingFungibleStakedSuiEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!RedeemingFungibleStakedSuiEvent.cachedBcs) {
+      RedeemingFungibleStakedSuiEvent.cachedBcs = RedeemingFungibleStakedSuiEvent.instantiateBcs()
+    }
+    return RedeemingFungibleStakedSuiEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RedeemingFungibleStakedSuiEvent {

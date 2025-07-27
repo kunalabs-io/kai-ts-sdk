@@ -59,6 +59,7 @@ export class Section implements StructClass {
   }
 
   static reified(): SectionReified {
+    const reifiedBcs = Section.bcs
     return {
       typeName: Section.$typeName,
       fullTypeName: composeSuiType(
@@ -70,8 +71,8 @@ export class Section implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Section.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Section.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Section.fromBcs(data),
-      bcs: Section.bcs,
+      fromBcs: (data: Uint8Array) => Section.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Section.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Section.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Section.fromSuiParsedData(content),
@@ -95,11 +96,20 @@ export class Section implements StructClass {
     return Section.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Section', {
       end: bcs.u64(),
       end_val: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Section.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Section.cachedBcs) {
+      Section.cachedBcs = Section.instantiateBcs()
+    }
+    return Section.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Section {
@@ -233,6 +243,7 @@ export class Piecewise implements StructClass {
   }
 
   static reified(): PiecewiseReified {
+    const reifiedBcs = Piecewise.bcs
     return {
       typeName: Piecewise.$typeName,
       fullTypeName: composeSuiType(
@@ -244,8 +255,8 @@ export class Piecewise implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Piecewise.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Piecewise.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Piecewise.fromBcs(data),
-      bcs: Piecewise.bcs,
+      fromBcs: (data: Uint8Array) => Piecewise.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Piecewise.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Piecewise.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Piecewise.fromSuiParsedData(content),
@@ -269,12 +280,21 @@ export class Piecewise implements StructClass {
     return Piecewise.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Piecewise', {
       start: bcs.u64(),
       start_val: bcs.u64(),
       sections: bcs.vector(Section.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Piecewise.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Piecewise.cachedBcs) {
+      Piecewise.cachedBcs = Piecewise.instantiateBcs()
+    }
+    return Piecewise.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Piecewise {

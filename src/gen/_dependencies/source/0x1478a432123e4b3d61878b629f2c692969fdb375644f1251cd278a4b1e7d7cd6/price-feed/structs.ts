@@ -56,6 +56,7 @@ export class PriceFeed implements StructClass {
   }
 
   static reified(): PriceFeedReified {
+    const reifiedBcs = PriceFeed.bcs
     return {
       typeName: PriceFeed.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class PriceFeed implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PriceFeed.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PriceFeed.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PriceFeed.fromBcs(data),
-      bcs: PriceFeed.bcs,
+      fromBcs: (data: Uint8Array) => PriceFeed.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceFeed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceFeed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PriceFeed.fromSuiParsedData(content),
@@ -92,11 +93,20 @@ export class PriceFeed implements StructClass {
     return PriceFeed.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceFeed', {
       value: bcs.u64(),
       last_updated: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceFeed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceFeed.cachedBcs) {
+      PriceFeed.cachedBcs = PriceFeed.instantiateBcs()
+    }
+    return PriceFeed.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PriceFeed {

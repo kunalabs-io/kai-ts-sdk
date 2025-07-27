@@ -68,7 +68,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
         logger.info('No positions to liquidate found')
 
         const duration = Date.now() - start
-        logger.info({ duration }, 'Poll finished in %dms')
+        logger.info({ duration }, `Poll finished in ${duration}ms`)
 
         metrics.monitorPollRunSuccessDurationMs?.record(duration)
         return
@@ -82,7 +82,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     }
 
     const duration = Date.now() - start
-    logger.info({ duration }, 'Poll finished in %dms')
+    logger.info({ duration }, `Poll finished in ${duration}ms`)
 
     metrics.monitorPollRunSuccessDurationMs?.record(duration)
   }

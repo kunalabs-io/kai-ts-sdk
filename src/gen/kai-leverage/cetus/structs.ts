@@ -56,6 +56,7 @@ export class AHandleExploitedPosition implements StructClass {
   }
 
   static reified(): AHandleExploitedPositionReified {
+    const reifiedBcs = AHandleExploitedPosition.bcs
     return {
       typeName: AHandleExploitedPosition.$typeName,
       fullTypeName: composeSuiType(
@@ -68,8 +69,8 @@ export class AHandleExploitedPosition implements StructClass {
       fromFields: (fields: Record<string, any>) => AHandleExploitedPosition.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AHandleExploitedPosition.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AHandleExploitedPosition.fromBcs(data),
-      bcs: AHandleExploitedPosition.bcs,
+      fromBcs: (data: Uint8Array) => AHandleExploitedPosition.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AHandleExploitedPosition.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AHandleExploitedPosition.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -95,10 +96,19 @@ export class AHandleExploitedPosition implements StructClass {
     return AHandleExploitedPosition.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AHandleExploitedPosition', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AHandleExploitedPosition.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AHandleExploitedPosition.cachedBcs) {
+      AHandleExploitedPosition.cachedBcs = AHandleExploitedPosition.instantiateBcs()
+    }
+    return AHandleExploitedPosition.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AHandleExploitedPosition {

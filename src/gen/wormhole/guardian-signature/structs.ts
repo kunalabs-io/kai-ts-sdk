@@ -63,6 +63,7 @@ export class GuardianSignature implements StructClass {
   }
 
   static reified(): GuardianSignatureReified {
+    const reifiedBcs = GuardianSignature.bcs
     return {
       typeName: GuardianSignature.$typeName,
       fullTypeName: composeSuiType(
@@ -74,8 +75,8 @@ export class GuardianSignature implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GuardianSignature.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GuardianSignature.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GuardianSignature.fromBcs(data),
-      bcs: GuardianSignature.bcs,
+      fromBcs: (data: Uint8Array) => GuardianSignature.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GuardianSignature.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GuardianSignature.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GuardianSignature.fromSuiParsedData(content),
@@ -99,13 +100,22 @@ export class GuardianSignature implements StructClass {
     return GuardianSignature.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GuardianSignature', {
       r: Bytes32.bcs,
       s: Bytes32.bcs,
       recovery_id: bcs.u8(),
       index: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GuardianSignature.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GuardianSignature.cachedBcs) {
+      GuardianSignature.cachedBcs = GuardianSignature.instantiateBcs()
+    }
+    return GuardianSignature.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GuardianSignature {

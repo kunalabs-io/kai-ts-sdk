@@ -74,6 +74,7 @@ export class ExpectSwapResult implements StructClass {
   }
 
   static reified(): ExpectSwapResultReified {
+    const reifiedBcs = ExpectSwapResult.bcs
     return {
       typeName: ExpectSwapResult.$typeName,
       fullTypeName: composeSuiType(
@@ -85,8 +86,8 @@ export class ExpectSwapResult implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ExpectSwapResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ExpectSwapResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ExpectSwapResult.fromBcs(data),
-      bcs: ExpectSwapResult.bcs,
+      fromBcs: (data: Uint8Array) => ExpectSwapResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ExpectSwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExpectSwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ExpectSwapResult.fromSuiParsedData(content),
@@ -110,7 +111,7 @@ export class ExpectSwapResult implements StructClass {
     return ExpectSwapResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ExpectSwapResult', {
       amount_in: bcs.u256(),
       amount_out: bcs.u256(),
@@ -120,6 +121,15 @@ export class ExpectSwapResult implements StructClass {
       is_exceed: bcs.bool(),
       step_results: bcs.vector(SwapStepResult.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ExpectSwapResult.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ExpectSwapResult.cachedBcs) {
+      ExpectSwapResult.cachedBcs = ExpectSwapResult.instantiateBcs()
+    }
+    return ExpectSwapResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ExpectSwapResult {
@@ -291,6 +301,7 @@ export class SwapStepResult implements StructClass {
   }
 
   static reified(): SwapStepResultReified {
+    const reifiedBcs = SwapStepResult.bcs
     return {
       typeName: SwapStepResult.$typeName,
       fullTypeName: composeSuiType(
@@ -302,8 +313,8 @@ export class SwapStepResult implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SwapStepResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SwapStepResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwapStepResult.fromBcs(data),
-      bcs: SwapStepResult.bcs,
+      fromBcs: (data: Uint8Array) => SwapStepResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapStepResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
@@ -327,7 +338,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SwapStepResult', {
       current_sqrt_price: bcs.u128(),
       target_sqrt_price: bcs.u128(),
@@ -337,6 +348,15 @@ export class SwapStepResult implements StructClass {
       fee_amount: bcs.u256(),
       remainder_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SwapStepResult.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SwapStepResult.cachedBcs) {
+      SwapStepResult.cachedBcs = SwapStepResult.instantiateBcs()
+    }
+    return SwapStepResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SwapStepResult {
@@ -496,6 +516,7 @@ export class SwapResult implements StructClass {
   }
 
   static reified(): SwapResultReified {
+    const reifiedBcs = SwapResult.bcs
     return {
       typeName: SwapResult.$typeName,
       fullTypeName: composeSuiType(
@@ -507,8 +528,8 @@ export class SwapResult implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SwapResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SwapResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwapResult.fromBcs(data),
-      bcs: SwapResult.bcs,
+      fromBcs: (data: Uint8Array) => SwapResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
@@ -532,7 +553,7 @@ export class SwapResult implements StructClass {
     return SwapResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SwapResult', {
       amount_in: bcs.u256(),
       amount_out: bcs.u256(),
@@ -540,6 +561,15 @@ export class SwapResult implements StructClass {
       ref_fee_amount: bcs.u256(),
       steps: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SwapResult.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SwapResult.cachedBcs) {
+      SwapResult.cachedBcs = SwapResult.instantiateBcs()
+    }
+    return SwapResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SwapResult {
@@ -685,6 +715,7 @@ export class ExpectSwapResultEvent implements StructClass {
   }
 
   static reified(): ExpectSwapResultEventReified {
+    const reifiedBcs = ExpectSwapResultEvent.bcs
     return {
       typeName: ExpectSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -697,8 +728,8 @@ export class ExpectSwapResultEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => ExpectSwapResultEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ExpectSwapResultEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ExpectSwapResultEvent.fromBcs(data),
-      bcs: ExpectSwapResultEvent.bcs,
+      fromBcs: (data: Uint8Array) => ExpectSwapResultEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ExpectSwapResultEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExpectSwapResultEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -724,11 +755,20 @@ export class ExpectSwapResultEvent implements StructClass {
     return ExpectSwapResultEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ExpectSwapResultEvent', {
       data: ExpectSwapResult.bcs,
       current_sqrt_price: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ExpectSwapResultEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ExpectSwapResultEvent.cachedBcs) {
+      ExpectSwapResultEvent.cachedBcs = ExpectSwapResultEvent.instantiateBcs()
+    }
+    return ExpectSwapResultEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ExpectSwapResultEvent {

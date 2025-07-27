@@ -97,6 +97,7 @@ export class TransferTicket<T0 extends PhantomTypeArgument> implements StructCla
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): TransferTicketReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = TransferTicket.bcs
     return {
       typeName: TransferTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -108,8 +109,8 @@ export class TransferTicket<T0 extends PhantomTypeArgument> implements StructCla
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => TransferTicket.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TransferTicket.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => TransferTicket.fromBcs(T0, data),
-      bcs: TransferTicket.bcs,
+      fromBcs: (data: Uint8Array) => TransferTicket.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferTicket.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => TransferTicket.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => TransferTicket.fromSuiParsedData(T0, content),
@@ -135,7 +136,7 @@ export class TransferTicket<T0 extends PhantomTypeArgument> implements StructCla
     return TransferTicket.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TransferTicket', {
       asset_info: VerifiedAsset.bcs,
       bridged_in: Balance.bcs,
@@ -146,6 +147,15 @@ export class TransferTicket<T0 extends PhantomTypeArgument> implements StructCla
       payload: bcs.vector(bcs.u8()),
       nonce: bcs.u32(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TransferTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TransferTicket.cachedBcs) {
+      TransferTicket.cachedBcs = TransferTicket.instantiateBcs()
+    }
+    return TransferTicket.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

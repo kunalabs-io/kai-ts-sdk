@@ -183,4 +183,13 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
+  xBTC: new KaiLeverageSupplyPoolStrategyInfo({
+    name: 'Kai Leverage xBTC Supply Pool Strategy',
+    id: '0xd9e4258a4faa631b2ecf55fab68227c4ad013350e01587e05ca226775d7d930b',
+    vault: VAULTS.xBTC,
+    adminCapId: '0x4f6f2b5b01eacced9a5ef7a65e2d7d9375227a76446402ce8a5504f91adaefaf',
+    supplyPoolInfo: SUPPLY_POOL_INFOS.xBTC,
+    policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+    ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+  }),
 }

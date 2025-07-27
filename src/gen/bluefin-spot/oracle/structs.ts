@@ -66,6 +66,7 @@ export class ObservationManager implements StructClass {
   }
 
   static reified(): ObservationManagerReified {
+    const reifiedBcs = ObservationManager.bcs
     return {
       typeName: ObservationManager.$typeName,
       fullTypeName: composeSuiType(
@@ -77,8 +78,8 @@ export class ObservationManager implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ObservationManager.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ObservationManager.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObservationManager.fromBcs(data),
-      bcs: ObservationManager.bcs,
+      fromBcs: (data: Uint8Array) => ObservationManager.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObservationManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObservationManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ObservationManager.fromSuiParsedData(content),
@@ -102,13 +103,22 @@ export class ObservationManager implements StructClass {
     return ObservationManager.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObservationManager', {
       observations: bcs.vector(Observation.bcs),
       observation_index: bcs.u64(),
       observation_cardinality: bcs.u64(),
       observation_cardinality_next: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObservationManager.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ObservationManager.cachedBcs) {
+      ObservationManager.cachedBcs = ObservationManager.instantiateBcs()
+    }
+    return ObservationManager.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObservationManager {
@@ -262,6 +272,7 @@ export class Observation implements StructClass {
   }
 
   static reified(): ObservationReified {
+    const reifiedBcs = Observation.bcs
     return {
       typeName: Observation.$typeName,
       fullTypeName: composeSuiType(
@@ -273,8 +284,8 @@ export class Observation implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Observation.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Observation.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Observation.fromBcs(data),
-      bcs: Observation.bcs,
+      fromBcs: (data: Uint8Array) => Observation.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Observation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Observation.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Observation.fromSuiParsedData(content),
@@ -298,13 +309,22 @@ export class Observation implements StructClass {
     return Observation.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Observation', {
       timestamp: bcs.u64(),
       tick_cumulative: I64.bcs,
       seconds_per_liquidity_cumulative: bcs.u256(),
       initialized: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Observation.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Observation.cachedBcs) {
+      Observation.cachedBcs = Observation.instantiateBcs()
+    }
+    return Observation.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Observation {

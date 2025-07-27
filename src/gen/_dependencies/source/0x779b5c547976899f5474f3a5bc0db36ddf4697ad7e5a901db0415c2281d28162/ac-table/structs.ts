@@ -108,6 +108,7 @@ export class AcTable<
     T1: T1,
     T2: T2
   ): AcTableReified<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+    const reifiedBcs = AcTable.bcs(toBcs(T1))
     return {
       typeName: AcTable.$typeName,
       fullTypeName: composeSuiType(
@@ -124,8 +125,8 @@ export class AcTable<
       fromFields: (fields: Record<string, any>) => AcTable.fromFields([T0, T1, T2], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AcTable.fromFieldsWithTypes([T0, T1, T2], item),
-      fromBcs: (data: Uint8Array) => AcTable.fromBcs([T0, T1, T2], data),
-      bcs: AcTable.bcs(toBcs(T1)),
+      fromBcs: (data: Uint8Array) => AcTable.fromFields([T0, T1, T2], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTable.fromJSONField([T0, T1, T2], field),
       fromJSON: (json: Record<string, any>) => AcTable.fromJSON([T0, T1, T2], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -167,7 +168,7 @@ export class AcTable<
     return AcTable.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T1 extends BcsType<any>>(T1: T1) =>
       bcs.struct(`AcTable<${T1.name}>`, {
         id: UID.bcs,
@@ -175,6 +176,15 @@ export class AcTable<
         keys: Option.bcs(VecSet.bcs(T1)),
         with_keys: bcs.bool(),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof AcTable.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AcTable.cachedBcs) {
+      AcTable.cachedBcs = AcTable.instantiateBcs()
+    }
+    return AcTable.cachedBcs
   }
 
   static fromFields<
@@ -404,6 +414,7 @@ export class AcTableOwnership implements StructClass {
   }
 
   static reified(): AcTableOwnershipReified {
+    const reifiedBcs = AcTableOwnership.bcs
     return {
       typeName: AcTableOwnership.$typeName,
       fullTypeName: composeSuiType(
@@ -415,8 +426,8 @@ export class AcTableOwnership implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AcTableOwnership.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableOwnership.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AcTableOwnership.fromBcs(data),
-      bcs: AcTableOwnership.bcs,
+      fromBcs: (data: Uint8Array) => AcTableOwnership.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTableOwnership.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AcTableOwnership.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AcTableOwnership.fromSuiParsedData(content),
@@ -440,10 +451,19 @@ export class AcTableOwnership implements StructClass {
     return AcTableOwnership.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AcTableOwnership', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AcTableOwnership.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AcTableOwnership.cachedBcs) {
+      AcTableOwnership.cachedBcs = AcTableOwnership.instantiateBcs()
+    }
+    return AcTableOwnership.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AcTableOwnership {
@@ -575,6 +595,7 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): AcTableCapReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = AcTableCap.bcs
     return {
       typeName: AcTableCap.$typeName,
       fullTypeName: composeSuiType(
@@ -586,8 +607,8 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => AcTableCap.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableCap.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => AcTableCap.fromBcs(T0, data),
-      bcs: AcTableCap.bcs,
+      fromBcs: (data: Uint8Array) => AcTableCap.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTableCap.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => AcTableCap.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => AcTableCap.fromSuiParsedData(T0, content),
@@ -613,11 +634,20 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AcTableCap', {
       id: UID.bcs,
       ownership: Ownership.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AcTableCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AcTableCap.cachedBcs) {
+      AcTableCap.cachedBcs = AcTableCap.instantiateBcs()
+    }
+    return AcTableCap.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

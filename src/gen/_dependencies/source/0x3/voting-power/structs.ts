@@ -55,6 +55,7 @@ export class VotingPowerInfo implements StructClass {
   }
 
   static reified(): VotingPowerInfoReified {
+    const reifiedBcs = VotingPowerInfo.bcs
     return {
       typeName: VotingPowerInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class VotingPowerInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => VotingPowerInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => VotingPowerInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VotingPowerInfo.fromBcs(data),
-      bcs: VotingPowerInfo.bcs,
+      fromBcs: (data: Uint8Array) => VotingPowerInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VotingPowerInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VotingPowerInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VotingPowerInfo.fromSuiParsedData(content),
@@ -91,11 +92,20 @@ export class VotingPowerInfo implements StructClass {
     return VotingPowerInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VotingPowerInfo', {
       validator_index: bcs.u64(),
       voting_power: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof VotingPowerInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!VotingPowerInfo.cachedBcs) {
+      VotingPowerInfo.cachedBcs = VotingPowerInfo.instantiateBcs()
+    }
+    return VotingPowerInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): VotingPowerInfo {
@@ -229,6 +239,7 @@ export class VotingPowerInfoV2 implements StructClass {
   }
 
   static reified(): VotingPowerInfoV2Reified {
+    const reifiedBcs = VotingPowerInfoV2.bcs
     return {
       typeName: VotingPowerInfoV2.$typeName,
       fullTypeName: composeSuiType(
@@ -240,8 +251,8 @@ export class VotingPowerInfoV2 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => VotingPowerInfoV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => VotingPowerInfoV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VotingPowerInfoV2.fromBcs(data),
-      bcs: VotingPowerInfoV2.bcs,
+      fromBcs: (data: Uint8Array) => VotingPowerInfoV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VotingPowerInfoV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VotingPowerInfoV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VotingPowerInfoV2.fromSuiParsedData(content),
@@ -265,12 +276,21 @@ export class VotingPowerInfoV2 implements StructClass {
     return VotingPowerInfoV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VotingPowerInfoV2', {
       validator_index: bcs.u64(),
       voting_power: bcs.u64(),
       stake: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof VotingPowerInfoV2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!VotingPowerInfoV2.cachedBcs) {
+      VotingPowerInfoV2.cachedBcs = VotingPowerInfoV2.instantiateBcs()
+    }
+    return VotingPowerInfoV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): VotingPowerInfoV2 {

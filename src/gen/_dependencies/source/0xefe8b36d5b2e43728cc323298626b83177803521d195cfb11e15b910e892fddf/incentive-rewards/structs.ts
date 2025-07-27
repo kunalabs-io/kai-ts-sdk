@@ -55,6 +55,7 @@ export class RewardFactors implements StructClass {
   }
 
   static reified(): RewardFactorsReified {
+    const reifiedBcs = RewardFactors.bcs
     return {
       typeName: RewardFactors.$typeName,
       fullTypeName: composeSuiType(
@@ -66,8 +67,8 @@ export class RewardFactors implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RewardFactors.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewardFactors.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardFactors.fromBcs(data),
-      bcs: RewardFactors.bcs,
+      fromBcs: (data: Uint8Array) => RewardFactors.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardFactors.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardFactors.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewardFactors.fromSuiParsedData(content),
@@ -91,10 +92,19 @@ export class RewardFactors implements StructClass {
     return RewardFactors.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardFactors', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardFactors.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewardFactors.cachedBcs) {
+      RewardFactors.cachedBcs = RewardFactors.instantiateBcs()
+    }
+    return RewardFactors.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewardFactors {
@@ -219,6 +229,7 @@ export class RewardFactor implements StructClass {
   }
 
   static reified(): RewardFactorReified {
+    const reifiedBcs = RewardFactor.bcs
     return {
       typeName: RewardFactor.$typeName,
       fullTypeName: composeSuiType(
@@ -230,8 +241,8 @@ export class RewardFactor implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RewardFactor.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RewardFactor.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RewardFactor.fromBcs(data),
-      bcs: RewardFactor.bcs,
+      fromBcs: (data: Uint8Array) => RewardFactor.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardFactor.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardFactor.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewardFactor.fromSuiParsedData(content),
@@ -255,11 +266,20 @@ export class RewardFactor implements StructClass {
     return RewardFactor.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RewardFactor', {
       coin_type: TypeName.bcs,
       reward_factor: FixedPoint32.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RewardFactor.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RewardFactor.cachedBcs) {
+      RewardFactor.cachedBcs = RewardFactor.instantiateBcs()
+    }
+    return RewardFactor.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RewardFactor {

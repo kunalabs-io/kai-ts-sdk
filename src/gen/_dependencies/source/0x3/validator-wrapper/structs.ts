@@ -53,6 +53,7 @@ export class ValidatorWrapper implements StructClass {
   }
 
   static reified(): ValidatorWrapperReified {
+    const reifiedBcs = ValidatorWrapper.bcs
     return {
       typeName: ValidatorWrapper.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class ValidatorWrapper implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ValidatorWrapper.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ValidatorWrapper.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatorWrapper.fromBcs(data),
-      bcs: ValidatorWrapper.bcs,
+      fromBcs: (data: Uint8Array) => ValidatorWrapper.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatorWrapper.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatorWrapper.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatorWrapper.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class ValidatorWrapper implements StructClass {
     return ValidatorWrapper.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatorWrapper', {
       inner: Versioned.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatorWrapper.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatorWrapper.cachedBcs) {
+      ValidatorWrapper.cachedBcs = ValidatorWrapper.instantiateBcs()
+    }
+    return ValidatorWrapper.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatorWrapper {

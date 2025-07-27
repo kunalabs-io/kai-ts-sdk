@@ -12,6 +12,13 @@ export function aRebalance(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::position_core_clmm::a_rebalance`, arguments: [] })
 }
 
+export function aRepayBadDebt(tx: Transaction) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::a_repay_bad_debt`,
+    arguments: [],
+  })
+}
+
 export interface PositionConstructorArgs {
   configId: string | TransactionArgument
   lpPosition: GenericArg
@@ -1345,6 +1352,24 @@ export function emitDeletePositionInfo(tx: Transaction, args: EmitDeletePosition
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.capId, `${ID.$typeName}`),
+    ],
+  })
+}
+
+export interface EmitBadDebtRepaidArgs {
+  positionId: string | TransactionArgument
+  sharesRepaid: bigint | TransactionArgument
+  balanceRepaid: bigint | TransactionArgument
+}
+
+export function emitBadDebtRepaid(tx: Transaction, typeArg: string, args: EmitBadDebtRepaidArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::emit_bad_debt_repaid`,
+    typeArguments: [typeArg],
+    arguments: [
+      pure(tx, args.positionId, `${ID.$typeName}`),
+      pure(tx, args.sharesRepaid, `u128`),
+      pure(tx, args.balanceRepaid, `u64`),
     ],
   })
 }

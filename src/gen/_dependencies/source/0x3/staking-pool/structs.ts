@@ -91,6 +91,7 @@ export class StakingPool implements StructClass {
   }
 
   static reified(): StakingPoolReified {
+    const reifiedBcs = StakingPool.bcs
     return {
       typeName: StakingPool.$typeName,
       fullTypeName: composeSuiType(
@@ -102,8 +103,8 @@ export class StakingPool implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StakingPool.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StakingPool.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StakingPool.fromBcs(data),
-      bcs: StakingPool.bcs,
+      fromBcs: (data: Uint8Array) => StakingPool.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StakingPool.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StakingPool.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StakingPool.fromSuiParsedData(content),
@@ -127,7 +128,7 @@ export class StakingPool implements StructClass {
     return StakingPool.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StakingPool', {
       id: UID.bcs,
       activation_epoch: Option.bcs(bcs.u64()),
@@ -141,6 +142,15 @@ export class StakingPool implements StructClass {
       pending_pool_token_withdraw: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StakingPool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StakingPool.cachedBcs) {
+      StakingPool.cachedBcs = StakingPool.instantiateBcs()
+    }
+    return StakingPool.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StakingPool {
@@ -343,6 +353,7 @@ export class PoolTokenExchangeRate implements StructClass {
   }
 
   static reified(): PoolTokenExchangeRateReified {
+    const reifiedBcs = PoolTokenExchangeRate.bcs
     return {
       typeName: PoolTokenExchangeRate.$typeName,
       fullTypeName: composeSuiType(
@@ -355,8 +366,8 @@ export class PoolTokenExchangeRate implements StructClass {
       fromFields: (fields: Record<string, any>) => PoolTokenExchangeRate.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PoolTokenExchangeRate.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PoolTokenExchangeRate.fromBcs(data),
-      bcs: PoolTokenExchangeRate.bcs,
+      fromBcs: (data: Uint8Array) => PoolTokenExchangeRate.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolTokenExchangeRate.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolTokenExchangeRate.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -382,11 +393,20 @@ export class PoolTokenExchangeRate implements StructClass {
     return PoolTokenExchangeRate.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PoolTokenExchangeRate', {
       sui_amount: bcs.u64(),
       pool_token_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PoolTokenExchangeRate.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PoolTokenExchangeRate.cachedBcs) {
+      PoolTokenExchangeRate.cachedBcs = PoolTokenExchangeRate.instantiateBcs()
+    }
+    return PoolTokenExchangeRate.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PoolTokenExchangeRate {
@@ -525,6 +545,7 @@ export class StakedSui implements StructClass {
   }
 
   static reified(): StakedSuiReified {
+    const reifiedBcs = StakedSui.bcs
     return {
       typeName: StakedSui.$typeName,
       fullTypeName: composeSuiType(StakedSui.$typeName, ...[]) as `0x3::staking_pool::StakedSui`,
@@ -533,8 +554,8 @@ export class StakedSui implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => StakedSui.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => StakedSui.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => StakedSui.fromBcs(data),
-      bcs: StakedSui.bcs,
+      fromBcs: (data: Uint8Array) => StakedSui.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => StakedSui.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StakedSui.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => StakedSui.fromSuiParsedData(content),
@@ -558,13 +579,22 @@ export class StakedSui implements StructClass {
     return StakedSui.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('StakedSui', {
       id: UID.bcs,
       pool_id: ID.bcs,
       stake_activation_epoch: bcs.u64(),
       principal: Balance.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof StakedSui.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!StakedSui.cachedBcs) {
+      StakedSui.cachedBcs = StakedSui.instantiateBcs()
+    }
+    return StakedSui.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): StakedSui {
@@ -715,6 +745,7 @@ export class FungibleStakedSui implements StructClass {
   }
 
   static reified(): FungibleStakedSuiReified {
+    const reifiedBcs = FungibleStakedSui.bcs
     return {
       typeName: FungibleStakedSui.$typeName,
       fullTypeName: composeSuiType(
@@ -726,8 +757,8 @@ export class FungibleStakedSui implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FungibleStakedSui.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FungibleStakedSui.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FungibleStakedSui.fromBcs(data),
-      bcs: FungibleStakedSui.bcs,
+      fromBcs: (data: Uint8Array) => FungibleStakedSui.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FungibleStakedSui.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FungibleStakedSui.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FungibleStakedSui.fromSuiParsedData(content),
@@ -751,12 +782,21 @@ export class FungibleStakedSui implements StructClass {
     return FungibleStakedSui.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FungibleStakedSui', {
       id: UID.bcs,
       pool_id: ID.bcs,
       value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FungibleStakedSui.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FungibleStakedSui.cachedBcs) {
+      FungibleStakedSui.cachedBcs = FungibleStakedSui.instantiateBcs()
+    }
+    return FungibleStakedSui.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FungibleStakedSui {
@@ -897,6 +937,7 @@ export class FungibleStakedSuiData implements StructClass {
   }
 
   static reified(): FungibleStakedSuiDataReified {
+    const reifiedBcs = FungibleStakedSuiData.bcs
     return {
       typeName: FungibleStakedSuiData.$typeName,
       fullTypeName: composeSuiType(
@@ -909,8 +950,8 @@ export class FungibleStakedSuiData implements StructClass {
       fromFields: (fields: Record<string, any>) => FungibleStakedSuiData.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FungibleStakedSuiData.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FungibleStakedSuiData.fromBcs(data),
-      bcs: FungibleStakedSuiData.bcs,
+      fromBcs: (data: Uint8Array) => FungibleStakedSuiData.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FungibleStakedSuiData.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FungibleStakedSuiData.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -936,12 +977,21 @@ export class FungibleStakedSuiData implements StructClass {
     return FungibleStakedSuiData.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FungibleStakedSuiData', {
       id: UID.bcs,
       total_supply: bcs.u64(),
       principal: Balance.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FungibleStakedSuiData.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FungibleStakedSuiData.cachedBcs) {
+      FungibleStakedSuiData.cachedBcs = FungibleStakedSuiData.instantiateBcs()
+    }
+    return FungibleStakedSuiData.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FungibleStakedSuiData {
@@ -1087,6 +1137,7 @@ export class FungibleStakedSuiDataKey implements StructClass {
   }
 
   static reified(): FungibleStakedSuiDataKeyReified {
+    const reifiedBcs = FungibleStakedSuiDataKey.bcs
     return {
       typeName: FungibleStakedSuiDataKey.$typeName,
       fullTypeName: composeSuiType(
@@ -1099,8 +1150,8 @@ export class FungibleStakedSuiDataKey implements StructClass {
       fromFields: (fields: Record<string, any>) => FungibleStakedSuiDataKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         FungibleStakedSuiDataKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FungibleStakedSuiDataKey.fromBcs(data),
-      bcs: FungibleStakedSuiDataKey.bcs,
+      fromBcs: (data: Uint8Array) => FungibleStakedSuiDataKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FungibleStakedSuiDataKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FungibleStakedSuiDataKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1126,10 +1177,19 @@ export class FungibleStakedSuiDataKey implements StructClass {
     return FungibleStakedSuiDataKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FungibleStakedSuiDataKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FungibleStakedSuiDataKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FungibleStakedSuiDataKey.cachedBcs) {
+      FungibleStakedSuiDataKey.cachedBcs = FungibleStakedSuiDataKey.instantiateBcs()
+    }
+    return FungibleStakedSuiDataKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FungibleStakedSuiDataKey {

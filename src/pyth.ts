@@ -13,6 +13,7 @@ import {
   wBTC,
   LBTC,
   WAL,
+  xBTC,
 } from './coin-info'
 import { Price } from './price'
 import Decimal from 'decimal.js'
@@ -104,6 +105,12 @@ export const LBTCPioInfo = new PriceFeedInfo({
   priceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
   priceInfoObjectId: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
   T: LBTC,
+})
+
+export const xBTCPioInfo = new PriceFeedInfo({
+  priceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+  priceInfoObjectId: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+  T: xBTC,
 })
 
 export function getPriceFromPio(pioData: PriceInfoObject_) {

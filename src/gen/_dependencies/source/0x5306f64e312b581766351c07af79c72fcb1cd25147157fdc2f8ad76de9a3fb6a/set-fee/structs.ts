@@ -53,6 +53,7 @@ export class GovernanceWitness implements StructClass {
   }
 
   static reified(): GovernanceWitnessReified {
+    const reifiedBcs = GovernanceWitness.bcs
     return {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class GovernanceWitness implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GovernanceWitness.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GovernanceWitness.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceWitness.fromBcs(data),
-      bcs: GovernanceWitness.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceWitness.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceWitness', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceWitness.cachedBcs) {
+      GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
+    }
+    return GovernanceWitness.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceWitness {
@@ -216,6 +226,7 @@ export class SetFee implements StructClass {
   }
 
   static reified(): SetFeeReified {
+    const reifiedBcs = SetFee.bcs
     return {
       typeName: SetFee.$typeName,
       fullTypeName: composeSuiType(SetFee.$typeName, ...[]) as `${typeof PKG_V1}::set_fee::SetFee`,
@@ -224,8 +235,8 @@ export class SetFee implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SetFee.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SetFee.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SetFee.fromBcs(data),
-      bcs: SetFee.bcs,
+      fromBcs: (data: Uint8Array) => SetFee.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SetFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetFee.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SetFee.fromSuiParsedData(content),
@@ -249,10 +260,19 @@ export class SetFee implements StructClass {
     return SetFee.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SetFee', {
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SetFee.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SetFee.cachedBcs) {
+      SetFee.cachedBcs = SetFee.instantiateBcs()
+    }
+    return SetFee.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SetFee {

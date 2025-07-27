@@ -70,6 +70,7 @@ export class GlobalConfig implements StructClass {
   }
 
   static reified(): GlobalConfigReified {
+    const reifiedBcs = GlobalConfig.bcs
     return {
       typeName: GlobalConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -81,8 +82,8 @@ export class GlobalConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GlobalConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GlobalConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GlobalConfig.fromBcs(data),
-      bcs: GlobalConfig.bcs,
+      fromBcs: (data: Uint8Array) => GlobalConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GlobalConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GlobalConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GlobalConfig.fromSuiParsedData(content),
@@ -106,7 +107,7 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GlobalConfig', {
       id: UID.bcs,
       min_tick: I32.bcs,
@@ -119,6 +120,15 @@ export class GlobalConfig implements StructClass {
         })
       ),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GlobalConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GlobalConfig.cachedBcs) {
+      GlobalConfig.cachedBcs = GlobalConfig.instantiateBcs()
+    }
+    return GlobalConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GlobalConfig {

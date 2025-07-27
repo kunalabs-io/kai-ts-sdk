@@ -63,6 +63,7 @@ export class PythPriceInfo implements StructClass {
   }
 
   static reified(): PythPriceInfoReified {
+    const reifiedBcs = PythPriceInfo.bcs
     return {
       typeName: PythPriceInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -74,8 +75,8 @@ export class PythPriceInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PythPriceInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PythPriceInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PythPriceInfo.fromBcs(data),
-      bcs: PythPriceInfo.bcs,
+      fromBcs: (data: Uint8Array) => PythPriceInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PythPriceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythPriceInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythPriceInfo.fromSuiParsedData(content),
@@ -99,12 +100,21 @@ export class PythPriceInfo implements StructClass {
     return PythPriceInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PythPriceInfo', {
       pio_map: VecMap.bcs(ID.bcs, PriceInfo.bcs),
       current_ts_sec: bcs.u64(),
       max_age_secs: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PythPriceInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PythPriceInfo.cachedBcs) {
+      PythPriceInfo.cachedBcs = PythPriceInfo.instantiateBcs()
+    }
+    return PythPriceInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PythPriceInfo {
@@ -248,6 +258,7 @@ export class ValidatedPythPriceInfo implements StructClass {
   }
 
   static reified(): ValidatedPythPriceInfoReified {
+    const reifiedBcs = ValidatedPythPriceInfo.bcs
     return {
       typeName: ValidatedPythPriceInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -260,8 +271,8 @@ export class ValidatedPythPriceInfo implements StructClass {
       fromFields: (fields: Record<string, any>) => ValidatedPythPriceInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ValidatedPythPriceInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ValidatedPythPriceInfo.fromBcs(data),
-      bcs: ValidatedPythPriceInfo.bcs,
+      fromBcs: (data: Uint8Array) => ValidatedPythPriceInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatedPythPriceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatedPythPriceInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -287,12 +298,21 @@ export class ValidatedPythPriceInfo implements StructClass {
     return ValidatedPythPriceInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ValidatedPythPriceInfo', {
       map: VecMap.bcs(TypeName.bcs, PriceInfo.bcs),
       current_ts_sec: bcs.u64(),
       max_age_secs: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ValidatedPythPriceInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ValidatedPythPriceInfo.cachedBcs) {
+      ValidatedPythPriceInfo.cachedBcs = ValidatedPythPriceInfo.instantiateBcs()
+    }
+    return ValidatedPythPriceInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ValidatedPythPriceInfo {

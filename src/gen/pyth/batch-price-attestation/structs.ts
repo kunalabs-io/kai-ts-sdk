@@ -69,6 +69,7 @@ export class BatchPriceAttestation implements StructClass {
   }
 
   static reified(): BatchPriceAttestationReified {
+    const reifiedBcs = BatchPriceAttestation.bcs
     return {
       typeName: BatchPriceAttestation.$typeName,
       fullTypeName: composeSuiType(
@@ -81,8 +82,8 @@ export class BatchPriceAttestation implements StructClass {
       fromFields: (fields: Record<string, any>) => BatchPriceAttestation.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BatchPriceAttestation.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BatchPriceAttestation.fromBcs(data),
-      bcs: BatchPriceAttestation.bcs,
+      fromBcs: (data: Uint8Array) => BatchPriceAttestation.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchPriceAttestation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BatchPriceAttestation.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -108,13 +109,22 @@ export class BatchPriceAttestation implements StructClass {
     return BatchPriceAttestation.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BatchPriceAttestation', {
       header: Header.bcs,
       attestation_size: bcs.u64(),
       attestation_count: bcs.u64(),
       price_infos: bcs.vector(PriceInfo.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BatchPriceAttestation.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BatchPriceAttestation.cachedBcs) {
+      BatchPriceAttestation.cachedBcs = BatchPriceAttestation.instantiateBcs()
+    }
+    return BatchPriceAttestation.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BatchPriceAttestation {
@@ -267,6 +277,7 @@ export class Header implements StructClass {
   }
 
   static reified(): HeaderReified {
+    const reifiedBcs = Header.bcs
     return {
       typeName: Header.$typeName,
       fullTypeName: composeSuiType(
@@ -278,8 +289,8 @@ export class Header implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Header.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Header.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Header.fromBcs(data),
-      bcs: Header.bcs,
+      fromBcs: (data: Uint8Array) => Header.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Header.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Header.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Header.fromSuiParsedData(content),
@@ -303,7 +314,7 @@ export class Header implements StructClass {
     return Header.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Header', {
       magic: bcs.u64(),
       version_major: bcs.u64(),
@@ -311,6 +322,15 @@ export class Header implements StructClass {
       header_size: bcs.u64(),
       payload_id: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Header.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Header.cachedBcs) {
+      Header.cachedBcs = Header.instantiateBcs()
+    }
+    return Header.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Header {

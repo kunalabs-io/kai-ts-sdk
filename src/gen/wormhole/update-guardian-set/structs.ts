@@ -57,6 +57,7 @@ export class GovernanceWitness implements StructClass {
   }
 
   static reified(): GovernanceWitnessReified {
+    const reifiedBcs = GovernanceWitness.bcs
     return {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
@@ -68,8 +69,8 @@ export class GovernanceWitness implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GovernanceWitness.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GovernanceWitness.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceWitness.fromBcs(data),
-      bcs: GovernanceWitness.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceWitness.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
@@ -93,10 +94,19 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceWitness', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceWitness.cachedBcs) {
+      GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
+    }
+    return GovernanceWitness.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceWitness {
@@ -220,6 +230,7 @@ export class GuardianSetAdded implements StructClass {
   }
 
   static reified(): GuardianSetAddedReified {
+    const reifiedBcs = GuardianSetAdded.bcs
     return {
       typeName: GuardianSetAdded.$typeName,
       fullTypeName: composeSuiType(
@@ -231,8 +242,8 @@ export class GuardianSetAdded implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GuardianSetAdded.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GuardianSetAdded.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GuardianSetAdded.fromBcs(data),
-      bcs: GuardianSetAdded.bcs,
+      fromBcs: (data: Uint8Array) => GuardianSetAdded.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GuardianSetAdded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GuardianSetAdded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GuardianSetAdded.fromSuiParsedData(content),
@@ -256,10 +267,19 @@ export class GuardianSetAdded implements StructClass {
     return GuardianSetAdded.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GuardianSetAdded', {
       new_index: bcs.u32(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GuardianSetAdded.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GuardianSetAdded.cachedBcs) {
+      GuardianSetAdded.cachedBcs = GuardianSetAdded.instantiateBcs()
+    }
+    return GuardianSetAdded.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GuardianSetAdded {
@@ -382,6 +402,7 @@ export class UpdateGuardianSet implements StructClass {
   }
 
   static reified(): UpdateGuardianSetReified {
+    const reifiedBcs = UpdateGuardianSet.bcs
     return {
       typeName: UpdateGuardianSet.$typeName,
       fullTypeName: composeSuiType(
@@ -393,8 +414,8 @@ export class UpdateGuardianSet implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateGuardianSet.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateGuardianSet.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateGuardianSet.fromBcs(data),
-      bcs: UpdateGuardianSet.bcs,
+      fromBcs: (data: Uint8Array) => UpdateGuardianSet.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateGuardianSet.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateGuardianSet.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateGuardianSet.fromSuiParsedData(content),
@@ -418,11 +439,20 @@ export class UpdateGuardianSet implements StructClass {
     return UpdateGuardianSet.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateGuardianSet', {
       new_index: bcs.u32(),
       guardians: bcs.vector(Guardian.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateGuardianSet.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateGuardianSet.cachedBcs) {
+      UpdateGuardianSet.cachedBcs = UpdateGuardianSet.instantiateBcs()
+    }
+    return UpdateGuardianSet.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateGuardianSet {

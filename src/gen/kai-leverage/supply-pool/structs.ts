@@ -71,6 +71,7 @@ export class ACreatePool implements StructClass {
   }
 
   static reified(): ACreatePoolReified {
+    const reifiedBcs = ACreatePool.bcs
     return {
       typeName: ACreatePool.$typeName,
       fullTypeName: composeSuiType(
@@ -82,8 +83,8 @@ export class ACreatePool implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ACreatePool.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ACreatePool.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACreatePool.fromBcs(data),
-      bcs: ACreatePool.bcs,
+      fromBcs: (data: Uint8Array) => ACreatePool.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ACreatePool.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACreatePool.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACreatePool.fromSuiParsedData(content),
@@ -107,10 +108,19 @@ export class ACreatePool implements StructClass {
     return ACreatePool.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ACreatePool', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ACreatePool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ACreatePool.cachedBcs) {
+      ACreatePool.cachedBcs = ACreatePool.instantiateBcs()
+    }
+    return ACreatePool.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ACreatePool {
@@ -230,6 +240,7 @@ export class AConfigLendFacil implements StructClass {
   }
 
   static reified(): AConfigLendFacilReified {
+    const reifiedBcs = AConfigLendFacil.bcs
     return {
       typeName: AConfigLendFacil.$typeName,
       fullTypeName: composeSuiType(
@@ -241,8 +252,8 @@ export class AConfigLendFacil implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AConfigLendFacil.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AConfigLendFacil.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AConfigLendFacil.fromBcs(data),
-      bcs: AConfigLendFacil.bcs,
+      fromBcs: (data: Uint8Array) => AConfigLendFacil.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AConfigLendFacil.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AConfigLendFacil.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AConfigLendFacil.fromSuiParsedData(content),
@@ -266,10 +277,19 @@ export class AConfigLendFacil implements StructClass {
     return AConfigLendFacil.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AConfigLendFacil', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AConfigLendFacil.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AConfigLendFacil.cachedBcs) {
+      AConfigLendFacil.cachedBcs = AConfigLendFacil.instantiateBcs()
+    }
+    return AConfigLendFacil.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AConfigLendFacil {
@@ -393,6 +413,7 @@ export class AConfigFees implements StructClass {
   }
 
   static reified(): AConfigFeesReified {
+    const reifiedBcs = AConfigFees.bcs
     return {
       typeName: AConfigFees.$typeName,
       fullTypeName: composeSuiType(
@@ -404,8 +425,8 @@ export class AConfigFees implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AConfigFees.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AConfigFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AConfigFees.fromBcs(data),
-      bcs: AConfigFees.bcs,
+      fromBcs: (data: Uint8Array) => AConfigFees.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AConfigFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AConfigFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AConfigFees.fromSuiParsedData(content),
@@ -429,10 +450,19 @@ export class AConfigFees implements StructClass {
     return AConfigFees.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AConfigFees', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AConfigFees.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AConfigFees.cachedBcs) {
+      AConfigFees.cachedBcs = AConfigFees.instantiateBcs()
+    }
+    return AConfigFees.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AConfigFees {
@@ -552,6 +582,7 @@ export class ATakeFees implements StructClass {
   }
 
   static reified(): ATakeFeesReified {
+    const reifiedBcs = ATakeFees.bcs
     return {
       typeName: ATakeFees.$typeName,
       fullTypeName: composeSuiType(
@@ -563,8 +594,8 @@ export class ATakeFees implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ATakeFees.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ATakeFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ATakeFees.fromBcs(data),
-      bcs: ATakeFees.bcs,
+      fromBcs: (data: Uint8Array) => ATakeFees.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ATakeFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ATakeFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ATakeFees.fromSuiParsedData(content),
@@ -588,10 +619,19 @@ export class ATakeFees implements StructClass {
     return ATakeFees.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ATakeFees', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ATakeFees.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ATakeFees.cachedBcs) {
+      ATakeFees.cachedBcs = ATakeFees.instantiateBcs()
+    }
+    return ATakeFees.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ATakeFees {
@@ -711,6 +751,7 @@ export class ADeposit implements StructClass {
   }
 
   static reified(): ADepositReified {
+    const reifiedBcs = ADeposit.bcs
     return {
       typeName: ADeposit.$typeName,
       fullTypeName: composeSuiType(
@@ -722,8 +763,8 @@ export class ADeposit implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ADeposit.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ADeposit.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ADeposit.fromBcs(data),
-      bcs: ADeposit.bcs,
+      fromBcs: (data: Uint8Array) => ADeposit.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ADeposit.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ADeposit.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ADeposit.fromSuiParsedData(content),
@@ -747,10 +788,19 @@ export class ADeposit implements StructClass {
     return ADeposit.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ADeposit', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ADeposit.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ADeposit.cachedBcs) {
+      ADeposit.cachedBcs = ADeposit.instantiateBcs()
+    }
+    return ADeposit.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ADeposit {
@@ -870,6 +920,7 @@ export class AMigrate implements StructClass {
   }
 
   static reified(): AMigrateReified {
+    const reifiedBcs = AMigrate.bcs
     return {
       typeName: AMigrate.$typeName,
       fullTypeName: composeSuiType(
@@ -881,8 +932,8 @@ export class AMigrate implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AMigrate.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AMigrate.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AMigrate.fromBcs(data),
-      bcs: AMigrate.bcs,
+      fromBcs: (data: Uint8Array) => AMigrate.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AMigrate.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
@@ -906,10 +957,19 @@ export class AMigrate implements StructClass {
     return AMigrate.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AMigrate', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AMigrate.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AMigrate.cachedBcs) {
+      AMigrate.cachedBcs = AMigrate.instantiateBcs()
+    }
+    return AMigrate.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AMigrate {
@@ -1035,6 +1095,7 @@ export class SupplyInfo implements StructClass {
   }
 
   static reified(): SupplyInfoReified {
+    const reifiedBcs = SupplyInfo.bcs
     return {
       typeName: SupplyInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -1046,8 +1107,8 @@ export class SupplyInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SupplyInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SupplyInfo.fromBcs(data),
-      bcs: SupplyInfo.bcs,
+      fromBcs: (data: Uint8Array) => SupplyInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SupplyInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyInfo.fromSuiParsedData(content),
@@ -1071,12 +1132,21 @@ export class SupplyInfo implements StructClass {
     return SupplyInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SupplyInfo', {
       supply_pool_id: ID.bcs,
       deposited: bcs.u64(),
       share_balance: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SupplyInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SupplyInfo.cachedBcs) {
+      SupplyInfo.cachedBcs = SupplyInfo.instantiateBcs()
+    }
+    return SupplyInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SupplyInfo {
@@ -1214,6 +1284,7 @@ export class WithdrawInfo implements StructClass {
   }
 
   static reified(): WithdrawInfoReified {
+    const reifiedBcs = WithdrawInfo.bcs
     return {
       typeName: WithdrawInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -1225,8 +1296,8 @@ export class WithdrawInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WithdrawInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WithdrawInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WithdrawInfo.fromBcs(data),
-      bcs: WithdrawInfo.bcs,
+      fromBcs: (data: Uint8Array) => WithdrawInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WithdrawInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WithdrawInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WithdrawInfo.fromSuiParsedData(content),
@@ -1250,12 +1321,21 @@ export class WithdrawInfo implements StructClass {
     return WithdrawInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WithdrawInfo', {
       supply_pool_id: ID.bcs,
       share_balance: bcs.u64(),
       withdrawn: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WithdrawInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WithdrawInfo.cachedBcs) {
+      WithdrawInfo.cachedBcs = WithdrawInfo.instantiateBcs()
+    }
+    return WithdrawInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WithdrawInfo {
@@ -1387,6 +1467,7 @@ export class LendFacilCap implements StructClass {
   }
 
   static reified(): LendFacilCapReified {
+    const reifiedBcs = LendFacilCap.bcs
     return {
       typeName: LendFacilCap.$typeName,
       fullTypeName: composeSuiType(
@@ -1398,8 +1479,8 @@ export class LendFacilCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LendFacilCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LendFacilCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LendFacilCap.fromBcs(data),
-      bcs: LendFacilCap.bcs,
+      fromBcs: (data: Uint8Array) => LendFacilCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LendFacilCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LendFacilCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LendFacilCap.fromSuiParsedData(content),
@@ -1423,10 +1504,19 @@ export class LendFacilCap implements StructClass {
     return LendFacilCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LendFacilCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LendFacilCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LendFacilCap.cachedBcs) {
+      LendFacilCap.cachedBcs = LendFacilCap.instantiateBcs()
+    }
+    return LendFacilCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LendFacilCap {
@@ -1560,6 +1650,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
   static reified<ST extends PhantomReified<PhantomTypeArgument>>(
     ST: ST
   ): LendFacilInfoReified<ToPhantomTypeArgument<ST>> {
+    const reifiedBcs = LendFacilInfo.bcs
     return {
       typeName: LendFacilInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -1571,8 +1662,8 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
       reifiedTypeArgs: [ST],
       fromFields: (fields: Record<string, any>) => LendFacilInfo.fromFields(ST, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LendFacilInfo.fromFieldsWithTypes(ST, item),
-      fromBcs: (data: Uint8Array) => LendFacilInfo.fromBcs(ST, data),
-      bcs: LendFacilInfo.bcs,
+      fromBcs: (data: Uint8Array) => LendFacilInfo.fromFields(ST, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LendFacilInfo.fromJSONField(ST, field),
       fromJSON: (json: Record<string, any>) => LendFacilInfo.fromJSON(ST, json),
       fromSuiParsedData: (content: SuiParsedData) => LendFacilInfo.fromSuiParsedData(ST, content),
@@ -1598,13 +1689,22 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
     return LendFacilInfo.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LendFacilInfo', {
       interest_model: Piecewise.bcs,
       debt_registry: DebtRegistry.bcs,
       max_liability_outstanding: bcs.u64(),
       max_utilization_bps: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LendFacilInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LendFacilInfo.cachedBcs) {
+      LendFacilInfo.cachedBcs = LendFacilInfo.instantiateBcs()
+    }
+    return LendFacilInfo.cachedBcs
   }
 
   static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
@@ -1799,6 +1899,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
   static reified<ST extends PhantomReified<PhantomTypeArgument>>(
     ST: ST
   ): FacilDebtShareReified<ToPhantomTypeArgument<ST>> {
+    const reifiedBcs = FacilDebtShare.bcs
     return {
       typeName: FacilDebtShare.$typeName,
       fullTypeName: composeSuiType(
@@ -1810,8 +1911,8 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
       reifiedTypeArgs: [ST],
       fromFields: (fields: Record<string, any>) => FacilDebtShare.fromFields(ST, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtShare.fromFieldsWithTypes(ST, item),
-      fromBcs: (data: Uint8Array) => FacilDebtShare.fromBcs(ST, data),
-      bcs: FacilDebtShare.bcs,
+      fromBcs: (data: Uint8Array) => FacilDebtShare.fromFields(ST, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FacilDebtShare.fromJSONField(ST, field),
       fromJSON: (json: Record<string, any>) => FacilDebtShare.fromJSON(ST, json),
       fromSuiParsedData: (content: SuiParsedData) => FacilDebtShare.fromSuiParsedData(ST, content),
@@ -1837,11 +1938,20 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
     return FacilDebtShare.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FacilDebtShare', {
       facil_id: ID.bcs,
       inner: DebtShareBalance.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FacilDebtShare.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FacilDebtShare.cachedBcs) {
+      FacilDebtShare.cachedBcs = FacilDebtShare.instantiateBcs()
+    }
+    return FacilDebtShare.cachedBcs
   }
 
   static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
@@ -2020,6 +2130,7 @@ export class FacilDebtBag implements StructClass {
   }
 
   static reified(): FacilDebtBagReified {
+    const reifiedBcs = FacilDebtBag.bcs
     return {
       typeName: FacilDebtBag.$typeName,
       fullTypeName: composeSuiType(
@@ -2031,8 +2142,8 @@ export class FacilDebtBag implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => FacilDebtBag.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => FacilDebtBag.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => FacilDebtBag.fromBcs(data),
-      bcs: FacilDebtBag.bcs,
+      fromBcs: (data: Uint8Array) => FacilDebtBag.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => FacilDebtBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FacilDebtBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FacilDebtBag.fromSuiParsedData(content),
@@ -2056,12 +2167,21 @@ export class FacilDebtBag implements StructClass {
     return FacilDebtBag.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('FacilDebtBag', {
       id: UID.bcs,
       facil_id: ID.bcs,
       inner: DebtBag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof FacilDebtBag.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!FacilDebtBag.cachedBcs) {
+      FacilDebtBag.cachedBcs = FacilDebtBag.instantiateBcs()
+    }
+    return FacilDebtBag.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): FacilDebtBag {
@@ -2228,6 +2348,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
   >(T: T, ST: ST): SupplyPoolReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
+    const reifiedBcs = SupplyPool.bcs
     return {
       typeName: SupplyPool.$typeName,
       fullTypeName: composeSuiType(
@@ -2242,8 +2363,8 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       reifiedTypeArgs: [T, ST],
       fromFields: (fields: Record<string, any>) => SupplyPool.fromFields([T, ST], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SupplyPool.fromFieldsWithTypes([T, ST], item),
-      fromBcs: (data: Uint8Array) => SupplyPool.fromBcs([T, ST], data),
-      bcs: SupplyPool.bcs,
+      fromBcs: (data: Uint8Array) => SupplyPool.fromFields([T, ST], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyPool.fromJSONField([T, ST], field),
       fromJSON: (json: Record<string, any>) => SupplyPool.fromJSON([T, ST], json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyPool.fromSuiParsedData([T, ST], content),
@@ -2273,7 +2394,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return SupplyPool.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SupplyPool', {
       id: UID.bcs,
       available_balance: Balance.bcs,
@@ -2285,6 +2406,15 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       collected_fees: EquityShareBalance.bcs,
       version: bcs.u16(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SupplyPool.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SupplyPool.cachedBcs) {
+      SupplyPool.cachedBcs = SupplyPool.instantiateBcs()
+    }
+    return SupplyPool.cachedBcs
   }
 
   static fromFields<

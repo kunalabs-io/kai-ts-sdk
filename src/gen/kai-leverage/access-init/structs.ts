@@ -53,6 +53,7 @@ export class ACCESS_INIT implements StructClass {
   }
 
   static reified(): ACCESS_INITReified {
+    const reifiedBcs = ACCESS_INIT.bcs
     return {
       typeName: ACCESS_INIT.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class ACCESS_INIT implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ACCESS_INIT.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ACCESS_INIT.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACCESS_INIT.fromBcs(data),
-      bcs: ACCESS_INIT.bcs,
+      fromBcs: (data: Uint8Array) => ACCESS_INIT.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ACCESS_INIT.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACCESS_INIT.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACCESS_INIT.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class ACCESS_INIT implements StructClass {
     return ACCESS_INIT.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ACCESS_INIT', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ACCESS_INIT.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ACCESS_INIT.cachedBcs) {
+      ACCESS_INIT.cachedBcs = ACCESS_INIT.instantiateBcs()
+    }
+    return ACCESS_INIT.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ACCESS_INIT {

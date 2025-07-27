@@ -57,6 +57,7 @@ export class Version implements StructClass {
   }
 
   static reified(): VersionReified {
+    const reifiedBcs = Version.bcs
     return {
       typeName: Version.$typeName,
       fullTypeName: composeSuiType(
@@ -68,8 +69,8 @@ export class Version implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Version.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Version.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Version.fromBcs(data),
-      bcs: Version.bcs,
+      fromBcs: (data: Uint8Array) => Version.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Version.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Version.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Version.fromSuiParsedData(content),
@@ -93,11 +94,20 @@ export class Version implements StructClass {
     return Version.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Version', {
       id: UID.bcs,
       value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Version.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Version.cachedBcs) {
+      Version.cachedBcs = Version.instantiateBcs()
+    }
+    return Version.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Version {
@@ -225,6 +235,7 @@ export class VersionCap implements StructClass {
   }
 
   static reified(): VersionCapReified {
+    const reifiedBcs = VersionCap.bcs
     return {
       typeName: VersionCap.$typeName,
       fullTypeName: composeSuiType(
@@ -236,8 +247,8 @@ export class VersionCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => VersionCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => VersionCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => VersionCap.fromBcs(data),
-      bcs: VersionCap.bcs,
+      fromBcs: (data: Uint8Array) => VersionCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => VersionCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VersionCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VersionCap.fromSuiParsedData(content),
@@ -261,10 +272,19 @@ export class VersionCap implements StructClass {
     return VersionCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('VersionCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof VersionCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!VersionCap.cachedBcs) {
+      VersionCap.cachedBcs = VersionCap.instantiateBcs()
+    }
+    return VersionCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): VersionCap {

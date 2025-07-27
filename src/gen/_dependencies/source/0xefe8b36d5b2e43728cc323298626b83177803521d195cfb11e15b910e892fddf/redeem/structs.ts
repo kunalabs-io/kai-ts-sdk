@@ -69,6 +69,7 @@ export class RedeemEvent implements StructClass {
   }
 
   static reified(): RedeemEventReified {
+    const reifiedBcs = RedeemEvent.bcs
     return {
       typeName: RedeemEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -80,8 +81,8 @@ export class RedeemEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RedeemEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RedeemEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RedeemEvent.fromBcs(data),
-      bcs: RedeemEvent.bcs,
+      fromBcs: (data: Uint8Array) => RedeemEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RedeemEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RedeemEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RedeemEvent.fromSuiParsedData(content),
@@ -105,7 +106,7 @@ export class RedeemEvent implements StructClass {
     return RedeemEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RedeemEvent', {
       redeemer: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -117,6 +118,15 @@ export class RedeemEvent implements StructClass {
       burn_amount: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RedeemEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RedeemEvent.cachedBcs) {
+      RedeemEvent.cachedBcs = RedeemEvent.instantiateBcs()
+    }
+    return RedeemEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RedeemEvent {

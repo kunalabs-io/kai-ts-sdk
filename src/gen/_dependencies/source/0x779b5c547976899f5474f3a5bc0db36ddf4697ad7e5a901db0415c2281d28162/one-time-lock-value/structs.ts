@@ -80,6 +80,7 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
   static reified<T0 extends Reified<TypeArgument, any>>(
     T0: T0
   ): OneTimeLockValueReified<ToTypeArgument<T0>> {
+    const reifiedBcs = OneTimeLockValue.bcs(toBcs(T0))
     return {
       typeName: OneTimeLockValue.$typeName,
       fullTypeName: composeSuiType(
@@ -92,8 +93,8 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
       fromFields: (fields: Record<string, any>) => OneTimeLockValue.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         OneTimeLockValue.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => OneTimeLockValue.fromBcs(T0, data),
-      bcs: OneTimeLockValue.bcs(toBcs(T0)),
+      fromBcs: (data: Uint8Array) => OneTimeLockValue.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OneTimeLockValue.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => OneTimeLockValue.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -121,7 +122,7 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     return OneTimeLockValue.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T0 extends BcsType<any>>(T0: T0) =>
       bcs.struct(`OneTimeLockValue<${T0.name}>`, {
         id: UID.bcs,
@@ -129,6 +130,15 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
         lock_until_epoch: bcs.u64(),
         valid_before_epoch: bcs.u64(),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof OneTimeLockValue.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!OneTimeLockValue.cachedBcs) {
+      OneTimeLockValue.cachedBcs = OneTimeLockValue.instantiateBcs()
+    }
+    return OneTimeLockValue.cachedBcs
   }
 
   static fromFields<T0 extends Reified<TypeArgument, any>>(

@@ -371,6 +371,66 @@ export function liquidateColY(
   })
 }
 
+export interface RepayBadDebtXArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  repayment: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayBadDebtX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayBadDebtXArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::repay_bad_debt_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.supplyPool),
+      obj(tx, args.repayment),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayBadDebtYArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  repayment: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function repayBadDebtY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayBadDebtYArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::repay_bad_debt_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.supplyPool),
+      obj(tx, args.repayment),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface ReduceArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput

@@ -67,6 +67,7 @@ export class BorrowEvent implements StructClass {
   }
 
   static reified(): BorrowEventReified {
+    const reifiedBcs = BorrowEvent.bcs
     return {
       typeName: BorrowEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -78,8 +79,8 @@ export class BorrowEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowEvent.fromBcs(data),
-      bcs: BorrowEvent.bcs,
+      fromBcs: (data: Uint8Array) => BorrowEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEvent.fromSuiParsedData(content),
@@ -103,7 +104,7 @@ export class BorrowEvent implements StructClass {
     return BorrowEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowEvent', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -114,6 +115,15 @@ export class BorrowEvent implements StructClass {
       amount: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowEvent.cachedBcs) {
+      BorrowEvent.cachedBcs = BorrowEvent.instantiateBcs()
+    }
+    return BorrowEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowEvent {
@@ -268,6 +278,7 @@ export class BorrowEventV2 implements StructClass {
   }
 
   static reified(): BorrowEventV2Reified {
+    const reifiedBcs = BorrowEventV2.bcs
     return {
       typeName: BorrowEventV2.$typeName,
       fullTypeName: composeSuiType(
@@ -279,8 +290,8 @@ export class BorrowEventV2 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowEventV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowEventV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowEventV2.fromBcs(data),
-      bcs: BorrowEventV2.bcs,
+      fromBcs: (data: Uint8Array) => BorrowEventV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEventV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEventV2.fromSuiParsedData(content),
@@ -304,7 +315,7 @@ export class BorrowEventV2 implements StructClass {
     return BorrowEventV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowEventV2', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -316,6 +327,15 @@ export class BorrowEventV2 implements StructClass {
       borrow_fee: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowEventV2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowEventV2.cachedBcs) {
+      BorrowEventV2.cachedBcs = BorrowEventV2.instantiateBcs()
+    }
+    return BorrowEventV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowEventV2 {
@@ -480,6 +500,7 @@ export class BorrowEventV3 implements StructClass {
   }
 
   static reified(): BorrowEventV3Reified {
+    const reifiedBcs = BorrowEventV3.bcs
     return {
       typeName: BorrowEventV3.$typeName,
       fullTypeName: composeSuiType(
@@ -491,8 +512,8 @@ export class BorrowEventV3 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowEventV3.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowEventV3.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowEventV3.fromBcs(data),
-      bcs: BorrowEventV3.bcs,
+      fromBcs: (data: Uint8Array) => BorrowEventV3.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEventV3.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEventV3.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEventV3.fromSuiParsedData(content),
@@ -516,7 +537,7 @@ export class BorrowEventV3 implements StructClass {
     return BorrowEventV3.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowEventV3', {
       borrower: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -530,6 +551,15 @@ export class BorrowEventV3 implements StructClass {
       borrow_referral_fee: bcs.u64(),
       time: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowEventV3.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowEventV3.cachedBcs) {
+      BorrowEventV3.cachedBcs = BorrowEventV3.instantiateBcs()
+    }
+    return BorrowEventV3.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowEventV3 {

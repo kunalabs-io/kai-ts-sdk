@@ -69,6 +69,7 @@ export class MintAllowance<T extends PhantomTypeArgument> implements StructClass
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): MintAllowanceReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = MintAllowance.bcs
     return {
       typeName: MintAllowance.$typeName,
       fullTypeName: composeSuiType(
@@ -80,8 +81,8 @@ export class MintAllowance<T extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => MintAllowance.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => MintAllowance.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => MintAllowance.fromBcs(T, data),
-      bcs: MintAllowance.bcs,
+      fromBcs: (data: Uint8Array) => MintAllowance.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => MintAllowance.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => MintAllowance.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => MintAllowance.fromSuiParsedData(T, content),
@@ -107,10 +108,19 @@ export class MintAllowance<T extends PhantomTypeArgument> implements StructClass
     return MintAllowance.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('MintAllowance', {
       value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof MintAllowance.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!MintAllowance.cachedBcs) {
+      MintAllowance.cachedBcs = MintAllowance.instantiateBcs()
+    }
+    return MintAllowance.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(

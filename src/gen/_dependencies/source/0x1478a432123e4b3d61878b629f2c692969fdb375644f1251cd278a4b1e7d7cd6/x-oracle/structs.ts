@@ -75,6 +75,7 @@ export class X_ORACLE implements StructClass {
   }
 
   static reified(): X_ORACLEReified {
+    const reifiedBcs = X_ORACLE.bcs
     return {
       typeName: X_ORACLE.$typeName,
       fullTypeName: composeSuiType(
@@ -86,8 +87,8 @@ export class X_ORACLE implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => X_ORACLE.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => X_ORACLE.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => X_ORACLE.fromBcs(data),
-      bcs: X_ORACLE.bcs,
+      fromBcs: (data: Uint8Array) => X_ORACLE.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => X_ORACLE.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => X_ORACLE.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => X_ORACLE.fromSuiParsedData(content),
@@ -111,10 +112,19 @@ export class X_ORACLE implements StructClass {
     return X_ORACLE.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('X_ORACLE', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof X_ORACLE.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!X_ORACLE.cachedBcs) {
+      X_ORACLE.cachedBcs = X_ORACLE.instantiateBcs()
+    }
+    return X_ORACLE.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): X_ORACLE {
@@ -246,6 +256,7 @@ export class XOracle implements StructClass {
   }
 
   static reified(): XOracleReified {
+    const reifiedBcs = XOracle.bcs
     return {
       typeName: XOracle.$typeName,
       fullTypeName: composeSuiType(
@@ -257,8 +268,8 @@ export class XOracle implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => XOracle.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => XOracle.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => XOracle.fromBcs(data),
-      bcs: XOracle.bcs,
+      fromBcs: (data: Uint8Array) => XOracle.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => XOracle.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => XOracle.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => XOracle.fromSuiParsedData(content),
@@ -282,7 +293,7 @@ export class XOracle implements StructClass {
     return XOracle.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('XOracle', {
       id: UID.bcs,
       primary_price_update_policy: PriceUpdatePolicy.bcs,
@@ -290,6 +301,15 @@ export class XOracle implements StructClass {
       prices: Table.bcs,
       ema_prices: Table.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof XOracle.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!XOracle.cachedBcs) {
+      XOracle.cachedBcs = XOracle.instantiateBcs()
+    }
+    return XOracle.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): XOracle {
@@ -471,6 +491,7 @@ export class XOraclePolicyCap implements StructClass {
   }
 
   static reified(): XOraclePolicyCapReified {
+    const reifiedBcs = XOraclePolicyCap.bcs
     return {
       typeName: XOraclePolicyCap.$typeName,
       fullTypeName: composeSuiType(
@@ -482,8 +503,8 @@ export class XOraclePolicyCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => XOraclePolicyCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => XOraclePolicyCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => XOraclePolicyCap.fromBcs(data),
-      bcs: XOraclePolicyCap.bcs,
+      fromBcs: (data: Uint8Array) => XOraclePolicyCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => XOraclePolicyCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => XOraclePolicyCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => XOraclePolicyCap.fromSuiParsedData(content),
@@ -507,12 +528,21 @@ export class XOraclePolicyCap implements StructClass {
     return XOraclePolicyCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('XOraclePolicyCap', {
       id: UID.bcs,
       primary_price_update_policy_cap: PriceUpdatePolicyCap.bcs,
       secondary_price_update_policy_cap: PriceUpdatePolicyCap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof XOraclePolicyCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!XOraclePolicyCap.cachedBcs) {
+      XOraclePolicyCap.cachedBcs = XOraclePolicyCap.instantiateBcs()
+    }
+    return XOraclePolicyCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): XOraclePolicyCap {
@@ -673,6 +703,7 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): XOraclePriceUpdateRequestReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = XOraclePriceUpdateRequest.bcs
     return {
       typeName: XOraclePriceUpdateRequest.$typeName,
       fullTypeName: composeSuiType(
@@ -685,8 +716,9 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
       fromFields: (fields: Record<string, any>) => XOraclePriceUpdateRequest.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         XOraclePriceUpdateRequest.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => XOraclePriceUpdateRequest.fromBcs(T0, data),
-      bcs: XOraclePriceUpdateRequest.bcs,
+      fromBcs: (data: Uint8Array) =>
+        XOraclePriceUpdateRequest.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => XOraclePriceUpdateRequest.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => XOraclePriceUpdateRequest.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -715,11 +747,21 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     return XOraclePriceUpdateRequest.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('XOraclePriceUpdateRequest', {
       primary_price_update_request: PriceUpdateRequest.bcs,
       secondary_price_update_request: PriceUpdateRequest.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof XOraclePriceUpdateRequest.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!XOraclePriceUpdateRequest.cachedBcs) {
+      XOraclePriceUpdateRequest.cachedBcs = XOraclePriceUpdateRequest.instantiateBcs()
+    }
+    return XOraclePriceUpdateRequest.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(

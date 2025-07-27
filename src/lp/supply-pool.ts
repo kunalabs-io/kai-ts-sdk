@@ -41,6 +41,8 @@ import {
   wBTC,
   LBTC,
   klWBTC,
+  xBTC,
+  klXBTC,
 } from '../coin-info'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
@@ -415,5 +417,10 @@ export const SUPPLY_POOL_INFOS = {
     id: '0xae80d793d8fc9524ee98fde1bae80c2204819e66500a89f27021ef981f540d07',
     T: LBTC,
     ST: klLBTC,
+  }),
+  xBTC: new SupplyPoolInfo({
+    id: '0xae06ce8a8ba18aa3c67d45c6ccc7dae7d0551f36dc1fdcc6093521ce9bd154e2',
+    T: xBTC,
+    ST: klXBTC,
   }),
 }

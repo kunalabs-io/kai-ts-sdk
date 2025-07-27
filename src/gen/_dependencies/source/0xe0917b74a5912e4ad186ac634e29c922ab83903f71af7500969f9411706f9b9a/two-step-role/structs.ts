@@ -74,6 +74,7 @@ export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): TwoStepRoleReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = TwoStepRole.bcs
     return {
       typeName: TwoStepRole.$typeName,
       fullTypeName: composeSuiType(
@@ -85,8 +86,8 @@ export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TwoStepRole.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TwoStepRole.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => TwoStepRole.fromBcs(T, data),
-      bcs: TwoStepRole.bcs,
+      fromBcs: (data: Uint8Array) => TwoStepRole.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TwoStepRole.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TwoStepRole.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => TwoStepRole.fromSuiParsedData(T, content),
@@ -112,7 +113,7 @@ export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
     return TwoStepRole.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TwoStepRole', {
       active_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -125,6 +126,15 @@ export class TwoStepRole<T extends PhantomTypeArgument> implements StructClass {
         })
       ),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TwoStepRole.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TwoStepRole.cachedBcs) {
+      TwoStepRole.cachedBcs = TwoStepRole.instantiateBcs()
+    }
+    return TwoStepRole.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -311,6 +321,7 @@ export class RoleTransferStarted<T extends PhantomTypeArgument> implements Struc
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): RoleTransferStartedReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = RoleTransferStarted.bcs
     return {
       typeName: RoleTransferStarted.$typeName,
       fullTypeName: composeSuiType(
@@ -323,8 +334,8 @@ export class RoleTransferStarted<T extends PhantomTypeArgument> implements Struc
       fromFields: (fields: Record<string, any>) => RoleTransferStarted.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RoleTransferStarted.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => RoleTransferStarted.fromBcs(T, data),
-      bcs: RoleTransferStarted.bcs,
+      fromBcs: (data: Uint8Array) => RoleTransferStarted.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RoleTransferStarted.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => RoleTransferStarted.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -352,7 +363,7 @@ export class RoleTransferStarted<T extends PhantomTypeArgument> implements Struc
     return RoleTransferStarted.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RoleTransferStarted', {
       old_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -363,6 +374,15 @@ export class RoleTransferStarted<T extends PhantomTypeArgument> implements Struc
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RoleTransferStarted.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RoleTransferStarted.cachedBcs) {
+      RoleTransferStarted.cachedBcs = RoleTransferStarted.instantiateBcs()
+    }
+    return RoleTransferStarted.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -543,6 +563,7 @@ export class RoleTransferred<T extends PhantomTypeArgument> implements StructCla
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): RoleTransferredReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = RoleTransferred.bcs
     return {
       typeName: RoleTransferred.$typeName,
       fullTypeName: composeSuiType(
@@ -554,8 +575,8 @@ export class RoleTransferred<T extends PhantomTypeArgument> implements StructCla
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => RoleTransferred.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RoleTransferred.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => RoleTransferred.fromBcs(T, data),
-      bcs: RoleTransferred.bcs,
+      fromBcs: (data: Uint8Array) => RoleTransferred.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RoleTransferred.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => RoleTransferred.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => RoleTransferred.fromSuiParsedData(T, content),
@@ -581,7 +602,7 @@ export class RoleTransferred<T extends PhantomTypeArgument> implements StructCla
     return RoleTransferred.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RoleTransferred', {
       old_address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -592,6 +613,15 @@ export class RoleTransferred<T extends PhantomTypeArgument> implements StructCla
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RoleTransferred.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RoleTransferred.cachedBcs) {
+      RoleTransferred.cachedBcs = RoleTransferred.instantiateBcs()
+    }
+    return RoleTransferred.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(

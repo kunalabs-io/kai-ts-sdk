@@ -83,6 +83,7 @@ export class SystemParameters implements StructClass {
   }
 
   static reified(): SystemParametersReified {
+    const reifiedBcs = SystemParameters.bcs
     return {
       typeName: SystemParameters.$typeName,
       fullTypeName: composeSuiType(
@@ -94,8 +95,8 @@ export class SystemParameters implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SystemParameters.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SystemParameters.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SystemParameters.fromBcs(data),
-      bcs: SystemParameters.bcs,
+      fromBcs: (data: Uint8Array) => SystemParameters.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SystemParameters.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SystemParameters.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SystemParameters.fromSuiParsedData(content),
@@ -119,7 +120,7 @@ export class SystemParameters implements StructClass {
     return SystemParameters.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SystemParameters', {
       epoch_duration_ms: bcs.u64(),
       stake_subsidy_start_epoch: bcs.u64(),
@@ -130,6 +131,15 @@ export class SystemParameters implements StructClass {
       validator_low_stake_grace_period: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SystemParameters.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SystemParameters.cachedBcs) {
+      SystemParameters.cachedBcs = SystemParameters.instantiateBcs()
+    }
+    return SystemParameters.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SystemParameters {
@@ -329,6 +339,7 @@ export class SystemParametersV2 implements StructClass {
   }
 
   static reified(): SystemParametersV2Reified {
+    const reifiedBcs = SystemParametersV2.bcs
     return {
       typeName: SystemParametersV2.$typeName,
       fullTypeName: composeSuiType(
@@ -340,8 +351,8 @@ export class SystemParametersV2 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SystemParametersV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SystemParametersV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SystemParametersV2.fromBcs(data),
-      bcs: SystemParametersV2.bcs,
+      fromBcs: (data: Uint8Array) => SystemParametersV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SystemParametersV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SystemParametersV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SystemParametersV2.fromSuiParsedData(content),
@@ -365,7 +376,7 @@ export class SystemParametersV2 implements StructClass {
     return SystemParametersV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SystemParametersV2', {
       epoch_duration_ms: bcs.u64(),
       stake_subsidy_start_epoch: bcs.u64(),
@@ -377,6 +388,15 @@ export class SystemParametersV2 implements StructClass {
       validator_low_stake_grace_period: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SystemParametersV2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SystemParametersV2.cachedBcs) {
+      SystemParametersV2.cachedBcs = SystemParametersV2.instantiateBcs()
+    }
+    return SystemParametersV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SystemParametersV2 {
@@ -601,6 +621,7 @@ export class SuiSystemStateInner implements StructClass {
   }
 
   static reified(): SuiSystemStateInnerReified {
+    const reifiedBcs = SuiSystemStateInner.bcs
     return {
       typeName: SuiSystemStateInner.$typeName,
       fullTypeName: composeSuiType(
@@ -612,8 +633,8 @@ export class SuiSystemStateInner implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => SuiSystemStateInner.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => SuiSystemStateInner.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SuiSystemStateInner.fromBcs(data),
-      bcs: SuiSystemStateInner.bcs,
+      fromBcs: (data: Uint8Array) => SuiSystemStateInner.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SuiSystemStateInner.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SuiSystemStateInner.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SuiSystemStateInner.fromSuiParsedData(content),
@@ -637,7 +658,7 @@ export class SuiSystemStateInner implements StructClass {
     return SuiSystemStateInner.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SuiSystemStateInner', {
       epoch: bcs.u64(),
       protocol_version: bcs.u64(),
@@ -667,6 +688,15 @@ export class SuiSystemStateInner implements StructClass {
       epoch_start_timestamp_ms: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SuiSystemStateInner.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SuiSystemStateInner.cachedBcs) {
+      SuiSystemStateInner.cachedBcs = SuiSystemStateInner.instantiateBcs()
+    }
+    return SuiSystemStateInner.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SuiSystemStateInner {
@@ -937,6 +967,7 @@ export class SuiSystemStateInnerV2 implements StructClass {
   }
 
   static reified(): SuiSystemStateInnerV2Reified {
+    const reifiedBcs = SuiSystemStateInnerV2.bcs
     return {
       typeName: SuiSystemStateInnerV2.$typeName,
       fullTypeName: composeSuiType(
@@ -949,8 +980,8 @@ export class SuiSystemStateInnerV2 implements StructClass {
       fromFields: (fields: Record<string, any>) => SuiSystemStateInnerV2.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SuiSystemStateInnerV2.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SuiSystemStateInnerV2.fromBcs(data),
-      bcs: SuiSystemStateInnerV2.bcs,
+      fromBcs: (data: Uint8Array) => SuiSystemStateInnerV2.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SuiSystemStateInnerV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SuiSystemStateInnerV2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -976,7 +1007,7 @@ export class SuiSystemStateInnerV2 implements StructClass {
     return SuiSystemStateInnerV2.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SuiSystemStateInnerV2', {
       epoch: bcs.u64(),
       protocol_version: bcs.u64(),
@@ -1006,6 +1037,15 @@ export class SuiSystemStateInnerV2 implements StructClass {
       epoch_start_timestamp_ms: bcs.u64(),
       extra_fields: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SuiSystemStateInnerV2.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SuiSystemStateInnerV2.cachedBcs) {
+      SuiSystemStateInnerV2.cachedBcs = SuiSystemStateInnerV2.instantiateBcs()
+    }
+    return SuiSystemStateInnerV2.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SuiSystemStateInnerV2 {
@@ -1263,6 +1303,7 @@ export class SystemEpochInfoEvent implements StructClass {
   }
 
   static reified(): SystemEpochInfoEventReified {
+    const reifiedBcs = SystemEpochInfoEvent.bcs
     return {
       typeName: SystemEpochInfoEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1275,8 +1316,8 @@ export class SystemEpochInfoEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => SystemEpochInfoEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SystemEpochInfoEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SystemEpochInfoEvent.fromBcs(data),
-      bcs: SystemEpochInfoEvent.bcs,
+      fromBcs: (data: Uint8Array) => SystemEpochInfoEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SystemEpochInfoEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SystemEpochInfoEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1302,7 +1343,7 @@ export class SystemEpochInfoEvent implements StructClass {
     return SystemEpochInfoEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SystemEpochInfoEvent', {
       epoch: bcs.u64(),
       protocol_version: bcs.u64(),
@@ -1317,6 +1358,15 @@ export class SystemEpochInfoEvent implements StructClass {
       total_stake_rewards_distributed: bcs.u64(),
       leftover_storage_fund_inflow: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SystemEpochInfoEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!SystemEpochInfoEvent.cachedBcs) {
+      SystemEpochInfoEvent.cachedBcs = SystemEpochInfoEvent.instantiateBcs()
+    }
+    return SystemEpochInfoEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SystemEpochInfoEvent {

@@ -60,6 +60,7 @@ export class BaseAssetActiveStates implements StructClass {
   }
 
   static reified(): BaseAssetActiveStatesReified {
+    const reifiedBcs = BaseAssetActiveStates.bcs
     return {
       typeName: BaseAssetActiveStates.$typeName,
       fullTypeName: composeSuiType(
@@ -72,8 +73,8 @@ export class BaseAssetActiveStates implements StructClass {
       fromFields: (fields: Record<string, any>) => BaseAssetActiveStates.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BaseAssetActiveStates.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BaseAssetActiveStates.fromBcs(data),
-      bcs: BaseAssetActiveStates.bcs,
+      fromBcs: (data: Uint8Array) => BaseAssetActiveStates.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BaseAssetActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BaseAssetActiveStates.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -99,10 +100,19 @@ export class BaseAssetActiveStates implements StructClass {
     return BaseAssetActiveStates.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BaseAssetActiveStates', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BaseAssetActiveStates.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BaseAssetActiveStates.cachedBcs) {
+      BaseAssetActiveStates.cachedBcs = BaseAssetActiveStates.instantiateBcs()
+    }
+    return BaseAssetActiveStates.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BaseAssetActiveStates {
@@ -231,6 +241,7 @@ export class CollateralActiveStates implements StructClass {
   }
 
   static reified(): CollateralActiveStatesReified {
+    const reifiedBcs = CollateralActiveStates.bcs
     return {
       typeName: CollateralActiveStates.$typeName,
       fullTypeName: composeSuiType(
@@ -243,8 +254,8 @@ export class CollateralActiveStates implements StructClass {
       fromFields: (fields: Record<string, any>) => CollateralActiveStates.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CollateralActiveStates.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CollateralActiveStates.fromBcs(data),
-      bcs: CollateralActiveStates.bcs,
+      fromBcs: (data: Uint8Array) => CollateralActiveStates.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralActiveStates.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -270,10 +281,19 @@ export class CollateralActiveStates implements StructClass {
     return CollateralActiveStates.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollateralActiveStates', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollateralActiveStates.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollateralActiveStates.cachedBcs) {
+      CollateralActiveStates.cachedBcs = CollateralActiveStates.instantiateBcs()
+    }
+    return CollateralActiveStates.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CollateralActiveStates {
@@ -402,6 +422,7 @@ export class AssetActiveStates implements StructClass {
   }
 
   static reified(): AssetActiveStatesReified {
+    const reifiedBcs = AssetActiveStates.bcs
     return {
       typeName: AssetActiveStates.$typeName,
       fullTypeName: composeSuiType(
@@ -413,8 +434,8 @@ export class AssetActiveStates implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AssetActiveStates.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AssetActiveStates.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AssetActiveStates.fromBcs(data),
-      bcs: AssetActiveStates.bcs,
+      fromBcs: (data: Uint8Array) => AssetActiveStates.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AssetActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AssetActiveStates.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AssetActiveStates.fromSuiParsedData(content),
@@ -438,11 +459,20 @@ export class AssetActiveStates implements StructClass {
     return AssetActiveStates.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AssetActiveStates', {
       base: WitTable.bcs(TypeName.bcs),
       collateral: WitTable.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AssetActiveStates.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AssetActiveStates.cachedBcs) {
+      AssetActiveStates.cachedBcs = AssetActiveStates.instantiateBcs()
+    }
+    return AssetActiveStates.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AssetActiveStates {

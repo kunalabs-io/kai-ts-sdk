@@ -66,6 +66,7 @@ export class TokenBridgeMessage implements StructClass {
   }
 
   static reified(): TokenBridgeMessageReified {
+    const reifiedBcs = TokenBridgeMessage.bcs
     return {
       typeName: TokenBridgeMessage.$typeName,
       fullTypeName: composeSuiType(
@@ -77,8 +78,8 @@ export class TokenBridgeMessage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => TokenBridgeMessage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => TokenBridgeMessage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenBridgeMessage.fromBcs(data),
-      bcs: TokenBridgeMessage.bcs,
+      fromBcs: (data: Uint8Array) => TokenBridgeMessage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenBridgeMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenBridgeMessage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TokenBridgeMessage.fromSuiParsedData(content),
@@ -102,13 +103,22 @@ export class TokenBridgeMessage implements StructClass {
     return TokenBridgeMessage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenBridgeMessage', {
       emitter_chain: bcs.u16(),
       emitter_address: ExternalAddress.bcs,
       sequence: bcs.u64(),
       payload: bcs.vector(bcs.u8()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenBridgeMessage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenBridgeMessage.cachedBcs) {
+      TokenBridgeMessage.cachedBcs = TokenBridgeMessage.instantiateBcs()
+    }
+    return TokenBridgeMessage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenBridgeMessage {

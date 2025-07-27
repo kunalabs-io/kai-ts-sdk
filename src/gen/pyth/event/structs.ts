@@ -57,6 +57,7 @@ export class PythInitializationEvent implements StructClass {
   }
 
   static reified(): PythInitializationEventReified {
+    const reifiedBcs = PythInitializationEvent.bcs
     return {
       typeName: PythInitializationEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -69,8 +70,8 @@ export class PythInitializationEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => PythInitializationEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PythInitializationEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PythInitializationEvent.fromBcs(data),
-      bcs: PythInitializationEvent.bcs,
+      fromBcs: (data: Uint8Array) => PythInitializationEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PythInitializationEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythInitializationEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -96,10 +97,19 @@ export class PythInitializationEvent implements StructClass {
     return PythInitializationEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PythInitializationEvent', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PythInitializationEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PythInitializationEvent.cachedBcs) {
+      PythInitializationEvent.cachedBcs = PythInitializationEvent.instantiateBcs()
+    }
+    return PythInitializationEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PythInitializationEvent {
@@ -230,6 +240,7 @@ export class PriceFeedUpdateEvent implements StructClass {
   }
 
   static reified(): PriceFeedUpdateEventReified {
+    const reifiedBcs = PriceFeedUpdateEvent.bcs
     return {
       typeName: PriceFeedUpdateEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -242,8 +253,8 @@ export class PriceFeedUpdateEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => PriceFeedUpdateEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PriceFeedUpdateEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PriceFeedUpdateEvent.fromBcs(data),
-      bcs: PriceFeedUpdateEvent.bcs,
+      fromBcs: (data: Uint8Array) => PriceFeedUpdateEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceFeedUpdateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceFeedUpdateEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -269,11 +280,20 @@ export class PriceFeedUpdateEvent implements StructClass {
     return PriceFeedUpdateEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PriceFeedUpdateEvent', {
       price_feed: PriceFeed.bcs,
       timestamp: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PriceFeedUpdateEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PriceFeedUpdateEvent.cachedBcs) {
+      PriceFeedUpdateEvent.cachedBcs = PriceFeedUpdateEvent.instantiateBcs()
+    }
+    return PriceFeedUpdateEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PriceFeedUpdateEvent {

@@ -104,6 +104,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
   >(X: X, Y: Y): RebalanceReceiptReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
+    const reifiedBcs = RebalanceReceipt.bcs
     return {
       typeName: RebalanceReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -119,8 +120,8 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
       fromFields: (fields: Record<string, any>) => RebalanceReceipt.fromFields([X, Y], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         RebalanceReceipt.fromFieldsWithTypes([X, Y], item),
-      fromBcs: (data: Uint8Array) => RebalanceReceipt.fromBcs([X, Y], data),
-      bcs: RebalanceReceipt.bcs,
+      fromBcs: (data: Uint8Array) => RebalanceReceipt.fromFields([X, Y], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceReceipt.fromJSONField([X, Y], field),
       fromJSON: (json: Record<string, any>) => RebalanceReceipt.fromJSON([X, Y], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -154,7 +155,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     return RebalanceReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RebalanceReceipt', {
       position_id: ID.bcs,
       batch_swap_to_x: bcs.vector(BatchSwapClaim.bcs),
@@ -164,6 +165,15 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
       collected_x: Balance.bcs,
       collected_y: Balance.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RebalanceReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RebalanceReceipt.cachedBcs) {
+      RebalanceReceipt.cachedBcs = RebalanceReceipt.instantiateBcs()
+    }
+    return RebalanceReceipt.cachedBcs
   }
 
   static fromFields<
@@ -423,6 +433,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     A: A,
     B: B
   ): WrappedFlashSwapReceiptReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    const reifiedBcs = WrappedFlashSwapReceipt.bcs
     return {
       typeName: WrappedFlashSwapReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -439,8 +450,9 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
         WrappedFlashSwapReceipt.fromFields([A, B], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WrappedFlashSwapReceipt.fromFieldsWithTypes([A, B], item),
-      fromBcs: (data: Uint8Array) => WrappedFlashSwapReceipt.fromBcs([A, B], data),
-      bcs: WrappedFlashSwapReceipt.bcs,
+      fromBcs: (data: Uint8Array) =>
+        WrappedFlashSwapReceipt.fromFields([A, B], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedFlashSwapReceipt.fromJSONField([A, B], field),
       fromJSON: (json: Record<string, any>) => WrappedFlashSwapReceipt.fromJSON([A, B], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -477,10 +489,19 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     return WrappedFlashSwapReceipt.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WrappedFlashSwapReceipt', {
       inner: Option.bcs(FlashSwapReceipt.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WrappedFlashSwapReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WrappedFlashSwapReceipt.cachedBcs) {
+      WrappedFlashSwapReceipt.cachedBcs = WrappedFlashSwapReceipt.instantiateBcs()
+    }
+    return WrappedFlashSwapReceipt.cachedBcs
   }
 
   static fromFields<

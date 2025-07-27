@@ -52,6 +52,7 @@ export class ACL implements StructClass {
   }
 
   static reified(): ACLReified {
+    const reifiedBcs = ACL.bcs
     return {
       typeName: ACL.$typeName,
       fullTypeName: composeSuiType(ACL.$typeName, ...[]) as `${typeof PKG_V1}::acl::ACL`,
@@ -60,8 +61,8 @@ export class ACL implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ACL.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ACL.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACL.fromBcs(data),
-      bcs: ACL.bcs,
+      fromBcs: (data: Uint8Array) => ACL.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ACL.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACL.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACL.fromSuiParsedData(content),
@@ -85,7 +86,7 @@ export class ACL implements StructClass {
     return ACL.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ACL', {
       permissions: LinkedTable.bcs(
         bcs.bytes(32).transform({
@@ -94,6 +95,15 @@ export class ACL implements StructClass {
         })
       ),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ACL.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ACL.cachedBcs) {
+      ACL.cachedBcs = ACL.instantiateBcs()
+    }
+    return ACL.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ACL {
@@ -229,6 +239,7 @@ export class Member implements StructClass {
   }
 
   static reified(): MemberReified {
+    const reifiedBcs = Member.bcs
     return {
       typeName: Member.$typeName,
       fullTypeName: composeSuiType(Member.$typeName, ...[]) as `${typeof PKG_V1}::acl::Member`,
@@ -237,8 +248,8 @@ export class Member implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Member.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Member.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Member.fromBcs(data),
-      bcs: Member.bcs,
+      fromBcs: (data: Uint8Array) => Member.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Member.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Member.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Member.fromSuiParsedData(content),
@@ -262,7 +273,7 @@ export class Member implements StructClass {
     return Member.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Member', {
       address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -270,6 +281,15 @@ export class Member implements StructClass {
       }),
       permission: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Member.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Member.cachedBcs) {
+      Member.cachedBcs = Member.instantiateBcs()
+    }
+    return Member.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Member {

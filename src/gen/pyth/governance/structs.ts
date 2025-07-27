@@ -66,6 +66,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
   }
 
   static reified(): WormholeVAAVerificationReceiptReified {
+    const reifiedBcs = WormholeVAAVerificationReceipt.bcs
     return {
       typeName: WormholeVAAVerificationReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -79,8 +80,9 @@ export class WormholeVAAVerificationReceipt implements StructClass {
         WormholeVAAVerificationReceipt.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WormholeVAAVerificationReceipt.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WormholeVAAVerificationReceipt.fromBcs(data),
-      bcs: WormholeVAAVerificationReceipt.bcs,
+      fromBcs: (data: Uint8Array) =>
+        WormholeVAAVerificationReceipt.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WormholeVAAVerificationReceipt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WormholeVAAVerificationReceipt.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -107,12 +109,23 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     return WormholeVAAVerificationReceipt.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WormholeVAAVerificationReceipt', {
       payload: bcs.vector(bcs.u8()),
       digest: Bytes32.bcs,
       sequence: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof WormholeVAAVerificationReceipt.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!WormholeVAAVerificationReceipt.cachedBcs) {
+      WormholeVAAVerificationReceipt.cachedBcs = WormholeVAAVerificationReceipt.instantiateBcs()
+    }
+    return WormholeVAAVerificationReceipt.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WormholeVAAVerificationReceipt {

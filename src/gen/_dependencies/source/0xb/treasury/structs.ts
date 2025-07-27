@@ -66,6 +66,7 @@ export class BridgeTreasury implements StructClass {
   }
 
   static reified(): BridgeTreasuryReified {
+    const reifiedBcs = BridgeTreasury.bcs
     return {
       typeName: BridgeTreasury.$typeName,
       fullTypeName: composeSuiType(
@@ -77,8 +78,8 @@ export class BridgeTreasury implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeTreasury.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeTreasury.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeTreasury.fromBcs(data),
-      bcs: BridgeTreasury.bcs,
+      fromBcs: (data: Uint8Array) => BridgeTreasury.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeTreasury.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeTreasury.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeTreasury.fromSuiParsedData(content),
@@ -102,13 +103,22 @@ export class BridgeTreasury implements StructClass {
     return BridgeTreasury.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeTreasury', {
       treasuries: ObjectBag.bcs,
       supported_tokens: VecMap.bcs(TypeName.bcs, BridgeTokenMetadata.bcs),
       id_token_type_map: VecMap.bcs(bcs.u8(), TypeName.bcs),
       waiting_room: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeTreasury.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeTreasury.cachedBcs) {
+      BridgeTreasury.cachedBcs = BridgeTreasury.instantiateBcs()
+    }
+    return BridgeTreasury.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeTreasury {
@@ -271,6 +281,7 @@ export class BridgeTokenMetadata implements StructClass {
   }
 
   static reified(): BridgeTokenMetadataReified {
+    const reifiedBcs = BridgeTokenMetadata.bcs
     return {
       typeName: BridgeTokenMetadata.$typeName,
       fullTypeName: composeSuiType(
@@ -282,8 +293,8 @@ export class BridgeTokenMetadata implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BridgeTokenMetadata.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BridgeTokenMetadata.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BridgeTokenMetadata.fromBcs(data),
-      bcs: BridgeTokenMetadata.bcs,
+      fromBcs: (data: Uint8Array) => BridgeTokenMetadata.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BridgeTokenMetadata.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BridgeTokenMetadata.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BridgeTokenMetadata.fromSuiParsedData(content),
@@ -307,13 +318,22 @@ export class BridgeTokenMetadata implements StructClass {
     return BridgeTokenMetadata.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BridgeTokenMetadata', {
       id: bcs.u8(),
       decimal_multiplier: bcs.u64(),
       notional_value: bcs.u64(),
       native_token: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BridgeTokenMetadata.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BridgeTokenMetadata.cachedBcs) {
+      BridgeTokenMetadata.cachedBcs = BridgeTokenMetadata.instantiateBcs()
+    }
+    return BridgeTokenMetadata.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BridgeTokenMetadata {
@@ -458,6 +478,7 @@ export class ForeignTokenRegistration implements StructClass {
   }
 
   static reified(): ForeignTokenRegistrationReified {
+    const reifiedBcs = ForeignTokenRegistration.bcs
     return {
       typeName: ForeignTokenRegistration.$typeName,
       fullTypeName: composeSuiType(
@@ -470,8 +491,8 @@ export class ForeignTokenRegistration implements StructClass {
       fromFields: (fields: Record<string, any>) => ForeignTokenRegistration.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ForeignTokenRegistration.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ForeignTokenRegistration.fromBcs(data),
-      bcs: ForeignTokenRegistration.bcs,
+      fromBcs: (data: Uint8Array) => ForeignTokenRegistration.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ForeignTokenRegistration.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ForeignTokenRegistration.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -497,12 +518,21 @@ export class ForeignTokenRegistration implements StructClass {
     return ForeignTokenRegistration.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ForeignTokenRegistration', {
       type_name: TypeName.bcs,
       uc: UpgradeCap.bcs,
       decimal: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ForeignTokenRegistration.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ForeignTokenRegistration.cachedBcs) {
+      ForeignTokenRegistration.cachedBcs = ForeignTokenRegistration.instantiateBcs()
+    }
+    return ForeignTokenRegistration.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ForeignTokenRegistration {
@@ -647,6 +677,7 @@ export class UpdateTokenPriceEvent implements StructClass {
   }
 
   static reified(): UpdateTokenPriceEventReified {
+    const reifiedBcs = UpdateTokenPriceEvent.bcs
     return {
       typeName: UpdateTokenPriceEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -659,8 +690,8 @@ export class UpdateTokenPriceEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => UpdateTokenPriceEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpdateTokenPriceEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateTokenPriceEvent.fromBcs(data),
-      bcs: UpdateTokenPriceEvent.bcs,
+      fromBcs: (data: Uint8Array) => UpdateTokenPriceEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateTokenPriceEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateTokenPriceEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -686,11 +717,20 @@ export class UpdateTokenPriceEvent implements StructClass {
     return UpdateTokenPriceEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateTokenPriceEvent', {
       token_id: bcs.u8(),
       new_price: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateTokenPriceEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateTokenPriceEvent.cachedBcs) {
+      UpdateTokenPriceEvent.cachedBcs = UpdateTokenPriceEvent.instantiateBcs()
+    }
+    return UpdateTokenPriceEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateTokenPriceEvent {
@@ -832,6 +872,7 @@ export class NewTokenEvent implements StructClass {
   }
 
   static reified(): NewTokenEventReified {
+    const reifiedBcs = NewTokenEvent.bcs
     return {
       typeName: NewTokenEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -843,8 +884,8 @@ export class NewTokenEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => NewTokenEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => NewTokenEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => NewTokenEvent.fromBcs(data),
-      bcs: NewTokenEvent.bcs,
+      fromBcs: (data: Uint8Array) => NewTokenEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => NewTokenEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => NewTokenEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => NewTokenEvent.fromSuiParsedData(content),
@@ -868,7 +909,7 @@ export class NewTokenEvent implements StructClass {
     return NewTokenEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('NewTokenEvent', {
       token_id: bcs.u8(),
       type_name: TypeName.bcs,
@@ -876,6 +917,15 @@ export class NewTokenEvent implements StructClass {
       decimal_multiplier: bcs.u64(),
       notional_value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof NewTokenEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!NewTokenEvent.cachedBcs) {
+      NewTokenEvent.cachedBcs = NewTokenEvent.instantiateBcs()
+    }
+    return NewTokenEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): NewTokenEvent {
@@ -1024,6 +1074,7 @@ export class TokenRegistrationEvent implements StructClass {
   }
 
   static reified(): TokenRegistrationEventReified {
+    const reifiedBcs = TokenRegistrationEvent.bcs
     return {
       typeName: TokenRegistrationEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1036,8 +1087,8 @@ export class TokenRegistrationEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => TokenRegistrationEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         TokenRegistrationEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => TokenRegistrationEvent.fromBcs(data),
-      bcs: TokenRegistrationEvent.bcs,
+      fromBcs: (data: Uint8Array) => TokenRegistrationEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenRegistrationEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenRegistrationEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1063,12 +1114,21 @@ export class TokenRegistrationEvent implements StructClass {
     return TokenRegistrationEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('TokenRegistrationEvent', {
       type_name: TypeName.bcs,
       decimal: bcs.u8(),
       native_token: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof TokenRegistrationEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!TokenRegistrationEvent.cachedBcs) {
+      TokenRegistrationEvent.cachedBcs = TokenRegistrationEvent.instantiateBcs()
+    }
+    return TokenRegistrationEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): TokenRegistrationEvent {

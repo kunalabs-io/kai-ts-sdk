@@ -64,6 +64,7 @@ export class AdminCap implements StructClass {
   }
 
   static reified(): AdminCapReified {
+    const reifiedBcs = AdminCap.bcs
     return {
       typeName: AdminCap.$typeName,
       fullTypeName: composeSuiType(
@@ -75,8 +76,8 @@ export class AdminCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AdminCap.fromBcs(data),
-      bcs: AdminCap.bcs,
+      fromBcs: (data: Uint8Array) => AdminCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
@@ -100,10 +101,19 @@ export class AdminCap implements StructClass {
     return AdminCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminCap', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminCap.cachedBcs) {
+      AdminCap.cachedBcs = AdminCap.instantiateBcs()
+    }
+    return AdminCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AdminCap {
@@ -242,6 +252,7 @@ export class Strategy implements StructClass {
   }
 
   static reified(): StrategyReified {
+    const reifiedBcs = Strategy.bcs
     return {
       typeName: Strategy.$typeName,
       fullTypeName: composeSuiType(
@@ -253,8 +264,8 @@ export class Strategy implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Strategy.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Strategy.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Strategy.fromBcs(data),
-      bcs: Strategy.bcs,
+      fromBcs: (data: Uint8Array) => Strategy.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Strategy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Strategy.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Strategy.fromSuiParsedData(content),
@@ -278,7 +289,7 @@ export class Strategy implements StructClass {
     return Strategy.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Strategy', {
       id: UID.bcs,
       admin_cap_id: ID.bcs,
@@ -289,6 +300,15 @@ export class Strategy implements StructClass {
       collected_profit_sui: Balance.bcs,
       version: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Strategy.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Strategy.cachedBcs) {
+      Strategy.cachedBcs = Strategy.instantiateBcs()
+    }
+    return Strategy.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Strategy {

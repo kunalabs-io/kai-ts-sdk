@@ -77,6 +77,7 @@ export class CalculatedRouterSwapResult implements StructClass {
   }
 
   static reified(): CalculatedRouterSwapResultReified {
+    const reifiedBcs = CalculatedRouterSwapResult.bcs
     return {
       typeName: CalculatedRouterSwapResult.$typeName,
       fullTypeName: composeSuiType(
@@ -89,8 +90,8 @@ export class CalculatedRouterSwapResult implements StructClass {
       fromFields: (fields: Record<string, any>) => CalculatedRouterSwapResult.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CalculatedRouterSwapResult.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CalculatedRouterSwapResult.fromBcs(data),
-      bcs: CalculatedRouterSwapResult.bcs,
+      fromBcs: (data: Uint8Array) => CalculatedRouterSwapResult.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CalculatedRouterSwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CalculatedRouterSwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -116,7 +117,7 @@ export class CalculatedRouterSwapResult implements StructClass {
     return CalculatedRouterSwapResult.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CalculatedRouterSwapResult', {
       amount_in: bcs.u64(),
       amount_medium: bcs.u64(),
@@ -127,6 +128,16 @@ export class CalculatedRouterSwapResult implements StructClass {
       target_sqrt_price_ab: bcs.u128(),
       target_sqrt_price_cd: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CalculatedRouterSwapResult.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!CalculatedRouterSwapResult.cachedBcs) {
+      CalculatedRouterSwapResult.cachedBcs = CalculatedRouterSwapResult.instantiateBcs()
+    }
+    return CalculatedRouterSwapResult.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CalculatedRouterSwapResult {
@@ -288,6 +299,7 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
   }
 
   static reified(): CalculatedRouterSwapResultEventReified {
+    const reifiedBcs = CalculatedRouterSwapResultEvent.bcs
     return {
       typeName: CalculatedRouterSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -301,8 +313,9 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
         CalculatedRouterSwapResultEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CalculatedRouterSwapResultEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CalculatedRouterSwapResultEvent.fromBcs(data),
-      bcs: CalculatedRouterSwapResultEvent.bcs,
+      fromBcs: (data: Uint8Array) =>
+        CalculatedRouterSwapResultEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CalculatedRouterSwapResultEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CalculatedRouterSwapResultEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -329,10 +342,21 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
     return CalculatedRouterSwapResultEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CalculatedRouterSwapResultEvent', {
       data: CalculatedRouterSwapResult.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof CalculatedRouterSwapResultEvent.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!CalculatedRouterSwapResultEvent.cachedBcs) {
+      CalculatedRouterSwapResultEvent.cachedBcs = CalculatedRouterSwapResultEvent.instantiateBcs()
+    }
+    return CalculatedRouterSwapResultEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CalculatedRouterSwapResultEvent {

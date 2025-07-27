@@ -101,6 +101,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
   >(A: A, B: B): BatchSwapReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    const reifiedBcs = BatchSwap.bcs
     return {
       typeName: BatchSwap.$typeName,
       fullTypeName: composeSuiType(
@@ -115,8 +116,8 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       reifiedTypeArgs: [A, B],
       fromFields: (fields: Record<string, any>) => BatchSwap.fromFields([A, B], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BatchSwap.fromFieldsWithTypes([A, B], item),
-      fromBcs: (data: Uint8Array) => BatchSwap.fromBcs([A, B], data),
-      bcs: BatchSwap.bcs,
+      fromBcs: (data: Uint8Array) => BatchSwap.fromFields([A, B], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchSwap.fromJSONField([A, B], field),
       fromJSON: (json: Record<string, any>) => BatchSwap.fromJSON([A, B], json),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwap.fromSuiParsedData([A, B], content),
@@ -146,7 +147,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     return BatchSwap.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BatchSwap', {
       id: ID.bcs,
       in: Balance.bcs,
@@ -158,6 +159,15 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       in_swap: bcs.bool(),
       swap_completed: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BatchSwap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BatchSwap.cachedBcs) {
+      BatchSwap.cachedBcs = BatchSwap.instantiateBcs()
+    }
+    return BatchSwap.cachedBcs
   }
 
   static fromFields<
@@ -384,6 +394,7 @@ export class BatchSwapClaim implements StructClass {
   }
 
   static reified(): BatchSwapClaimReified {
+    const reifiedBcs = BatchSwapClaim.bcs
     return {
       typeName: BatchSwapClaim.$typeName,
       fullTypeName: composeSuiType(
@@ -395,8 +406,8 @@ export class BatchSwapClaim implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BatchSwapClaim.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BatchSwapClaim.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BatchSwapClaim.fromBcs(data),
-      bcs: BatchSwapClaim.bcs,
+      fromBcs: (data: Uint8Array) => BatchSwapClaim.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchSwapClaim.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BatchSwapClaim.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwapClaim.fromSuiParsedData(content),
@@ -420,11 +431,20 @@ export class BatchSwapClaim implements StructClass {
     return BatchSwapClaim.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BatchSwapClaim', {
       batch_swap_id: ID.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BatchSwapClaim.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BatchSwapClaim.cachedBcs) {
+      BatchSwapClaim.cachedBcs = BatchSwapClaim.instantiateBcs()
+    }
+    return BatchSwapClaim.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BatchSwapClaim {

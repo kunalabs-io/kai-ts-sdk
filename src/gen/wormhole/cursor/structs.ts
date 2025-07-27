@@ -67,6 +67,7 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
   }
 
   static reified<T0 extends Reified<TypeArgument, any>>(T0: T0): CursorReified<ToTypeArgument<T0>> {
+    const reifiedBcs = Cursor.bcs(toBcs(T0))
     return {
       typeName: Cursor.$typeName,
       fullTypeName: composeSuiType(
@@ -78,8 +79,8 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
       reifiedTypeArgs: [T0],
       fromFields: (fields: Record<string, any>) => Cursor.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Cursor.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Cursor.fromBcs(T0, data),
-      bcs: Cursor.bcs(toBcs(T0)),
+      fromBcs: (data: Uint8Array) => Cursor.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Cursor.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => Cursor.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) => Cursor.fromSuiParsedData(T0, content),
@@ -105,11 +106,20 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     return Cursor.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T0 extends BcsType<any>>(T0: T0) =>
       bcs.struct(`Cursor<${T0.name}>`, {
         data: bcs.vector(T0),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof Cursor.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Cursor.cachedBcs) {
+      Cursor.cachedBcs = Cursor.instantiateBcs()
+    }
+    return Cursor.cachedBcs
   }
 
   static fromFields<T0 extends Reified<TypeArgument, any>>(

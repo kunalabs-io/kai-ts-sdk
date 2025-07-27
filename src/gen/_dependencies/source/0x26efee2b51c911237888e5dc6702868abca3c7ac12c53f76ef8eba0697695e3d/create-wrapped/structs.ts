@@ -86,6 +86,7 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
     T0: T0,
     T1: T1
   ): WrappedAssetSetupReified<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    const reifiedBcs = WrappedAssetSetup.bcs
     return {
       typeName: WrappedAssetSetup.$typeName,
       fullTypeName: composeSuiType(
@@ -101,8 +102,8 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
       fromFields: (fields: Record<string, any>) => WrappedAssetSetup.fromFields([T0, T1], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WrappedAssetSetup.fromFieldsWithTypes([T0, T1], item),
-      fromBcs: (data: Uint8Array) => WrappedAssetSetup.fromBcs([T0, T1], data),
-      bcs: WrappedAssetSetup.bcs,
+      fromBcs: (data: Uint8Array) => WrappedAssetSetup.fromFields([T0, T1], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedAssetSetup.fromJSONField([T0, T1], field),
       fromJSON: (json: Record<string, any>) => WrappedAssetSetup.fromJSON([T0, T1], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -138,11 +139,20 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
     return WrappedAssetSetup.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WrappedAssetSetup', {
       id: UID.bcs,
       treasury_cap: TreasuryCap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WrappedAssetSetup.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WrappedAssetSetup.cachedBcs) {
+      WrappedAssetSetup.cachedBcs = WrappedAssetSetup.instantiateBcs()
+    }
+    return WrappedAssetSetup.cachedBcs
   }
 
   static fromFields<

@@ -79,6 +79,7 @@ export class PackageAdmin implements StructClass {
   }
 
   static reified(): PackageAdminReified {
+    const reifiedBcs = PackageAdmin.bcs
     return {
       typeName: PackageAdmin.$typeName,
       fullTypeName: composeSuiType(
@@ -90,8 +91,8 @@ export class PackageAdmin implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PackageAdmin.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PackageAdmin.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PackageAdmin.fromBcs(data),
-      bcs: PackageAdmin.bcs,
+      fromBcs: (data: Uint8Array) => PackageAdmin.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PackageAdmin.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PackageAdmin.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PackageAdmin.fromSuiParsedData(content),
@@ -115,11 +116,20 @@ export class PackageAdmin implements StructClass {
     return PackageAdmin.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PackageAdmin', {
       id: UID.bcs,
       package: String.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PackageAdmin.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PackageAdmin.cachedBcs) {
+      PackageAdmin.cachedBcs = PackageAdmin.instantiateBcs()
+    }
+    return PackageAdmin.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PackageAdmin {
@@ -247,6 +257,7 @@ export class Entity implements StructClass {
   }
 
   static reified(): EntityReified {
+    const reifiedBcs = Entity.bcs
     return {
       typeName: Entity.$typeName,
       fullTypeName: composeSuiType(Entity.$typeName, ...[]) as `${typeof PKG_V1}::access::Entity`,
@@ -255,8 +266,8 @@ export class Entity implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Entity.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Entity.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Entity.fromBcs(data),
-      bcs: Entity.bcs,
+      fromBcs: (data: Uint8Array) => Entity.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Entity.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Entity.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Entity.fromSuiParsedData(content),
@@ -280,10 +291,19 @@ export class Entity implements StructClass {
     return Entity.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Entity', {
       id: UID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Entity.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Entity.cachedBcs) {
+      Entity.cachedBcs = Entity.instantiateBcs()
+    }
+    return Entity.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Entity {
@@ -407,6 +427,7 @@ export class Rule implements StructClass {
   }
 
   static reified(): RuleReified {
+    const reifiedBcs = Rule.bcs
     return {
       typeName: Rule.$typeName,
       fullTypeName: composeSuiType(Rule.$typeName, ...[]) as `${typeof PKG_V1}::access::Rule`,
@@ -415,8 +436,8 @@ export class Rule implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Rule.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Rule.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Rule.fromBcs(data),
-      bcs: Rule.bcs,
+      fromBcs: (data: Uint8Array) => Rule.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Rule.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Rule.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Rule.fromSuiParsedData(content),
@@ -440,12 +461,21 @@ export class Rule implements StructClass {
     return Rule.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Rule', {
       actions: VecSet.bcs(TypeName.bcs),
       conditions: VecSet.bcs(TypeName.bcs),
       condition_configs: DynamicMap.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Rule.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Rule.cachedBcs) {
+      Rule.cachedBcs = Rule.instantiateBcs()
+    }
+    return Rule.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Rule {
@@ -604,6 +634,7 @@ export class Policy implements StructClass {
   }
 
   static reified(): PolicyReified {
+    const reifiedBcs = Policy.bcs
     return {
       typeName: Policy.$typeName,
       fullTypeName: composeSuiType(Policy.$typeName, ...[]) as `${typeof PKG_V1}::access::Policy`,
@@ -612,8 +643,8 @@ export class Policy implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Policy.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Policy.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Policy.fromBcs(data),
-      bcs: Policy.bcs,
+      fromBcs: (data: Uint8Array) => Policy.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Policy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Policy.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Policy.fromSuiParsedData(content),
@@ -637,7 +668,7 @@ export class Policy implements StructClass {
     return Policy.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Policy', {
       id: UID.bcs,
       package: String.bcs,
@@ -652,6 +683,15 @@ export class Policy implements StructClass {
       enabled: bcs.bool(),
       version: bcs.u16(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Policy.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Policy.cachedBcs) {
+      Policy.cachedBcs = Policy.instantiateBcs()
+    }
+    return Policy.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Policy {
@@ -807,6 +847,7 @@ export class ActionRequest implements StructClass {
   }
 
   static reified(): ActionRequestReified {
+    const reifiedBcs = ActionRequest.bcs
     return {
       typeName: ActionRequest.$typeName,
       fullTypeName: composeSuiType(
@@ -818,8 +859,8 @@ export class ActionRequest implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ActionRequest.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ActionRequest.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ActionRequest.fromBcs(data),
-      bcs: ActionRequest.bcs,
+      fromBcs: (data: Uint8Array) => ActionRequest.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ActionRequest.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ActionRequest.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ActionRequest.fromSuiParsedData(content),
@@ -843,7 +884,7 @@ export class ActionRequest implements StructClass {
     return ActionRequest.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ActionRequest', {
       action_name: TypeName.bcs,
       context: DynamicMap.bcs,
@@ -855,6 +896,15 @@ export class ActionRequest implements StructClass {
         })
       ),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ActionRequest.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ActionRequest.cachedBcs) {
+      ActionRequest.cachedBcs = ActionRequest.instantiateBcs()
+    }
+    return ActionRequest.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ActionRequest {
@@ -1030,6 +1080,7 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
     Condition: Condition,
     Config: Config
   ): ConditionWitnessReified<ToPhantomTypeArgument<Condition>, ToTypeArgument<Config>> {
+    const reifiedBcs = ConditionWitness.bcs(toBcs(Config))
     return {
       typeName: ConditionWitness.$typeName,
       fullTypeName: composeSuiType(
@@ -1046,8 +1097,9 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
         ConditionWitness.fromFields([Condition, Config], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ConditionWitness.fromFieldsWithTypes([Condition, Config], item),
-      fromBcs: (data: Uint8Array) => ConditionWitness.fromBcs([Condition, Config], data),
-      bcs: ConditionWitness.bcs(toBcs(Config)),
+      fromBcs: (data: Uint8Array) =>
+        ConditionWitness.fromFields([Condition, Config], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ConditionWitness.fromJSONField([Condition, Config], field),
       fromJSON: (json: Record<string, any>) => ConditionWitness.fromJSON([Condition, Config], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1084,7 +1136,7 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
     return ConditionWitness.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <Config extends BcsType<any>>(Config: Config) =>
       bcs.struct(`ConditionWitness<${Config.name}>`, {
         rule_id: bcs.bytes(32).transform({
@@ -1095,6 +1147,15 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
         policy: ID.bcs,
         entity: ID.bcs,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof ConditionWitness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ConditionWitness.cachedBcs) {
+      ConditionWitness.cachedBcs = ConditionWitness.instantiateBcs()
+    }
+    return ConditionWitness.cachedBcs
   }
 
   static fromFields<
@@ -1304,6 +1365,7 @@ export class ConfigNone implements StructClass {
   }
 
   static reified(): ConfigNoneReified {
+    const reifiedBcs = ConfigNone.bcs
     return {
       typeName: ConfigNone.$typeName,
       fullTypeName: composeSuiType(
@@ -1315,8 +1377,8 @@ export class ConfigNone implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ConfigNone.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ConfigNone.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ConfigNone.fromBcs(data),
-      bcs: ConfigNone.bcs,
+      fromBcs: (data: Uint8Array) => ConfigNone.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ConfigNone.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ConfigNone.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ConfigNone.fromSuiParsedData(content),
@@ -1340,10 +1402,19 @@ export class ConfigNone implements StructClass {
     return ConfigNone.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ConfigNone', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ConfigNone.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ConfigNone.cachedBcs) {
+      ConfigNone.cachedBcs = ConfigNone.instantiateBcs()
+    }
+    return ConfigNone.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ConfigNone {

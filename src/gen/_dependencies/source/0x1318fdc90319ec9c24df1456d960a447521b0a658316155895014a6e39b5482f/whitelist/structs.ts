@@ -54,6 +54,7 @@ export class WhitelistKey implements StructClass {
   }
 
   static reified(): WhitelistKeyReified {
+    const reifiedBcs = WhitelistKey.bcs
     return {
       typeName: WhitelistKey.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class WhitelistKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WhitelistKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WhitelistKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WhitelistKey.fromBcs(data),
-      bcs: WhitelistKey.bcs,
+      fromBcs: (data: Uint8Array) => WhitelistKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WhitelistKey.fromSuiParsedData(content),
@@ -90,13 +91,22 @@ export class WhitelistKey implements StructClass {
     return WhitelistKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WhitelistKey', {
       address: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WhitelistKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WhitelistKey.cachedBcs) {
+      WhitelistKey.cachedBcs = WhitelistKey.instantiateBcs()
+    }
+    return WhitelistKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WhitelistKey {
@@ -216,6 +226,7 @@ export class AllowAllKey implements StructClass {
   }
 
   static reified(): AllowAllKeyReified {
+    const reifiedBcs = AllowAllKey.bcs
     return {
       typeName: AllowAllKey.$typeName,
       fullTypeName: composeSuiType(
@@ -227,8 +238,8 @@ export class AllowAllKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AllowAllKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AllowAllKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AllowAllKey.fromBcs(data),
-      bcs: AllowAllKey.bcs,
+      fromBcs: (data: Uint8Array) => AllowAllKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AllowAllKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AllowAllKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AllowAllKey.fromSuiParsedData(content),
@@ -252,10 +263,19 @@ export class AllowAllKey implements StructClass {
     return AllowAllKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AllowAllKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AllowAllKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AllowAllKey.cachedBcs) {
+      AllowAllKey.cachedBcs = AllowAllKey.instantiateBcs()
+    }
+    return AllowAllKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AllowAllKey {
@@ -375,6 +395,7 @@ export class RejectAllKey implements StructClass {
   }
 
   static reified(): RejectAllKeyReified {
+    const reifiedBcs = RejectAllKey.bcs
     return {
       typeName: RejectAllKey.$typeName,
       fullTypeName: composeSuiType(
@@ -386,8 +407,8 @@ export class RejectAllKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RejectAllKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RejectAllKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RejectAllKey.fromBcs(data),
-      bcs: RejectAllKey.bcs,
+      fromBcs: (data: Uint8Array) => RejectAllKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RejectAllKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RejectAllKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RejectAllKey.fromSuiParsedData(content),
@@ -411,10 +432,19 @@ export class RejectAllKey implements StructClass {
     return RejectAllKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RejectAllKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RejectAllKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RejectAllKey.cachedBcs) {
+      RejectAllKey.cachedBcs = RejectAllKey.instantiateBcs()
+    }
+    return RejectAllKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RejectAllKey {
@@ -537,6 +567,7 @@ export class WhitelistAddEvent implements StructClass {
   }
 
   static reified(): WhitelistAddEventReified {
+    const reifiedBcs = WhitelistAddEvent.bcs
     return {
       typeName: WhitelistAddEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -548,8 +579,8 @@ export class WhitelistAddEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => WhitelistAddEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => WhitelistAddEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WhitelistAddEvent.fromBcs(data),
-      bcs: WhitelistAddEvent.bcs,
+      fromBcs: (data: Uint8Array) => WhitelistAddEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistAddEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistAddEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WhitelistAddEvent.fromSuiParsedData(content),
@@ -573,7 +604,7 @@ export class WhitelistAddEvent implements StructClass {
     return WhitelistAddEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WhitelistAddEvent', {
       id: ID.bcs,
       address: bcs.bytes(32).transform({
@@ -581,6 +612,15 @@ export class WhitelistAddEvent implements StructClass {
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WhitelistAddEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WhitelistAddEvent.cachedBcs) {
+      WhitelistAddEvent.cachedBcs = WhitelistAddEvent.instantiateBcs()
+    }
+    return WhitelistAddEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WhitelistAddEvent {
@@ -711,6 +751,7 @@ export class WhitelistRemoveEvent implements StructClass {
   }
 
   static reified(): WhitelistRemoveEventReified {
+    const reifiedBcs = WhitelistRemoveEvent.bcs
     return {
       typeName: WhitelistRemoveEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -723,8 +764,8 @@ export class WhitelistRemoveEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => WhitelistRemoveEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         WhitelistRemoveEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => WhitelistRemoveEvent.fromBcs(data),
-      bcs: WhitelistRemoveEvent.bcs,
+      fromBcs: (data: Uint8Array) => WhitelistRemoveEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistRemoveEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistRemoveEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -750,7 +791,7 @@ export class WhitelistRemoveEvent implements StructClass {
     return WhitelistRemoveEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('WhitelistRemoveEvent', {
       id: ID.bcs,
       address: bcs.bytes(32).transform({
@@ -758,6 +799,15 @@ export class WhitelistRemoveEvent implements StructClass {
         output: (val: Uint8Array) => toHEX(val),
       }),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof WhitelistRemoveEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!WhitelistRemoveEvent.cachedBcs) {
+      WhitelistRemoveEvent.cachedBcs = WhitelistRemoveEvent.instantiateBcs()
+    }
+    return WhitelistRemoveEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): WhitelistRemoveEvent {
@@ -887,6 +937,7 @@ export class AllowAllEvent implements StructClass {
   }
 
   static reified(): AllowAllEventReified {
+    const reifiedBcs = AllowAllEvent.bcs
     return {
       typeName: AllowAllEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -898,8 +949,8 @@ export class AllowAllEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AllowAllEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AllowAllEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AllowAllEvent.fromBcs(data),
-      bcs: AllowAllEvent.bcs,
+      fromBcs: (data: Uint8Array) => AllowAllEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AllowAllEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AllowAllEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AllowAllEvent.fromSuiParsedData(content),
@@ -923,10 +974,19 @@ export class AllowAllEvent implements StructClass {
     return AllowAllEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AllowAllEvent', {
       id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AllowAllEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AllowAllEvent.cachedBcs) {
+      AllowAllEvent.cachedBcs = AllowAllEvent.instantiateBcs()
+    }
+    return AllowAllEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AllowAllEvent {
@@ -1046,6 +1106,7 @@ export class RejectAllEvent implements StructClass {
   }
 
   static reified(): RejectAllEventReified {
+    const reifiedBcs = RejectAllEvent.bcs
     return {
       typeName: RejectAllEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1057,8 +1118,8 @@ export class RejectAllEvent implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RejectAllEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RejectAllEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RejectAllEvent.fromBcs(data),
-      bcs: RejectAllEvent.bcs,
+      fromBcs: (data: Uint8Array) => RejectAllEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RejectAllEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RejectAllEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RejectAllEvent.fromSuiParsedData(content),
@@ -1082,10 +1143,19 @@ export class RejectAllEvent implements StructClass {
     return RejectAllEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RejectAllEvent', {
       id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RejectAllEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RejectAllEvent.cachedBcs) {
+      RejectAllEvent.cachedBcs = RejectAllEvent.instantiateBcs()
+    }
+    return RejectAllEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RejectAllEvent {
@@ -1208,6 +1278,7 @@ export class SwitchToWhitelistModeEvent implements StructClass {
   }
 
   static reified(): SwitchToWhitelistModeEventReified {
+    const reifiedBcs = SwitchToWhitelistModeEvent.bcs
     return {
       typeName: SwitchToWhitelistModeEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -1220,8 +1291,8 @@ export class SwitchToWhitelistModeEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => SwitchToWhitelistModeEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         SwitchToWhitelistModeEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => SwitchToWhitelistModeEvent.fromBcs(data),
-      bcs: SwitchToWhitelistModeEvent.bcs,
+      fromBcs: (data: Uint8Array) => SwitchToWhitelistModeEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => SwitchToWhitelistModeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwitchToWhitelistModeEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1247,10 +1318,20 @@ export class SwitchToWhitelistModeEvent implements StructClass {
     return SwitchToWhitelistModeEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('SwitchToWhitelistModeEvent', {
       id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof SwitchToWhitelistModeEvent.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!SwitchToWhitelistModeEvent.cachedBcs) {
+      SwitchToWhitelistModeEvent.cachedBcs = SwitchToWhitelistModeEvent.instantiateBcs()
+    }
+    return SwitchToWhitelistModeEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): SwitchToWhitelistModeEvent {

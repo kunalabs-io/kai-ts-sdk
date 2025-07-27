@@ -67,6 +67,7 @@ export class CollateralWithdrawEvent implements StructClass {
   }
 
   static reified(): CollateralWithdrawEventReified {
+    const reifiedBcs = CollateralWithdrawEvent.bcs
     return {
       typeName: CollateralWithdrawEvent.$typeName,
       fullTypeName: composeSuiType(
@@ -79,8 +80,8 @@ export class CollateralWithdrawEvent implements StructClass {
       fromFields: (fields: Record<string, any>) => CollateralWithdrawEvent.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CollateralWithdrawEvent.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => CollateralWithdrawEvent.fromBcs(data),
-      bcs: CollateralWithdrawEvent.bcs,
+      fromBcs: (data: Uint8Array) => CollateralWithdrawEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralWithdrawEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralWithdrawEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -106,7 +107,7 @@ export class CollateralWithdrawEvent implements StructClass {
     return CollateralWithdrawEvent.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollateralWithdrawEvent', {
       taker: bcs.bytes(32).transform({
         input: (val: string) => fromHEX(val),
@@ -116,6 +117,15 @@ export class CollateralWithdrawEvent implements StructClass {
       withdraw_asset: TypeName.bcs,
       withdraw_amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollateralWithdrawEvent.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollateralWithdrawEvent.cachedBcs) {
+      CollateralWithdrawEvent.cachedBcs = CollateralWithdrawEvent.instantiateBcs()
+    }
+    return CollateralWithdrawEvent.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): CollateralWithdrawEvent {

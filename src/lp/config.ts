@@ -35,6 +35,7 @@ import {
   wBTC,
   whUSDCe,
   whUSDTe,
+  xBTC,
 } from '../coin-info'
 import { PositionMath } from './position-math'
 import Decimal from 'decimal.js'
@@ -53,6 +54,7 @@ import {
   wBTCPioInfo,
   whUSDCePioInfo,
   whUSDTePioInfo,
+  xBTCPioInfo,
 } from '../pyth'
 import {
   coinWithBalance,
@@ -1157,7 +1159,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(WAL.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
-    rewardCoins: [WAL, stSUI],
+    rewardCoins: [BLUE, stSUI, WAL],
   }),
   new PositionConfigInfo({
     name: 'Cetus USDC/suiUSDT 0.001%',
@@ -1183,6 +1185,30 @@ export const POSITION_CONFIG_INFOS: Array<
     isReversedPair: true,
     rewardCoins: [SUI, CETUS],
   }),
+  new PositionConfigInfo({
+    name: 'Bluefin xBTC/wBTC',
+    configId: '0xe9bffee7ecdcc440b7a187e10dc7b990e6deca3708d57c2f09cd93e9b3a23718',
+    poolObjectId: '0x6490f12f357a95dd5cb2415258efc3377a73ef0979a3f785a05ab67351ed4a98',
+    lendFacilCap: '0x850d4fb12949587842fbbee0d5602278783374e781733bfff715b78d3700ea83',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.xBTC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.wBTC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: xBTCPioInfo,
+    pioInfoY: wBTCPioInfo,
+    positionReified: Position_.r(xBTC.p, wBTC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(xBTC.p, wBTC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [BLUE, stSUI],
+  }),
 ]
 
 /**
@@ -1196,8 +1222,9 @@ export function findConfigInfoForPositionBcs(bcs: Uint8Array, type: string) {
     throw new Error(`${type} is not a Position type`)
   }
 
+  const compressedType = compressSuiType(type)
   const info = POSITION_CONFIG_INFOS.find(info => {
-    return compressSuiType(type) === compressSuiType(info.positionReified.fullTypeName)
+    return compressedType === compressSuiType(info.positionReified.fullTypeName)
   })
   if (!info) {
     return undefined

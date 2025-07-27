@@ -53,6 +53,7 @@ export class NormalizedAmount implements StructClass {
   }
 
   static reified(): NormalizedAmountReified {
+    const reifiedBcs = NormalizedAmount.bcs
     return {
       typeName: NormalizedAmount.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class NormalizedAmount implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => NormalizedAmount.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => NormalizedAmount.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => NormalizedAmount.fromBcs(data),
-      bcs: NormalizedAmount.bcs,
+      fromBcs: (data: Uint8Array) => NormalizedAmount.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => NormalizedAmount.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => NormalizedAmount.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => NormalizedAmount.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class NormalizedAmount implements StructClass {
     return NormalizedAmount.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('NormalizedAmount', {
       value: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof NormalizedAmount.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!NormalizedAmount.cachedBcs) {
+      NormalizedAmount.cachedBcs = NormalizedAmount.instantiateBcs()
+    }
+    return NormalizedAmount.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): NormalizedAmount {

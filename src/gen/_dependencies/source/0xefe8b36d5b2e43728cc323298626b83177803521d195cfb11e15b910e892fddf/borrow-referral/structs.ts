@@ -98,6 +98,7 @@ export class BorrowReferral<T0 extends PhantomTypeArgument, T1 extends TypeArgum
     T0 extends PhantomReified<PhantomTypeArgument>,
     T1 extends Reified<TypeArgument, any>,
   >(T0: T0, T1: T1): BorrowReferralReified<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>> {
+    const reifiedBcs = BorrowReferral.bcs(toBcs(T1))
     return {
       typeName: BorrowReferral.$typeName,
       fullTypeName: composeSuiType(
@@ -113,8 +114,8 @@ export class BorrowReferral<T0 extends PhantomTypeArgument, T1 extends TypeArgum
       fromFields: (fields: Record<string, any>) => BorrowReferral.fromFields([T0, T1], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BorrowReferral.fromFieldsWithTypes([T0, T1], item),
-      fromBcs: (data: Uint8Array) => BorrowReferral.fromBcs([T0, T1], data),
-      bcs: BorrowReferral.bcs(toBcs(T1)),
+      fromBcs: (data: Uint8Array) => BorrowReferral.fromFields([T0, T1], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowReferral.fromJSONField([T0, T1], field),
       fromJSON: (json: Record<string, any>) => BorrowReferral.fromJSON([T0, T1], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -146,7 +147,7 @@ export class BorrowReferral<T0 extends PhantomTypeArgument, T1 extends TypeArgum
     return BorrowReferral.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <T1 extends BcsType<any>>(T1: T1) =>
       bcs.struct(`BorrowReferral<${T1.name}>`, {
         id: UID.bcs,
@@ -156,6 +157,15 @@ export class BorrowReferral<T0 extends PhantomTypeArgument, T1 extends TypeArgum
         referral_fee: Balance.bcs,
         witness: T1,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowReferral.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowReferral.cachedBcs) {
+      BorrowReferral.cachedBcs = BorrowReferral.instantiateBcs()
+    }
+    return BorrowReferral.cachedBcs
   }
 
   static fromFields<
@@ -375,6 +385,7 @@ export class BorrowReferralCfgKey<T0 extends PhantomTypeArgument> implements Str
   static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
     T0: T0
   ): BorrowReferralCfgKeyReified<ToPhantomTypeArgument<T0>> {
+    const reifiedBcs = BorrowReferralCfgKey.bcs
     return {
       typeName: BorrowReferralCfgKey.$typeName,
       fullTypeName: composeSuiType(
@@ -387,8 +398,8 @@ export class BorrowReferralCfgKey<T0 extends PhantomTypeArgument> implements Str
       fromFields: (fields: Record<string, any>) => BorrowReferralCfgKey.fromFields(T0, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         BorrowReferralCfgKey.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => BorrowReferralCfgKey.fromBcs(T0, data),
-      bcs: BorrowReferralCfgKey.bcs,
+      fromBcs: (data: Uint8Array) => BorrowReferralCfgKey.fromFields(T0, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowReferralCfgKey.fromJSONField(T0, field),
       fromJSON: (json: Record<string, any>) => BorrowReferralCfgKey.fromJSON(T0, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -416,10 +427,19 @@ export class BorrowReferralCfgKey<T0 extends PhantomTypeArgument> implements Str
     return BorrowReferralCfgKey.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowReferralCfgKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowReferralCfgKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowReferralCfgKey.cachedBcs) {
+      BorrowReferralCfgKey.cachedBcs = BorrowReferralCfgKey.instantiateBcs()
+    }
+    return BorrowReferralCfgKey.cachedBcs
   }
 
   static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
@@ -590,6 +610,7 @@ export class BorrowedKey implements StructClass {
   }
 
   static reified(): BorrowedKeyReified {
+    const reifiedBcs = BorrowedKey.bcs
     return {
       typeName: BorrowedKey.$typeName,
       fullTypeName: composeSuiType(
@@ -601,8 +622,8 @@ export class BorrowedKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => BorrowedKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => BorrowedKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => BorrowedKey.fromBcs(data),
-      bcs: BorrowedKey.bcs,
+      fromBcs: (data: Uint8Array) => BorrowedKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowedKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowedKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BorrowedKey.fromSuiParsedData(content),
@@ -626,10 +647,19 @@ export class BorrowedKey implements StructClass {
     return BorrowedKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('BorrowedKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof BorrowedKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BorrowedKey.cachedBcs) {
+      BorrowedKey.cachedBcs = BorrowedKey.instantiateBcs()
+    }
+    return BorrowedKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): BorrowedKey {
@@ -749,6 +779,7 @@ export class ReferralFeeKey implements StructClass {
   }
 
   static reified(): ReferralFeeKeyReified {
+    const reifiedBcs = ReferralFeeKey.bcs
     return {
       typeName: ReferralFeeKey.$typeName,
       fullTypeName: composeSuiType(
@@ -760,8 +791,8 @@ export class ReferralFeeKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ReferralFeeKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ReferralFeeKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ReferralFeeKey.fromBcs(data),
-      bcs: ReferralFeeKey.bcs,
+      fromBcs: (data: Uint8Array) => ReferralFeeKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ReferralFeeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReferralFeeKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ReferralFeeKey.fromSuiParsedData(content),
@@ -785,10 +816,19 @@ export class ReferralFeeKey implements StructClass {
     return ReferralFeeKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ReferralFeeKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ReferralFeeKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ReferralFeeKey.cachedBcs) {
+      ReferralFeeKey.cachedBcs = ReferralFeeKey.instantiateBcs()
+    }
+    return ReferralFeeKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ReferralFeeKey {
@@ -918,6 +958,7 @@ export class AuthorizedWitnessList implements StructClass {
   }
 
   static reified(): AuthorizedWitnessListReified {
+    const reifiedBcs = AuthorizedWitnessList.bcs
     return {
       typeName: AuthorizedWitnessList.$typeName,
       fullTypeName: composeSuiType(
@@ -930,8 +971,8 @@ export class AuthorizedWitnessList implements StructClass {
       fromFields: (fields: Record<string, any>) => AuthorizedWitnessList.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AuthorizedWitnessList.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AuthorizedWitnessList.fromBcs(data),
-      bcs: AuthorizedWitnessList.bcs,
+      fromBcs: (data: Uint8Array) => AuthorizedWitnessList.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AuthorizedWitnessList.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AuthorizedWitnessList.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -957,11 +998,20 @@ export class AuthorizedWitnessList implements StructClass {
     return AuthorizedWitnessList.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AuthorizedWitnessList', {
       id: UID.bcs,
       witness_list: VecSet.bcs(TypeName.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AuthorizedWitnessList.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AuthorizedWitnessList.cachedBcs) {
+      AuthorizedWitnessList.cachedBcs = AuthorizedWitnessList.instantiateBcs()
+    }
+    return AuthorizedWitnessList.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AuthorizedWitnessList {

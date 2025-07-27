@@ -54,6 +54,7 @@ export class GovernanceWitness implements StructClass {
   }
 
   static reified(): GovernanceWitnessReified {
+    const reifiedBcs = GovernanceWitness.bcs
     return {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
@@ -65,8 +66,8 @@ export class GovernanceWitness implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => GovernanceWitness.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => GovernanceWitness.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => GovernanceWitness.fromBcs(data),
-      bcs: GovernanceWitness.bcs,
+      fromBcs: (data: Uint8Array) => GovernanceWitness.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
@@ -90,10 +91,19 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('GovernanceWitness', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!GovernanceWitness.cachedBcs) {
+      GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
+    }
+    return GovernanceWitness.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): GovernanceWitness {
@@ -220,6 +230,7 @@ export class RegisterChain implements StructClass {
   }
 
   static reified(): RegisterChainReified {
+    const reifiedBcs = RegisterChain.bcs
     return {
       typeName: RegisterChain.$typeName,
       fullTypeName: composeSuiType(
@@ -231,8 +242,8 @@ export class RegisterChain implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RegisterChain.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RegisterChain.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RegisterChain.fromBcs(data),
-      bcs: RegisterChain.bcs,
+      fromBcs: (data: Uint8Array) => RegisterChain.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RegisterChain.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RegisterChain.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RegisterChain.fromSuiParsedData(content),
@@ -256,11 +267,20 @@ export class RegisterChain implements StructClass {
     return RegisterChain.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RegisterChain', {
       chain: bcs.u16(),
       contract_address: ExternalAddress.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RegisterChain.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RegisterChain.cachedBcs) {
+      RegisterChain.cachedBcs = RegisterChain.instantiateBcs()
+    }
+    return RegisterChain.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RegisterChain {

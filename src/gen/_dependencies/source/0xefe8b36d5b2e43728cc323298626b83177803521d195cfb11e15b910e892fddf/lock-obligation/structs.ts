@@ -61,6 +61,7 @@ export class ObligationUnhealthyUnlocked implements StructClass {
   }
 
   static reified(): ObligationUnhealthyUnlockedReified {
+    const reifiedBcs = ObligationUnhealthyUnlocked.bcs
     return {
       typeName: ObligationUnhealthyUnlocked.$typeName,
       fullTypeName: composeSuiType(
@@ -73,8 +74,8 @@ export class ObligationUnhealthyUnlocked implements StructClass {
       fromFields: (fields: Record<string, any>) => ObligationUnhealthyUnlocked.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ObligationUnhealthyUnlocked.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ObligationUnhealthyUnlocked.fromBcs(data),
-      bcs: ObligationUnhealthyUnlocked.bcs,
+      fromBcs: (data: Uint8Array) => ObligationUnhealthyUnlocked.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationUnhealthyUnlocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationUnhealthyUnlocked.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -100,11 +101,21 @@ export class ObligationUnhealthyUnlocked implements StructClass {
     return ObligationUnhealthyUnlocked.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ObligationUnhealthyUnlocked', {
       obligation: ID.bcs,
       witness: TypeName.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationUnhealthyUnlocked.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!ObligationUnhealthyUnlocked.cachedBcs) {
+      ObligationUnhealthyUnlocked.cachedBcs = ObligationUnhealthyUnlocked.instantiateBcs()
+    }
+    return ObligationUnhealthyUnlocked.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ObligationUnhealthyUnlocked {

@@ -220,6 +220,17 @@ export const klLBTC = new CoinInfo({
   displaySymbol: 'klLBTC',
 })
 
+export const klXBTC = new CoinInfo({
+  reified: phantom(
+    '0x439536b0ed9ffa4ead507ec35ae2bdc759a8bb7abe30fafea68a06af54476d75::klxbtc::KLXBTC'
+  ),
+  decimals: 8,
+  name: 'Kai Leverage xBTC',
+  description: 'Kai Leverage xBTC Supply Pool LP Token',
+  symbol: 'klxBTC',
+  displaySymbol: 'klxBTC',
+})
+
 export const USDC = new CoinInfo({
   reified: phantom(
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC'
@@ -431,6 +442,18 @@ export const LBTC = new CoinInfo({
   iconUrl: 'https://www.lombard.finance/lbtc/LBTC.png',
 })
 
+export const xBTC = new CoinInfo({
+  reified: phantom(
+    '0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC'
+  ),
+  decimals: 8,
+  name: 'OKX Wrapped BTC',
+  description: 'A wrapped BTC that is backed 1:1 by Bitcoin (BTC) securely held by OKX',
+  symbol: 'xBTC',
+  displaySymbol: 'xBTC',
+  iconUrl: 'https://static.coinall.ltd/cdn/oksupport/common/20250512-095503.72e1f41d9b9a06.png',
+})
+
 export const yWAL = new CoinInfo({
   reified: phantom(
     '0xdab19711df7a4eefc633b9426e15d23305c6815eed775247e477599c706ede98::ywal::YWAL'
@@ -464,6 +487,17 @@ export const yLBTC = new CoinInfo({
   displaySymbol: 'yLBTC',
 })
 
+export const yXBTC = new CoinInfo({
+  reified: phantom(
+    '0xfc39a879b5a8772f682f1202cc5a8a3d93654cbb9e716b96bda7e5832af0e0eb::yxbtc::YXBTC'
+  ),
+  decimals: 8,
+  name: 'yXBTC',
+  description: 'Kai xBTC vault yield bearing token',
+  symbol: 'yXBTC',
+  displaySymbol: 'yXBTC',
+})
+
 export const COIN_INFOS = [
   SUI,
   whUSDCe,
@@ -478,6 +512,7 @@ export const COIN_INFOS = [
   klWAL,
   klWBTC,
   klLBTC,
+  klXBTC,
   CETUS,
   USDC,
   yWHUSDCe,
@@ -499,9 +534,11 @@ export const COIN_INFOS = [
   WAL,
   wBTC,
   LBTC,
+  xBTC,
   yWAL,
   yWBTC,
   yLBTC,
+  yXBTC,
 ]
 
 export const COIN_INFO_MAP = new Map(COIN_INFOS.map(c => [compressSuiType(c.typeName), c]))

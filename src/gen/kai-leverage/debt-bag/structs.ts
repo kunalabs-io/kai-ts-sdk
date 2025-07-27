@@ -65,6 +65,7 @@ export class Info implements StructClass {
   }
 
   static reified(): InfoReified {
+    const reifiedBcs = Info.bcs
     return {
       typeName: Info.$typeName,
       fullTypeName: composeSuiType(Info.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Info`,
@@ -73,8 +74,8 @@ export class Info implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Info.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Info.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Info.fromBcs(data),
-      bcs: Info.bcs,
+      fromBcs: (data: Uint8Array) => Info.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Info.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Info.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Info.fromSuiParsedData(content),
@@ -98,12 +99,21 @@ export class Info implements StructClass {
     return Info.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Info', {
       asset_type: TypeName.bcs,
       share_type: TypeName.bcs,
       amount: bcs.u128(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Info.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Info.cachedBcs) {
+      Info.cachedBcs = Info.instantiateBcs()
+    }
+    return Info.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Info {
@@ -241,6 +251,7 @@ export class DebtBag implements StructClass {
   }
 
   static reified(): DebtBagReified {
+    const reifiedBcs = DebtBag.bcs
     return {
       typeName: DebtBag.$typeName,
       fullTypeName: composeSuiType(
@@ -252,8 +263,8 @@ export class DebtBag implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DebtBag.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DebtBag.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DebtBag.fromBcs(data),
-      bcs: DebtBag.bcs,
+      fromBcs: (data: Uint8Array) => DebtBag.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DebtBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DebtBag.fromSuiParsedData(content),
@@ -277,12 +288,21 @@ export class DebtBag implements StructClass {
     return DebtBag.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DebtBag', {
       id: UID.bcs,
       infos: bcs.vector(Info.bcs),
       bag: Bag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DebtBag.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DebtBag.cachedBcs) {
+      DebtBag.cachedBcs = DebtBag.instantiateBcs()
+    }
+    return DebtBag.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DebtBag {
@@ -417,6 +437,7 @@ export class Key implements StructClass {
   }
 
   static reified(): KeyReified {
+    const reifiedBcs = Key.bcs
     return {
       typeName: Key.$typeName,
       fullTypeName: composeSuiType(Key.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Key`,
@@ -425,8 +446,8 @@ export class Key implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => Key.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => Key.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => Key.fromBcs(data),
-      bcs: Key.bcs,
+      fromBcs: (data: Uint8Array) => Key.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Key.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Key.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(content),
@@ -450,11 +471,20 @@ export class Key implements StructClass {
     return Key.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('Key', {
       t: TypeName.bcs,
       st: TypeName.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof Key.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Key.cachedBcs) {
+      Key.cachedBcs = Key.instantiateBcs()
+    }
+    return Key.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): Key {

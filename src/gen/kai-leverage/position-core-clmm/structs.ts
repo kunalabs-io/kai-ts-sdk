@@ -31,7 +31,7 @@ import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
 import { BalanceBag } from '../balance-bag/structs'
-import { PKG_V1, PKG_V11, PKG_V3 } from '../index'
+import { PKG_V1, PKG_V11, PKG_V16, PKG_V3 } from '../index'
 import { PositionModel } from '../position-model-clmm/structs'
 import { FacilDebtBag, FacilDebtShare, LendFacilCap } from '../supply-pool/structs'
 import { BcsType, bcs } from '@mysten/sui/bcs'
@@ -76,6 +76,7 @@ export class ACreateConfig implements StructClass {
   }
 
   static reified(): ACreateConfigReified {
+    const reifiedBcs = ACreateConfig.bcs
     return {
       typeName: ACreateConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -87,8 +88,8 @@ export class ACreateConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ACreateConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ACreateConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACreateConfig.fromBcs(data),
-      bcs: ACreateConfig.bcs,
+      fromBcs: (data: Uint8Array) => ACreateConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ACreateConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACreateConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACreateConfig.fromSuiParsedData(content),
@@ -112,10 +113,19 @@ export class ACreateConfig implements StructClass {
     return ACreateConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ACreateConfig', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ACreateConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ACreateConfig.cachedBcs) {
+      ACreateConfig.cachedBcs = ACreateConfig.instantiateBcs()
+    }
+    return ACreateConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ACreateConfig {
@@ -237,6 +247,7 @@ export class AModifyConfig implements StructClass {
   }
 
   static reified(): AModifyConfigReified {
+    const reifiedBcs = AModifyConfig.bcs
     return {
       typeName: AModifyConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -248,8 +259,8 @@ export class AModifyConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AModifyConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AModifyConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AModifyConfig.fromBcs(data),
-      bcs: AModifyConfig.bcs,
+      fromBcs: (data: Uint8Array) => AModifyConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AModifyConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AModifyConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AModifyConfig.fromSuiParsedData(content),
@@ -273,10 +284,19 @@ export class AModifyConfig implements StructClass {
     return AModifyConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AModifyConfig', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AModifyConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AModifyConfig.cachedBcs) {
+      AModifyConfig.cachedBcs = AModifyConfig.instantiateBcs()
+    }
+    return AModifyConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AModifyConfig {
@@ -398,6 +418,7 @@ export class AMigrate implements StructClass {
   }
 
   static reified(): AMigrateReified {
+    const reifiedBcs = AMigrate.bcs
     return {
       typeName: AMigrate.$typeName,
       fullTypeName: composeSuiType(
@@ -409,8 +430,8 @@ export class AMigrate implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AMigrate.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AMigrate.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AMigrate.fromBcs(data),
-      bcs: AMigrate.bcs,
+      fromBcs: (data: Uint8Array) => AMigrate.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AMigrate.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
@@ -434,10 +455,19 @@ export class AMigrate implements StructClass {
     return AMigrate.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AMigrate', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AMigrate.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AMigrate.cachedBcs) {
+      AMigrate.cachedBcs = AMigrate.instantiateBcs()
+    }
+    return AMigrate.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AMigrate {
@@ -557,6 +587,7 @@ export class ADeleverage implements StructClass {
   }
 
   static reified(): ADeleverageReified {
+    const reifiedBcs = ADeleverage.bcs
     return {
       typeName: ADeleverage.$typeName,
       fullTypeName: composeSuiType(
@@ -568,8 +599,8 @@ export class ADeleverage implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ADeleverage.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ADeleverage.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ADeleverage.fromBcs(data),
-      bcs: ADeleverage.bcs,
+      fromBcs: (data: Uint8Array) => ADeleverage.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ADeleverage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ADeleverage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ADeleverage.fromSuiParsedData(content),
@@ -593,10 +624,19 @@ export class ADeleverage implements StructClass {
     return ADeleverage.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ADeleverage', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ADeleverage.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ADeleverage.cachedBcs) {
+      ADeleverage.cachedBcs = ADeleverage.instantiateBcs()
+    }
+    return ADeleverage.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ADeleverage {
@@ -716,6 +756,7 @@ export class ARebalance implements StructClass {
   }
 
   static reified(): ARebalanceReified {
+    const reifiedBcs = ARebalance.bcs
     return {
       typeName: ARebalance.$typeName,
       fullTypeName: composeSuiType(
@@ -727,8 +768,8 @@ export class ARebalance implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ARebalance.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ARebalance.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ARebalance.fromBcs(data),
-      bcs: ARebalance.bcs,
+      fromBcs: (data: Uint8Array) => ARebalance.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ARebalance.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ARebalance.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ARebalance.fromSuiParsedData(content),
@@ -752,10 +793,19 @@ export class ARebalance implements StructClass {
     return ARebalance.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ARebalance', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ARebalance.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ARebalance.cachedBcs) {
+      ARebalance.cachedBcs = ARebalance.instantiateBcs()
+    }
+    return ARebalance.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ARebalance {
@@ -875,6 +925,7 @@ export class ACollectProtocolFees implements StructClass {
   }
 
   static reified(): ACollectProtocolFeesReified {
+    const reifiedBcs = ACollectProtocolFees.bcs
     return {
       typeName: ACollectProtocolFees.$typeName,
       fullTypeName: composeSuiType(
@@ -887,8 +938,8 @@ export class ACollectProtocolFees implements StructClass {
       fromFields: (fields: Record<string, any>) => ACollectProtocolFees.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ACollectProtocolFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ACollectProtocolFees.fromBcs(data),
-      bcs: ACollectProtocolFees.bcs,
+      fromBcs: (data: Uint8Array) => ACollectProtocolFees.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ACollectProtocolFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACollectProtocolFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -914,10 +965,19 @@ export class ACollectProtocolFees implements StructClass {
     return ACollectProtocolFees.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ACollectProtocolFees', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ACollectProtocolFees.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ACollectProtocolFees.cachedBcs) {
+      ACollectProtocolFees.cachedBcs = ACollectProtocolFees.instantiateBcs()
+    }
+    return ACollectProtocolFees.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ACollectProtocolFees {
@@ -1002,6 +1062,177 @@ export class ACollectProtocolFees implements StructClass {
     }
 
     return ACollectProtocolFees.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== ARepayBadDebt =============================== */
+
+export function isARepayBadDebt(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V16}::position_core_clmm::ARepayBadDebt`
+}
+
+export interface ARepayBadDebtFields {
+  dummyField: ToField<'bool'>
+}
+
+export type ARepayBadDebtReified = Reified<ARepayBadDebt, ARepayBadDebtFields>
+
+export class ARepayBadDebt implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V16}::position_core_clmm::ARepayBadDebt`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ARepayBadDebt.$typeName
+  readonly $fullTypeName: `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`
+  readonly $typeArgs: []
+  readonly $isPhantom = ARepayBadDebt.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: ARepayBadDebtFields) {
+    this.$fullTypeName = composeSuiType(
+      ARepayBadDebt.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): ARepayBadDebtReified {
+    const reifiedBcs = ARepayBadDebt.bcs
+    return {
+      typeName: ARepayBadDebt.$typeName,
+      fullTypeName: composeSuiType(
+        ARepayBadDebt.$typeName,
+        ...[]
+      ) as `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`,
+      typeArgs: [] as [],
+      isPhantom: ARepayBadDebt.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ARepayBadDebt.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ARepayBadDebt.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ARepayBadDebt.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => ARepayBadDebt.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ARepayBadDebt.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ARepayBadDebt.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ARepayBadDebt.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => ARepayBadDebt.fetch(client, id),
+      new: (fields: ARepayBadDebtFields) => {
+        return new ARepayBadDebt([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ARepayBadDebt.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ARepayBadDebt>> {
+    return phantom(ARepayBadDebt.reified())
+  }
+  static get p() {
+    return ARepayBadDebt.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('ARepayBadDebt', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof ARepayBadDebt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ARepayBadDebt.cachedBcs) {
+      ARepayBadDebt.cachedBcs = ARepayBadDebt.instantiateBcs()
+    }
+    return ARepayBadDebt.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): ARepayBadDebt {
+    return ARepayBadDebt.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ARepayBadDebt {
+    if (!isARepayBadDebt(item.type)) {
+      throw new Error('not a ARepayBadDebt type')
+    }
+
+    return ARepayBadDebt.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ARepayBadDebt {
+    return ARepayBadDebt.fromFields(ARepayBadDebt.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ARepayBadDebt {
+    return ARepayBadDebt.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ARepayBadDebt {
+    if (json.$typeName !== ARepayBadDebt.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ARepayBadDebt.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ARepayBadDebt {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isARepayBadDebt(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ARepayBadDebt object`)
+    }
+    return ARepayBadDebt.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ARepayBadDebt {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isARepayBadDebt(data.bcs.type)) {
+        throw new Error(`object at is not a ARepayBadDebt object`)
+      }
+
+      return ARepayBadDebt.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ARepayBadDebt.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ARepayBadDebt> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching ARepayBadDebt object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isARepayBadDebt(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a ARepayBadDebt object`)
+    }
+
+    return ARepayBadDebt.fromSuiObjectData(res.data)
   }
 }
 
@@ -1101,6 +1332,7 @@ export class CreatePositionTicket<
     ToPhantomTypeArgument<Y>,
     ToTypeArgument<I32>
   > {
+    const reifiedBcs = CreatePositionTicket.bcs(toBcs(I32))
     return {
       typeName: CreatePositionTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -1118,8 +1350,9 @@ export class CreatePositionTicket<
         CreatePositionTicket.fromFields([X, Y, I32], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CreatePositionTicket.fromFieldsWithTypes([X, Y, I32], item),
-      fromBcs: (data: Uint8Array) => CreatePositionTicket.fromBcs([X, Y, I32], data),
-      bcs: CreatePositionTicket.bcs(toBcs(I32)),
+      fromBcs: (data: Uint8Array) =>
+        CreatePositionTicket.fromFields([X, Y, I32], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CreatePositionTicket.fromJSONField([X, Y, I32], field),
       fromJSON: (json: Record<string, any>) => CreatePositionTicket.fromJSON([X, Y, I32], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1164,7 +1397,7 @@ export class CreatePositionTicket<
     return CreatePositionTicket.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <I32 extends BcsType<any>>(I32: I32) =>
       bcs.struct(`CreatePositionTicket<${I32.name}>`, {
         config_id: ID.bcs,
@@ -1179,6 +1412,15 @@ export class CreatePositionTicket<
         borrowed_y: Balance.bcs,
         debt_bag: FacilDebtBag.bcs,
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof CreatePositionTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CreatePositionTicket.cachedBcs) {
+      CreatePositionTicket.cachedBcs = CreatePositionTicket.instantiateBcs()
+    }
+    return CreatePositionTicket.cachedBcs
   }
 
   static fromFields<
@@ -1479,6 +1721,7 @@ export class Position<
     Y: Y,
     LP: LP
   ): PositionReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
+    const reifiedBcs = Position.bcs(toBcs(LP))
     return {
       typeName: Position.$typeName,
       fullTypeName: composeSuiType(
@@ -1495,8 +1738,8 @@ export class Position<
       fromFields: (fields: Record<string, any>) => Position.fromFields([X, Y, LP], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         Position.fromFieldsWithTypes([X, Y, LP], item),
-      fromBcs: (data: Uint8Array) => Position.fromBcs([X, Y, LP], data),
-      bcs: Position.bcs(toBcs(LP)),
+      fromBcs: (data: Uint8Array) => Position.fromFields([X, Y, LP], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => Position.fromJSONField([X, Y, LP], field),
       fromJSON: (json: Record<string, any>) => Position.fromJSON([X, Y, LP], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1538,7 +1781,7 @@ export class Position<
     return Position.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return <LP extends BcsType<any>>(LP: LP) =>
       bcs.struct(`Position<${LP.name}>`, {
         id: UID.bcs,
@@ -1552,6 +1795,15 @@ export class Position<
         ticket_active: bcs.bool(),
         version: bcs.u16(),
       })
+  }
+
+  private static cachedBcs: ReturnType<typeof Position.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!Position.cachedBcs) {
+      Position.cachedBcs = Position.instantiateBcs()
+    }
+    return Position.cachedBcs
   }
 
   static fromFields<
@@ -1796,6 +2048,7 @@ export class PositionCap implements StructClass {
   }
 
   static reified(): PositionCapReified {
+    const reifiedBcs = PositionCap.bcs
     return {
       typeName: PositionCap.$typeName,
       fullTypeName: composeSuiType(
@@ -1807,8 +2060,8 @@ export class PositionCap implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionCap.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionCap.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionCap.fromBcs(data),
-      bcs: PositionCap.bcs,
+      fromBcs: (data: Uint8Array) => PositionCap.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionCap.fromSuiParsedData(content),
@@ -1832,11 +2085,20 @@ export class PositionCap implements StructClass {
     return PositionCap.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionCap', {
       id: UID.bcs,
       position_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionCap.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionCap.cachedBcs) {
+      PositionCap.cachedBcs = PositionCap.instantiateBcs()
+    }
+    return PositionCap.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionCap {
@@ -1967,6 +2229,7 @@ export class PythConfig implements StructClass {
   }
 
   static reified(): PythConfigReified {
+    const reifiedBcs = PythConfig.bcs
     return {
       typeName: PythConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -1978,8 +2241,8 @@ export class PythConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PythConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PythConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PythConfig.fromBcs(data),
-      bcs: PythConfig.bcs,
+      fromBcs: (data: Uint8Array) => PythConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PythConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythConfig.fromSuiParsedData(content),
@@ -2003,11 +2266,20 @@ export class PythConfig implements StructClass {
     return PythConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PythConfig', {
       max_age_secs: bcs.u64(),
       pio_allowlist: VecMap.bcs(TypeName.bcs, ID.bcs),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PythConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PythConfig.cachedBcs) {
+      PythConfig.cachedBcs = PythConfig.instantiateBcs()
+    }
+    return PythConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PythConfig {
@@ -2198,6 +2470,7 @@ export class PositionConfig implements StructClass {
   }
 
   static reified(): PositionConfigReified {
+    const reifiedBcs = PositionConfig.bcs
     return {
       typeName: PositionConfig.$typeName,
       fullTypeName: composeSuiType(
@@ -2209,8 +2482,8 @@ export class PositionConfig implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => PositionConfig.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => PositionConfig.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionConfig.fromBcs(data),
-      bcs: PositionConfig.bcs,
+      fromBcs: (data: Uint8Array) => PositionConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionConfig.fromSuiParsedData(content),
@@ -2234,7 +2507,7 @@ export class PositionConfig implements StructClass {
     return PositionConfig.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionConfig', {
       id: UID.bcs,
       pool_object_id: ID.bcs,
@@ -2256,6 +2529,15 @@ export class PositionConfig implements StructClass {
       position_creation_fee_sui: bcs.u64(),
       version: bcs.u16(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionConfig.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionConfig.cachedBcs) {
+      PositionConfig.cachedBcs = PositionConfig.instantiateBcs()
+    }
+    return PositionConfig.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionConfig {
@@ -2463,6 +2745,7 @@ export class LiquidationDisabledKey implements StructClass {
   }
 
   static reified(): LiquidationDisabledKeyReified {
+    const reifiedBcs = LiquidationDisabledKey.bcs
     return {
       typeName: LiquidationDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -2475,8 +2758,8 @@ export class LiquidationDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => LiquidationDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         LiquidationDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LiquidationDisabledKey.fromBcs(data),
-      bcs: LiquidationDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) => LiquidationDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidationDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidationDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -2502,10 +2785,19 @@ export class LiquidationDisabledKey implements StructClass {
     return LiquidationDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LiquidationDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LiquidationDisabledKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LiquidationDisabledKey.cachedBcs) {
+      LiquidationDisabledKey.cachedBcs = LiquidationDisabledKey.instantiateBcs()
+    }
+    return LiquidationDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LiquidationDisabledKey {
@@ -2631,6 +2923,7 @@ export class ReductionDisabledKey implements StructClass {
   }
 
   static reified(): ReductionDisabledKeyReified {
+    const reifiedBcs = ReductionDisabledKey.bcs
     return {
       typeName: ReductionDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -2643,8 +2936,8 @@ export class ReductionDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => ReductionDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ReductionDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ReductionDisabledKey.fromBcs(data),
-      bcs: ReductionDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) => ReductionDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReductionDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -2670,10 +2963,19 @@ export class ReductionDisabledKey implements StructClass {
     return ReductionDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ReductionDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ReductionDisabledKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ReductionDisabledKey.cachedBcs) {
+      ReductionDisabledKey.cachedBcs = ReductionDisabledKey.instantiateBcs()
+    }
+    return ReductionDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ReductionDisabledKey {
@@ -2802,6 +3104,7 @@ export class AddLiquidityDisabledKey implements StructClass {
   }
 
   static reified(): AddLiquidityDisabledKeyReified {
+    const reifiedBcs = AddLiquidityDisabledKey.bcs
     return {
       typeName: AddLiquidityDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -2814,8 +3117,8 @@ export class AddLiquidityDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => AddLiquidityDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         AddLiquidityDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddLiquidityDisabledKey.fromBcs(data),
-      bcs: AddLiquidityDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) => AddLiquidityDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -2841,10 +3144,19 @@ export class AddLiquidityDisabledKey implements StructClass {
     return AddLiquidityDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddLiquidityDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddLiquidityDisabledKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddLiquidityDisabledKey.cachedBcs) {
+      AddLiquidityDisabledKey.cachedBcs = AddLiquidityDisabledKey.instantiateBcs()
+    }
+    return AddLiquidityDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddLiquidityDisabledKey {
@@ -2975,6 +3287,7 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
   }
 
   static reified(): OwnerCollectFeeDisabledKeyReified {
+    const reifiedBcs = OwnerCollectFeeDisabledKey.bcs
     return {
       typeName: OwnerCollectFeeDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -2987,8 +3300,8 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => OwnerCollectFeeDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         OwnerCollectFeeDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => OwnerCollectFeeDisabledKey.fromBcs(data),
-      bcs: OwnerCollectFeeDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) => OwnerCollectFeeDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectFeeDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectFeeDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3014,10 +3327,20 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     return OwnerCollectFeeDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OwnerCollectFeeDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OwnerCollectFeeDisabledKey.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!OwnerCollectFeeDisabledKey.cachedBcs) {
+      OwnerCollectFeeDisabledKey.cachedBcs = OwnerCollectFeeDisabledKey.instantiateBcs()
+    }
+    return OwnerCollectFeeDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): OwnerCollectFeeDisabledKey {
@@ -3151,6 +3474,7 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
   }
 
   static reified(): OwnerCollectRewardDisabledKeyReified {
+    const reifiedBcs = OwnerCollectRewardDisabledKey.bcs
     return {
       typeName: OwnerCollectRewardDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -3163,8 +3487,9 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => OwnerCollectRewardDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         OwnerCollectRewardDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => OwnerCollectRewardDisabledKey.fromBcs(data),
-      bcs: OwnerCollectRewardDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) =>
+        OwnerCollectRewardDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectRewardDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectRewardDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3191,10 +3516,20 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     return OwnerCollectRewardDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OwnerCollectRewardDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OwnerCollectRewardDisabledKey.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!OwnerCollectRewardDisabledKey.cachedBcs) {
+      OwnerCollectRewardDisabledKey.cachedBcs = OwnerCollectRewardDisabledKey.instantiateBcs()
+    }
+    return OwnerCollectRewardDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): OwnerCollectRewardDisabledKey {
@@ -3328,6 +3663,7 @@ export class DeletePositionDisabledKey implements StructClass {
   }
 
   static reified(): DeletePositionDisabledKeyReified {
+    const reifiedBcs = DeletePositionDisabledKey.bcs
     return {
       typeName: DeletePositionDisabledKey.$typeName,
       fullTypeName: composeSuiType(
@@ -3340,8 +3676,8 @@ export class DeletePositionDisabledKey implements StructClass {
       fromFields: (fields: Record<string, any>) => DeletePositionDisabledKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         DeletePositionDisabledKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeletePositionDisabledKey.fromBcs(data),
-      bcs: DeletePositionDisabledKey.bcs,
+      fromBcs: (data: Uint8Array) => DeletePositionDisabledKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletePositionDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletePositionDisabledKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3367,10 +3703,20 @@ export class DeletePositionDisabledKey implements StructClass {
     return DeletePositionDisabledKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeletePositionDisabledKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeletePositionDisabledKey.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!DeletePositionDisabledKey.cachedBcs) {
+      DeletePositionDisabledKey.cachedBcs = DeletePositionDisabledKey.instantiateBcs()
+    }
+    return DeletePositionDisabledKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeletePositionDisabledKey {
@@ -3510,6 +3856,7 @@ export class DeleverageTicket implements StructClass {
   }
 
   static reified(): DeleverageTicketReified {
+    const reifiedBcs = DeleverageTicket.bcs
     return {
       typeName: DeleverageTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -3521,8 +3868,8 @@ export class DeleverageTicket implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DeleverageTicket.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DeleverageTicket.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeleverageTicket.fromBcs(data),
-      bcs: DeleverageTicket.bcs,
+      fromBcs: (data: Uint8Array) => DeleverageTicket.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeleverageTicket.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeleverageTicket.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageTicket.fromSuiParsedData(content),
@@ -3546,13 +3893,22 @@ export class DeleverageTicket implements StructClass {
     return DeleverageTicket.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeleverageTicket', {
       position_id: ID.bcs,
       can_repay_x: bcs.bool(),
       can_repay_y: bcs.bool(),
       info: DeleverageInfo.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeleverageTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DeleverageTicket.cachedBcs) {
+      DeleverageTicket.cachedBcs = DeleverageTicket.instantiateBcs()
+    }
+    return DeleverageTicket.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeleverageTicket {
@@ -3713,6 +4069,7 @@ export class ReductionRepaymentTicket<
     SX: SX,
     SY: SY
   ): ReductionRepaymentTicketReified<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
+    const reifiedBcs = ReductionRepaymentTicket.bcs
     return {
       typeName: ReductionRepaymentTicket.$typeName,
       fullTypeName: composeSuiType(
@@ -3729,8 +4086,9 @@ export class ReductionRepaymentTicket<
         ReductionRepaymentTicket.fromFields([SX, SY], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         ReductionRepaymentTicket.fromFieldsWithTypes([SX, SY], item),
-      fromBcs: (data: Uint8Array) => ReductionRepaymentTicket.fromBcs([SX, SY], data),
-      bcs: ReductionRepaymentTicket.bcs,
+      fromBcs: (data: Uint8Array) =>
+        ReductionRepaymentTicket.fromFields([SX, SY], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionRepaymentTicket.fromJSONField([SX, SY], field),
       fromJSON: (json: Record<string, any>) => ReductionRepaymentTicket.fromJSON([SX, SY], json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -3767,12 +4125,21 @@ export class ReductionRepaymentTicket<
     return ReductionRepaymentTicket.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ReductionRepaymentTicket', {
       sx: FacilDebtShare.bcs,
       sy: FacilDebtShare.bcs,
       info: ReductionInfo.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ReductionRepaymentTicket.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ReductionRepaymentTicket.cachedBcs) {
+      ReductionRepaymentTicket.cachedBcs = ReductionRepaymentTicket.instantiateBcs()
+    }
+    return ReductionRepaymentTicket.cachedBcs
   }
 
   static fromFields<
@@ -4027,6 +4394,7 @@ export class RebalanceReceipt implements StructClass {
   }
 
   static reified(): RebalanceReceiptReified {
+    const reifiedBcs = RebalanceReceipt.bcs
     return {
       typeName: RebalanceReceipt.$typeName,
       fullTypeName: composeSuiType(
@@ -4038,8 +4406,8 @@ export class RebalanceReceipt implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RebalanceReceipt.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceReceipt.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RebalanceReceipt.fromBcs(data),
-      bcs: RebalanceReceipt.bcs,
+      fromBcs: (data: Uint8Array) => RebalanceReceipt.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceReceipt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceReceipt.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceReceipt.fromSuiParsedData(content),
@@ -4063,7 +4431,7 @@ export class RebalanceReceipt implements StructClass {
     return RebalanceReceipt.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RebalanceReceipt', {
       id: ID.bcs,
       position_id: ID.bcs,
@@ -4082,6 +4450,15 @@ export class RebalanceReceipt implements StructClass {
       added_cy: bcs.u64(),
       stashed_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RebalanceReceipt.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RebalanceReceipt.cachedBcs) {
+      RebalanceReceipt.cachedBcs = RebalanceReceipt.instantiateBcs()
+    }
+    return RebalanceReceipt.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RebalanceReceipt {
@@ -4295,6 +4672,7 @@ export class DeletedPositionCollectedFees implements StructClass {
   }
 
   static reified(): DeletedPositionCollectedFeesReified {
+    const reifiedBcs = DeletedPositionCollectedFees.bcs
     return {
       typeName: DeletedPositionCollectedFees.$typeName,
       fullTypeName: composeSuiType(
@@ -4307,8 +4685,9 @@ export class DeletedPositionCollectedFees implements StructClass {
       fromFields: (fields: Record<string, any>) => DeletedPositionCollectedFees.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         DeletedPositionCollectedFees.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeletedPositionCollectedFees.fromBcs(data),
-      bcs: DeletedPositionCollectedFees.bcs,
+      fromBcs: (data: Uint8Array) =>
+        DeletedPositionCollectedFees.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletedPositionCollectedFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletedPositionCollectedFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -4335,12 +4714,22 @@ export class DeletedPositionCollectedFees implements StructClass {
     return DeletedPositionCollectedFees.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeletedPositionCollectedFees', {
       id: UID.bcs,
       position_id: ID.bcs,
       balance_bag: BalanceBag.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeletedPositionCollectedFees.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!DeletedPositionCollectedFees.cachedBcs) {
+      DeletedPositionCollectedFees.cachedBcs = DeletedPositionCollectedFees.instantiateBcs()
+    }
+    return DeletedPositionCollectedFees.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeletedPositionCollectedFees {
@@ -4512,6 +4901,7 @@ export class PositionCreationInfo implements StructClass {
   }
 
   static reified(): PositionCreationInfoReified {
+    const reifiedBcs = PositionCreationInfo.bcs
     return {
       typeName: PositionCreationInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -4524,8 +4914,8 @@ export class PositionCreationInfo implements StructClass {
       fromFields: (fields: Record<string, any>) => PositionCreationInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         PositionCreationInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => PositionCreationInfo.fromBcs(data),
-      bcs: PositionCreationInfo.bcs,
+      fromBcs: (data: Uint8Array) => PositionCreationInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionCreationInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionCreationInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -4551,7 +4941,7 @@ export class PositionCreationInfo implements StructClass {
     return PositionCreationInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('PositionCreationInfo', {
       position_id: ID.bcs,
       config_id: ID.bcs,
@@ -4566,6 +4956,15 @@ export class PositionCreationInfo implements StructClass {
       dy: bcs.u64(),
       creation_fee_amt_sui: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof PositionCreationInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!PositionCreationInfo.cachedBcs) {
+      PositionCreationInfo.cachedBcs = PositionCreationInfo.instantiateBcs()
+    }
+    return PositionCreationInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): PositionCreationInfo {
@@ -4759,6 +5158,7 @@ export class DeleverageInfo implements StructClass {
   }
 
   static reified(): DeleverageInfoReified {
+    const reifiedBcs = DeleverageInfo.bcs
     return {
       typeName: DeleverageInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -4770,8 +5170,8 @@ export class DeleverageInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DeleverageInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DeleverageInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeleverageInfo.fromBcs(data),
-      bcs: DeleverageInfo.bcs,
+      fromBcs: (data: Uint8Array) => DeleverageInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeleverageInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeleverageInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageInfo.fromSuiParsedData(content),
@@ -4795,7 +5195,7 @@ export class DeleverageInfo implements StructClass {
     return DeleverageInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeleverageInfo', {
       position_id: ID.bcs,
       model: PositionModel.bcs,
@@ -4807,6 +5207,15 @@ export class DeleverageInfo implements StructClass {
       x_repaid: bcs.u64(),
       y_repaid: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeleverageInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DeleverageInfo.cachedBcs) {
+      DeleverageInfo.cachedBcs = DeleverageInfo.instantiateBcs()
+    }
+    return DeleverageInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeleverageInfo {
@@ -4986,6 +5395,7 @@ export class LiquidationInfo implements StructClass {
   }
 
   static reified(): LiquidationInfoReified {
+    const reifiedBcs = LiquidationInfo.bcs
     return {
       typeName: LiquidationInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -4997,8 +5407,8 @@ export class LiquidationInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => LiquidationInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => LiquidationInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => LiquidationInfo.fromBcs(data),
-      bcs: LiquidationInfo.bcs,
+      fromBcs: (data: Uint8Array) => LiquidationInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidationInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidationInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LiquidationInfo.fromSuiParsedData(content),
@@ -5022,7 +5432,7 @@ export class LiquidationInfo implements StructClass {
     return LiquidationInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('LiquidationInfo', {
       position_id: ID.bcs,
       model: PositionModel.bcs,
@@ -5034,6 +5444,15 @@ export class LiquidationInfo implements StructClass {
       liquidation_fee_x: bcs.u64(),
       liquidation_fee_y: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof LiquidationInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!LiquidationInfo.cachedBcs) {
+      LiquidationInfo.cachedBcs = LiquidationInfo.instantiateBcs()
+    }
+    return LiquidationInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): LiquidationInfo {
@@ -5219,6 +5638,7 @@ export class ReductionInfo implements StructClass {
   }
 
   static reified(): ReductionInfoReified {
+    const reifiedBcs = ReductionInfo.bcs
     return {
       typeName: ReductionInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -5230,8 +5650,8 @@ export class ReductionInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => ReductionInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => ReductionInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => ReductionInfo.fromBcs(data),
-      bcs: ReductionInfo.bcs,
+      fromBcs: (data: Uint8Array) => ReductionInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReductionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ReductionInfo.fromSuiParsedData(content),
@@ -5255,7 +5675,7 @@ export class ReductionInfo implements StructClass {
     return ReductionInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('ReductionInfo', {
       position_id: ID.bcs,
       model: PositionModel.bcs,
@@ -5269,6 +5689,15 @@ export class ReductionInfo implements StructClass {
       x_repaid: bcs.u64(),
       y_repaid: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof ReductionInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!ReductionInfo.cachedBcs) {
+      ReductionInfo.cachedBcs = ReductionInfo.instantiateBcs()
+    }
+    return ReductionInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): ReductionInfo {
@@ -5438,6 +5867,7 @@ export class AddCollateralInfo implements StructClass {
   }
 
   static reified(): AddCollateralInfoReified {
+    const reifiedBcs = AddCollateralInfo.bcs
     return {
       typeName: AddCollateralInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -5449,8 +5879,8 @@ export class AddCollateralInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddCollateralInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddCollateralInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddCollateralInfo.fromBcs(data),
-      bcs: AddCollateralInfo.bcs,
+      fromBcs: (data: Uint8Array) => AddCollateralInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddCollateralInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddCollateralInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddCollateralInfo.fromSuiParsedData(content),
@@ -5474,12 +5904,21 @@ export class AddCollateralInfo implements StructClass {
     return AddCollateralInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddCollateralInfo', {
       position_id: ID.bcs,
       amount_x: bcs.u64(),
       amount_y: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddCollateralInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddCollateralInfo.cachedBcs) {
+      AddCollateralInfo.cachedBcs = AddCollateralInfo.instantiateBcs()
+    }
+    return AddCollateralInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddCollateralInfo {
@@ -5623,6 +6062,7 @@ export class AddLiquidityInfo implements StructClass {
   }
 
   static reified(): AddLiquidityInfoReified {
+    const reifiedBcs = AddLiquidityInfo.bcs
     return {
       typeName: AddLiquidityInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -5634,8 +6074,8 @@ export class AddLiquidityInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => AddLiquidityInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AddLiquidityInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => AddLiquidityInfo.fromBcs(data),
-      bcs: AddLiquidityInfo.bcs,
+      fromBcs: (data: Uint8Array) => AddLiquidityInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityInfo.fromSuiParsedData(content),
@@ -5659,7 +6099,7 @@ export class AddLiquidityInfo implements StructClass {
     return AddLiquidityInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AddLiquidityInfo', {
       position_id: ID.bcs,
       sqrt_pool_price_x64: bcs.u128(),
@@ -5667,6 +6107,15 @@ export class AddLiquidityInfo implements StructClass {
       delta_x: bcs.u64(),
       delta_y: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AddLiquidityInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AddLiquidityInfo.cachedBcs) {
+      AddLiquidityInfo.cachedBcs = AddLiquidityInfo.instantiateBcs()
+    }
+    return AddLiquidityInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): AddLiquidityInfo {
@@ -5812,6 +6261,7 @@ export class RepayDebtInfo implements StructClass {
   }
 
   static reified(): RepayDebtInfoReified {
+    const reifiedBcs = RepayDebtInfo.bcs
     return {
       typeName: RepayDebtInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -5823,8 +6273,8 @@ export class RepayDebtInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RepayDebtInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RepayDebtInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RepayDebtInfo.fromBcs(data),
-      bcs: RepayDebtInfo.bcs,
+      fromBcs: (data: Uint8Array) => RepayDebtInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayDebtInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayDebtInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RepayDebtInfo.fromSuiParsedData(content),
@@ -5848,12 +6298,21 @@ export class RepayDebtInfo implements StructClass {
     return RepayDebtInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RepayDebtInfo', {
       position_id: ID.bcs,
       x_repaid: bcs.u64(),
       y_repaid: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RepayDebtInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RepayDebtInfo.cachedBcs) {
+      RepayDebtInfo.cachedBcs = RepayDebtInfo.instantiateBcs()
+    }
+    return RepayDebtInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RepayDebtInfo {
@@ -5997,6 +6456,7 @@ export class OwnerCollectFeeInfo implements StructClass {
   }
 
   static reified(): OwnerCollectFeeInfoReified {
+    const reifiedBcs = OwnerCollectFeeInfo.bcs
     return {
       typeName: OwnerCollectFeeInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -6008,8 +6468,8 @@ export class OwnerCollectFeeInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => OwnerCollectFeeInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => OwnerCollectFeeInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => OwnerCollectFeeInfo.fromBcs(data),
-      bcs: OwnerCollectFeeInfo.bcs,
+      fromBcs: (data: Uint8Array) => OwnerCollectFeeInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectFeeInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectFeeInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => OwnerCollectFeeInfo.fromSuiParsedData(content),
@@ -6033,7 +6493,7 @@ export class OwnerCollectFeeInfo implements StructClass {
     return OwnerCollectFeeInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OwnerCollectFeeInfo', {
       position_id: ID.bcs,
       collected_x_amt: bcs.u64(),
@@ -6041,6 +6501,15 @@ export class OwnerCollectFeeInfo implements StructClass {
       fee_amt_x: bcs.u64(),
       fee_amt_y: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OwnerCollectFeeInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!OwnerCollectFeeInfo.cachedBcs) {
+      OwnerCollectFeeInfo.cachedBcs = OwnerCollectFeeInfo.instantiateBcs()
+    }
+    return OwnerCollectFeeInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): OwnerCollectFeeInfo {
@@ -6191,6 +6660,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): OwnerCollectRewardInfoReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = OwnerCollectRewardInfo.bcs
     return {
       typeName: OwnerCollectRewardInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -6203,8 +6673,8 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
       fromFields: (fields: Record<string, any>) => OwnerCollectRewardInfo.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         OwnerCollectRewardInfo.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => OwnerCollectRewardInfo.fromBcs(T, data),
-      bcs: OwnerCollectRewardInfo.bcs,
+      fromBcs: (data: Uint8Array) => OwnerCollectRewardInfo.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectRewardInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => OwnerCollectRewardInfo.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -6232,12 +6702,21 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
     return OwnerCollectRewardInfo.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OwnerCollectRewardInfo', {
       position_id: ID.bcs,
       collected_reward_amt: bcs.u64(),
       fee_amt: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OwnerCollectRewardInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!OwnerCollectRewardInfo.cachedBcs) {
+      OwnerCollectRewardInfo.cachedBcs = OwnerCollectRewardInfo.instantiateBcs()
+    }
+    return OwnerCollectRewardInfo.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -6427,6 +6906,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): OwnerTakeStashedRewardsInfoReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = OwnerTakeStashedRewardsInfo.bcs
     return {
       typeName: OwnerTakeStashedRewardsInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -6440,8 +6920,9 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
         OwnerTakeStashedRewardsInfo.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         OwnerTakeStashedRewardsInfo.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => OwnerTakeStashedRewardsInfo.fromBcs(T, data),
-      bcs: OwnerTakeStashedRewardsInfo.bcs,
+      fromBcs: (data: Uint8Array) =>
+        OwnerTakeStashedRewardsInfo.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerTakeStashedRewardsInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => OwnerTakeStashedRewardsInfo.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -6470,11 +6951,21 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
     return OwnerTakeStashedRewardsInfo.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('OwnerTakeStashedRewardsInfo', {
       position_id: ID.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof OwnerTakeStashedRewardsInfo.instantiateBcs> | null =
+    null
+
+  static get bcs() {
+    if (!OwnerTakeStashedRewardsInfo.cachedBcs) {
+      OwnerTakeStashedRewardsInfo.cachedBcs = OwnerTakeStashedRewardsInfo.instantiateBcs()
+    }
+    return OwnerTakeStashedRewardsInfo.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -6660,6 +7151,7 @@ export class DeletePositionInfo implements StructClass {
   }
 
   static reified(): DeletePositionInfoReified {
+    const reifiedBcs = DeletePositionInfo.bcs
     return {
       typeName: DeletePositionInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -6671,8 +7163,8 @@ export class DeletePositionInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => DeletePositionInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => DeletePositionInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeletePositionInfo.fromBcs(data),
-      bcs: DeletePositionInfo.bcs,
+      fromBcs: (data: Uint8Array) => DeletePositionInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletePositionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletePositionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeletePositionInfo.fromSuiParsedData(content),
@@ -6696,11 +7188,20 @@ export class DeletePositionInfo implements StructClass {
     return DeletePositionInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeletePositionInfo', {
       position_id: ID.bcs,
       cap_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof DeletePositionInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!DeletePositionInfo.cachedBcs) {
+      DeletePositionInfo.cachedBcs = DeletePositionInfo.instantiateBcs()
+    }
+    return DeletePositionInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeletePositionInfo {
@@ -6873,6 +7374,7 @@ export class RebalanceInfo implements StructClass {
   }
 
   static reified(): RebalanceInfoReified {
+    const reifiedBcs = RebalanceInfo.bcs
     return {
       typeName: RebalanceInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -6884,8 +7386,8 @@ export class RebalanceInfo implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => RebalanceInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => RebalanceInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => RebalanceInfo.fromBcs(data),
-      bcs: RebalanceInfo.bcs,
+      fromBcs: (data: Uint8Array) => RebalanceInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
@@ -6909,7 +7411,7 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('RebalanceInfo', {
       id: ID.bcs,
       position_id: ID.bcs,
@@ -6928,6 +7430,15 @@ export class RebalanceInfo implements StructClass {
       added_cy: bcs.u64(),
       stashed_amm_rewards: VecMap.bcs(TypeName.bcs, bcs.u64()),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof RebalanceInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!RebalanceInfo.cachedBcs) {
+      RebalanceInfo.cachedBcs = RebalanceInfo.instantiateBcs()
+    }
+    return RebalanceInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): RebalanceInfo {
@@ -7140,6 +7651,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): CollectProtocolFeesInfoReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = CollectProtocolFeesInfo.bcs
     return {
       typeName: CollectProtocolFeesInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -7152,8 +7664,8 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
       fromFields: (fields: Record<string, any>) => CollectProtocolFeesInfo.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         CollectProtocolFeesInfo.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => CollectProtocolFeesInfo.fromBcs(T, data),
-      bcs: CollectProtocolFeesInfo.bcs,
+      fromBcs: (data: Uint8Array) => CollectProtocolFeesInfo.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectProtocolFeesInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => CollectProtocolFeesInfo.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -7181,11 +7693,20 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
     return CollectProtocolFeesInfo.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CollectProtocolFeesInfo', {
       position_id: ID.bcs,
       amount: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CollectProtocolFeesInfo.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CollectProtocolFeesInfo.cachedBcs) {
+      CollectProtocolFeesInfo.cachedBcs = CollectProtocolFeesInfo.instantiateBcs()
+    }
+    return CollectProtocolFeesInfo.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -7368,6 +7889,7 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
   }
 
   static reified(): DeletedPositionCollectedFeesInfoReified {
+    const reifiedBcs = DeletedPositionCollectedFeesInfo.bcs
     return {
       typeName: DeletedPositionCollectedFeesInfo.$typeName,
       fullTypeName: composeSuiType(
@@ -7381,8 +7903,9 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
         DeletedPositionCollectedFeesInfo.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         DeletedPositionCollectedFeesInfo.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => DeletedPositionCollectedFeesInfo.fromBcs(data),
-      bcs: DeletedPositionCollectedFeesInfo.bcs,
+      fromBcs: (data: Uint8Array) =>
+        DeletedPositionCollectedFeesInfo.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletedPositionCollectedFeesInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletedPositionCollectedFeesInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -7409,11 +7932,22 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     return DeletedPositionCollectedFeesInfo.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('DeletedPositionCollectedFeesInfo', {
       position_id: ID.bcs,
       amounts: VecMap.bcs(TypeName.bcs, bcs.u64()),
     })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof DeletedPositionCollectedFeesInfo.instantiateBcs
+  > | null = null
+
+  static get bcs() {
+    if (!DeletedPositionCollectedFeesInfo.cachedBcs) {
+      DeletedPositionCollectedFeesInfo.cachedBcs = DeletedPositionCollectedFeesInfo.instantiateBcs()
+    }
+    return DeletedPositionCollectedFeesInfo.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): DeletedPositionCollectedFeesInfo {
@@ -7515,5 +8049,246 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     }
 
     return DeletedPositionCollectedFeesInfo.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== BadDebtRepaid =============================== */
+
+export function isBadDebtRepaid(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(`${PKG_V16}::position_core_clmm::BadDebtRepaid` + '<')
+}
+
+export interface BadDebtRepaidFields<ST extends PhantomTypeArgument> {
+  positionId: ToField<ID>
+  sharesRepaid: ToField<'u128'>
+  balanceRepaid: ToField<'u64'>
+}
+
+export type BadDebtRepaidReified<ST extends PhantomTypeArgument> = Reified<
+  BadDebtRepaid<ST>,
+  BadDebtRepaidFields<ST>
+>
+
+export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V16}::position_core_clmm::BadDebtRepaid`
+  static readonly $numTypeParams = 1
+  static readonly $isPhantom = [true] as const
+
+  readonly $typeName = BadDebtRepaid.$typeName
+  readonly $fullTypeName: `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
+  readonly $typeArgs: [PhantomToTypeStr<ST>]
+  readonly $isPhantom = BadDebtRepaid.$isPhantom
+
+  readonly positionId: ToField<ID>
+  readonly sharesRepaid: ToField<'u128'>
+  readonly balanceRepaid: ToField<'u64'>
+
+  private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: BadDebtRepaidFields<ST>) {
+    this.$fullTypeName = composeSuiType(
+      BadDebtRepaid.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
+    this.$typeArgs = typeArgs
+
+    this.positionId = fields.positionId
+    this.sharesRepaid = fields.sharesRepaid
+    this.balanceRepaid = fields.balanceRepaid
+  }
+
+  static reified<ST extends PhantomReified<PhantomTypeArgument>>(
+    ST: ST
+  ): BadDebtRepaidReified<ToPhantomTypeArgument<ST>> {
+    const reifiedBcs = BadDebtRepaid.bcs
+    return {
+      typeName: BadDebtRepaid.$typeName,
+      fullTypeName: composeSuiType(
+        BadDebtRepaid.$typeName,
+        ...[extractType(ST)]
+      ) as `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+      typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
+      isPhantom: BadDebtRepaid.$isPhantom,
+      reifiedTypeArgs: [ST],
+      fromFields: (fields: Record<string, any>) => BadDebtRepaid.fromFields(ST, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => BadDebtRepaid.fromFieldsWithTypes(ST, item),
+      fromBcs: (data: Uint8Array) => BadDebtRepaid.fromFields(ST, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => BadDebtRepaid.fromJSONField(ST, field),
+      fromJSON: (json: Record<string, any>) => BadDebtRepaid.fromJSON(ST, json),
+      fromSuiParsedData: (content: SuiParsedData) => BadDebtRepaid.fromSuiParsedData(ST, content),
+      fromSuiObjectData: (content: SuiObjectData) => BadDebtRepaid.fromSuiObjectData(ST, content),
+      fetch: async (client: SuiClient, id: string) => BadDebtRepaid.fetch(client, ST, id),
+      new: (fields: BadDebtRepaidFields<ToPhantomTypeArgument<ST>>) => {
+        return new BadDebtRepaid([extractType(ST)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return BadDebtRepaid.reified
+  }
+
+  static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
+    ST: ST
+  ): PhantomReified<ToTypeStr<BadDebtRepaid<ToPhantomTypeArgument<ST>>>> {
+    return phantom(BadDebtRepaid.reified(ST))
+  }
+  static get p() {
+    return BadDebtRepaid.phantom
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('BadDebtRepaid', {
+      position_id: ID.bcs,
+      shares_repaid: bcs.u128(),
+      balance_repaid: bcs.u64(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof BadDebtRepaid.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!BadDebtRepaid.cachedBcs) {
+      BadDebtRepaid.cachedBcs = BadDebtRepaid.instantiateBcs()
+    }
+    return BadDebtRepaid.cachedBcs
+  }
+
+  static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    fields: Record<string, any>
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    return BadDebtRepaid.reified(typeArg).new({
+      positionId: decodeFromFields(ID.reified(), fields.position_id),
+      sharesRepaid: decodeFromFields('u128', fields.shares_repaid),
+      balanceRepaid: decodeFromFields('u64', fields.balance_repaid),
+    })
+  }
+
+  static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    item: FieldsWithTypes
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    if (!isBadDebtRepaid(item.type)) {
+      throw new Error('not a BadDebtRepaid type')
+    }
+    assertFieldsWithTypesArgsMatch(item, [typeArg])
+
+    return BadDebtRepaid.reified(typeArg).new({
+      positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
+      sharesRepaid: decodeFromFieldsWithTypes('u128', item.fields.shares_repaid),
+      balanceRepaid: decodeFromFieldsWithTypes('u64', item.fields.balance_repaid),
+    })
+  }
+
+  static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    data: Uint8Array
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    return BadDebtRepaid.fromFields(typeArg, BadDebtRepaid.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      positionId: this.positionId,
+      sharesRepaid: this.sharesRepaid.toString(),
+      balanceRepaid: this.balanceRepaid.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    field: any
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    return BadDebtRepaid.reified(typeArg).new({
+      positionId: decodeFromJSONField(ID.reified(), field.positionId),
+      sharesRepaid: decodeFromJSONField('u128', field.sharesRepaid),
+      balanceRepaid: decodeFromJSONField('u64', field.balanceRepaid),
+    })
+  }
+
+  static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    json: Record<string, any>
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    if (json.$typeName !== BadDebtRepaid.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(BadDebtRepaid.$typeName, extractType(typeArg)),
+      json.$typeArgs,
+      [typeArg]
+    )
+
+    return BadDebtRepaid.fromJSONField(typeArg, json)
+  }
+
+  static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    content: SuiParsedData
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isBadDebtRepaid(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a BadDebtRepaid object`)
+    }
+    return BadDebtRepaid.fromFieldsWithTypes(typeArg, content)
+  }
+
+  static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    data: SuiObjectData
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isBadDebtRepaid(data.bcs.type)) {
+        throw new Error(`object at is not a BadDebtRepaid object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 1) {
+        throw new Error(
+          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+        )
+      }
+      const gotTypeArg = compressSuiType(gotTypeArgs[0])
+      const expectedTypeArg = compressSuiType(extractType(typeArg))
+      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
+        throw new Error(
+          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+        )
+      }
+
+      return BadDebtRepaid.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return BadDebtRepaid.fromSuiParsedData(typeArg, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
+    client: SuiClient,
+    typeArg: ST,
+    id: string
+  ): Promise<BadDebtRepaid<ToPhantomTypeArgument<ST>>> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching BadDebtRepaid object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isBadDebtRepaid(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a BadDebtRepaid object`)
+    }
+
+    return BadDebtRepaid.fromSuiObjectData(typeArg, res.data)
   }
 }

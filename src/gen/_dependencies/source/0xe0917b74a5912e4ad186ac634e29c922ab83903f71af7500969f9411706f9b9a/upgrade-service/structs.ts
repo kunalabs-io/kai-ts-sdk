@@ -76,6 +76,7 @@ export class UpgradeService<T extends PhantomTypeArgument> implements StructClas
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): UpgradeServiceReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = UpgradeService.bcs
     return {
       typeName: UpgradeService.$typeName,
       fullTypeName: composeSuiType(
@@ -87,8 +88,8 @@ export class UpgradeService<T extends PhantomTypeArgument> implements StructClas
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => UpgradeService.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpgradeService.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => UpgradeService.fromBcs(T, data),
-      bcs: UpgradeService.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeService.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeService.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => UpgradeService.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => UpgradeService.fromSuiParsedData(T, content),
@@ -114,11 +115,20 @@ export class UpgradeService<T extends PhantomTypeArgument> implements StructClas
     return UpgradeService.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeService', {
       id: UID.bcs,
       admin: TwoStepRole.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeService.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeService.cachedBcs) {
+      UpgradeService.cachedBcs = UpgradeService.instantiateBcs()
+    }
+    return UpgradeService.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -300,6 +310,7 @@ export class UpgradeCapKey implements StructClass {
   }
 
   static reified(): UpgradeCapKeyReified {
+    const reifiedBcs = UpgradeCapKey.bcs
     return {
       typeName: UpgradeCapKey.$typeName,
       fullTypeName: composeSuiType(
@@ -311,8 +322,8 @@ export class UpgradeCapKey implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpgradeCapKey.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpgradeCapKey.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpgradeCapKey.fromBcs(data),
-      bcs: UpgradeCapKey.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeCapKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeCapKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpgradeCapKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpgradeCapKey.fromSuiParsedData(content),
@@ -336,10 +347,19 @@ export class UpgradeCapKey implements StructClass {
     return UpgradeCapKey.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeCapKey', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeCapKey.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeCapKey.cachedBcs) {
+      UpgradeCapKey.cachedBcs = UpgradeCapKey.instantiateBcs()
+    }
+    return UpgradeCapKey.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpgradeCapKey {
@@ -466,6 +486,7 @@ export class AdminRole<T extends PhantomTypeArgument> implements StructClass {
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): AdminRoleReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = AdminRole.bcs
     return {
       typeName: AdminRole.$typeName,
       fullTypeName: composeSuiType(
@@ -477,8 +498,8 @@ export class AdminRole<T extends PhantomTypeArgument> implements StructClass {
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => AdminRole.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AdminRole.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => AdminRole.fromBcs(T, data),
-      bcs: AdminRole.bcs,
+      fromBcs: (data: Uint8Array) => AdminRole.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminRole.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => AdminRole.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => AdminRole.fromSuiParsedData(T, content),
@@ -504,10 +525,19 @@ export class AdminRole<T extends PhantomTypeArgument> implements StructClass {
     return AdminRole.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AdminRole', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AdminRole.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AdminRole.cachedBcs) {
+      AdminRole.cachedBcs = AdminRole.instantiateBcs()
+    }
+    return AdminRole.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -681,6 +711,7 @@ export class UpgradeCapDeposited<T extends PhantomTypeArgument> implements Struc
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): UpgradeCapDepositedReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = UpgradeCapDeposited.bcs
     return {
       typeName: UpgradeCapDeposited.$typeName,
       fullTypeName: composeSuiType(
@@ -693,8 +724,8 @@ export class UpgradeCapDeposited<T extends PhantomTypeArgument> implements Struc
       fromFields: (fields: Record<string, any>) => UpgradeCapDeposited.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpgradeCapDeposited.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => UpgradeCapDeposited.fromBcs(T, data),
-      bcs: UpgradeCapDeposited.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeCapDeposited.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeCapDeposited.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => UpgradeCapDeposited.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -722,10 +753,19 @@ export class UpgradeCapDeposited<T extends PhantomTypeArgument> implements Struc
     return UpgradeCapDeposited.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeCapDeposited', {
       upgrade_cap_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeCapDeposited.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeCapDeposited.cachedBcs) {
+      UpgradeCapDeposited.cachedBcs = UpgradeCapDeposited.instantiateBcs()
+    }
+    return UpgradeCapDeposited.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -899,6 +939,7 @@ export class UpgradeCapExtracted<T extends PhantomTypeArgument> implements Struc
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): UpgradeCapExtractedReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = UpgradeCapExtracted.bcs
     return {
       typeName: UpgradeCapExtracted.$typeName,
       fullTypeName: composeSuiType(
@@ -911,8 +952,8 @@ export class UpgradeCapExtracted<T extends PhantomTypeArgument> implements Struc
       fromFields: (fields: Record<string, any>) => UpgradeCapExtracted.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpgradeCapExtracted.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => UpgradeCapExtracted.fromBcs(T, data),
-      bcs: UpgradeCapExtracted.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeCapExtracted.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeCapExtracted.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => UpgradeCapExtracted.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -940,10 +981,19 @@ export class UpgradeCapExtracted<T extends PhantomTypeArgument> implements Struc
     return UpgradeCapExtracted.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeCapExtracted', {
       upgrade_cap_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeCapExtracted.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeCapExtracted.cachedBcs) {
+      UpgradeCapExtracted.cachedBcs = UpgradeCapExtracted.instantiateBcs()
+    }
+    return UpgradeCapExtracted.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -1117,6 +1167,7 @@ export class UpgradeServiceDestroyed<T extends PhantomTypeArgument> implements S
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): UpgradeServiceDestroyedReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = UpgradeServiceDestroyed.bcs
     return {
       typeName: UpgradeServiceDestroyed.$typeName,
       fullTypeName: composeSuiType(
@@ -1129,8 +1180,8 @@ export class UpgradeServiceDestroyed<T extends PhantomTypeArgument> implements S
       fromFields: (fields: Record<string, any>) => UpgradeServiceDestroyed.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
         UpgradeServiceDestroyed.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => UpgradeServiceDestroyed.fromBcs(T, data),
-      bcs: UpgradeServiceDestroyed.bcs,
+      fromBcs: (data: Uint8Array) => UpgradeServiceDestroyed.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeServiceDestroyed.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => UpgradeServiceDestroyed.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
@@ -1158,10 +1209,19 @@ export class UpgradeServiceDestroyed<T extends PhantomTypeArgument> implements S
     return UpgradeServiceDestroyed.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpgradeServiceDestroyed', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpgradeServiceDestroyed.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpgradeServiceDestroyed.cachedBcs) {
+      UpgradeServiceDestroyed.cachedBcs = UpgradeServiceDestroyed.instantiateBcs()
+    }
+    return UpgradeServiceDestroyed.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -1342,6 +1402,7 @@ export class AuthorizeUpgrade<T extends PhantomTypeArgument> implements StructCl
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): AuthorizeUpgradeReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = AuthorizeUpgrade.bcs
     return {
       typeName: AuthorizeUpgrade.$typeName,
       fullTypeName: composeSuiType(
@@ -1353,8 +1414,8 @@ export class AuthorizeUpgrade<T extends PhantomTypeArgument> implements StructCl
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => AuthorizeUpgrade.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => AuthorizeUpgrade.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => AuthorizeUpgrade.fromBcs(T, data),
-      bcs: AuthorizeUpgrade.bcs,
+      fromBcs: (data: Uint8Array) => AuthorizeUpgrade.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => AuthorizeUpgrade.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => AuthorizeUpgrade.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => AuthorizeUpgrade.fromSuiParsedData(T, content),
@@ -1380,11 +1441,20 @@ export class AuthorizeUpgrade<T extends PhantomTypeArgument> implements StructCl
     return AuthorizeUpgrade.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('AuthorizeUpgrade', {
       package_id: ID.bcs,
       policy: bcs.u8(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof AuthorizeUpgrade.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!AuthorizeUpgrade.cachedBcs) {
+      AuthorizeUpgrade.cachedBcs = AuthorizeUpgrade.instantiateBcs()
+    }
+    return AuthorizeUpgrade.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
@@ -1562,6 +1632,7 @@ export class CommitUpgrade<T extends PhantomTypeArgument> implements StructClass
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
     T: T
   ): CommitUpgradeReified<ToPhantomTypeArgument<T>> {
+    const reifiedBcs = CommitUpgrade.bcs
     return {
       typeName: CommitUpgrade.$typeName,
       fullTypeName: composeSuiType(
@@ -1573,8 +1644,8 @@ export class CommitUpgrade<T extends PhantomTypeArgument> implements StructClass
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => CommitUpgrade.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => CommitUpgrade.fromFieldsWithTypes(T, item),
-      fromBcs: (data: Uint8Array) => CommitUpgrade.fromBcs(T, data),
-      bcs: CommitUpgrade.bcs,
+      fromBcs: (data: Uint8Array) => CommitUpgrade.fromFields(T, reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => CommitUpgrade.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => CommitUpgrade.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => CommitUpgrade.fromSuiParsedData(T, content),
@@ -1600,10 +1671,19 @@ export class CommitUpgrade<T extends PhantomTypeArgument> implements StructClass
     return CommitUpgrade.phantom
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('CommitUpgrade', {
       package_id: ID.bcs,
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof CommitUpgrade.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!CommitUpgrade.cachedBcs) {
+      CommitUpgrade.cachedBcs = CommitUpgrade.instantiateBcs()
+    }
+    return CommitUpgrade.cachedBcs
   }
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(

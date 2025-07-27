@@ -56,6 +56,7 @@ export class UpdateFee implements StructClass {
   }
 
   static reified(): UpdateFeeReified {
+    const reifiedBcs = UpdateFee.bcs
     return {
       typeName: UpdateFee.$typeName,
       fullTypeName: composeSuiType(
@@ -67,8 +68,8 @@ export class UpdateFee implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => UpdateFee.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => UpdateFee.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => UpdateFee.fromBcs(data),
-      bcs: UpdateFee.bcs,
+      fromBcs: (data: Uint8Array) => UpdateFee.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateFee.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFee.fromSuiParsedData(content),
@@ -92,11 +93,20 @@ export class UpdateFee implements StructClass {
     return UpdateFee.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('UpdateFee', {
       mantissa: bcs.u64(),
       exponent: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof UpdateFee.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!UpdateFee.cachedBcs) {
+      UpdateFee.cachedBcs = UpdateFee.instantiateBcs()
+    }
+    return UpdateFee.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): UpdateFee {

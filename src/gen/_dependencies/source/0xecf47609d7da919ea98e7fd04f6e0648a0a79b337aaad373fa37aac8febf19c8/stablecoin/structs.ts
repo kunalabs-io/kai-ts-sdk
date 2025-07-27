@@ -53,6 +53,7 @@ export class STABLECOIN implements StructClass {
   }
 
   static reified(): STABLECOINReified {
+    const reifiedBcs = STABLECOIN.bcs
     return {
       typeName: STABLECOIN.$typeName,
       fullTypeName: composeSuiType(
@@ -64,8 +65,8 @@ export class STABLECOIN implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => STABLECOIN.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => STABLECOIN.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => STABLECOIN.fromBcs(data),
-      bcs: STABLECOIN.bcs,
+      fromBcs: (data: Uint8Array) => STABLECOIN.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => STABLECOIN.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => STABLECOIN.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => STABLECOIN.fromSuiParsedData(content),
@@ -89,10 +90,19 @@ export class STABLECOIN implements StructClass {
     return STABLECOIN.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('STABLECOIN', {
       dummy_field: bcs.bool(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof STABLECOIN.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!STABLECOIN.cachedBcs) {
+      STABLECOIN.cachedBcs = STABLECOIN.instantiateBcs()
+    }
+    return STABLECOIN.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): STABLECOIN {

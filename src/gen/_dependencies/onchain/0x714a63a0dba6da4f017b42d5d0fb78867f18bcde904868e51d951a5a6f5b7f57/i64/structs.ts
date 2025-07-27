@@ -50,6 +50,7 @@ export class I64 implements StructClass {
   }
 
   static reified(): I64Reified {
+    const reifiedBcs = I64.bcs
     return {
       typeName: I64.$typeName,
       fullTypeName: composeSuiType(I64.$typeName, ...[]) as `${typeof PKG_V1}::i64::I64`,
@@ -58,8 +59,8 @@ export class I64 implements StructClass {
       reifiedTypeArgs: [],
       fromFields: (fields: Record<string, any>) => I64.fromFields(fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) => I64.fromFieldsWithTypes(item),
-      fromBcs: (data: Uint8Array) => I64.fromBcs(data),
-      bcs: I64.bcs,
+      fromBcs: (data: Uint8Array) => I64.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
       fromJSONField: (field: any) => I64.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I64.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => I64.fromSuiParsedData(content),
@@ -83,10 +84,19 @@ export class I64 implements StructClass {
     return I64.phantom()
   }
 
-  static get bcs() {
+  private static instantiateBcs() {
     return bcs.struct('I64', {
       bits: bcs.u64(),
     })
+  }
+
+  private static cachedBcs: ReturnType<typeof I64.instantiateBcs> | null = null
+
+  static get bcs() {
+    if (!I64.cachedBcs) {
+      I64.cachedBcs = I64.instantiateBcs()
+    }
+    return I64.cachedBcs
   }
 
   static fromFields(fields: Record<string, any>): I64 {
