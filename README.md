@@ -261,7 +261,7 @@ export async function positionInfo(client: SuiClient) {
 Withdraws liquidity from the position.
 
 ```ts
-import { Position, findPositionCapForWalletPosition } from '@kunalabs-io/kai'
+import { Position, findPositionCapForWalletPosition, USDC } from '@kunalabs-io/kai'
 import { SuiClient } from '@mysten/sui/client'
 
 export async function withdraw(client: SuiClient) {
@@ -292,8 +292,12 @@ export async function withdraw(client: SuiClient) {
     {
       factor: new Decimal(0.5), // reduce the position by 50%
       positionCapId: positionCap.id,
+      routerArgs: {
+        swapMethod: 'exact-in', // or 'exact-out'
+        slippage: 0.0005, // 0.05%
+        overestimationFactor: 0.0005, // 0.05%
+      }
       convertRewardsTo: USDC,
-      slippage: 0.01,
     },
     walletAddress
   )
