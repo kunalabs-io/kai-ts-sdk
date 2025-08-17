@@ -946,7 +946,7 @@ export const POSITION_CONFIG_INFOS: Array<
     rewardCoins: [SUI, DEEP],
   }),
   new PositionConfigInfo({
-    name: 'Bluefin DEEP/SUI',
+    name: 'Bluefin DEEP/SUI 0.2%',
     configId: '0x3bcfc891da3c64c846cbba27238554fa5b123812b45a8c7f251e27bf7c1fa793',
     poolObjectId: '0x1b06371d74082856a1be71760cf49f6a377d050eb57afd017f203e89b09c89a2',
     lendFacilCap: '0x5a530999b7eacf75bfb592647b91da2da80f2722af80c83582be06cbaed238ef',
@@ -1018,7 +1018,7 @@ export const POSITION_CONFIG_INFOS: Array<
     rewardCoins: [BLUE, stSUI],
   }),
   new PositionConfigInfo({
-    name: 'Bluefin SUI/USDC',
+    name: 'Bluefin SUI/USDC 0.2%',
     configId: '0x97d0b302207ebe0581a8c8b072fa302a41b8db2fa86baadd750fd1f2fc9cdf92',
     poolObjectId: '0x3b585786b13af1d8ea067ab37101b6513a05d2f90cfe60e8b1d9e1b46a63c4fa',
     lendFacilCap: '0x65e1f3a32a05c8d5ef8e32555d21f18214b1393d7007d6b502c8cc19157816bc',
@@ -1208,6 +1208,78 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(xBTC.p, wBTC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     rewardCoins: [BLUE, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin DEEP/USDC 0.2%',
+    configId: '0x55c662d98da03a4a0e60fd1e4fe621c30b09cac49f0e0b800ca0c0f22b9fa6d2',
+    poolObjectId: '0xd5e3a3c7396702d8f358a63ef921cc7c1951f52c6dfc2051cc8772cf7cb9900c',
+    lendFacilCap: '0x2f97b916f3eba24eb824ebd7a0751c28849c13c53482e6364c194879659a7b63',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.DEEP as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: DEEPPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(DEEP.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(DEEP.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [DEEP, BLUE],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin SUI/USDC 0.175%',
+    configId: '0xd248b691f00585467010c28f88c8c8b51f9cc0b035dcc36721a06b391d04a11e',
+    poolObjectId: '0x15dbcac854b1fc68fc9467dbd9ab34270447aabd8cc0e04a5864d95ccb86b74a',
+    lendFacilCap: '0x55a04bf565242f0fcb8d51c8567751f099a1a18a7b0a3278fe1f5fe9e500dc27',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.USDC as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: suiPioInfo,
+    pioInfoY: USDCPioInfo,
+    positionReified: Position_.r(SUI.p, USDC.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [BLUE, stSUI],
+  }),
+  new PositionConfigInfo({
+    name: 'Bluefin DEEP/SUI 0.175%',
+    configId: '0xe844f1deb8c1863de32374a5c1c426d082e57e466e3102a297356b1a8ac06e6b',
+    poolObjectId: '0x7242459a663c4e59434252ceb27c228f6b1f21f2ba506f3b62d71b19a7421cc1',
+    lendFacilCap: '0xdf7cb67bc8b6fa82af20659dceb34a2970ea7d6d699d15e7c73cb361f30677f2',
+    supplyPoolXInfo: SUPPLY_POOL_INFOS.DEEP as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    supplyPoolYInfo: SUPPLY_POOL_INFOS.SUI as SupplyPoolInfo<
+      PhantomTypeArgument,
+      PhantomTypeArgument
+    >,
+    pioInfoX: DEEPPioInfo,
+    pioInfoY: suiPioInfo,
+    positionReified: Position_.r(DEEP.p, SUI.p, BluefinPosition.r) as PositionReified<
+      PhantomTypeArgument,
+      PhantomTypeArgument,
+      TypeArgument
+    >,
+    poolReified: BluefinPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
+    isReversedPair: false,
+    rewardCoins: [DEEP],
   }),
 ]
 
