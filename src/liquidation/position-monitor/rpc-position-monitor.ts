@@ -93,7 +93,8 @@ export class RpcPositionMonitor extends BasePositionMonitor {
       positionInfos,
       this.logger,
       this.config.includeDeleveragePositions,
-      this.config.minAssetValue
+      this.config.minAssetValue,
+      this.config.positionSkipList
     )
   }
 

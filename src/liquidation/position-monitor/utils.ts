@@ -1,7 +1,7 @@
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { SupplyPool } from '../../lp/supply-pool'
-import { CoinInfo, SUI } from '../../coin-info'
+import { CoinInfo } from '../../coin-info'
 import { Price } from '../../price'
 import { PositionConfig } from '../../lp/config'
 import { PriceFeed, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
@@ -104,12 +104,18 @@ export function filterByLiquidationAndDeleverageNeeded(
   positionInfos: PositionInfo[],
   logger: Logger,
   includeDeleveragePositions: boolean = false,
-  minAssetValue: number = 0.01
+  minAssetValue: number = 0.01,
+  positionSkipList: string[] = []
 ): Map<string, PositionInfo> {
   const positionsToProcess = new Map<string, PositionInfo>()
 
   for (const info of positionInfos) {
     const { position, config, marginLevel, assetValue } = info
+
+    if (positionSkipList.includes(position.id)) {
+      logger.info(`Position ${position.id} is in skip list, skipping`)
+      continue
+    }
 
     if (marginLevel.eq(0)) {
       continue
@@ -136,16 +142,14 @@ export function filterByLiquidationAndDeleverageNeeded(
 
       if (hasNothingToDeleverage) {
         logger.info(
-          `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()} and above liquidation margin ${config.liqMargin.toDP(6).toString()},
-            but there's nothing to deleverage`
+          `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()} and above liquidation margin ${config.liqMargin.toDP(6).toString()}, but there's nothing to deleverage`
         )
         continue
       }
 
       positionsToProcess.set(position.id, info)
       logger.info(
-        `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()},
-          adding to positions to process`
+        `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()}, adding to positions to process`
       )
     }
   }

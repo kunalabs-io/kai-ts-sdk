@@ -8,9 +8,11 @@
       "esnext"
     ],
     "isolatedModules": true,
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": "src",
+    "declarationMap": true
   },
   "include": [
-    "src/**/*",
+    "src/**/*"
   ]
 }

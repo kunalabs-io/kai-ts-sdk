@@ -17,3 +17,7 @@ export function muldiv(a: bigint, b: bigint, c: bigint): bigint {
 export function abs(a: bigint): bigint {
   return a < 0n ? -a : a
 }
+
+export function divRoundUp(a: bigint, b: bigint): bigint {
+  return (a + b - 1n) / b
+}

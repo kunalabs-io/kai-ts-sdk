@@ -18,7 +18,7 @@ import {
 } from './config'
 import { Price } from '../price'
 import { Amount } from '../amount'
-import { PositionMath } from './position-math'
+import { PositionDecimalMath } from './position-decimal-math'
 import { DryRunTransactionBlockResponse, SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { COIN_INFO_MAP, CoinInfo, SUI } from '../coin-info'
 import Decimal from 'decimal.js'
@@ -58,6 +58,7 @@ import { getMinSwapAmountBatch, PriceCache } from '../router/util'
 import { createBalanceOfExactValue } from '../coin'
 import * as CetusRedemptionUtil from './cetus-redemption-util'
 import * as positionCore from '../gen/kai-leverage/position-core-clmm/functions'
+import { PositionModel } from './position-model'
 
 export interface PositionConstructorArgs<
   X extends PhantomTypeArgument,
@@ -733,17 +734,43 @@ export class Position<
   }
 
   /**
+   * Constructs and returns a PositionModel instance representing the current LP position.
+   *
+   * This model includes the position's tick range (as sqrt prices), liquidity, collateral, and debt shares.
+   *
+   * @returns {PositionModel} The PositionModel for this LP position.
+   */
+  positionModel(): PositionModel {
+    const { tickA, tickB } = this.getRange()
+    const sqrtPaX64 = tickIndexToSqrtPriceX64(tickA)
+    const sqrtPbX64 = tickIndexToSqrtPriceX64(tickB)
+
+    return new PositionModel({
+      sqrtPaX64,
+      sqrtPbX64,
+      l: this.lpLiquidity,
+      cx: this.colX.int,
+      cy: this.colY.int,
+      dx: this.debtSharesX,
+      dy: this.debtSharesY,
+    })
+  }
+
+  /**
    * Calculates the amount of X in the underlying CLMM LP position given the current pool price.
    *
    * @param currentPrice - The current pool price.
    * @returns The amount of X in the position.
    */
   calcX(currentPrice: Price<X, Y>): Amount {
-    const l = new Decimal(this.lpLiquidity.toString())
-    const { pa, pb } = this.getRange()
-
-    const val = PositionMath.X(pa.numeric, pb.numeric, currentPrice.numeric, l)
-    return Amount.fromInt(BigInt(val.toFixed(0, Decimal.ROUND_DOWN)), this.X.decimals)
+    const sqrtPx64 = BigInt(
+      currentPrice.numeric
+        .sqrt()
+        .mul((1n << 64n).toString())
+        .toFixed(0)
+    )
+    const val = this.positionModel().xX64(sqrtPx64) >> 64n
+    return Amount.fromInt(val, this.X.decimals)
   }
 
   /**
@@ -753,11 +780,14 @@ export class Position<
    * @returns The amount of Y in the position.
    */
   calcY(currentPrice: Price<X, Y>): Amount {
-    const l = new Decimal(this.lpLiquidity.toString())
-    const { pa, pb } = this.getRange()
-
-    const val = PositionMath.Y(pa.numeric, pb.numeric, currentPrice.numeric, l)
-    return Amount.fromInt(BigInt(val.toFixed(0, Decimal.ROUND_DOWN)), this.Y.decimals)
+    const sqrtPx64 = BigInt(
+      currentPrice.numeric
+        .sqrt()
+        .mul((1n << 64n).toString())
+        .toFixed(0)
+    )
+    const val = this.positionModel().yX64(sqrtPx64) >> 64n
+    return Amount.fromInt(val, this.Y.decimals)
   }
 
   /**
@@ -837,7 +867,7 @@ export class Position<
    * @param args - The arguments for the calculation.
    * @returns The position's math.
    */
-  pm(args: GetPositionMathArgs<X, Y>): PositionMath {
+  pm(args: GetPositionMathArgs<X, Y>): PositionDecimalMath {
     if (args.supplyPoolX.id !== this.configInfo.supplyPoolXInfo.id) {
       throw new Error('supply pool X id mismatch')
     }
@@ -858,7 +888,7 @@ export class Position<
         .int.toString()
     )
 
-    return new PositionMath({
+    return new PositionDecimalMath({
       pa: pa.numeric,
       pb: pb.numeric,
       L: new Decimal(this.lpLiquidity.toString()),

@@ -17,7 +17,7 @@ function asIntN(int: bigint, bits = 32) {
 }
 
 function toX64(num: Decimal): bigint {
-  return BigInt(num.mul(Decimal.pow(2, 64)).floor().toFixed())
+  return BigInt(num.mul(Decimal.pow(2, 64)).floor().toFixed(0))
 }
 
 function fromX64(num: bigint): Decimal {

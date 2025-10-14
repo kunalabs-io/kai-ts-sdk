@@ -13,6 +13,7 @@ const DEFAULT_PRICE_CACHE_REFRESH_INTERVAL_MS = 60 * 60 * 1000 // 1 hour
 
 export interface PositionMonitor {
   onLiquidationNeeded(observer: (positions: Map<string, PositionInfo>) => Promise<void>): void
+  updateSkipList(newSkipList: string[]): void
 }
 
 export interface PositionMonitorConfig {
@@ -20,6 +21,7 @@ export interface PositionMonitorConfig {
   minAssetValue?: number
   priceCacheRefreshIntervalMs?: number
   assetValueCoin?: CoinInfo<PhantomTypeArgument>
+  positionSkipList?: string[]
 }
 
 export abstract class BasePositionMonitor extends Interval implements PositionMonitor {
@@ -40,6 +42,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
       minAssetValue: 0.01,
       priceCacheRefreshIntervalMs: DEFAULT_PRICE_CACHE_REFRESH_INTERVAL_MS,
       assetValueCoin: SUI,
+      positionSkipList: [],
     }
   ) {
     super(pollIntervalMs, logger.child({ task: 'position_monitor' }))
@@ -79,6 +82,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
       await this.notifyLiquidationNeeded(positions)
     } catch (error) {
       logger.error(error, 'Error polling for positions')
+      metrics.monitorPollRunFailuresCount?.add(1)
     }
 
     const duration = Date.now() - start
@@ -91,6 +95,11 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     observer: (positions: Map<string, PositionInfo>) => Promise<void>
   ): void {
     this.liquidationObservers.push(observer)
+  }
+
+  public updateSkipList(newSkipList: string[]) {
+    this.config.positionSkipList = newSkipList
+    this.logger.info(`Updated skip list with ${newSkipList.length} positions`)
   }
 
   protected abstract getPositionsToLiquidateAndDeleverage(): Promise<Map<string, PositionInfo>>

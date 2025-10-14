@@ -1,6 +1,7 @@
 import { Counter, Histogram, Meter, Gauge } from '@opentelemetry/api'
 
 export let monitorPollRunCount: Counter | undefined
+export let monitorPollRunFailuresCount: Counter | undefined
 export let monitorPollRunSuccessDurationMs: Histogram | undefined
 export let getActivePositionInfosRpcFetchLatencyMs: Histogram | undefined
 export let positionsToProcessCount: Gauge | undefined
@@ -33,9 +34,11 @@ function createCounter(meter: Meter, name: string, description: string) {
 }
 
 function createGauge(meter: Meter, name: string, description: string) {
-  return meter.createGauge(name, {
+  const gauge = meter.createGauge(name, {
     description,
   })
+  gauge.record(0)
+  return gauge
 }
 
 /**
@@ -47,6 +50,11 @@ export function registerAll(meter: Meter) {
     meter,
     'monitor_poll_run_count',
     'Number of times the monitor poll has been run'
+  )
+  monitorPollRunFailuresCount = createCounter(
+    meter,
+    'monitor_poll_run_failures_count',
+    'Monitor poll callback failed with an exception'
   )
   monitorPollRunSuccessDurationMs = createHistogram(
     meter,

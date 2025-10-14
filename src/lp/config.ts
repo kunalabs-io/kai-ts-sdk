@@ -37,11 +37,10 @@ import {
   whUSDTe,
   xBTC,
 } from '../coin-info'
-import { PositionMath } from './position-math'
+import { findMaxL } from './position-model'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
 import { Price } from '../price'
-import { min } from '../math'
 import {
   DEEPPioInfo,
   LBTCPioInfo,
@@ -87,6 +86,7 @@ export interface PositionConfigInfoConstructorArgs<
   positionReified: PositionReified<X, Y, LP>
   poolReified: StructClassReified<StructClass, unknown>
   isReversedPair: boolean
+  isStablePair: boolean
   rewardCoins: CoinInfo<PhantomTypeArgument>[]
 }
 
@@ -163,6 +163,7 @@ export class PositionConfigInfo<
   readonly positionReified: PositionReified<X, Y, LP>
   readonly poolReified: StructClassReified<StructClass, unknown>
   readonly isReversedPair: boolean
+  readonly isStablePair: boolean
   readonly rewardCoins: CoinInfo<PhantomTypeArgument>[]
 
   constructor(args: PositionConfigInfoConstructorArgs<X, Y, LP>) {
@@ -179,6 +180,7 @@ export class PositionConfigInfo<
     this.positionReified = args.positionReified
     this.poolReified = args.poolReified
     this.isReversedPair = args.isReversedPair
+    this.isStablePair = args.isStablePair
     this.rewardCoins = args.rewardCoins
   }
 
@@ -518,36 +520,25 @@ export class PositionConfig<
       throw new Error('pythPrice Y type mismatch')
     }
 
-    const tickA = args.tickA
-    const tickB = args.tickB
-    const UX = new Decimal(args.UX.int.toString())
-    const UY = new Decimal(args.UY.int.toString())
-
-    const fmlArgs = {
-      tickA,
-      tickB,
-      UX,
-      UY,
-      minLiqStartPriceDelta: this.minLiqStartPriceDelta,
-      liqMargin: this.liqMargin,
-      minInitMargin: this.minInitMargin,
-    }
-
-    const poolMaxL = BigInt(
-      PositionMath.findMaxL({
-        ...fmlArgs,
-        P0: args.poolPrice.numeric,
-      }).toFixed(0, Decimal.ROUND_DOWN)
+    const poolSqrtP0x64 = BigInt(
+      args.poolPrice.numeric
+        .sqrt()
+        .mul((1n << 64n).toString())
+        .toFixed(0)
     )
+    const oracleP0x128 = BigInt(args.pythPrice.numeric.mul((1n << 128n).toString()).toFixed(0))
 
-    const pythMaxL = BigInt(
-      PositionMath.findMaxL({
-        ...fmlArgs,
-        P0: args.pythPrice.numeric,
-      }).toFixed(0, Decimal.ROUND_DOWN)
-    )
-
-    return min(poolMaxL, pythMaxL)
+    return findMaxL({
+      tickA: args.tickA,
+      tickB: args.tickB,
+      poolSqrtP0x64,
+      oracleP0x128,
+      ux: args.UX.int,
+      uy: args.UY.int,
+      minLiqStartPriceDeltaBps: this.data.minLiqStartPriceDeltaBps,
+      liqMarginBps: this.data.liqMarginBps,
+      minInitMarginBps: this.data.minInitMarginBps,
+    })
   }
 
   /**
@@ -775,6 +766,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(whUSDTe.p, whUSDCe.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -799,6 +791,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, whUSDTe.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: true,
     rewardCoins: [CETUS],
   }),
   new PositionConfigInfo({
@@ -823,6 +816,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: false,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -847,6 +841,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(whUSDTe.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [SUI, BLUE],
   }),
   new PositionConfigInfo({
@@ -871,6 +866,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, suiUSDT.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: true,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -895,6 +891,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [SUI, BLUE, stSUI],
   }),
   new PositionConfigInfo({
@@ -919,6 +916,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, USDY.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: true,
     rewardCoins: [SUI],
   }),
   new PositionConfigInfo({
@@ -943,6 +941,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [SUI, DEEP],
   }),
   new PositionConfigInfo({
@@ -967,6 +966,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [BLUE, DEEP],
   }),
   new PositionConfigInfo({
@@ -991,6 +991,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [BLUE, stSUI],
   }),
   new PositionConfigInfo({
@@ -1015,6 +1016,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [BLUE, stSUI],
   }),
   new PositionConfigInfo({
@@ -1039,6 +1041,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [stSUI, BLUE],
   }),
   new PositionConfigInfo({
@@ -1063,6 +1066,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(WAL.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [WAL, stSUI, BLUE],
   }),
   new PositionConfigInfo({
@@ -1087,6 +1091,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, suiUSDT.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: true,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -1111,6 +1116,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(LBTC.p, wBTC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [DEEP, BLUE],
   }),
   new PositionConfigInfo({
@@ -1135,6 +1141,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: false,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -1159,6 +1166,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(WAL.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [BLUE, stSUI, WAL],
   }),
   new PositionConfigInfo({
@@ -1183,6 +1191,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: CetusPool.r(USDC.p, suiUSDT.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: true,
+    isStablePair: true,
     rewardCoins: [SUI, CETUS],
   }),
   new PositionConfigInfo({
@@ -1207,6 +1216,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(xBTC.p, wBTC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: true,
     rewardCoins: [BLUE, stSUI],
   }),
   new PositionConfigInfo({
@@ -1231,6 +1241,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(DEEP.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [DEEP, BLUE],
   }),
   new PositionConfigInfo({
@@ -1255,6 +1266,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [BLUE, stSUI],
   }),
   new PositionConfigInfo({
@@ -1279,6 +1291,7 @@ export const POSITION_CONFIG_INFOS: Array<
     >,
     poolReified: BluefinPool.r(DEEP.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
+    isStablePair: false,
     rewardCoins: [DEEP],
   }),
 ]

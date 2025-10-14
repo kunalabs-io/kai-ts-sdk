@@ -4,7 +4,7 @@
         "composite": false,
         "emitDeclarationOnly": false,
         "noEmit": false,
-        "rootDir": null,
+        "declarationMap": true
     },
     "include": [
         "src"
