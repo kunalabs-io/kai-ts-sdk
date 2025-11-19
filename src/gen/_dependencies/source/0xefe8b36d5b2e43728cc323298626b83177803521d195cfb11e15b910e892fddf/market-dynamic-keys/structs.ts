@@ -99,7 +99,7 @@ export class BorrowFeeKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowFeeKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowFeeKey.instantiateBcs> {
     if (!BorrowFeeKey.cachedBcs) {
       BorrowFeeKey.cachedBcs = BorrowFeeKey.instantiateBcs()
     }
@@ -274,7 +274,7 @@ export class BorrowFeeRecipientKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowFeeRecipientKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowFeeRecipientKey.instantiateBcs> {
     if (!BorrowFeeRecipientKey.cachedBcs) {
       BorrowFeeRecipientKey.cachedBcs = BorrowFeeRecipientKey.instantiateBcs()
     }
@@ -449,7 +449,7 @@ export class SupplyLimitKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SupplyLimitKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SupplyLimitKey.instantiateBcs> {
     if (!SupplyLimitKey.cachedBcs) {
       SupplyLimitKey.cachedBcs = SupplyLimitKey.instantiateBcs()
     }

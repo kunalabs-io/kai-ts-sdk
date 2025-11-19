@@ -7,28 +7,30 @@ export function init(tx: Transaction) {
 }
 
 export interface CompleteArgs {
-  deployerCap: TransactionObjectInput
+  deployer: TransactionObjectInput
   upgradeCap: TransactionObjectInput
-  u16: number | TransactionArgument
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
-  u321: number | TransactionArgument
-  vecVecU8: Array<Array<number | TransactionArgument> | TransactionArgument> | TransactionArgument
-  u322: number | TransactionArgument
-  u64: bigint | TransactionArgument
+  governanceChain: number | TransactionArgument
+  governanceContract: Array<number | TransactionArgument> | TransactionArgument
+  guardianSetIndex: number | TransactionArgument
+  initialGuardians:
+    | Array<Array<number | TransactionArgument> | TransactionArgument>
+    | TransactionArgument
+  guardianSetSecondsToLive: number | TransactionArgument
+  messageFee: bigint | TransactionArgument
 }
 
 export function complete(tx: Transaction, args: CompleteArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::setup::complete`,
     arguments: [
-      obj(tx, args.deployerCap),
+      obj(tx, args.deployer),
       obj(tx, args.upgradeCap),
-      pure(tx, args.u16, `u16`),
-      pure(tx, args.vecU8, `vector<u8>`),
-      pure(tx, args.u321, `u32`),
-      pure(tx, args.vecVecU8, `vector<vector<u8>>`),
-      pure(tx, args.u322, `u32`),
-      pure(tx, args.u64, `u64`),
+      pure(tx, args.governanceChain, `u16`),
+      pure(tx, args.governanceContract, `vector<u8>`),
+      pure(tx, args.guardianSetIndex, `u32`),
+      pure(tx, args.initialGuardians, `vector<vector<u8>>`),
+      pure(tx, args.guardianSetSecondsToLive, `u32`),
+      pure(tx, args.messageFee, `u64`),
     ],
   })
 }

@@ -122,7 +122,7 @@ export class StakeSubsidy implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StakeSubsidy.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StakeSubsidy.instantiateBcs> {
     if (!StakeSubsidy.cachedBcs) {
       StakeSubsidy.cachedBcs = StakeSubsidy.instantiateBcs()
     }

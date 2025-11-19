@@ -140,7 +140,7 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
 
   private static cachedBcs: ReturnType<typeof TimeLockedBalance.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TimeLockedBalance.instantiateBcs> {
     if (!TimeLockedBalance.cachedBcs) {
       TimeLockedBalance.cachedBcs = TimeLockedBalance.instantiateBcs()
     }

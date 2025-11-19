@@ -134,7 +134,7 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
 
   private static cachedBcs: ReturnType<typeof PriceUpdateRequest.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceUpdateRequest.instantiateBcs> {
     if (!PriceUpdateRequest.cachedBcs) {
       PriceUpdateRequest.cachedBcs = PriceUpdateRequest.instantiateBcs()
     }
@@ -367,7 +367,7 @@ export class PriceUpdatePolicy implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceUpdatePolicy.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceUpdatePolicy.instantiateBcs> {
     if (!PriceUpdatePolicy.cachedBcs) {
       PriceUpdatePolicy.cachedBcs = PriceUpdatePolicy.instantiateBcs()
     }
@@ -551,7 +551,7 @@ export class PriceUpdatePolicyCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceUpdatePolicyCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceUpdatePolicyCap.instantiateBcs> {
     if (!PriceUpdatePolicyCap.cachedBcs) {
       PriceUpdatePolicyCap.cachedBcs = PriceUpdatePolicyCap.instantiateBcs()
     }

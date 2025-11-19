@@ -119,7 +119,7 @@ export class IncentiveInjectInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof IncentiveInjectInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof IncentiveInjectInfo.instantiateBcs> {
     if (!IncentiveInjectInfo.cachedBcs) {
       IncentiveInjectInfo.cachedBcs = IncentiveInjectInfo.instantiateBcs()
     }
@@ -296,7 +296,7 @@ export class AdminCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AdminCap.instantiateBcs> {
     if (!AdminCap.cachedBcs) {
       AdminCap.cachedBcs = AdminCap.instantiateBcs()
     }
@@ -511,7 +511,7 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
 
   private static cachedBcs: ReturnType<typeof Strategy.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Strategy.instantiateBcs> {
     if (!Strategy.cachedBcs) {
       Strategy.cachedBcs = Strategy.instantiateBcs()
     }

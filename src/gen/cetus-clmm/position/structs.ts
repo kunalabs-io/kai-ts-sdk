@@ -115,7 +115,7 @@ export class PositionManager implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionManager.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionManager.instantiateBcs> {
     if (!PositionManager.cachedBcs) {
       PositionManager.cachedBcs = PositionManager.instantiateBcs()
     }
@@ -305,7 +305,7 @@ export class POSITION implements StructClass {
 
   private static cachedBcs: ReturnType<typeof POSITION.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof POSITION.instantiateBcs> {
     if (!POSITION.cachedBcs) {
       POSITION.cachedBcs = POSITION.instantiateBcs()
     }
@@ -514,7 +514,7 @@ export class Position implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Position.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Position.instantiateBcs> {
     if (!Position.cachedBcs) {
       Position.cachedBcs = Position.instantiateBcs()
     }
@@ -767,7 +767,7 @@ export class PositionInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionInfo.instantiateBcs> {
     if (!PositionInfo.cachedBcs) {
       PositionInfo.cachedBcs = PositionInfo.instantiateBcs()
     }
@@ -990,7 +990,7 @@ export class PositionReward implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionReward.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionReward.instantiateBcs> {
     if (!PositionReward.cachedBcs) {
       PositionReward.cachedBcs = PositionReward.instantiateBcs()
     }

@@ -114,7 +114,7 @@ export class BridgeMessage implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeMessage.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeMessage.instantiateBcs> {
     if (!BridgeMessage.cachedBcs) {
       BridgeMessage.cachedBcs = BridgeMessage.instantiateBcs()
     }
@@ -311,7 +311,7 @@ export class BridgeMessageKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeMessageKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeMessageKey.instantiateBcs> {
     if (!BridgeMessageKey.cachedBcs) {
       BridgeMessageKey.cachedBcs = BridgeMessageKey.instantiateBcs()
     }
@@ -511,7 +511,7 @@ export class TokenTransferPayload implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TokenTransferPayload.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TokenTransferPayload.instantiateBcs> {
     if (!TokenTransferPayload.cachedBcs) {
       TokenTransferPayload.cachedBcs = TokenTransferPayload.instantiateBcs()
     }
@@ -699,7 +699,7 @@ export class EmergencyOp implements StructClass {
 
   private static cachedBcs: ReturnType<typeof EmergencyOp.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof EmergencyOp.instantiateBcs> {
     if (!EmergencyOp.cachedBcs) {
       EmergencyOp.cachedBcs = EmergencyOp.instantiateBcs()
     }
@@ -869,7 +869,7 @@ export class Blocklist implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Blocklist.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Blocklist.instantiateBcs> {
     if (!Blocklist.cachedBcs) {
       Blocklist.cachedBcs = Blocklist.instantiateBcs()
     }
@@ -1066,7 +1066,7 @@ export class UpdateBridgeLimit implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateBridgeLimit.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateBridgeLimit.instantiateBcs> {
     if (!UpdateBridgeLimit.cachedBcs) {
       UpdateBridgeLimit.cachedBcs = UpdateBridgeLimit.instantiateBcs()
     }
@@ -1251,7 +1251,7 @@ export class UpdateAssetPrice implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateAssetPrice.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateAssetPrice.instantiateBcs> {
     if (!UpdateAssetPrice.cachedBcs) {
       UpdateAssetPrice.cachedBcs = UpdateAssetPrice.instantiateBcs()
     }
@@ -1437,7 +1437,7 @@ export class AddTokenOnSui implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddTokenOnSui.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddTokenOnSui.instantiateBcs> {
     if (!AddTokenOnSui.cachedBcs) {
       AddTokenOnSui.cachedBcs = AddTokenOnSui.instantiateBcs()
     }
@@ -1651,7 +1651,7 @@ export class ParsedTokenTransferMessage implements StructClass {
   private static cachedBcs: ReturnType<typeof ParsedTokenTransferMessage.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ParsedTokenTransferMessage.instantiateBcs> {
     if (!ParsedTokenTransferMessage.cachedBcs) {
       ParsedTokenTransferMessage.cachedBcs = ParsedTokenTransferMessage.instantiateBcs()
     }

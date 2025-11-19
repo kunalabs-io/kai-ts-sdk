@@ -100,7 +100,7 @@ export class AdminCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AdminCap.instantiateBcs> {
     if (!AdminCap.cachedBcs) {
       AdminCap.cachedBcs = AdminCap.instantiateBcs()
     }
@@ -291,7 +291,7 @@ export class CreateSpoolEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CreateSpoolEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CreateSpoolEvent.instantiateBcs> {
     if (!CreateSpoolEvent.cachedBcs) {
       CreateSpoolEvent.cachedBcs = CreateSpoolEvent.instantiateBcs()
     }
@@ -517,7 +517,7 @@ export class UpdateSpoolConfigEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateSpoolConfigEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateSpoolConfigEvent.instantiateBcs> {
     if (!UpdateSpoolConfigEvent.cachedBcs) {
       UpdateSpoolConfigEvent.cachedBcs = UpdateSpoolConfigEvent.instantiateBcs()
     }

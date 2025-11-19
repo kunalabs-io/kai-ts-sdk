@@ -121,7 +121,7 @@ export class CollateralWithdrawEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CollateralWithdrawEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollateralWithdrawEvent.instantiateBcs> {
     if (!CollateralWithdrawEvent.cachedBcs) {
       CollateralWithdrawEvent.cachedBcs = CollateralWithdrawEvent.instantiateBcs()
     }

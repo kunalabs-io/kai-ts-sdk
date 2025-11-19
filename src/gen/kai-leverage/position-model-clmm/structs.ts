@@ -122,7 +122,7 @@ export class PositionModel implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionModel.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionModel.instantiateBcs> {
     if (!PositionModel.cachedBcs) {
       PositionModel.cachedBcs = PositionModel.instantiateBcs()
     }

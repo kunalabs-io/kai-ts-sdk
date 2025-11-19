@@ -3,11 +3,11 @@ import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface AuthorizeVerifyGlobalArgs {
-  t0: GenericArg
-  u16: number | TransactionArgument
-  externalAddress: TransactionObjectInput
-  bytes32: TransactionObjectInput
-  u8: number | TransactionArgument
+  witness: GenericArg
+  governanceChain: number | TransactionArgument
+  governanceContract: TransactionObjectInput
+  moduleName: TransactionObjectInput
+  action: number | TransactionArgument
 }
 
 export function authorizeVerifyGlobal(
@@ -19,21 +19,21 @@ export function authorizeVerifyGlobal(
     target: `${PUBLISHED_AT}::governance_message::authorize_verify_global`,
     typeArguments: [typeArg],
     arguments: [
-      generic(tx, `${typeArg}`, args.t0),
-      pure(tx, args.u16, `u16`),
-      obj(tx, args.externalAddress),
-      obj(tx, args.bytes32),
-      pure(tx, args.u8, `u8`),
+      generic(tx, `${typeArg}`, args.witness),
+      pure(tx, args.governanceChain, `u16`),
+      obj(tx, args.governanceContract),
+      obj(tx, args.moduleName),
+      pure(tx, args.action, `u8`),
     ],
   })
 }
 
 export interface AuthorizeVerifyLocalArgs {
-  t0: GenericArg
-  u16: number | TransactionArgument
-  externalAddress: TransactionObjectInput
-  bytes32: TransactionObjectInput
-  u8: number | TransactionArgument
+  witness: GenericArg
+  governanceChain: number | TransactionArgument
+  governanceContract: TransactionObjectInput
+  moduleName: TransactionObjectInput
+  action: number | TransactionArgument
 }
 
 export function authorizeVerifyLocal(
@@ -45,72 +45,72 @@ export function authorizeVerifyLocal(
     target: `${PUBLISHED_AT}::governance_message::authorize_verify_local`,
     typeArguments: [typeArg],
     arguments: [
-      generic(tx, `${typeArg}`, args.t0),
-      pure(tx, args.u16, `u16`),
-      obj(tx, args.externalAddress),
-      obj(tx, args.bytes32),
-      pure(tx, args.u8, `u8`),
+      generic(tx, `${typeArg}`, args.witness),
+      pure(tx, args.governanceChain, `u16`),
+      obj(tx, args.governanceContract),
+      obj(tx, args.moduleName),
+      pure(tx, args.action, `u8`),
     ],
   })
 }
 
-export function sequence(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
+export function sequence(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::sequence`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, decreeReceipt)],
+    arguments: [obj(tx, receipt)],
   })
 }
 
 export interface TakePayloadArgs {
-  consumedVaAs: TransactionObjectInput
-  decreeReceipt: TransactionObjectInput
+  consumed: TransactionObjectInput
+  receipt: TransactionObjectInput
 }
 
 export function takePayload(tx: Transaction, typeArg: string, args: TakePayloadArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::take_payload`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.consumedVaAs), obj(tx, args.decreeReceipt)],
+    arguments: [obj(tx, args.consumed), obj(tx, args.receipt)],
   })
 }
 
-export function payload(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
+export function payload(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::payload`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, decreeReceipt)],
+    arguments: [obj(tx, receipt)],
   })
 }
 
-export function destroy(tx: Transaction, typeArg: string, decreeReceipt: TransactionObjectInput) {
+export function destroy(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::destroy`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, decreeReceipt)],
+    arguments: [obj(tx, receipt)],
   })
 }
 
 export interface VerifyVaaArgs {
-  state: TransactionObjectInput
-  vaa: TransactionObjectInput
-  decreeTicket: TransactionObjectInput
+  wormholeState: TransactionObjectInput
+  verifiedVaa: TransactionObjectInput
+  ticket: TransactionObjectInput
 }
 
 export function verifyVaa(tx: Transaction, typeArg: string, args: VerifyVaaArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::verify_vaa`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.state), obj(tx, args.vaa), obj(tx, args.decreeTicket)],
+    arguments: [obj(tx, args.wormholeState), obj(tx, args.verifiedVaa), obj(tx, args.ticket)],
   })
 }
 
 export function deserialize(
   tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
+  buf: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::governance_message::deserialize`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
+    arguments: [pure(tx, buf, `vector<u8>`)],
   })
 }

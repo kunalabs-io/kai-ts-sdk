@@ -119,7 +119,7 @@ export class BorrowEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowEvent.instantiateBcs> {
     if (!BorrowEvent.cachedBcs) {
       BorrowEvent.cachedBcs = BorrowEvent.instantiateBcs()
     }
@@ -331,7 +331,7 @@ export class BorrowEventV2 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowEventV2.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowEventV2.instantiateBcs> {
     if (!BorrowEventV2.cachedBcs) {
       BorrowEventV2.cachedBcs = BorrowEventV2.instantiateBcs()
     }
@@ -555,7 +555,7 @@ export class BorrowEventV3 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowEventV3.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowEventV3.instantiateBcs> {
     if (!BorrowEventV3.cachedBcs) {
       BorrowEventV3.cachedBcs = BorrowEventV3.instantiateBcs()
     }

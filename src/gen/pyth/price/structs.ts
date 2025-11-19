@@ -108,7 +108,7 @@ export class Price implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Price.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Price.instantiateBcs> {
     if (!Price.cachedBcs) {
       Price.cachedBcs = Price.instantiateBcs()
     }

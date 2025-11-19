@@ -95,7 +95,7 @@ export class Random implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Random.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Random.instantiateBcs> {
     if (!Random.cachedBcs) {
       Random.cachedBcs = Random.instantiateBcs()
     }

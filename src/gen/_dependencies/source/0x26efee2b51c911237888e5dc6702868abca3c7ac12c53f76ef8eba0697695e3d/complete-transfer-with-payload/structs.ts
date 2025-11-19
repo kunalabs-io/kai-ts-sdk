@@ -126,7 +126,7 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
 
   private static cachedBcs: ReturnType<typeof RedeemerReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RedeemerReceipt.instantiateBcs> {
     if (!RedeemerReceipt.cachedBcs) {
       RedeemerReceipt.cachedBcs = RedeemerReceipt.instantiateBcs()
     }

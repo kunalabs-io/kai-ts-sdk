@@ -3,6 +3,18 @@ import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export interface NewArgs {
+  currentSqrtPrice: bigint | TransactionArgument
+  removePercent: bigint | TransactionArgument
+}
+
+export function new_(tx: Transaction, args: NewArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_snapshot::new`,
+    arguments: [pure(tx, args.currentSqrtPrice, `u128`), pure(tx, args.removePercent, `u64`)],
+  })
+}
+
 export function removePercent(tx: Transaction, snapshot: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_snapshot::remove_percent`,
@@ -17,16 +29,16 @@ export function currentSqrtPrice(tx: Transaction, snapshot: TransactionObjectInp
   })
 }
 
-export function totalValueCutted(tx: Transaction, snapshot: TransactionObjectInput) {
+export function totalValueCut(tx: Transaction, snapshot: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_snapshot::total_value_cutted`,
+    target: `${PUBLISHED_AT}::position_snapshot::total_value_cut`,
     arguments: [obj(tx, snapshot)],
   })
 }
 
-export function valueCutted(tx: Transaction, snapshot: TransactionObjectInput) {
+export function valueCut(tx: Transaction, snapshot: TransactionObjectInput) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_snapshot::value_cutted`,
+    target: `${PUBLISHED_AT}::position_snapshot::value_cut`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -78,6 +90,25 @@ export function calculateRemoveLiquidity(tx: Transaction, args: CalculateRemoveL
   })
 }
 
+export interface AddArgs {
+  snapshot: TransactionObjectInput
+  positionId: string | TransactionArgument
+  valueCut: bigint | TransactionArgument
+  positionInfo: TransactionObjectInput
+}
+
+export function add(tx: Transaction, args: AddArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_snapshot::add`,
+    arguments: [
+      obj(tx, args.snapshot),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+      pure(tx, args.valueCut, `u64`),
+      obj(tx, args.positionInfo),
+    ],
+  })
+}
+
 export interface GetArgs {
   snapshot: TransactionObjectInput
   positionId: string | TransactionArgument
@@ -98,6 +129,18 @@ export interface ContainsArgs {
 export function contains(tx: Transaction, args: ContainsArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_snapshot::contains`,
+    arguments: [obj(tx, args.snapshot), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
+export interface RemoveArgs {
+  snapshot: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function remove(tx: Transaction, args: RemoveArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_snapshot::remove`,
     arguments: [obj(tx, args.snapshot), pure(tx, args.positionId, `${ID.$typeName}`)],
   })
 }

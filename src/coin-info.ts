@@ -298,7 +298,8 @@ export const BLUE = new CoinInfo({
   description: '',
   symbol: 'BLUE',
   displaySymbol: 'BLUE',
-  iconUrl: 'https://trade.bluefin.io/tokens/BLUE.svg',
+  iconUrl:
+    'https://coinmeta.polymedia.app/img/coins/0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca-blue-BLUE.webp',
 })
 
 export const suiUSDT = new CoinInfo({

@@ -102,7 +102,7 @@ export class OptionU128 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof OptionU128.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OptionU128.instantiateBcs> {
     if (!OptionU128.cachedBcs) {
       OptionU128.cachedBcs = OptionU128.instantiateBcs()
     }

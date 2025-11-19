@@ -98,7 +98,7 @@ export class YWHUSDTE implements StructClass {
 
   private static cachedBcs: ReturnType<typeof YWHUSDTE.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof YWHUSDTE.instantiateBcs> {
     if (!YWHUSDTE.cachedBcs) {
       YWHUSDTE.cachedBcs = YWHUSDTE.instantiateBcs()
     }

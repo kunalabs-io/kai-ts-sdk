@@ -1,5 +1,9 @@
 import { Price } from '../../price'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionObjectArgument,
+  TransactionObjectInput,
+} from '@mysten/sui/transactions'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 import * as balance from '../../gen/sui/balance/functions'
 import { compressSuiType } from '../../gen/_framework/util'
@@ -187,7 +191,7 @@ export function swapWithRoute(
   route: Array<RouteStep>,
   balanceIn: TransactionObjectInput
 ) {
-  let currentIn = balanceIn
+  let currentIn: TransactionObjectArgument = tx.object(balanceIn)
   for (const step of route) {
     switch (step.pool.protocol) {
       case 'cetus':
@@ -205,9 +209,9 @@ export function swapWithRoute(
   return currentIn
 }
 
-export function swap(tx: Transaction, args: SwapArgs) {
+export function swap(tx: Transaction, args: SwapArgs): TransactionObjectArgument {
   if (compressSuiType(args.inInfo.typeName) === compressSuiType(args.outInfo.typeName)) {
-    return args.balanceIn
+    return tx.object(args.balanceIn)
   }
 
   const route = findRoute(args.inInfo, args.outInfo, args.allowedProtocols)
@@ -237,7 +241,7 @@ export class KaiRouterAdapter implements Router {
       balanceIn: args.balanceIn,
       inInfo: args.inInfo,
       outInfo: args.outInfo,
-    }) as TransactionArgument
+    })
 
     return {
       tx: args.tx,

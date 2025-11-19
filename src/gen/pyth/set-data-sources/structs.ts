@@ -102,7 +102,7 @@ export class DataSources implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DataSources.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DataSources.instantiateBcs> {
     if (!DataSources.cachedBcs) {
       DataSources.cachedBcs = DataSources.instantiateBcs()
     }

@@ -111,7 +111,7 @@ export class Unit implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Unit.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Unit.instantiateBcs> {
     if (!Unit.cachedBcs) {
       Unit.cachedBcs = Unit.instantiateBcs()
     }
@@ -287,7 +287,7 @@ export class Set<A extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Set.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Set.instantiateBcs> {
     if (!Set.cachedBcs) {
       Set.cachedBcs = Set.instantiateBcs()
     }

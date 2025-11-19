@@ -134,7 +134,7 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof OneTimeLockValue.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OneTimeLockValue.instantiateBcs> {
     if (!OneTimeLockValue.cachedBcs) {
       OneTimeLockValue.cachedBcs = OneTimeLockValue.instantiateBcs()
     }

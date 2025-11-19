@@ -1,11 +1,17 @@
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
 import * as balance from '../../gen/sui/balance/functions'
 import * as cetusUtil from '../../gen/kai-leverage-util/cetus/functions'
 import { CETUS_GLOBAL_CONFIG_ID } from '../../constants'
 import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
-import * as cetusRouter from '../../gen/cetus/router/functions'
+import * as cetusRouter from '../../gen/cetus-integrate/router/functions'
 import * as coin from '../../gen/sui/coin/functions'
 import { PoolInfo } from './pool-info'
 
@@ -13,7 +19,11 @@ function getSqrtPriceLimit(a2b: boolean) {
   return a2b ? 4295048016n : 79226673515401279992447579055n
 }
 
-export function swapStep(tx: Transaction, step: RouteStep, balanceIn: TransactionObjectInput) {
+export function swapStep(
+  tx: Transaction,
+  step: RouteStep,
+  balanceIn: TransactionObjectInput
+): TransactionObjectArgument {
   const { pool, a2b } = step
   const byAmountIn = true
 
@@ -110,7 +120,14 @@ export interface FlashSwapReceipt {
   readonly object: TransactionObjectInput
 }
 
-export function flashSwap(tx: Transaction, args: FlashSwapArguments) {
+export function flashSwap(
+  tx: Transaction,
+  args: FlashSwapArguments
+): {
+  balanceOut: TransactionObjectInput
+  repayAmount: TransactionResult
+  receipt: FlashSwapReceipt
+} {
   const route = findRoute(args.coinInInfo, args.coinOutInfo, ['cetus'])
   if (!route) {
     throw new Error(

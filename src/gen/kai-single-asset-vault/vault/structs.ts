@@ -129,7 +129,7 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
 
   private static cachedBcs: ReturnType<typeof DepositEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DepositEvent.instantiateBcs> {
     if (!DepositEvent.cachedBcs) {
       DepositEvent.cachedBcs = DepositEvent.instantiateBcs()
     }
@@ -362,7 +362,7 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof WithdrawEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WithdrawEvent.instantiateBcs> {
     if (!WithdrawEvent.cachedBcs) {
       WithdrawEvent.cachedBcs = WithdrawEvent.instantiateBcs()
     }
@@ -602,7 +602,7 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
 
   private static cachedBcs: ReturnType<typeof StrategyProfitEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StrategyProfitEvent.instantiateBcs> {
     if (!StrategyProfitEvent.cachedBcs) {
       StrategyProfitEvent.cachedBcs = StrategyProfitEvent.instantiateBcs()
     }
@@ -846,7 +846,7 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
 
   private static cachedBcs: ReturnType<typeof StrategyLossEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StrategyLossEvent.instantiateBcs> {
     if (!StrategyLossEvent.cachedBcs) {
       StrategyLossEvent.cachedBcs = StrategyLossEvent.instantiateBcs()
     }
@@ -1079,7 +1079,7 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AdminCap.instantiateBcs> {
     if (!AdminCap.cachedBcs) {
       AdminCap.cachedBcs = AdminCap.instantiateBcs()
     }
@@ -1293,7 +1293,7 @@ export class VaultAccess implements StructClass {
 
   private static cachedBcs: ReturnType<typeof VaultAccess.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VaultAccess.instantiateBcs> {
     if (!VaultAccess.cachedBcs) {
       VaultAccess.cachedBcs = VaultAccess.instantiateBcs()
     }
@@ -1502,7 +1502,7 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
 
   private static cachedBcs: ReturnType<typeof StrategyRemovalTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StrategyRemovalTicket.instantiateBcs> {
     if (!StrategyRemovalTicket.cachedBcs) {
       StrategyRemovalTicket.cachedBcs = StrategyRemovalTicket.instantiateBcs()
     }
@@ -1773,7 +1773,7 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
 
   private static cachedBcs: ReturnType<typeof StrategyWithdrawInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StrategyWithdrawInfo.instantiateBcs> {
     if (!StrategyWithdrawInfo.cachedBcs) {
       StrategyWithdrawInfo.cachedBcs = StrategyWithdrawInfo.instantiateBcs()
     }
@@ -2040,7 +2040,7 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
 
   private static cachedBcs: ReturnType<typeof WithdrawTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WithdrawTicket.instantiateBcs> {
     if (!WithdrawTicket.cachedBcs) {
       WithdrawTicket.cachedBcs = WithdrawTicket.instantiateBcs()
     }
@@ -2308,7 +2308,7 @@ export class RebalanceInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RebalanceInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RebalanceInfo.instantiateBcs> {
     if (!RebalanceInfo.cachedBcs) {
       RebalanceInfo.cachedBcs = RebalanceInfo.instantiateBcs()
     }
@@ -2485,7 +2485,7 @@ export class RebalanceAmounts implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RebalanceAmounts.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RebalanceAmounts.instantiateBcs> {
     if (!RebalanceAmounts.cachedBcs) {
       RebalanceAmounts.cachedBcs = RebalanceAmounts.instantiateBcs()
     }
@@ -2672,7 +2672,7 @@ export class StrategyState implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StrategyState.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StrategyState.instantiateBcs> {
     if (!StrategyState.cachedBcs) {
       StrategyState.cachedBcs = StrategyState.instantiateBcs()
     }
@@ -2917,7 +2917,7 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
 
   private static cachedBcs: ReturnType<typeof Vault.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Vault.instantiateBcs> {
     if (!Vault.cachedBcs) {
       Vault.cachedBcs = Vault.instantiateBcs()
     }

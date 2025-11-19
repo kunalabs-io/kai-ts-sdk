@@ -101,7 +101,7 @@ export class PythFeeRecipient implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PythFeeRecipient.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PythFeeRecipient.instantiateBcs> {
     if (!PythFeeRecipient.cachedBcs) {
       PythFeeRecipient.cachedBcs = PythFeeRecipient.instantiateBcs()
     }

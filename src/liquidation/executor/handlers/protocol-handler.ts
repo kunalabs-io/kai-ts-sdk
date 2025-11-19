@@ -1,9 +1,4 @@
-import {
-  Transaction,
-  TransactionArgument,
-  TransactionObjectInput,
-  TransactionResult,
-} from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/sui/transactions'
 import { Position } from '../../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../../gen/_framework/reified'
 
@@ -27,7 +22,7 @@ export interface ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayYBalance: TransactionObjectInput
-  ): TransactionArgument
+  ): TransactionResult
 
   calcLiquidateColY(
     tx: Transaction,
@@ -42,5 +37,5 @@ export interface ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayXBalance: TransactionObjectInput
-  ): TransactionArgument
+  ): TransactionResult
 }

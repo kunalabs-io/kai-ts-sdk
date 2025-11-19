@@ -82,6 +82,78 @@ export function borrowRewarder(tx: Transaction, typeArg: string, manager: Transa
   })
 }
 
+export function borrowMutRewarder(
+  tx: Transaction,
+  typeArg: string,
+  manager: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::borrow_mut_rewarder`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export function addRewarder(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::add_rewarder`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, manager)],
+  })
+}
+
+export interface SettleArgs {
+  manager: TransactionObjectInput
+  liquidity: bigint | TransactionArgument
+  timestamp: bigint | TransactionArgument
+}
+
+export function settle(tx: Transaction, args: SettleArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::settle`,
+    arguments: [
+      obj(tx, args.manager),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.timestamp, `u64`),
+    ],
+  })
+}
+
+export interface UpdateEmissionArgs {
+  vault: TransactionObjectInput
+  manager: TransactionObjectInput
+  liquidity: bigint | TransactionArgument
+  emissionsPerSecond: bigint | TransactionArgument
+  timestamp: bigint | TransactionArgument
+}
+
+export function updateEmission(tx: Transaction, typeArg: string, args: UpdateEmissionArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::update_emission`,
+    typeArguments: [typeArg],
+    arguments: [
+      obj(tx, args.vault),
+      obj(tx, args.manager),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.emissionsPerSecond, `u128`),
+      pure(tx, args.timestamp, `u64`),
+    ],
+  })
+}
+
+export interface WithdrawRewardArgs {
+  vault: TransactionObjectInput
+  amount: bigint | TransactionArgument
+}
+
+export function withdrawReward(tx: Transaction, typeArg: string, args: WithdrawRewardArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::rewarder::withdraw_reward`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.vault), pure(tx, args.amount, `u64`)],
+  })
+}
+
 export interface DepositRewardArgs {
   config: TransactionObjectInput
   vault: TransactionObjectInput

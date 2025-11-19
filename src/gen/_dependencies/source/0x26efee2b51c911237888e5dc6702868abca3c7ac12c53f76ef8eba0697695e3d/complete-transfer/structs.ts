@@ -22,7 +22,7 @@ import {
   parseTypeName,
 } from '../../../../_framework/util'
 import { Coin } from '../../../../sui/coin/structs'
-import { ExternalAddress } from '../../0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/external-address/structs'
+import { ExternalAddress } from '../../../../wormhole/external-address/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -119,7 +119,7 @@ export class TransferRedeemed implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TransferRedeemed.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TransferRedeemed.instantiateBcs> {
     if (!TransferRedeemed.cachedBcs) {
       TransferRedeemed.cachedBcs = TransferRedeemed.instantiateBcs()
     }
@@ -310,7 +310,7 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
 
   private static cachedBcs: ReturnType<typeof RelayerReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RelayerReceipt.instantiateBcs> {
     if (!RelayerReceipt.cachedBcs) {
       RelayerReceipt.cachedBcs = RelayerReceipt.instantiateBcs()
     }

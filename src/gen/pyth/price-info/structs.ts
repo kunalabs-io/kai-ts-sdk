@@ -104,7 +104,7 @@ export class PriceInfoObject implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceInfoObject.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceInfoObject.instantiateBcs> {
     if (!PriceInfoObject.cachedBcs) {
       PriceInfoObject.cachedBcs = PriceInfoObject.instantiateBcs()
     }
@@ -289,7 +289,7 @@ export class PriceInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceInfo.instantiateBcs> {
     if (!PriceInfo.cachedBcs) {
       PriceInfo.cachedBcs = PriceInfo.instantiateBcs()
     }

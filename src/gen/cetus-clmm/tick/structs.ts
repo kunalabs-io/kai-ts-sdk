@@ -109,7 +109,7 @@ export class TickManager implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TickManager.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TickManager.instantiateBcs> {
     if (!TickManager.cachedBcs) {
       TickManager.cachedBcs = TickManager.instantiateBcs()
     }
@@ -314,7 +314,7 @@ export class Tick implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Tick.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Tick.instantiateBcs> {
     if (!Tick.cachedBcs) {
       Tick.cachedBcs = Tick.instantiateBcs()
     }

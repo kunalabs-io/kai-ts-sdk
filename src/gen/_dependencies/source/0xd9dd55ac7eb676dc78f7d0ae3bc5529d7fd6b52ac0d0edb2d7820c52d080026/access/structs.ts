@@ -125,7 +125,7 @@ export class PackageAdmin implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PackageAdmin.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PackageAdmin.instantiateBcs> {
     if (!PackageAdmin.cachedBcs) {
       PackageAdmin.cachedBcs = PackageAdmin.instantiateBcs()
     }
@@ -299,7 +299,7 @@ export class Entity implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Entity.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Entity.instantiateBcs> {
     if (!Entity.cachedBcs) {
       Entity.cachedBcs = Entity.instantiateBcs()
     }
@@ -471,7 +471,7 @@ export class Rule implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Rule.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Rule.instantiateBcs> {
     if (!Rule.cachedBcs) {
       Rule.cachedBcs = Rule.instantiateBcs()
     }
@@ -687,7 +687,7 @@ export class Policy implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Policy.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Policy.instantiateBcs> {
     if (!Policy.cachedBcs) {
       Policy.cachedBcs = Policy.instantiateBcs()
     }
@@ -900,7 +900,7 @@ export class ActionRequest implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ActionRequest.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ActionRequest.instantiateBcs> {
     if (!ActionRequest.cachedBcs) {
       ActionRequest.cachedBcs = ActionRequest.instantiateBcs()
     }
@@ -1151,7 +1151,7 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
 
   private static cachedBcs: ReturnType<typeof ConditionWitness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConditionWitness.instantiateBcs> {
     if (!ConditionWitness.cachedBcs) {
       ConditionWitness.cachedBcs = ConditionWitness.instantiateBcs()
     }
@@ -1410,7 +1410,7 @@ export class ConfigNone implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ConfigNone.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConfigNone.instantiateBcs> {
     if (!ConfigNone.cachedBcs) {
       ConfigNone.cachedBcs = ConfigNone.instantiateBcs()
     }

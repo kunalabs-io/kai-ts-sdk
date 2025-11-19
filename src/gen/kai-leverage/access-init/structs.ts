@@ -98,7 +98,7 @@ export class ACCESS_INIT implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ACCESS_INIT.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ACCESS_INIT.instantiateBcs> {
     if (!ACCESS_INIT.cachedBcs) {
       ACCESS_INIT.cachedBcs = ACCESS_INIT.instantiateBcs()
     }

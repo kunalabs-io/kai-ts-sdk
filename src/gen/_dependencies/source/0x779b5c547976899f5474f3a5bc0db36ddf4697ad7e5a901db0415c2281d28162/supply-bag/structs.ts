@@ -104,7 +104,7 @@ export class SupplyBag implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SupplyBag.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SupplyBag.instantiateBcs> {
     if (!SupplyBag.cachedBcs) {
       SupplyBag.cachedBcs = SupplyBag.instantiateBcs()
     }

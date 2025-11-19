@@ -1,7 +1,4 @@
 import * as reified from '../../_framework/reified'
-import { UID } from '../../_dependencies/onchain/0x2/object/structs'
-import { UpgradeCap } from '../../_dependencies/onchain/0x2/package/structs'
-import { Table } from '../../_dependencies/onchain/0x2/table/structs'
 import {
   PhantomReified,
   Reified,
@@ -15,6 +12,9 @@ import {
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import { UID } from '../../sui/object/structs'
+import { UpgradeCap } from '../../sui/package/structs'
+import { Table } from '../../sui/table/structs'
 import { ConsumedVAAs } from '../consumed-vaas/structs'
 import { ExternalAddress } from '../external-address/structs'
 import { FeeCollector } from '../fee-collector/structs'
@@ -107,7 +107,7 @@ export class LatestOnly implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LatestOnly.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LatestOnly.instantiateBcs> {
     if (!LatestOnly.cachedBcs) {
       LatestOnly.cachedBcs = LatestOnly.instantiateBcs()
     }
@@ -305,7 +305,7 @@ export class State implements StructClass {
 
   private static cachedBcs: ReturnType<typeof State.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof State.instantiateBcs> {
     if (!State.cachedBcs) {
       State.cachedBcs = State.instantiateBcs()
     }

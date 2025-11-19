@@ -106,7 +106,7 @@ export class DenyList implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DenyList.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DenyList.instantiateBcs> {
     if (!DenyList.cachedBcs) {
       DenyList.cachedBcs = DenyList.instantiateBcs()
     }
@@ -283,7 +283,7 @@ export class ConfigWriteCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ConfigWriteCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConfigWriteCap.instantiateBcs> {
     if (!ConfigWriteCap.cachedBcs) {
       ConfigWriteCap.cachedBcs = ConfigWriteCap.instantiateBcs()
     }
@@ -457,7 +457,7 @@ export class ConfigKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ConfigKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConfigKey.instantiateBcs> {
     if (!ConfigKey.cachedBcs) {
       ConfigKey.cachedBcs = ConfigKey.instantiateBcs()
     }
@@ -634,7 +634,7 @@ export class AddressKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddressKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddressKey.instantiateBcs> {
     if (!AddressKey.cachedBcs) {
       AddressKey.cachedBcs = AddressKey.instantiateBcs()
     }
@@ -803,7 +803,7 @@ export class GlobalPauseKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GlobalPauseKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GlobalPauseKey.instantiateBcs> {
     if (!GlobalPauseKey.cachedBcs) {
       GlobalPauseKey.cachedBcs = GlobalPauseKey.instantiateBcs()
     }
@@ -983,7 +983,7 @@ export class PerTypeConfigCreated implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PerTypeConfigCreated.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PerTypeConfigCreated.instantiateBcs> {
     if (!PerTypeConfigCreated.cachedBcs) {
       PerTypeConfigCreated.cachedBcs = PerTypeConfigCreated.instantiateBcs()
     }
@@ -1167,7 +1167,7 @@ export class PerTypeList implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PerTypeList.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PerTypeList.instantiateBcs> {
     if (!PerTypeList.cachedBcs) {
       PerTypeList.cachedBcs = PerTypeList.instantiateBcs()
     }

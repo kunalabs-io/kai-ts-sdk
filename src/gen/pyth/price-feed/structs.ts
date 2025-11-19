@@ -108,7 +108,7 @@ export class PriceFeed implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceFeed.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceFeed.instantiateBcs> {
     if (!PriceFeed.cachedBcs) {
       PriceFeed.cachedBcs = PriceFeed.instantiateBcs()
     }

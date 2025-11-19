@@ -121,7 +121,7 @@ export class CollateralDepositEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CollateralDepositEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollateralDepositEvent.instantiateBcs> {
     if (!CollateralDepositEvent.cachedBcs) {
       CollateralDepositEvent.cachedBcs = CollateralDepositEvent.instantiateBcs()
     }

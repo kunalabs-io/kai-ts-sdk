@@ -110,7 +110,7 @@ export class BalanceBag implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BalanceBag.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BalanceBag.instantiateBcs> {
     if (!BalanceBag.cachedBcs) {
       BalanceBag.cachedBcs = BalanceBag.instantiateBcs()
     }

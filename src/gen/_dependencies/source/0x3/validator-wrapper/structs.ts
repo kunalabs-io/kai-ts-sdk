@@ -98,7 +98,7 @@ export class ValidatorWrapper implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorWrapper.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorWrapper.instantiateBcs> {
     if (!ValidatorWrapper.cachedBcs) {
       ValidatorWrapper.cachedBcs = ValidatorWrapper.instantiateBcs()
     }

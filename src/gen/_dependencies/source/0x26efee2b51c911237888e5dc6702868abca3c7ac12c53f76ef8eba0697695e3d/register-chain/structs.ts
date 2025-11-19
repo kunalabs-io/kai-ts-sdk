@@ -10,7 +10,7 @@ import {
   phantom,
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
-import { ExternalAddress } from '../../0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/external-address/structs'
+import { ExternalAddress } from '../../../../wormhole/external-address/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -99,7 +99,7 @@ export class GovernanceWitness implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceWitness.instantiateBcs> {
     if (!GovernanceWitness.cachedBcs) {
       GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
     }
@@ -276,7 +276,7 @@ export class RegisterChain implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RegisterChain.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RegisterChain.instantiateBcs> {
     if (!RegisterChain.cachedBcs) {
       RegisterChain.cachedBcs = RegisterChain.instantiateBcs()
     }

@@ -121,7 +121,7 @@ export class DynamicMap<K extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DynamicMap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DynamicMap.instantiateBcs> {
     if (!DynamicMap.cachedBcs) {
       DynamicMap.cachedBcs = DynamicMap.instantiateBcs()
     }

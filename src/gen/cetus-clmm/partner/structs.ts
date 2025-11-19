@@ -106,7 +106,7 @@ export class Partners implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Partners.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Partners.instantiateBcs> {
     if (!Partners.cachedBcs) {
       Partners.cachedBcs = Partners.instantiateBcs()
     }
@@ -294,7 +294,7 @@ export class PartnerCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PartnerCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PartnerCap.instantiateBcs> {
     if (!PartnerCap.cachedBcs) {
       PartnerCap.cachedBcs = PartnerCap.instantiateBcs()
     }
@@ -495,7 +495,7 @@ export class Partner implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Partner.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Partner.instantiateBcs> {
     if (!Partner.cachedBcs) {
       Partner.cachedBcs = Partner.instantiateBcs()
     }
@@ -688,7 +688,7 @@ export class InitPartnerEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof InitPartnerEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InitPartnerEvent.instantiateBcs> {
     if (!InitPartnerEvent.cachedBcs) {
       InitPartnerEvent.cachedBcs = InitPartnerEvent.instantiateBcs()
     }
@@ -888,7 +888,7 @@ export class CreatePartnerEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CreatePartnerEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CreatePartnerEvent.instantiateBcs> {
     if (!CreatePartnerEvent.cachedBcs) {
       CreatePartnerEvent.cachedBcs = CreatePartnerEvent.instantiateBcs()
     }
@@ -1099,7 +1099,7 @@ export class UpdateRefFeeRateEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateRefFeeRateEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateRefFeeRateEvent.instantiateBcs> {
     if (!UpdateRefFeeRateEvent.cachedBcs) {
       UpdateRefFeeRateEvent.cachedBcs = UpdateRefFeeRateEvent.instantiateBcs()
     }
@@ -1293,7 +1293,7 @@ export class UpdateTimeRangeEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateTimeRangeEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateTimeRangeEvent.instantiateBcs> {
     if (!UpdateTimeRangeEvent.cachedBcs) {
       UpdateTimeRangeEvent.cachedBcs = UpdateTimeRangeEvent.instantiateBcs()
     }
@@ -1484,7 +1484,7 @@ export class ReceiveRefFeeEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ReceiveRefFeeEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ReceiveRefFeeEvent.instantiateBcs> {
     if (!ReceiveRefFeeEvent.cachedBcs) {
       ReceiveRefFeeEvent.cachedBcs = ReceiveRefFeeEvent.instantiateBcs()
     }
@@ -1673,7 +1673,7 @@ export class ClaimRefFeeEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ClaimRefFeeEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ClaimRefFeeEvent.instantiateBcs> {
     if (!ClaimRefFeeEvent.cachedBcs) {
       ClaimRefFeeEvent.cachedBcs = ClaimRefFeeEvent.instantiateBcs()
     }

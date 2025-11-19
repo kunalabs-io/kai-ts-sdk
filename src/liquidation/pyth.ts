@@ -23,9 +23,9 @@ export function updatePriceFeeds(tx: Transaction, info: PriceFeedUpdateInfo) {
   const vaa = extractVaaBytesFromAccumulatorMessage(priceFeedsUpdateData)
 
   const [verifiedVaa] = parseAndVerify(tx, {
-    state: WORMHOLE_STATE_ID,
-    vecU8: Array.from(vaa),
-    clock: SUI_CLOCK_OBJECT_ID,
+    wormholeState: WORMHOLE_STATE_ID,
+    buf: Array.from(vaa),
+    theClock: SUI_CLOCK_OBJECT_ID,
   })
 
   let priceUpdatesHotPotato

@@ -1,4 +1,3 @@
-import { ID } from '../../_dependencies/onchain/0x2/object/structs'
 import {
   PhantomReified,
   Reified,
@@ -11,6 +10,7 @@ import {
   phantom,
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import { ID } from '../../sui/object/structs'
 import { Bytes32 } from '../bytes32/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
@@ -100,7 +100,7 @@ export class CurrentVersion implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CurrentVersion.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CurrentVersion.instantiateBcs> {
     if (!CurrentVersion.cachedBcs) {
       CurrentVersion.cachedBcs = CurrentVersion.instantiateBcs()
     }
@@ -273,7 +273,7 @@ export class CurrentPackage implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CurrentPackage.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CurrentPackage.instantiateBcs> {
     if (!CurrentPackage.cachedBcs) {
       CurrentPackage.cachedBcs = CurrentPackage.instantiateBcs()
     }
@@ -446,7 +446,7 @@ export class PendingPackage implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PendingPackage.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PendingPackage.instantiateBcs> {
     if (!PendingPackage.cachedBcs) {
       PendingPackage.cachedBcs = PendingPackage.instantiateBcs()
     }
@@ -623,7 +623,7 @@ export class PackageInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PackageInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PackageInfo.instantiateBcs> {
     if (!PackageInfo.cachedBcs) {
       PackageInfo.cachedBcs = PackageInfo.instantiateBcs()
     }

@@ -129,7 +129,7 @@ export class VAA implements StructClass {
 
   private static cachedBcs: ReturnType<typeof VAA.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VAA.instantiateBcs> {
     if (!VAA.cachedBcs) {
       VAA.cachedBcs = VAA.instantiateBcs()
     }

@@ -122,7 +122,7 @@ export class MintEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof MintEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof MintEvent.instantiateBcs> {
     if (!MintEvent.cachedBcs) {
       MintEvent.cachedBcs = MintEvent.instantiateBcs()
     }

@@ -15,6 +15,64 @@ export function new_(tx: Transaction, args: NewArgs) {
   })
 }
 
+export interface IncreaseLiquidityArgs {
+  manager: TransactionObjectInput
+  poolCurrentTickIdx: TransactionObjectInput
+  tickLowerIdx: TransactionObjectInput
+  tickUpperIdx: TransactionObjectInput
+  deltaLiquidity: bigint | TransactionArgument
+  feeGrowthGlobalA: bigint | TransactionArgument
+  feeGrowthGlobalB: bigint | TransactionArgument
+  pointsGrowthGlobal: bigint | TransactionArgument
+  rewardsGrowthGlobal: Array<bigint | TransactionArgument> | TransactionArgument
+}
+
+export function increaseLiquidity(tx: Transaction, args: IncreaseLiquidityArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::increase_liquidity`,
+    arguments: [
+      obj(tx, args.manager),
+      obj(tx, args.poolCurrentTickIdx),
+      obj(tx, args.tickLowerIdx),
+      obj(tx, args.tickUpperIdx),
+      pure(tx, args.deltaLiquidity, `u128`),
+      pure(tx, args.feeGrowthGlobalA, `u128`),
+      pure(tx, args.feeGrowthGlobalB, `u128`),
+      pure(tx, args.pointsGrowthGlobal, `u128`),
+      pure(tx, args.rewardsGrowthGlobal, `vector<u128>`),
+    ],
+  })
+}
+
+export interface DecreaseLiquidityArgs {
+  manager: TransactionObjectInput
+  poolCurrentTickIndex: TransactionObjectInput
+  tickLowerIdx: TransactionObjectInput
+  tickUpperIdx: TransactionObjectInput
+  deltaLiquidity: bigint | TransactionArgument
+  feeGrowthGlobalA: bigint | TransactionArgument
+  feeGrowthGlobalB: bigint | TransactionArgument
+  pointsGrowthGlobal: bigint | TransactionArgument
+  rewardsGrowthGlobal: Array<bigint | TransactionArgument> | TransactionArgument
+}
+
+export function decreaseLiquidity(tx: Transaction, args: DecreaseLiquidityArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::decrease_liquidity`,
+    arguments: [
+      obj(tx, args.manager),
+      obj(tx, args.poolCurrentTickIndex),
+      obj(tx, args.tickLowerIdx),
+      obj(tx, args.tickUpperIdx),
+      pure(tx, args.deltaLiquidity, `u128`),
+      pure(tx, args.feeGrowthGlobalA, `u128`),
+      pure(tx, args.feeGrowthGlobalB, `u128`),
+      pure(tx, args.pointsGrowthGlobal, `u128`),
+      pure(tx, args.rewardsGrowthGlobal, `vector<u128>`),
+    ],
+  })
+}
+
 export interface FirstScoreForSwapArgs {
   manager: TransactionObjectInput
   currentTickIdx: TransactionObjectInput
@@ -38,6 +96,18 @@ export function borrowTickForSwap(tx: Transaction, args: BorrowTickForSwapArgs) 
   return tx.moveCall({
     target: `${PUBLISHED_AT}::tick::borrow_tick_for_swap`,
     arguments: [obj(tx, args.manager), pure(tx, args.score, `u64`), pure(tx, args.a2B, `bool`)],
+  })
+}
+
+export interface TryBorrowTickArgs {
+  manager: TransactionObjectInput
+  tickIdx: TransactionObjectInput
+}
+
+export function tryBorrowTick(tx: Transaction, args: TryBorrowTickArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::try_borrow_tick`,
+    arguments: [obj(tx, args.manager), obj(tx, args.tickIdx)],
   })
 }
 
@@ -171,6 +241,33 @@ export function getPointsInRange(tx: Transaction, args: GetPointsInRangeArgs) {
   })
 }
 
+export interface CrossBySwapArgs {
+  manager: TransactionObjectInput
+  tickIdx: TransactionObjectInput
+  a2B: boolean | TransactionArgument
+  poolCurrentLiquidity: bigint | TransactionArgument
+  feeGrowthGlobalA: bigint | TransactionArgument
+  feeGrowthGlobalB: bigint | TransactionArgument
+  pointsGrowthGlobal: bigint | TransactionArgument
+  rewardGrowthGlobals: Array<bigint | TransactionArgument> | TransactionArgument
+}
+
+export function crossBySwap(tx: Transaction, args: CrossBySwapArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::cross_by_swap`,
+    arguments: [
+      obj(tx, args.manager),
+      obj(tx, args.tickIdx),
+      pure(tx, args.a2B, `bool`),
+      pure(tx, args.poolCurrentLiquidity, `u128`),
+      pure(tx, args.feeGrowthGlobalA, `u128`),
+      pure(tx, args.feeGrowthGlobalB, `u128`),
+      pure(tx, args.pointsGrowthGlobal, `u128`),
+      pure(tx, args.rewardGrowthGlobals, `vector<u128>`),
+    ],
+  })
+}
+
 export interface FetchTicksArgs {
   manager: TransactionObjectInput
   start: Array<number | TransactionArgument> | TransactionArgument
@@ -185,6 +282,55 @@ export function fetchTicks(tx: Transaction, args: FetchTicksArgs) {
       pure(tx, args.start, `vector<u32>`),
       pure(tx, args.limit, `u64`),
     ],
+  })
+}
+
+export function tickCount(tx: Transaction, manager: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::tick_count`, arguments: [obj(tx, manager)] })
+}
+
+export interface UpdateByLiquidityArgs {
+  tick: TransactionObjectInput
+  poolCurrentTickIndex: TransactionObjectInput
+  deltaLiquidity: bigint | TransactionArgument
+  firstInit: boolean | TransactionArgument
+  isIncrease: boolean | TransactionArgument
+  isUpperTick: boolean | TransactionArgument
+  feeGrowthGlobalA: bigint | TransactionArgument
+  feeGrowthGlobalB: bigint | TransactionArgument
+  pointsGrowthGlobal: bigint | TransactionArgument
+  rewardGrowthGlobals: Array<bigint | TransactionArgument> | TransactionArgument
+}
+
+export function updateByLiquidity(tx: Transaction, args: UpdateByLiquidityArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::update_by_liquidity`,
+    arguments: [
+      obj(tx, args.tick),
+      obj(tx, args.poolCurrentTickIndex),
+      pure(tx, args.deltaLiquidity, `u128`),
+      pure(tx, args.firstInit, `bool`),
+      pure(tx, args.isIncrease, `bool`),
+      pure(tx, args.isUpperTick, `bool`),
+      pure(tx, args.feeGrowthGlobalA, `u128`),
+      pure(tx, args.feeGrowthGlobalB, `u128`),
+      pure(tx, args.pointsGrowthGlobal, `u128`),
+      pure(tx, args.rewardGrowthGlobals, `vector<u128>`),
+    ],
+  })
+}
+
+export function default_(tx: Transaction, tickIdx: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::tick::default`, arguments: [obj(tx, tickIdx)] })
+}
+
+export function defaultRewardsGrowthOutside(
+  tx: Transaction,
+  rewardCount: bigint | TransactionArgument
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::tick::default_rewards_growth_outside`,
+    arguments: [pure(tx, rewardCount, `u64`)],
   })
 }
 

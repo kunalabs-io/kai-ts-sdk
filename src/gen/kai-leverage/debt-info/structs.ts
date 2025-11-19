@@ -105,7 +105,7 @@ export class DebtInfoEntry implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DebtInfoEntry.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DebtInfoEntry.instantiateBcs> {
     if (!DebtInfoEntry.cachedBcs) {
       DebtInfoEntry.cachedBcs = DebtInfoEntry.instantiateBcs()
     }
@@ -286,7 +286,7 @@ export class DebtInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DebtInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DebtInfo.instantiateBcs> {
     if (!DebtInfo.cachedBcs) {
       DebtInfo.cachedBcs = DebtInfo.instantiateBcs()
     }
@@ -472,7 +472,7 @@ export class ValidatedDebtInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatedDebtInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatedDebtInfo.instantiateBcs> {
     if (!ValidatedDebtInfo.cachedBcs) {
       ValidatedDebtInfo.cachedBcs = ValidatedDebtInfo.instantiateBcs()
     }

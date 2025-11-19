@@ -120,7 +120,7 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   private static cachedBcs: ReturnType<typeof EquityShareBalance.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof EquityShareBalance.instantiateBcs> {
     if (!EquityShareBalance.cachedBcs) {
       EquityShareBalance.cachedBcs = EquityShareBalance.instantiateBcs()
     }
@@ -349,7 +349,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof EquityRegistry.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof EquityRegistry.instantiateBcs> {
     if (!EquityRegistry.cachedBcs) {
       EquityRegistry.cachedBcs = EquityRegistry.instantiateBcs()
     }
@@ -582,7 +582,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof EquityTreasury.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof EquityTreasury.instantiateBcs> {
     if (!EquityTreasury.cachedBcs) {
       EquityTreasury.cachedBcs = EquityTreasury.instantiateBcs()
     }

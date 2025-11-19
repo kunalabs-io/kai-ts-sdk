@@ -116,7 +116,7 @@ export class BalanceSheets implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BalanceSheets.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BalanceSheets.instantiateBcs> {
     if (!BalanceSheets.cachedBcs) {
       BalanceSheets.cachedBcs = BalanceSheets.instantiateBcs()
     }
@@ -299,7 +299,7 @@ export class BalanceSheet implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BalanceSheet.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BalanceSheet.instantiateBcs> {
     if (!BalanceSheet.cachedBcs) {
       BalanceSheet.cachedBcs = BalanceSheet.instantiateBcs()
     }
@@ -484,7 +484,7 @@ export class FlashLoanFees implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FlashLoanFees.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FlashLoanFees.instantiateBcs> {
     if (!FlashLoanFees.cachedBcs) {
       FlashLoanFees.cachedBcs = FlashLoanFees.instantiateBcs()
     }
@@ -666,7 +666,7 @@ export class FlashLoan<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FlashLoan.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FlashLoan.instantiateBcs> {
     if (!FlashLoan.cachedBcs) {
       FlashLoan.cachedBcs = FlashLoan.instantiateBcs()
     }
@@ -895,7 +895,7 @@ export class MarketCoin<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof MarketCoin.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof MarketCoin.instantiateBcs> {
     if (!MarketCoin.cachedBcs) {
       MarketCoin.cachedBcs = MarketCoin.instantiateBcs()
     }
@@ -1131,7 +1131,7 @@ export class Reserve implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Reserve.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Reserve.instantiateBcs> {
     if (!Reserve.cachedBcs) {
       Reserve.cachedBcs = Reserve.instantiateBcs()
     }

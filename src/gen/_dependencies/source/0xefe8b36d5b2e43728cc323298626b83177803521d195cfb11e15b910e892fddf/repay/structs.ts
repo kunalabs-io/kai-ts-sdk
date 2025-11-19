@@ -119,7 +119,7 @@ export class RepayEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RepayEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RepayEvent.instantiateBcs> {
     if (!RepayEvent.cachedBcs) {
       RepayEvent.cachedBcs = RepayEvent.instantiateBcs()
     }

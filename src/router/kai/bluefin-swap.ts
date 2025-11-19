@@ -1,10 +1,16 @@
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
 import * as balance from '../../gen/sui/balance/functions'
 import * as bluefinUtil from '../../gen/kai-leverage-util/bluefin-spot/functions'
 import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
-import * as bluefinSpot from '../../gen/bluefin-spot/pool/functions'
+import * as bluefinSpot from '../../gen/bluefin_spot/pool/functions'
 import { PoolInfo } from './pool-info'
 import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../constants'
 
@@ -12,7 +18,11 @@ function getSqrtPriceLimit(a2b: boolean) {
   return a2b ? 4295048017n : 79226673515401279992447579054n
 }
 
-export function swapStep(tx: Transaction, step: RouteStep, balanceIn: TransactionObjectInput) {
+export function swapStep(
+  tx: Transaction,
+  step: RouteStep,
+  balanceIn: TransactionObjectInput
+): TransactionObjectArgument {
   const { pool, a2b } = step
   const byAmountIn = true
 
@@ -113,7 +123,14 @@ export interface FlashSwapReceipt {
   readonly object: TransactionObjectInput
 }
 
-export function flashSwap(tx: Transaction, args: FlashSwapArguments) {
+export function flashSwap(
+  tx: Transaction,
+  args: FlashSwapArguments
+): {
+  balanceOut: TransactionObjectInput
+  repayAmount: TransactionResult
+  receipt: FlashSwapReceipt
+} {
   const route = findRoute(args.coinInInfo, args.coinOutInfo, ['bluefin'])
   if (!route) {
     throw new Error(

@@ -138,3 +138,11 @@ export function destroyEmpty(tx: Transaction, self: TransactionObjectInput) {
     arguments: [obj(tx, self)],
   })
 }
+
+export function size(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::size`, arguments: [obj(tx, self)] })
+}
+
+export function length(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_bag::length`, arguments: [obj(tx, self)] })
+}

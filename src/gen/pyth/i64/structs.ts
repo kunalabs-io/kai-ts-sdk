@@ -96,7 +96,7 @@ export class I64 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof I64.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof I64.instantiateBcs> {
     if (!I64.cachedBcs) {
       I64.cachedBcs = I64.instantiateBcs()
     }

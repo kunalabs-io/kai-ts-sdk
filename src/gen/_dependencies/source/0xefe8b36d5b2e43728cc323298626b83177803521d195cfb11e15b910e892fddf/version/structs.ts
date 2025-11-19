@@ -103,7 +103,7 @@ export class Version implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Version.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Version.instantiateBcs> {
     if (!Version.cachedBcs) {
       Version.cachedBcs = Version.instantiateBcs()
     }
@@ -280,7 +280,7 @@ export class VersionCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof VersionCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VersionCap.instantiateBcs> {
     if (!VersionCap.cachedBcs) {
       VersionCap.cachedBcs = VersionCap.instantiateBcs()
     }

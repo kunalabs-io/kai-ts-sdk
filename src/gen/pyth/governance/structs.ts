@@ -1,5 +1,4 @@
 import * as reified from '../../_framework/reified'
-import { Bytes32 } from '../../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/bytes32/structs'
 import {
   PhantomReified,
   Reified,
@@ -14,6 +13,7 @@ import {
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
+import { Bytes32 } from '../../wormhole/bytes32/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -121,7 +121,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     typeof WormholeVAAVerificationReceipt.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WormholeVAAVerificationReceipt.instantiateBcs> {
     if (!WormholeVAAVerificationReceipt.cachedBcs) {
       WormholeVAAVerificationReceipt.cachedBcs = WormholeVAAVerificationReceipt.instantiateBcs()
     }

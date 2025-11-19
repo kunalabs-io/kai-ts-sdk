@@ -143,7 +143,7 @@ export class SpoolAccount<T0 extends PhantomTypeArgument> implements StructClass
 
   private static cachedBcs: ReturnType<typeof SpoolAccount.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SpoolAccount.instantiateBcs> {
     if (!SpoolAccount.cachedBcs) {
       SpoolAccount.cachedBcs = SpoolAccount.instantiateBcs()
     }

@@ -1,5 +1,4 @@
 import * as reified from '../../_framework/reified'
-import { Table } from '../../_dependencies/onchain/0x2/table/structs'
 import {
   PhantomReified,
   PhantomToTypeStr,
@@ -24,6 +23,7 @@ import {
   compressSuiType,
   parseTypeName,
 } from '../../_framework/util'
+import { Table } from '../../sui/table/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -109,7 +109,7 @@ export class Empty implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Empty.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Empty.instantiateBcs> {
     if (!Empty.cachedBcs) {
       Empty.cachedBcs = Empty.instantiateBcs()
     }
@@ -202,13 +202,13 @@ export function isSet(type: string): boolean {
   return type.startsWith(`${PKG_V1}::set::Set` + '<')
 }
 
-export interface SetFields<T0 extends PhantomTypeArgument> {
-  items: ToField<Table<T0, ToPhantom<Empty>>>
+export interface SetFields<T extends PhantomTypeArgument> {
+  items: ToField<Table<T, ToPhantom<Empty>>>
 }
 
-export type SetReified<T0 extends PhantomTypeArgument> = Reified<Set<T0>, SetFields<T0>>
+export type SetReified<T extends PhantomTypeArgument> = Reified<Set<T>, SetFields<T>>
 
-export class Set<T0 extends PhantomTypeArgument> implements StructClass {
+export class Set<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName = `${PKG_V1}::set::Set`
@@ -216,46 +216,46 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
   static readonly $isPhantom = [true] as const
 
   readonly $typeName = Set.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom = Set.$isPhantom
 
-  readonly items: ToField<Table<T0, ToPhantom<Empty>>>
+  readonly items: ToField<Table<T, ToPhantom<Empty>>>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: SetFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: SetFields<T>) {
     this.$fullTypeName = composeSuiType(
       Set.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<T0>}>`
+    ) as `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.items = fields.items
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): SetReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): SetReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = Set.bcs
     return {
       typeName: Set.$typeName,
       fullTypeName: composeSuiType(
         Set.$typeName,
-        ...[extractType(T0)]
-      ) as `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::set::Set<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: Set.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => Set.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Set.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Set.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => Set.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Set.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => Set.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => Set.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => Set.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => Set.fromSuiObjectData(T0, content),
-      fetch: async (client: SuiClient, id: string) => Set.fetch(client, T0, id),
-      new: (fields: SetFields<ToPhantomTypeArgument<T0>>) => {
-        return new Set([extractType(T0)], fields)
+      fromJSONField: (field: any) => Set.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => Set.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => Set.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => Set.fetch(client, T, id),
+      new: (fields: SetFields<ToPhantomTypeArgument<T>>) => {
+        return new Set([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -265,10 +265,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     return Set.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): PhantomReified<ToTypeStr<Set<ToPhantomTypeArgument<T0>>>> {
-    return phantom(Set.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<Set<ToPhantomTypeArgument<T>>>> {
+    return phantom(Set.reified(T))
   }
   static get p() {
     return Set.phantom
@@ -282,17 +282,17 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Set.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Set.instantiateBcs> {
     if (!Set.cachedBcs) {
       Set.cachedBcs = Set.instantiateBcs()
     }
     return Set.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     return Set.reified(typeArg).new({
       items: decodeFromFields(
         Table.reified(typeArg, reified.phantom(Empty.reified())),
@@ -301,10 +301,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     if (!isSet(item.type)) {
       throw new Error('not a Set type')
     }
@@ -318,10 +318,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     return Set.fromFields(typeArg, Set.bcs.parse(data))
   }
 
@@ -335,10 +335,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     return Set.reified(typeArg).new({
       items: decodeFromJSONField(
         Table.reified(typeArg, reified.phantom(Empty.reified())),
@@ -347,10 +347,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== Set.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
@@ -363,10 +363,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     return Set.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -376,10 +376,10 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     return Set.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData
-  ): Set<ToPhantomTypeArgument<T0>> {
+  ): Set<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSet(data.bcs.type)) {
         throw new Error(`object at is not a Set object`)
@@ -409,11 +409,11 @@ export class Set<T0 extends PhantomTypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string
-  ): Promise<Set<ToPhantomTypeArgument<T0>>> {
+  ): Promise<Set<ToPhantomTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
       throw new Error(`error fetching Set object at id ${id}: ${res.error.code}`)

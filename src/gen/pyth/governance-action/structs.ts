@@ -98,7 +98,7 @@ export class GovernanceAction implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceAction.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceAction.instantiateBcs> {
     if (!GovernanceAction.cachedBcs) {
       GovernanceAction.cachedBcs = GovernanceAction.instantiateBcs()
     }

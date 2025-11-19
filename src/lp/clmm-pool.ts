@@ -8,7 +8,7 @@ import {
   Pool as BluefinPool_,
   PoolFields as BluefinPoolFields,
   isPool as isBluefinPool,
-} from '../gen/bluefin-spot/pool/structs'
+} from '../gen/bluefin_spot/pool/structs'
 import Decimal from 'decimal.js'
 import { CoinInfo } from '../coin-info'
 import { Price } from '../price'

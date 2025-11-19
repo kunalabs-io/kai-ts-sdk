@@ -117,7 +117,7 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
 
   private static cachedBcs: ReturnType<typeof DebtShareBalance.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DebtShareBalance.instantiateBcs> {
     if (!DebtShareBalance.cachedBcs) {
       DebtShareBalance.cachedBcs = DebtShareBalance.instantiateBcs()
     }
@@ -346,7 +346,7 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
 
   private static cachedBcs: ReturnType<typeof DebtRegistry.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DebtRegistry.instantiateBcs> {
     if (!DebtRegistry.cachedBcs) {
       DebtRegistry.cachedBcs = DebtRegistry.instantiateBcs()
     }
@@ -579,7 +579,7 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
 
   private static cachedBcs: ReturnType<typeof DebtTreasury.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DebtTreasury.instantiateBcs> {
     if (!DebtTreasury.cachedBcs) {
       DebtTreasury.cachedBcs = DebtTreasury.instantiateBcs()
     }

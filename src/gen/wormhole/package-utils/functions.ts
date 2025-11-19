@@ -2,38 +2,38 @@ import { PUBLISHED_AT } from '..'
 import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function currentPackage(tx: Transaction, uid: TransactionObjectInput) {
+export function currentPackage(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::current_package`,
-    arguments: [obj(tx, uid)],
+    arguments: [obj(tx, id)],
   })
 }
 
-export function currentDigest(tx: Transaction, uid: TransactionObjectInput) {
+export function currentDigest(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::current_digest`,
-    arguments: [obj(tx, uid)],
+    arguments: [obj(tx, id)],
   })
 }
 
-export function committedPackage(tx: Transaction, uid: TransactionObjectInput) {
+export function committedPackage(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::committed_package`,
-    arguments: [obj(tx, uid)],
+    arguments: [obj(tx, id)],
   })
 }
 
-export function authorizedDigest(tx: Transaction, uid: TransactionObjectInput) {
+export function authorizedDigest(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::authorized_digest`,
-    arguments: [obj(tx, uid)],
+    arguments: [obj(tx, id)],
   })
 }
 
 export interface AssertPackageUpgradeCapArgs {
-  upgradeCap: TransactionObjectInput
-  u8: number | TransactionArgument
-  u64: bigint | TransactionArgument
+  cap: TransactionObjectInput
+  expectedPolicy: number | TransactionArgument
+  expectedVersion: bigint | TransactionArgument
 }
 
 export function assertPackageUpgradeCap(
@@ -44,34 +44,38 @@ export function assertPackageUpgradeCap(
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::assert_package_upgrade_cap`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.upgradeCap), pure(tx, args.u8, `u8`), pure(tx, args.u64, `u64`)],
+    arguments: [
+      obj(tx, args.cap),
+      pure(tx, args.expectedPolicy, `u8`),
+      pure(tx, args.expectedVersion, `u64`),
+    ],
   })
 }
 
 export interface AssertVersionArgs {
-  uid: TransactionObjectInput
-  t0: GenericArg
+  id: TransactionObjectInput
+  version: GenericArg
 }
 
 export function assertVersion(tx: Transaction, typeArg: string, args: AssertVersionArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::assert_version`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.uid), generic(tx, `${typeArg}`, args.t0)],
+    arguments: [obj(tx, args.id), generic(tx, `${typeArg}`, args.version)],
   })
 }
 
-export function typeOfVersion(tx: Transaction, typeArg: string, t0: GenericArg) {
+export function typeOfVersion(tx: Transaction, typeArg: string, version: GenericArg) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::type_of_version`,
     typeArguments: [typeArg],
-    arguments: [generic(tx, `${typeArg}`, t0)],
+    arguments: [generic(tx, `${typeArg}`, version)],
   })
 }
 
 export interface InitPackageInfoArgs {
-  uid: TransactionObjectInput
-  t0: GenericArg
+  id: TransactionObjectInput
+  version: GenericArg
   upgradeCap: TransactionObjectInput
 }
 
@@ -79,14 +83,18 @@ export function initPackageInfo(tx: Transaction, typeArg: string, args: InitPack
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::init_package_info`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.uid), generic(tx, `${typeArg}`, args.t0), obj(tx, args.upgradeCap)],
+    arguments: [
+      obj(tx, args.id),
+      generic(tx, `${typeArg}`, args.version),
+      obj(tx, args.upgradeCap),
+    ],
   })
 }
 
 export interface MigrateVersionArgs {
-  uid: TransactionObjectInput
-  t0: GenericArg
-  t1: GenericArg
+  id: TransactionObjectInput
+  oldVersion: GenericArg
+  newVersion: GenericArg
 }
 
 export function migrateVersion(
@@ -98,74 +106,74 @@ export function migrateVersion(
     target: `${PUBLISHED_AT}::package_utils::migrate_version`,
     typeArguments: typeArgs,
     arguments: [
-      obj(tx, args.uid),
-      generic(tx, `${typeArgs[0]}`, args.t0),
-      generic(tx, `${typeArgs[1]}`, args.t1),
+      obj(tx, args.id),
+      generic(tx, `${typeArgs[0]}`, args.oldVersion),
+      generic(tx, `${typeArgs[1]}`, args.newVersion),
     ],
   })
 }
 
 export interface AuthorizeUpgradeArgs {
-  uid: TransactionObjectInput
+  id: TransactionObjectInput
   upgradeCap: TransactionObjectInput
-  bytes32: TransactionObjectInput
+  packageDigest: TransactionObjectInput
 }
 
 export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::authorize_upgrade`,
-    arguments: [obj(tx, args.uid), obj(tx, args.upgradeCap), obj(tx, args.bytes32)],
+    arguments: [obj(tx, args.id), obj(tx, args.upgradeCap), obj(tx, args.packageDigest)],
   })
 }
 
 export interface CommitUpgradeArgs {
-  uid: TransactionObjectInput
+  id: TransactionObjectInput
   upgradeCap: TransactionObjectInput
-  upgradeReceipt: TransactionObjectInput
+  receipt: TransactionObjectInput
 }
 
 export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::commit_upgrade`,
-    arguments: [obj(tx, args.uid), obj(tx, args.upgradeCap), obj(tx, args.upgradeReceipt)],
+    arguments: [obj(tx, args.id), obj(tx, args.upgradeCap), obj(tx, args.receipt)],
   })
 }
 
 export interface SetCommitedPackageArgs {
-  uid: TransactionObjectInput
+  id: TransactionObjectInput
   upgradeCap: TransactionObjectInput
 }
 
 export function setCommitedPackage(tx: Transaction, args: SetCommitedPackageArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::set_commited_package`,
-    arguments: [obj(tx, args.uid), obj(tx, args.upgradeCap)],
+    arguments: [obj(tx, args.id), obj(tx, args.upgradeCap)],
   })
 }
 
 export interface SetAuthorizedDigestArgs {
-  uid: TransactionObjectInput
-  bytes32: TransactionObjectInput
+  id: TransactionObjectInput
+  digest: TransactionObjectInput
 }
 
 export function setAuthorizedDigest(tx: Transaction, args: SetAuthorizedDigestArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::set_authorized_digest`,
-    arguments: [obj(tx, args.uid), obj(tx, args.bytes32)],
+    arguments: [obj(tx, args.id), obj(tx, args.digest)],
   })
 }
 
-export function updatePackageInfoFromPending(tx: Transaction, uid: TransactionObjectInput) {
+export function updatePackageInfoFromPending(tx: Transaction, id: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::package_utils::update_package_info_from_pending`,
-    arguments: [obj(tx, uid)],
+    arguments: [obj(tx, id)],
   })
 }
 
 export interface UpdateVersionTypeArgs {
-  uid: TransactionObjectInput
-  t0: GenericArg
-  t1: GenericArg
+  id: TransactionObjectInput
+  oldVersion: GenericArg
+  newVersion: GenericArg
 }
 
 export function updateVersionType(
@@ -177,9 +185,9 @@ export function updateVersionType(
     target: `${PUBLISHED_AT}::package_utils::update_version_type`,
     typeArguments: typeArgs,
     arguments: [
-      obj(tx, args.uid),
-      generic(tx, `${typeArgs[0]}`, args.t0),
-      generic(tx, `${typeArgs[1]}`, args.t1),
+      obj(tx, args.id),
+      generic(tx, `${typeArgs[0]}`, args.oldVersion),
+      generic(tx, `${typeArgs[1]}`, args.newVersion),
     ],
   })
 }

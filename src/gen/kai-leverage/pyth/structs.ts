@@ -110,7 +110,7 @@ export class PythPriceInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PythPriceInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PythPriceInfo.instantiateBcs> {
     if (!PythPriceInfo.cachedBcs) {
       PythPriceInfo.cachedBcs = PythPriceInfo.instantiateBcs()
     }
@@ -308,7 +308,7 @@ export class ValidatedPythPriceInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatedPythPriceInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatedPythPriceInfo.instantiateBcs> {
     if (!ValidatedPythPriceInfo.cachedBcs) {
       ValidatedPythPriceInfo.cachedBcs = ValidatedPythPriceInfo.instantiateBcs()
     }

@@ -113,7 +113,7 @@ export class BorrowFlashLoanEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowFlashLoanEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowFlashLoanEvent.instantiateBcs> {
     if (!BorrowFlashLoanEvent.cachedBcs) {
       BorrowFlashLoanEvent.cachedBcs = BorrowFlashLoanEvent.instantiateBcs()
     }
@@ -307,7 +307,7 @@ export class RepayFlashLoanEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RepayFlashLoanEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RepayFlashLoanEvent.instantiateBcs> {
     if (!RepayFlashLoanEvent.cachedBcs) {
       RepayFlashLoanEvent.cachedBcs = RepayFlashLoanEvent.instantiateBcs()
     }
@@ -517,7 +517,7 @@ export class BorrowFlashLoanV2Event implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowFlashLoanV2Event.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowFlashLoanV2Event.instantiateBcs> {
     if (!BorrowFlashLoanV2Event.cachedBcs) {
       BorrowFlashLoanV2Event.cachedBcs = BorrowFlashLoanV2Event.instantiateBcs()
     }
@@ -736,7 +736,7 @@ export class RepayFlashLoanV2Event implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RepayFlashLoanV2Event.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RepayFlashLoanV2Event.instantiateBcs> {
     if (!RepayFlashLoanV2Event.cachedBcs) {
       RepayFlashLoanV2Event.cachedBcs = RepayFlashLoanV2Event.instantiateBcs()
     }

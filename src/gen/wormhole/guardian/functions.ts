@@ -4,53 +4,47 @@ import { Transaction, TransactionArgument, TransactionObjectInput } from '@myste
 
 export function new_(
   tx: Transaction,
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
+  pubkey: Array<number | TransactionArgument> | TransactionArgument
 ) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian::new`,
-    arguments: [pure(tx, vecU8, `vector<u8>`)],
+    arguments: [pure(tx, pubkey, `vector<u8>`)],
   })
 }
 
-export function pubkey(tx: Transaction, guardian: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian::pubkey`,
-    arguments: [obj(tx, guardian)],
-  })
+export function pubkey(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::guardian::pubkey`, arguments: [obj(tx, self)] })
 }
 
-export function asBytes(tx: Transaction, guardian: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian::as_bytes`,
-    arguments: [obj(tx, guardian)],
-  })
+export function asBytes(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::guardian::as_bytes`, arguments: [obj(tx, self)] })
 }
 
 export interface VerifyArgs {
-  guardian: TransactionObjectInput
-  guardianSignature: TransactionObjectInput
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
+  self: TransactionObjectInput
+  signature: TransactionObjectInput
+  messageHash: Array<number | TransactionArgument> | TransactionArgument
 }
 
 export function verify(tx: Transaction, args: VerifyArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian::verify`,
     arguments: [
-      obj(tx, args.guardian),
-      obj(tx, args.guardianSignature),
-      pure(tx, args.vecU8, `vector<u8>`),
+      obj(tx, args.self),
+      obj(tx, args.signature),
+      pure(tx, args.messageHash, `vector<u8>`),
     ],
   })
 }
 
 export interface EcrecoverArgs {
-  vecU81: Array<number | TransactionArgument> | TransactionArgument
-  vecU82: Array<number | TransactionArgument> | TransactionArgument
+  message: Array<number | TransactionArgument> | TransactionArgument
+  sig: Array<number | TransactionArgument> | TransactionArgument
 }
 
 export function ecrecover(tx: Transaction, args: EcrecoverArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian::ecrecover`,
-    arguments: [pure(tx, args.vecU81, `vector<u8>`), pure(tx, args.vecU82, `vector<u8>`)],
+    arguments: [pure(tx, args.message, `vector<u8>`), pure(tx, args.sig, `vector<u8>`)],
   })
 }

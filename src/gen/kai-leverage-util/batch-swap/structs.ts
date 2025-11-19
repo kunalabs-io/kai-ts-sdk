@@ -163,7 +163,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
 
   private static cachedBcs: ReturnType<typeof BatchSwap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BatchSwap.instantiateBcs> {
     if (!BatchSwap.cachedBcs) {
       BatchSwap.cachedBcs = BatchSwap.instantiateBcs()
     }
@@ -440,7 +440,7 @@ export class BatchSwapClaim implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BatchSwapClaim.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BatchSwapClaim.instantiateBcs> {
     if (!BatchSwapClaim.cachedBcs) {
       BatchSwapClaim.cachedBcs = BatchSwapClaim.instantiateBcs()
     }

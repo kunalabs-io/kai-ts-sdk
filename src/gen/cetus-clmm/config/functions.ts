@@ -2,6 +2,10 @@ import { PUBLISHED_AT } from '..'
 import { obj, pure } from '../../_framework/util'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::config::init`, arguments: [] })
+}
+
 export interface UpdateProtocolFeeRateArgs {
   config: TransactionObjectInput
   protocolFeeRate: bigint | TransactionArgument
@@ -130,18 +134,6 @@ export function removeMember(tx: Transaction, args: RemoveMemberArgs) {
   })
 }
 
-export interface IsPoolManagerArgs {
-  config: TransactionObjectInput
-  member: string | TransactionArgument
-}
-
-export function isPoolManager(tx: Transaction, args: IsPoolManagerArgs) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::config::is_pool_manager`,
-    arguments: [obj(tx, args.config), pure(tx, args.member, `address`)],
-  })
-}
-
 export function getMembers(tx: Transaction, config: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::config::get_members`,
@@ -174,6 +166,18 @@ export function maxFeeRate(tx: Transaction) {
 
 export function maxProtocolFeeRate(tx: Transaction) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::config::max_protocol_fee_rate`, arguments: [] })
+}
+
+export interface IsPoolManagerArgs {
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+}
+
+export function isPoolManager(tx: Transaction, args: IsPoolManagerArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::is_pool_manager`,
+    arguments: [obj(tx, args.config), pure(tx, args.member, `address`)],
+  })
 }
 
 export interface CheckPoolManagerRoleArgs {
@@ -236,6 +240,18 @@ export function checkRewarderManagerRole(tx: Transaction, args: CheckRewarderMan
   })
 }
 
+export interface CheckEmergencyPauseRoleArgs {
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+}
+
+export function checkEmergencyPauseRole(tx: Transaction, args: CheckEmergencyPauseRoleArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::check_emergency_pause_role`,
+    arguments: [obj(tx, args.config), pure(tx, args.member, `address`)],
+  })
+}
+
 export function tickSpacing(tx: Transaction, feeTier: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::config::tick_spacing`,
@@ -266,6 +282,32 @@ export function checkedPackageVersion(tx: Transaction, config: TransactionObject
   return tx.moveCall({
     target: `${PUBLISHED_AT}::config::checked_package_version`,
     arguments: [obj(tx, config)],
+  })
+}
+
+export function checkEmergencyRestoreVersion(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::check_emergency_restore_version`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function emergencyPause(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::emergency_pause`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface EmergencyUnpauseArgs {
+  config: TransactionObjectInput
+  version: bigint | TransactionArgument
+}
+
+export function emergencyUnpause(tx: Transaction, args: EmergencyUnpauseArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::config::emergency_unpause`,
+    arguments: [obj(tx, args.config), pure(tx, args.version, `u64`)],
   })
 }
 

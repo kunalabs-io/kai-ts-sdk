@@ -5,28 +5,28 @@ import { Transaction, TransactionArgument, TransactionObjectInput } from '@myste
 export function new_(
   tx: Transaction,
   typeArg: string,
-  vecT0: Array<GenericArg> | TransactionArgument
+  data: Array<GenericArg> | TransactionArgument
 ) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::cursor::new`,
     typeArguments: [typeArg],
-    arguments: [vector(tx, `${typeArg}`, vecT0)],
+    arguments: [vector(tx, `${typeArg}`, data)],
   })
 }
 
-export function data(tx: Transaction, typeArg: string, cursor: TransactionObjectInput) {
+export function data(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::cursor::data`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, cursor)],
+    arguments: [obj(tx, self)],
   })
 }
 
-export function isEmpty(tx: Transaction, typeArg: string, cursor: TransactionObjectInput) {
+export function isEmpty(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::cursor::is_empty`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, cursor)],
+    arguments: [obj(tx, self)],
   })
 }
 
@@ -46,10 +46,10 @@ export function takeRest(tx: Transaction, typeArg: string, cursor: TransactionOb
   })
 }
 
-export function poke(tx: Transaction, typeArg: string, cursor: TransactionObjectInput) {
+export function poke(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::cursor::poke`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, cursor)],
+    arguments: [obj(tx, self)],
   })
 }

@@ -31,7 +31,7 @@ import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
 import { BalanceBag } from '../balance-bag/structs'
-import { PKG_V1, PKG_V11, PKG_V16, PKG_V3 } from '../index'
+import { PKG_V1, PKG_V11, PKG_V16, PKG_V17, PKG_V3 } from '../index'
 import { PositionModel } from '../position-model-clmm/structs'
 import { FacilDebtBag, FacilDebtShare, LendFacilCap } from '../supply-pool/structs'
 import { BcsType, bcs } from '@mysten/sui/bcs'
@@ -121,7 +121,7 @@ export class ACreateConfig implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ACreateConfig.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ACreateConfig.instantiateBcs> {
     if (!ACreateConfig.cachedBcs) {
       ACreateConfig.cachedBcs = ACreateConfig.instantiateBcs()
     }
@@ -292,7 +292,7 @@ export class AModifyConfig implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AModifyConfig.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AModifyConfig.instantiateBcs> {
     if (!AModifyConfig.cachedBcs) {
       AModifyConfig.cachedBcs = AModifyConfig.instantiateBcs()
     }
@@ -463,7 +463,7 @@ export class AMigrate implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AMigrate.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AMigrate.instantiateBcs> {
     if (!AMigrate.cachedBcs) {
       AMigrate.cachedBcs = AMigrate.instantiateBcs()
     }
@@ -632,7 +632,7 @@ export class ADeleverage implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ADeleverage.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ADeleverage.instantiateBcs> {
     if (!ADeleverage.cachedBcs) {
       ADeleverage.cachedBcs = ADeleverage.instantiateBcs()
     }
@@ -801,7 +801,7 @@ export class ARebalance implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ARebalance.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ARebalance.instantiateBcs> {
     if (!ARebalance.cachedBcs) {
       ARebalance.cachedBcs = ARebalance.instantiateBcs()
     }
@@ -973,7 +973,7 @@ export class ACollectProtocolFees implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ACollectProtocolFees.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ACollectProtocolFees.instantiateBcs> {
     if (!ACollectProtocolFees.cachedBcs) {
       ACollectProtocolFees.cachedBcs = ACollectProtocolFees.instantiateBcs()
     }
@@ -1148,7 +1148,7 @@ export class ARepayBadDebt implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ARepayBadDebt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ARepayBadDebt.instantiateBcs> {
     if (!ARepayBadDebt.cachedBcs) {
       ARepayBadDebt.cachedBcs = ARepayBadDebt.instantiateBcs()
     }
@@ -1416,7 +1416,7 @@ export class CreatePositionTicket<
 
   private static cachedBcs: ReturnType<typeof CreatePositionTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CreatePositionTicket.instantiateBcs> {
     if (!CreatePositionTicket.cachedBcs) {
       CreatePositionTicket.cachedBcs = CreatePositionTicket.instantiateBcs()
     }
@@ -1799,7 +1799,7 @@ export class Position<
 
   private static cachedBcs: ReturnType<typeof Position.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Position.instantiateBcs> {
     if (!Position.cachedBcs) {
       Position.cachedBcs = Position.instantiateBcs()
     }
@@ -2094,7 +2094,7 @@ export class PositionCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionCap.instantiateBcs> {
     if (!PositionCap.cachedBcs) {
       PositionCap.cachedBcs = PositionCap.instantiateBcs()
     }
@@ -2275,7 +2275,7 @@ export class PythConfig implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PythConfig.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PythConfig.instantiateBcs> {
     if (!PythConfig.cachedBcs) {
       PythConfig.cachedBcs = PythConfig.instantiateBcs()
     }
@@ -2533,7 +2533,7 @@ export class PositionConfig implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionConfig.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionConfig.instantiateBcs> {
     if (!PositionConfig.cachedBcs) {
       PositionConfig.cachedBcs = PositionConfig.instantiateBcs()
     }
@@ -2793,7 +2793,7 @@ export class LiquidationDisabledKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LiquidationDisabledKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LiquidationDisabledKey.instantiateBcs> {
     if (!LiquidationDisabledKey.cachedBcs) {
       LiquidationDisabledKey.cachedBcs = LiquidationDisabledKey.instantiateBcs()
     }
@@ -2971,7 +2971,7 @@ export class ReductionDisabledKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ReductionDisabledKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ReductionDisabledKey.instantiateBcs> {
     if (!ReductionDisabledKey.cachedBcs) {
       ReductionDisabledKey.cachedBcs = ReductionDisabledKey.instantiateBcs()
     }
@@ -3152,7 +3152,7 @@ export class AddLiquidityDisabledKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddLiquidityDisabledKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddLiquidityDisabledKey.instantiateBcs> {
     if (!AddLiquidityDisabledKey.cachedBcs) {
       AddLiquidityDisabledKey.cachedBcs = AddLiquidityDisabledKey.instantiateBcs()
     }
@@ -3336,7 +3336,7 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
   private static cachedBcs: ReturnType<typeof OwnerCollectFeeDisabledKey.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OwnerCollectFeeDisabledKey.instantiateBcs> {
     if (!OwnerCollectFeeDisabledKey.cachedBcs) {
       OwnerCollectFeeDisabledKey.cachedBcs = OwnerCollectFeeDisabledKey.instantiateBcs()
     }
@@ -3525,7 +3525,7 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
   private static cachedBcs: ReturnType<typeof OwnerCollectRewardDisabledKey.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OwnerCollectRewardDisabledKey.instantiateBcs> {
     if (!OwnerCollectRewardDisabledKey.cachedBcs) {
       OwnerCollectRewardDisabledKey.cachedBcs = OwnerCollectRewardDisabledKey.instantiateBcs()
     }
@@ -3712,7 +3712,7 @@ export class DeletePositionDisabledKey implements StructClass {
   private static cachedBcs: ReturnType<typeof DeletePositionDisabledKey.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeletePositionDisabledKey.instantiateBcs> {
     if (!DeletePositionDisabledKey.cachedBcs) {
       DeletePositionDisabledKey.cachedBcs = DeletePositionDisabledKey.instantiateBcs()
     }
@@ -3806,6 +3806,202 @@ export class DeletePositionDisabledKey implements StructClass {
     }
 
     return DeletePositionDisabledKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== PositionCreateWithdrawLimiterKey =============================== */
+
+export function isPositionCreateWithdrawLimiterKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `${PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+}
+
+export interface PositionCreateWithdrawLimiterKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type PositionCreateWithdrawLimiterKeyReified = Reified<
+  PositionCreateWithdrawLimiterKey,
+  PositionCreateWithdrawLimiterKeyFields
+>
+
+export class PositionCreateWithdrawLimiterKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `${PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = PositionCreateWithdrawLimiterKey.$typeName
+  readonly $fullTypeName: `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = PositionCreateWithdrawLimiterKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: PositionCreateWithdrawLimiterKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      PositionCreateWithdrawLimiterKey.$typeName,
+      ...typeArgs
+    ) as `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): PositionCreateWithdrawLimiterKeyReified {
+    const reifiedBcs = PositionCreateWithdrawLimiterKey.bcs
+    return {
+      typeName: PositionCreateWithdrawLimiterKey.$typeName,
+      fullTypeName: composeSuiType(
+        PositionCreateWithdrawLimiterKey.$typeName,
+        ...[]
+      ) as `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`,
+      typeArgs: [] as [],
+      isPhantom: PositionCreateWithdrawLimiterKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) =>
+        PositionCreateWithdrawLimiterKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        PositionCreateWithdrawLimiterKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) =>
+        PositionCreateWithdrawLimiterKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => PositionCreateWithdrawLimiterKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => PositionCreateWithdrawLimiterKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        PositionCreateWithdrawLimiterKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        PositionCreateWithdrawLimiterKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        PositionCreateWithdrawLimiterKey.fetch(client, id),
+      new: (fields: PositionCreateWithdrawLimiterKeyFields) => {
+        return new PositionCreateWithdrawLimiterKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return PositionCreateWithdrawLimiterKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<PositionCreateWithdrawLimiterKey>> {
+    return phantom(PositionCreateWithdrawLimiterKey.reified())
+  }
+  static get p() {
+    return PositionCreateWithdrawLimiterKey.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('PositionCreateWithdrawLimiterKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof PositionCreateWithdrawLimiterKey.instantiateBcs
+  > | null = null
+
+  static get bcs(): ReturnType<typeof PositionCreateWithdrawLimiterKey.instantiateBcs> {
+    if (!PositionCreateWithdrawLimiterKey.cachedBcs) {
+      PositionCreateWithdrawLimiterKey.cachedBcs = PositionCreateWithdrawLimiterKey.instantiateBcs()
+    }
+    return PositionCreateWithdrawLimiterKey.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): PositionCreateWithdrawLimiterKey {
+    return PositionCreateWithdrawLimiterKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): PositionCreateWithdrawLimiterKey {
+    if (!isPositionCreateWithdrawLimiterKey(item.type)) {
+      throw new Error('not a PositionCreateWithdrawLimiterKey type')
+    }
+
+    return PositionCreateWithdrawLimiterKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): PositionCreateWithdrawLimiterKey {
+    return PositionCreateWithdrawLimiterKey.fromFields(
+      PositionCreateWithdrawLimiterKey.bcs.parse(data)
+    )
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): PositionCreateWithdrawLimiterKey {
+    return PositionCreateWithdrawLimiterKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): PositionCreateWithdrawLimiterKey {
+    if (json.$typeName !== PositionCreateWithdrawLimiterKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return PositionCreateWithdrawLimiterKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): PositionCreateWithdrawLimiterKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isPositionCreateWithdrawLimiterKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a PositionCreateWithdrawLimiterKey object`
+      )
+    }
+    return PositionCreateWithdrawLimiterKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): PositionCreateWithdrawLimiterKey {
+    if (data.bcs) {
+      if (
+        data.bcs.dataType !== 'moveObject' ||
+        !isPositionCreateWithdrawLimiterKey(data.bcs.type)
+      ) {
+        throw new Error(`object at is not a PositionCreateWithdrawLimiterKey object`)
+      }
+
+      return PositionCreateWithdrawLimiterKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return PositionCreateWithdrawLimiterKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<PositionCreateWithdrawLimiterKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching PositionCreateWithdrawLimiterKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isPositionCreateWithdrawLimiterKey(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a PositionCreateWithdrawLimiterKey object`)
+    }
+
+    return PositionCreateWithdrawLimiterKey.fromSuiObjectData(res.data)
   }
 }
 
@@ -3904,7 +4100,7 @@ export class DeleverageTicket implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeleverageTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeleverageTicket.instantiateBcs> {
     if (!DeleverageTicket.cachedBcs) {
       DeleverageTicket.cachedBcs = DeleverageTicket.instantiateBcs()
     }
@@ -4135,7 +4331,7 @@ export class ReductionRepaymentTicket<
 
   private static cachedBcs: ReturnType<typeof ReductionRepaymentTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ReductionRepaymentTicket.instantiateBcs> {
     if (!ReductionRepaymentTicket.cachedBcs) {
       ReductionRepaymentTicket.cachedBcs = ReductionRepaymentTicket.instantiateBcs()
     }
@@ -4454,7 +4650,7 @@ export class RebalanceReceipt implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RebalanceReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RebalanceReceipt.instantiateBcs> {
     if (!RebalanceReceipt.cachedBcs) {
       RebalanceReceipt.cachedBcs = RebalanceReceipt.instantiateBcs()
     }
@@ -4725,7 +4921,7 @@ export class DeletedPositionCollectedFees implements StructClass {
   private static cachedBcs: ReturnType<typeof DeletedPositionCollectedFees.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeletedPositionCollectedFees.instantiateBcs> {
     if (!DeletedPositionCollectedFees.cachedBcs) {
       DeletedPositionCollectedFees.cachedBcs = DeletedPositionCollectedFees.instantiateBcs()
     }
@@ -4960,7 +5156,7 @@ export class PositionCreationInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PositionCreationInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionCreationInfo.instantiateBcs> {
     if (!PositionCreationInfo.cachedBcs) {
       PositionCreationInfo.cachedBcs = PositionCreationInfo.instantiateBcs()
     }
@@ -5211,7 +5407,7 @@ export class DeleverageInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeleverageInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeleverageInfo.instantiateBcs> {
     if (!DeleverageInfo.cachedBcs) {
       DeleverageInfo.cachedBcs = DeleverageInfo.instantiateBcs()
     }
@@ -5448,7 +5644,7 @@ export class LiquidationInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LiquidationInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LiquidationInfo.instantiateBcs> {
     if (!LiquidationInfo.cachedBcs) {
       LiquidationInfo.cachedBcs = LiquidationInfo.instantiateBcs()
     }
@@ -5693,7 +5889,7 @@ export class ReductionInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ReductionInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ReductionInfo.instantiateBcs> {
     if (!ReductionInfo.cachedBcs) {
       ReductionInfo.cachedBcs = ReductionInfo.instantiateBcs()
     }
@@ -5914,7 +6110,7 @@ export class AddCollateralInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddCollateralInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddCollateralInfo.instantiateBcs> {
     if (!AddCollateralInfo.cachedBcs) {
       AddCollateralInfo.cachedBcs = AddCollateralInfo.instantiateBcs()
     }
@@ -6111,7 +6307,7 @@ export class AddLiquidityInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddLiquidityInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddLiquidityInfo.instantiateBcs> {
     if (!AddLiquidityInfo.cachedBcs) {
       AddLiquidityInfo.cachedBcs = AddLiquidityInfo.instantiateBcs()
     }
@@ -6308,7 +6504,7 @@ export class RepayDebtInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RepayDebtInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RepayDebtInfo.instantiateBcs> {
     if (!RepayDebtInfo.cachedBcs) {
       RepayDebtInfo.cachedBcs = RepayDebtInfo.instantiateBcs()
     }
@@ -6505,7 +6701,7 @@ export class OwnerCollectFeeInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof OwnerCollectFeeInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OwnerCollectFeeInfo.instantiateBcs> {
     if (!OwnerCollectFeeInfo.cachedBcs) {
       OwnerCollectFeeInfo.cachedBcs = OwnerCollectFeeInfo.instantiateBcs()
     }
@@ -6712,7 +6908,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   private static cachedBcs: ReturnType<typeof OwnerCollectRewardInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OwnerCollectRewardInfo.instantiateBcs> {
     if (!OwnerCollectRewardInfo.cachedBcs) {
       OwnerCollectRewardInfo.cachedBcs = OwnerCollectRewardInfo.instantiateBcs()
     }
@@ -6961,7 +7157,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
   private static cachedBcs: ReturnType<typeof OwnerTakeStashedRewardsInfo.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof OwnerTakeStashedRewardsInfo.instantiateBcs> {
     if (!OwnerTakeStashedRewardsInfo.cachedBcs) {
       OwnerTakeStashedRewardsInfo.cachedBcs = OwnerTakeStashedRewardsInfo.instantiateBcs()
     }
@@ -7197,7 +7393,7 @@ export class DeletePositionInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeletePositionInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeletePositionInfo.instantiateBcs> {
     if (!DeletePositionInfo.cachedBcs) {
       DeletePositionInfo.cachedBcs = DeletePositionInfo.instantiateBcs()
     }
@@ -7434,7 +7630,7 @@ export class RebalanceInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RebalanceInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RebalanceInfo.instantiateBcs> {
     if (!RebalanceInfo.cachedBcs) {
       RebalanceInfo.cachedBcs = RebalanceInfo.instantiateBcs()
     }
@@ -7702,7 +7898,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   private static cachedBcs: ReturnType<typeof CollectProtocolFeesInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollectProtocolFeesInfo.instantiateBcs> {
     if (!CollectProtocolFeesInfo.cachedBcs) {
       CollectProtocolFeesInfo.cachedBcs = CollectProtocolFeesInfo.instantiateBcs()
     }
@@ -7943,7 +8139,7 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     typeof DeletedPositionCollectedFeesInfo.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeletedPositionCollectedFeesInfo.instantiateBcs> {
     if (!DeletedPositionCollectedFeesInfo.cachedBcs) {
       DeletedPositionCollectedFeesInfo.cachedBcs = DeletedPositionCollectedFeesInfo.instantiateBcs()
     }
@@ -8150,7 +8346,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof BadDebtRepaid.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BadDebtRepaid.instantiateBcs> {
     if (!BadDebtRepaid.cachedBcs) {
       BadDebtRepaid.cachedBcs = BadDebtRepaid.instantiateBcs()
     }

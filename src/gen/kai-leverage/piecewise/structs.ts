@@ -105,7 +105,7 @@ export class Section implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Section.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Section.instantiateBcs> {
     if (!Section.cachedBcs) {
       Section.cachedBcs = Section.instantiateBcs()
     }
@@ -290,7 +290,7 @@ export class Piecewise implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Piecewise.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Piecewise.instantiateBcs> {
     if (!Piecewise.cachedBcs) {
       Piecewise.cachedBcs = Piecewise.instantiateBcs()
     }

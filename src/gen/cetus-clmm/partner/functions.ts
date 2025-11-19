@@ -3,6 +3,10 @@ import { obj, pure } from '../../_framework/util'
 import { String } from '../../move-stdlib/string/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::partner::init`, arguments: [] })
+}
+
 export interface CreatePartnerArgs {
   config: TransactionObjectInput
   partners: TransactionObjectInput
@@ -116,6 +120,23 @@ export interface ReceiveRefFeeArgs {
 export function receiveRefFee(tx: Transaction, typeArg: string, args: ReceiveRefFeeArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::partner::receive_ref_fee`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.partner), obj(tx, args.fee)],
+  })
+}
+
+export interface ReceiveRefFeeInternalArgs {
+  partner: TransactionObjectInput
+  fee: TransactionObjectInput
+}
+
+export function receiveRefFeeInternal(
+  tx: Transaction,
+  typeArg: string,
+  args: ReceiveRefFeeInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::partner::receive_ref_fee_internal`,
     typeArguments: [typeArg],
     arguments: [obj(tx, args.partner), obj(tx, args.fee)],
   })

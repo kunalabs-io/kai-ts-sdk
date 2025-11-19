@@ -98,7 +98,7 @@ export class StalePriceThreshold implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StalePriceThreshold.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StalePriceThreshold.instantiateBcs> {
     if (!StalePriceThreshold.cachedBcs) {
       StalePriceThreshold.cachedBcs = StalePriceThreshold.instantiateBcs()
     }

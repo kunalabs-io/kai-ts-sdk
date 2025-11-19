@@ -120,7 +120,7 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof HotPotatoVector.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof HotPotatoVector.instantiateBcs> {
     if (!HotPotatoVector.cachedBcs) {
       HotPotatoVector.cachedBcs = HotPotatoVector.instantiateBcs()
     }

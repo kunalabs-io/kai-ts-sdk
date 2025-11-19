@@ -148,7 +148,7 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
 
   private static cachedBcs: ReturnType<typeof WrappedAssetSetup.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WrappedAssetSetup.instantiateBcs> {
     if (!WrappedAssetSetup.cachedBcs) {
       WrappedAssetSetup.cachedBcs = WrappedAssetSetup.instantiateBcs()
     }

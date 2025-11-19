@@ -135,7 +135,7 @@ export class SystemParameters implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SystemParameters.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SystemParameters.instantiateBcs> {
     if (!SystemParameters.cachedBcs) {
       SystemParameters.cachedBcs = SystemParameters.instantiateBcs()
     }
@@ -392,7 +392,7 @@ export class SystemParametersV2 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SystemParametersV2.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SystemParametersV2.instantiateBcs> {
     if (!SystemParametersV2.cachedBcs) {
       SystemParametersV2.cachedBcs = SystemParametersV2.instantiateBcs()
     }
@@ -692,7 +692,7 @@ export class SuiSystemStateInner implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SuiSystemStateInner.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SuiSystemStateInner.instantiateBcs> {
     if (!SuiSystemStateInner.cachedBcs) {
       SuiSystemStateInner.cachedBcs = SuiSystemStateInner.instantiateBcs()
     }
@@ -1041,7 +1041,7 @@ export class SuiSystemStateInnerV2 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SuiSystemStateInnerV2.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SuiSystemStateInnerV2.instantiateBcs> {
     if (!SuiSystemStateInnerV2.cachedBcs) {
       SuiSystemStateInnerV2.cachedBcs = SuiSystemStateInnerV2.instantiateBcs()
     }
@@ -1362,7 +1362,7 @@ export class SystemEpochInfoEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SystemEpochInfoEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SystemEpochInfoEvent.instantiateBcs> {
     if (!SystemEpochInfoEvent.cachedBcs) {
       SystemEpochInfoEvent.cachedBcs = SystemEpochInfoEvent.instantiateBcs()
     }

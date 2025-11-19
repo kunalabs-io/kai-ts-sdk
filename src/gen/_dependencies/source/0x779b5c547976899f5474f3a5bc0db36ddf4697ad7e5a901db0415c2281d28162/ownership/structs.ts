@@ -121,7 +121,7 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Ownership.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Ownership.instantiateBcs> {
     if (!Ownership.cachedBcs) {
       Ownership.cachedBcs = Ownership.instantiateBcs()
     }

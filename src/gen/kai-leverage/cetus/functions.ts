@@ -107,6 +107,40 @@ export function createPositionTicket(
   })
 }
 
+export interface CreatePositionTicketV2Args {
+  cetusPool: TransactionObjectInput
+  config: TransactionObjectInput
+  tickA: TransactionObjectInput
+  tickB: TransactionObjectInput
+  principalX: TransactionObjectInput
+  principalY: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  priceInfo: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function createPositionTicketV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePositionTicketV2Args
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::cetus::create_position_ticket_v2`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.cetusPool),
+      obj(tx, args.config),
+      obj(tx, args.tickA),
+      obj(tx, args.tickB),
+      obj(tx, args.principalX),
+      obj(tx, args.principalY),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.priceInfo),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface BorrowForPositionXArgs {
   ticket: TransactionObjectInput
   config: TransactionObjectInput

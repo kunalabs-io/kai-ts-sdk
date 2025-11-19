@@ -39,6 +39,18 @@ export function createPool(
   })
 }
 
+export function totalLiabilitiesX64(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::total_liabilities_x64`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
 export function createLendFacilCap(tx: Transaction) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::supply_pool::create_lend_facil_cap`,
@@ -589,6 +601,13 @@ export function fdbIsEmpty(tx: Transaction, self: TransactionObjectInput) {
 export function fdbDestroyEmpty(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::supply_pool::fdb_destroy_empty`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function fdbLength(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::supply_pool::fdb_length`,
     arguments: [obj(tx, self)],
   })
 }

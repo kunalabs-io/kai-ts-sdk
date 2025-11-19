@@ -138,7 +138,7 @@ export class RewardsPool<T0 extends PhantomTypeArgument> implements StructClass 
 
   private static cachedBcs: ReturnType<typeof RewardsPool.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardsPool.instantiateBcs> {
     if (!RewardsPool.cachedBcs) {
       RewardsPool.cachedBcs = RewardsPool.instantiateBcs()
     }
@@ -379,7 +379,7 @@ export class RewardsPoolFeeKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewardsPoolFeeKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardsPoolFeeKey.instantiateBcs> {
     if (!RewardsPoolFeeKey.cachedBcs) {
       RewardsPoolFeeKey.cachedBcs = RewardsPoolFeeKey.instantiateBcs()
     }
@@ -563,7 +563,7 @@ export class RewardsPoolFee implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewardsPoolFee.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardsPoolFee.instantiateBcs> {
     if (!RewardsPoolFee.cachedBcs) {
       RewardsPoolFee.cachedBcs = RewardsPoolFee.instantiateBcs()
     }
@@ -753,7 +753,7 @@ export class RewardsPoolRewardsBalanceKey implements StructClass {
   private static cachedBcs: ReturnType<typeof RewardsPoolRewardsBalanceKey.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardsPoolRewardsBalanceKey.instantiateBcs> {
     if (!RewardsPoolRewardsBalanceKey.cachedBcs) {
       RewardsPoolRewardsBalanceKey.cachedBcs = RewardsPoolRewardsBalanceKey.instantiateBcs()
     }

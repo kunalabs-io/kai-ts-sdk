@@ -109,7 +109,7 @@ export class AdminCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AdminCap.instantiateBcs> {
     if (!AdminCap.cachedBcs) {
       AdminCap.cachedBcs = AdminCap.instantiateBcs()
     }
@@ -304,7 +304,7 @@ export class Strategy implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Strategy.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Strategy.instantiateBcs> {
     if (!Strategy.cachedBcs) {
       Strategy.cachedBcs = Strategy.instantiateBcs()
     }

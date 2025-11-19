@@ -102,7 +102,7 @@ export class UpdateFee implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateFee.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateFee.instantiateBcs> {
     if (!UpdateFee.cachedBcs) {
       UpdateFee.cachedBcs = UpdateFee.instantiateBcs()
     }

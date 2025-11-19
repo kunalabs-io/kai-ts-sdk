@@ -111,7 +111,7 @@ export class GuardianSignature implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GuardianSignature.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GuardianSignature.instantiateBcs> {
     if (!GuardianSignature.cachedBcs) {
       GuardianSignature.cachedBcs = GuardianSignature.instantiateBcs()
     }

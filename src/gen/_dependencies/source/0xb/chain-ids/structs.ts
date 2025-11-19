@@ -98,7 +98,7 @@ export class BridgeRoute implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeRoute.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeRoute.instantiateBcs> {
     if (!BridgeRoute.cachedBcs) {
       BridgeRoute.cachedBcs = BridgeRoute.instantiateBcs()
     }

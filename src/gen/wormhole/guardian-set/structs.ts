@@ -110,7 +110,7 @@ export class GuardianSet implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GuardianSet.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GuardianSet.instantiateBcs> {
     if (!GuardianSet.cachedBcs) {
       GuardianSet.cachedBcs = GuardianSet.instantiateBcs()
     }

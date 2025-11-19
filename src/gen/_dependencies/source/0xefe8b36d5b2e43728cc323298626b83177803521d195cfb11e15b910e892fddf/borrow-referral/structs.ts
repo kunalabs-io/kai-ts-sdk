@@ -161,7 +161,7 @@ export class BorrowReferral<T0 extends PhantomTypeArgument, T1 extends TypeArgum
 
   private static cachedBcs: ReturnType<typeof BorrowReferral.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowReferral.instantiateBcs> {
     if (!BorrowReferral.cachedBcs) {
       BorrowReferral.cachedBcs = BorrowReferral.instantiateBcs()
     }
@@ -435,7 +435,7 @@ export class BorrowReferralCfgKey<T0 extends PhantomTypeArgument> implements Str
 
   private static cachedBcs: ReturnType<typeof BorrowReferralCfgKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowReferralCfgKey.instantiateBcs> {
     if (!BorrowReferralCfgKey.cachedBcs) {
       BorrowReferralCfgKey.cachedBcs = BorrowReferralCfgKey.instantiateBcs()
     }
@@ -655,7 +655,7 @@ export class BorrowedKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowedKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowedKey.instantiateBcs> {
     if (!BorrowedKey.cachedBcs) {
       BorrowedKey.cachedBcs = BorrowedKey.instantiateBcs()
     }
@@ -824,7 +824,7 @@ export class ReferralFeeKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ReferralFeeKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ReferralFeeKey.instantiateBcs> {
     if (!ReferralFeeKey.cachedBcs) {
       ReferralFeeKey.cachedBcs = ReferralFeeKey.instantiateBcs()
     }
@@ -1007,7 +1007,7 @@ export class AuthorizedWitnessList implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AuthorizedWitnessList.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AuthorizedWitnessList.instantiateBcs> {
     if (!AuthorizedWitnessList.cachedBcs) {
       AuthorizedWitnessList.cachedBcs = AuthorizedWitnessList.instantiateBcs()
     }

@@ -33,7 +33,7 @@ export interface PositionLiquiditySnapshotFields {
   id: ToField<UID>
   currentSqrtPrice: ToField<'u128'>
   removePercent: ToField<'u64'>
-  totalValueCutted: ToField<'u64'>
+  totalValueCut: ToField<'u64'>
   snapshots: ToField<LinkedTable<ID, ToPhantom<PositionSnapshot>>>
 }
 
@@ -57,7 +57,7 @@ export class PositionLiquiditySnapshot implements StructClass {
   readonly id: ToField<UID>
   readonly currentSqrtPrice: ToField<'u128'>
   readonly removePercent: ToField<'u64'>
-  readonly totalValueCutted: ToField<'u64'>
+  readonly totalValueCut: ToField<'u64'>
   readonly snapshots: ToField<LinkedTable<ID, ToPhantom<PositionSnapshot>>>
 
   private constructor(typeArgs: [], fields: PositionLiquiditySnapshotFields) {
@@ -70,7 +70,7 @@ export class PositionLiquiditySnapshot implements StructClass {
     this.id = fields.id
     this.currentSqrtPrice = fields.currentSqrtPrice
     this.removePercent = fields.removePercent
-    this.totalValueCutted = fields.totalValueCutted
+    this.totalValueCut = fields.totalValueCut
     this.snapshots = fields.snapshots
   }
 
@@ -120,7 +120,7 @@ export class PositionLiquiditySnapshot implements StructClass {
       id: UID.bcs,
       current_sqrt_price: bcs.u128(),
       remove_percent: bcs.u64(),
-      total_value_cutted: bcs.u64(),
+      total_value_cut: bcs.u64(),
       snapshots: LinkedTable.bcs(ID.bcs),
     })
   }
@@ -128,7 +128,7 @@ export class PositionLiquiditySnapshot implements StructClass {
   private static cachedBcs: ReturnType<typeof PositionLiquiditySnapshot.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionLiquiditySnapshot.instantiateBcs> {
     if (!PositionLiquiditySnapshot.cachedBcs) {
       PositionLiquiditySnapshot.cachedBcs = PositionLiquiditySnapshot.instantiateBcs()
     }
@@ -140,7 +140,7 @@ export class PositionLiquiditySnapshot implements StructClass {
       id: decodeFromFields(UID.reified(), fields.id),
       currentSqrtPrice: decodeFromFields('u128', fields.current_sqrt_price),
       removePercent: decodeFromFields('u64', fields.remove_percent),
-      totalValueCutted: decodeFromFields('u64', fields.total_value_cutted),
+      totalValueCut: decodeFromFields('u64', fields.total_value_cut),
       snapshots: decodeFromFields(
         LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
         fields.snapshots
@@ -157,7 +157,7 @@ export class PositionLiquiditySnapshot implements StructClass {
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       currentSqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.current_sqrt_price),
       removePercent: decodeFromFieldsWithTypes('u64', item.fields.remove_percent),
-      totalValueCutted: decodeFromFieldsWithTypes('u64', item.fields.total_value_cutted),
+      totalValueCut: decodeFromFieldsWithTypes('u64', item.fields.total_value_cut),
       snapshots: decodeFromFieldsWithTypes(
         LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
         item.fields.snapshots
@@ -174,7 +174,7 @@ export class PositionLiquiditySnapshot implements StructClass {
       id: this.id,
       currentSqrtPrice: this.currentSqrtPrice.toString(),
       removePercent: this.removePercent.toString(),
-      totalValueCutted: this.totalValueCutted.toString(),
+      totalValueCut: this.totalValueCut.toString(),
       snapshots: this.snapshots.toJSONField(),
     }
   }
@@ -188,7 +188,7 @@ export class PositionLiquiditySnapshot implements StructClass {
       id: decodeFromJSONField(UID.reified(), field.id),
       currentSqrtPrice: decodeFromJSONField('u128', field.currentSqrtPrice),
       removePercent: decodeFromJSONField('u64', field.removePercent),
-      totalValueCutted: decodeFromJSONField('u64', field.totalValueCutted),
+      totalValueCut: decodeFromJSONField('u64', field.totalValueCut),
       snapshots: decodeFromJSONField(
         LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
         field.snapshots
@@ -265,7 +265,7 @@ export interface PositionSnapshotFields {
   feeOwnedA: ToField<'u64'>
   feeOwnedB: ToField<'u64'>
   rewards: ToField<Vector<'u64'>>
-  valueCutted: ToField<'u64'>
+  valueCut: ToField<'u64'>
 }
 
 export type PositionSnapshotReified = Reified<PositionSnapshot, PositionSnapshotFields>
@@ -289,7 +289,7 @@ export class PositionSnapshot implements StructClass {
   readonly feeOwnedA: ToField<'u64'>
   readonly feeOwnedB: ToField<'u64'>
   readonly rewards: ToField<Vector<'u64'>>
-  readonly valueCutted: ToField<'u64'>
+  readonly valueCut: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: PositionSnapshotFields) {
     this.$fullTypeName = composeSuiType(
@@ -305,7 +305,7 @@ export class PositionSnapshot implements StructClass {
     this.feeOwnedA = fields.feeOwnedA
     this.feeOwnedB = fields.feeOwnedB
     this.rewards = fields.rewards
-    this.valueCutted = fields.valueCutted
+    this.valueCut = fields.valueCut
   }
 
   static reified(): PositionSnapshotReified {
@@ -355,13 +355,13 @@ export class PositionSnapshot implements StructClass {
       fee_owned_a: bcs.u64(),
       fee_owned_b: bcs.u64(),
       rewards: bcs.vector(bcs.u64()),
-      value_cutted: bcs.u64(),
+      value_cut: bcs.u64(),
     })
   }
 
   private static cachedBcs: ReturnType<typeof PositionSnapshot.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PositionSnapshot.instantiateBcs> {
     if (!PositionSnapshot.cachedBcs) {
       PositionSnapshot.cachedBcs = PositionSnapshot.instantiateBcs()
     }
@@ -377,7 +377,7 @@ export class PositionSnapshot implements StructClass {
       feeOwnedA: decodeFromFields('u64', fields.fee_owned_a),
       feeOwnedB: decodeFromFields('u64', fields.fee_owned_b),
       rewards: decodeFromFields(reified.vector('u64'), fields.rewards),
-      valueCutted: decodeFromFields('u64', fields.value_cutted),
+      valueCut: decodeFromFields('u64', fields.value_cut),
     })
   }
 
@@ -394,7 +394,7 @@ export class PositionSnapshot implements StructClass {
       feeOwnedA: decodeFromFieldsWithTypes('u64', item.fields.fee_owned_a),
       feeOwnedB: decodeFromFieldsWithTypes('u64', item.fields.fee_owned_b),
       rewards: decodeFromFieldsWithTypes(reified.vector('u64'), item.fields.rewards),
-      valueCutted: decodeFromFieldsWithTypes('u64', item.fields.value_cutted),
+      valueCut: decodeFromFieldsWithTypes('u64', item.fields.value_cut),
     })
   }
 
@@ -411,7 +411,7 @@ export class PositionSnapshot implements StructClass {
       feeOwnedA: this.feeOwnedA.toString(),
       feeOwnedB: this.feeOwnedB.toString(),
       rewards: fieldToJSON<Vector<'u64'>>(`vector<u64>`, this.rewards),
-      valueCutted: this.valueCutted.toString(),
+      valueCut: this.valueCut.toString(),
     }
   }
 
@@ -428,7 +428,7 @@ export class PositionSnapshot implements StructClass {
       feeOwnedA: decodeFromJSONField('u64', field.feeOwnedA),
       feeOwnedB: decodeFromJSONField('u64', field.feeOwnedB),
       rewards: decodeFromJSONField(reified.vector('u64'), field.rewards),
-      valueCutted: decodeFromJSONField('u64', field.valueCutted),
+      valueCut: decodeFromJSONField('u64', field.valueCut),
     })
   }
 

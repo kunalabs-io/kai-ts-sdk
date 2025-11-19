@@ -95,7 +95,7 @@ export class COIN implements StructClass {
 
   private static cachedBcs: ReturnType<typeof COIN.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof COIN.instantiateBcs> {
     if (!COIN.cachedBcs) {
       COIN.cachedBcs = COIN.instantiateBcs()
     }

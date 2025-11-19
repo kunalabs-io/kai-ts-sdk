@@ -114,7 +114,7 @@ export class BridgeTreasury implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeTreasury.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeTreasury.instantiateBcs> {
     if (!BridgeTreasury.cachedBcs) {
       BridgeTreasury.cachedBcs = BridgeTreasury.instantiateBcs()
     }
@@ -329,7 +329,7 @@ export class BridgeTokenMetadata implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeTokenMetadata.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeTokenMetadata.instantiateBcs> {
     if (!BridgeTokenMetadata.cachedBcs) {
       BridgeTokenMetadata.cachedBcs = BridgeTokenMetadata.instantiateBcs()
     }
@@ -528,7 +528,7 @@ export class ForeignTokenRegistration implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ForeignTokenRegistration.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ForeignTokenRegistration.instantiateBcs> {
     if (!ForeignTokenRegistration.cachedBcs) {
       ForeignTokenRegistration.cachedBcs = ForeignTokenRegistration.instantiateBcs()
     }
@@ -726,7 +726,7 @@ export class UpdateTokenPriceEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateTokenPriceEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateTokenPriceEvent.instantiateBcs> {
     if (!UpdateTokenPriceEvent.cachedBcs) {
       UpdateTokenPriceEvent.cachedBcs = UpdateTokenPriceEvent.instantiateBcs()
     }
@@ -921,7 +921,7 @@ export class NewTokenEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof NewTokenEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof NewTokenEvent.instantiateBcs> {
     if (!NewTokenEvent.cachedBcs) {
       NewTokenEvent.cachedBcs = NewTokenEvent.instantiateBcs()
     }
@@ -1124,7 +1124,7 @@ export class TokenRegistrationEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TokenRegistrationEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TokenRegistrationEvent.instantiateBcs> {
     if (!TokenRegistrationEvent.cachedBcs) {
       TokenRegistrationEvent.cachedBcs = TokenRegistrationEvent.instantiateBcs()
     }

@@ -210,6 +210,18 @@ export function positionDebtBagMut(
   })
 }
 
+export function collectedFees(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  position: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::collected_fees`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, position)],
+  })
+}
+
 export function collectedFeesMut(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -217,6 +229,30 @@ export function collectedFeesMut(
 ) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::collected_fees_mut`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, position)],
+  })
+}
+
+export function ownerRewardStash(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  position: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::owner_reward_stash`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, position)],
+  })
+}
+
+export function ownerRewardStashMut(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  position: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::owner_reward_stash_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -600,25 +636,77 @@ export function setPositionCreationFeeSui(tx: Transaction, args: SetPositionCrea
   })
 }
 
-export interface SetConfigExtensionArgs {
+export interface UpsertConfigExtensionArgs {
   config: TransactionObjectInput
   key: GenericArg
   newValue: GenericArg
 }
 
-export function setConfigExtension(
+export function upsertConfigExtension(
   tx: Transaction,
   typeArgs: [string, string],
-  args: SetConfigExtensionArgs
+  args: UpsertConfigExtensionArgs
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::position_core_clmm::set_config_extension`,
+    target: `${PUBLISHED_AT}::position_core_clmm::upsert_config_extension`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
       generic(tx, `${typeArgs[0]}`, args.key),
       generic(tx, `${typeArgs[1]}`, args.newValue),
     ],
+  })
+}
+
+export interface AddConfigExtensionArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+  newValue: GenericArg
+}
+
+export function addConfigExtension(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddConfigExtensionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::add_config_extension`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      generic(tx, `${typeArgs[0]}`, args.key),
+      generic(tx, `${typeArgs[1]}`, args.newValue),
+    ],
+  })
+}
+
+export interface HasConfigExtensionArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+}
+
+export function hasConfigExtension(tx: Transaction, typeArg: string, args: HasConfigExtensionArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::has_config_extension`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.config), generic(tx, `${typeArg}`, args.key)],
+  })
+}
+
+export interface BorrowConfigExtensionArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+}
+
+export function borrowConfigExtension(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: BorrowConfigExtensionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::borrow_config_extension`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), generic(tx, `${typeArgs[0]}`, args.key)],
   })
 }
 
@@ -641,6 +729,23 @@ export function getConfigExtensionOrDefault(
       generic(tx, `${typeArgs[0]}`, args.key),
       generic(tx, `${typeArgs[1]}`, args.defaultValue),
     ],
+  })
+}
+
+export interface ConfigExtensionMutArgs {
+  config: TransactionObjectInput
+  key: GenericArg
+}
+
+export function configExtensionMut(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ConfigExtensionMutArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::config_extension_mut`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), generic(tx, `${typeArgs[0]}`, args.key)],
   })
 }
 
@@ -761,6 +866,64 @@ export function deletePositionDisabled(tx: Transaction, config: TransactionObjec
   })
 }
 
+export interface AddCreateWithdrawLimiterArgs {
+  config: TransactionObjectInput
+  rateLimiter: GenericArg
+}
+
+export function addCreateWithdrawLimiter(
+  tx: Transaction,
+  typeArg: string,
+  args: AddCreateWithdrawLimiterArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::add_create_withdraw_limiter`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.config), generic(tx, `${typeArg}`, args.rateLimiter)],
+  })
+}
+
+export function hasCreateWithdrawLimiter(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::has_create_withdraw_limiter`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function borrowCreateWithdrawLimiter(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::borrow_create_withdraw_limiter`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export function borrowCreateWithdrawLimiterMut(tx: Transaction, config: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::borrow_create_withdraw_limiter_mut`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetMaxCreateWithdrawNetInflowAndOutflowLimitsArgs {
+  config: TransactionObjectInput
+  maxNetInflowLimit: bigint | TransactionArgument | TransactionArgument | null
+  maxNetOutflowLimit: bigint | TransactionArgument | TransactionArgument | null
+}
+
+export function setMaxCreateWithdrawNetInflowAndOutflowLimits(
+  tx: Transaction,
+  args: SetMaxCreateWithdrawNetInflowAndOutflowLimitsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::set_max_create_withdraw_net_inflow_and_outflow_limits`,
+    arguments: [
+      obj(tx, args.config),
+      pure(tx, args.maxNetInflowLimit, `${Option.$typeName}<u256>`),
+      pure(tx, args.maxNetOutflowLimit, `${Option.$typeName}<u256>`),
+    ],
+  })
+}
+
 export interface DeleverageTicketConstructorArgs {
   positionId: string | TransactionArgument
   canRepayX: boolean | TransactionArgument
@@ -783,6 +946,34 @@ export function deleverageTicketConstructor(
   })
 }
 
+export function dtPositionId(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dt_position_id`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function dtCanRepayX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dt_can_repay_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function dtCanRepayY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dt_can_repay_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function dtInfo(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::dt_info`,
+    arguments: [obj(tx, self)],
+  })
+}
+
 export interface ReductionRepaymentTicketConstructorArgs {
   sx: TransactionObjectInput
   sy: TransactionObjectInput
@@ -798,6 +989,30 @@ export function reductionRepaymentTicketConstructor(
     target: `${PUBLISHED_AT}::position_core_clmm::reduction_repayment_ticket_constructor`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.sx), obj(tx, args.sy), obj(tx, args.info)],
+  })
+}
+
+export function rrtSx(tx: Transaction, typeArgs: [string, string], self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rrt_sx`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrtSy(tx: Transaction, typeArgs: [string, string], self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rrt_sy`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrtInfo(tx: Transaction, typeArgs: [string, string], self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rrt_info`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, self)],
   })
 }
 
@@ -872,6 +1087,104 @@ export function increaseDeltaY(tx: Transaction, args: IncreaseDeltaYArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::position_core_clmm::increase_delta_y`,
     arguments: [obj(tx, args.self), pure(tx, args.delta, `u64`)],
+  })
+}
+
+export function rrCollectedAmmFeeX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_collected_amm_fee_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrCollectedAmmFeeY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_collected_amm_fee_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrCollectedAmmRewards(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_collected_amm_rewards`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrFeesTaken(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_fees_taken`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrTakenCx(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_taken_cx`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrTakenCy(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_taken_cy`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrDeltaL(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_delta_l`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrDeltaX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_delta_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrDeltaY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_delta_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrXRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_x_repaid`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrYRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_y_repaid`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrAddedCx(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_added_cx`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrAddedCy(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_added_cy`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function rrStashedAmmRewards(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::rr_stashed_amm_rewards`,
+    arguments: [obj(tx, self)],
   })
 }
 
@@ -1069,6 +1382,30 @@ export function cptDebtBagMut(
   })
 }
 
+export function cptTickA(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::cpt_tick_a`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
+export function cptTickB(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  ticket: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::cpt_tick_b`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, ticket)],
+  })
+}
+
 export interface ShareDeletedPositionCollectedFeesArgs {
   positionId: string | TransactionArgument
   balanceBag: TransactionObjectInput
@@ -1184,6 +1521,69 @@ export function setDeltaY(tx: Transaction, args: SetDeltaYArgs) {
   })
 }
 
+export function diPositionId(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_position_id`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diModel(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_model`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diOraclePriceX128(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_oracle_price_x128`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diSqrtPoolPriceX64(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_sqrt_pool_price_x64`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diDeltaL(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_delta_l`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diDeltaX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_delta_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diDeltaY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_delta_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diXRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_x_repaid`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function diYRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::di_y_repaid`,
+    arguments: [obj(tx, self)],
+  })
+}
+
 export interface EmitLiquidationInfoArgs {
   positionId: string | TransactionArgument
   model: TransactionObjectInput
@@ -1243,6 +1643,83 @@ export function reductionInfoConstructor(tx: Transaction, args: ReductionInfoCon
       pure(tx, args.xRepaid, `u64`),
       pure(tx, args.yRepaid, `u64`),
     ],
+  })
+}
+
+export function riPositionId(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_position_id`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riModel(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_model`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riOraclePriceX128(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_oracle_price_x128`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riSqrtPoolPriceX64(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_sqrt_pool_price_x64`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riDeltaL(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_delta_l`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riDeltaX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_delta_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riDeltaY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_delta_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riWithdrawnX(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_withdrawn_x`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riWithdrawnY(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_withdrawn_y`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riXRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_x_repaid`,
+    arguments: [obj(tx, self)],
+  })
+}
+
+export function riYRepaid(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::ri_y_repaid`,
+    arguments: [obj(tx, self)],
   })
 }
 
@@ -1465,6 +1942,23 @@ export function calcBorrowAmt(tx: Transaction, args: CalcBorrowAmtArgs) {
   })
 }
 
+export interface PriceDeviationIsAcceptableArgs {
+  config: TransactionObjectInput
+  p0OracleEmaX128: bigint | TransactionArgument
+  p0X128: bigint | TransactionArgument
+}
+
+export function priceDeviationIsAcceptable(tx: Transaction, args: PriceDeviationIsAcceptableArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::price_deviation_is_acceptable`,
+    arguments: [
+      obj(tx, args.config),
+      pure(tx, args.p0OracleEmaX128, `u256`),
+      pure(tx, args.p0X128, `u256`),
+    ],
+  })
+}
+
 export interface LiqMarginIsValidArgs {
   config: TransactionObjectInput
   model: TransactionObjectInput
@@ -1500,6 +1994,46 @@ export function initMarginIsValid(tx: Transaction, args: InitMarginIsValidArgs) 
       pure(tx, args.p0MinX128, `u256`),
       pure(tx, args.p0MaxX128, `u256`),
     ],
+  })
+}
+
+export interface GetAmountEmaUsdValue6DecimalsArgs {
+  amount: bigint | TransactionArgument
+  priceInfo: TransactionObjectInput
+  roundUp: boolean | TransactionArgument
+}
+
+export function getAmountEmaUsdValue6Decimals(
+  tx: Transaction,
+  typeArg: string,
+  args: GetAmountEmaUsdValue6DecimalsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::get_amount_ema_usd_value_6_decimals`,
+    typeArguments: [typeArg],
+    arguments: [
+      pure(tx, args.amount, `u64`),
+      obj(tx, args.priceInfo),
+      pure(tx, args.roundUp, `bool`),
+    ],
+  })
+}
+
+export interface GetBalanceEmaUsdValue6DecimalsArgs {
+  balance: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  roundUp: boolean | TransactionArgument
+}
+
+export function getBalanceEmaUsdValue6Decimals(
+  tx: Transaction,
+  typeArg: string,
+  args: GetBalanceEmaUsdValue6DecimalsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::position_core_clmm::get_balance_ema_usd_value_6_decimals`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.balance), obj(tx, args.priceInfo), pure(tx, args.roundUp, `bool`)],
   })
 }
 

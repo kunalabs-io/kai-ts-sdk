@@ -179,7 +179,7 @@ export class WitTable<
 
   private static cachedBcs: ReturnType<typeof WitTable.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WitTable.instantiateBcs> {
     if (!WitTable.cachedBcs) {
       WitTable.cachedBcs = WitTable.instantiateBcs()
     }

@@ -128,7 +128,7 @@ export class LiquidateEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LiquidateEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LiquidateEvent.instantiateBcs> {
     if (!LiquidateEvent.cachedBcs) {
       LiquidateEvent.cachedBcs = LiquidateEvent.instantiateBcs()
     }
@@ -364,7 +364,7 @@ export class LiquidateEventV2 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LiquidateEventV2.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LiquidateEventV2.instantiateBcs> {
     if (!LiquidateEventV2.cachedBcs) {
       LiquidateEventV2.cachedBcs = LiquidateEventV2.instantiateBcs()
     }

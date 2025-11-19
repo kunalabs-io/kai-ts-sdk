@@ -98,7 +98,7 @@ export class CollateralStats implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CollateralStats.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollateralStats.instantiateBcs> {
     if (!CollateralStats.cachedBcs) {
       CollateralStats.cachedBcs = CollateralStats.instantiateBcs()
     }
@@ -271,7 +271,7 @@ export class CollateralStat implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CollateralStat.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollateralStat.instantiateBcs> {
     if (!CollateralStat.cachedBcs) {
       CollateralStat.cachedBcs = CollateralStat.instantiateBcs()
     }

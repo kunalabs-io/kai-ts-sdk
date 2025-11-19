@@ -23,6 +23,7 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(stakingPool.FungibleStakedSui)
   loader.register(stakingPool.FungibleStakedSuiData)
   loader.register(stakingPool.FungibleStakedSuiDataKey)
+  loader.register(stakingPool.UnderflowSuiBalance)
   loader.register(storageFund.StorageFund)
   loader.register(suiSystem.SuiSystemState)
   loader.register(suiSystemStateInner.SystemParameters)

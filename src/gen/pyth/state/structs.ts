@@ -1,4 +1,3 @@
-import { ConsumedVAAs } from '../../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/consumed-vaas/structs'
 import {
   PhantomReified,
   Reified,
@@ -13,6 +12,7 @@ import {
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 import { UpgradeCap } from '../../sui/package/structs'
+import { ConsumedVAAs } from '../../wormhole/consumed-vaas/structs'
 import { DataSource } from '../data-source/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
@@ -102,7 +102,7 @@ export class LatestOnly implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LatestOnly.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LatestOnly.instantiateBcs> {
     if (!LatestOnly.cachedBcs) {
       LatestOnly.cachedBcs = LatestOnly.instantiateBcs()
     }
@@ -299,7 +299,7 @@ export class State implements StructClass {
 
   private static cachedBcs: ReturnType<typeof State.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof State.instantiateBcs> {
     if (!State.cachedBcs) {
       State.cachedBcs = State.instantiateBcs()
     }
@@ -512,7 +512,7 @@ export class CurrentDigest implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CurrentDigest.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CurrentDigest.instantiateBcs> {
     if (!CurrentDigest.cachedBcs) {
       CurrentDigest.cachedBcs = CurrentDigest.instantiateBcs()
     }

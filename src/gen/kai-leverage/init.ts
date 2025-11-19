@@ -48,6 +48,7 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(positionCoreClmm.OwnerCollectFeeDisabledKey)
   loader.register(positionCoreClmm.OwnerCollectRewardDisabledKey)
   loader.register(positionCoreClmm.DeletePositionDisabledKey)
+  loader.register(positionCoreClmm.PositionCreateWithdrawLimiterKey)
   loader.register(positionCoreClmm.DeleverageTicket)
   loader.register(positionCoreClmm.ReductionRepaymentTicket)
   loader.register(positionCoreClmm.RebalanceReceipt)

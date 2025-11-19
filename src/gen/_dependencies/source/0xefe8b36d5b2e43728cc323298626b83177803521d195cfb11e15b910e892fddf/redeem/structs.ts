@@ -122,7 +122,7 @@ export class RedeemEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RedeemEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RedeemEvent.instantiateBcs> {
     if (!RedeemEvent.cachedBcs) {
       RedeemEvent.cachedBcs = RedeemEvent.instantiateBcs()
     }

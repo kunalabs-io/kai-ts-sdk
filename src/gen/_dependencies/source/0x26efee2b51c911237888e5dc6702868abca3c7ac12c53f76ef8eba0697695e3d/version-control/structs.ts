@@ -98,7 +98,7 @@ export class V__0_2_0 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof V__0_2_0.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof V__0_2_0.instantiateBcs> {
     if (!V__0_2_0.cachedBcs) {
       V__0_2_0.cachedBcs = V__0_2_0.instantiateBcs()
     }
@@ -267,7 +267,7 @@ export class V__DUMMY implements StructClass {
 
   private static cachedBcs: ReturnType<typeof V__DUMMY.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof V__DUMMY.instantiateBcs> {
     if (!V__DUMMY.cachedBcs) {
       V__DUMMY.cachedBcs = V__DUMMY.instantiateBcs()
     }

@@ -106,7 +106,7 @@ export class TransferLimiter implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TransferLimiter.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TransferLimiter.instantiateBcs> {
     if (!TransferLimiter.cachedBcs) {
       TransferLimiter.cachedBcs = TransferLimiter.instantiateBcs()
     }
@@ -313,7 +313,7 @@ export class TransferRecord implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TransferRecord.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TransferRecord.instantiateBcs> {
     if (!TransferRecord.cachedBcs) {
       TransferRecord.cachedBcs = TransferRecord.instantiateBcs()
     }
@@ -515,7 +515,7 @@ export class UpdateRouteLimitEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateRouteLimitEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateRouteLimitEvent.instantiateBcs> {
     if (!UpdateRouteLimitEvent.cachedBcs) {
       UpdateRouteLimitEvent.cachedBcs = UpdateRouteLimitEvent.instantiateBcs()
     }

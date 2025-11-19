@@ -1,6 +1,6 @@
 import { PUBLISHED_AT } from '..'
-import { VAA } from '../../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/vaa/structs'
 import { obj, pure, vector } from '../../_framework/util'
+import { VAA } from '../../wormhole/vaa/structs'
 import { PriceInfo } from '../price-info/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 

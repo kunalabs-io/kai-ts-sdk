@@ -111,7 +111,7 @@ export class ObligationUnhealthyUnlocked implements StructClass {
   private static cachedBcs: ReturnType<typeof ObligationUnhealthyUnlocked.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationUnhealthyUnlocked.instantiateBcs> {
     if (!ObligationUnhealthyUnlocked.cachedBcs) {
       ObligationUnhealthyUnlocked.cachedBcs = ObligationUnhealthyUnlocked.instantiateBcs()
     }

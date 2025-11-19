@@ -151,7 +151,7 @@ export class Market implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Market.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Market.instantiateBcs> {
     if (!Market.cachedBcs) {
       Market.cachedBcs = Market.instantiateBcs()
     }

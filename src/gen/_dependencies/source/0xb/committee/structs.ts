@@ -111,7 +111,7 @@ export class BlocklistValidatorEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BlocklistValidatorEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BlocklistValidatorEvent.instantiateBcs> {
     if (!BlocklistValidatorEvent.cachedBcs) {
       BlocklistValidatorEvent.cachedBcs = BlocklistValidatorEvent.instantiateBcs()
     }
@@ -309,7 +309,7 @@ export class BridgeCommittee implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BridgeCommittee.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BridgeCommittee.instantiateBcs> {
     if (!BridgeCommittee.cachedBcs) {
       BridgeCommittee.cachedBcs = BridgeCommittee.instantiateBcs()
     }
@@ -518,7 +518,7 @@ export class CommitteeUpdateEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CommitteeUpdateEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CommitteeUpdateEvent.instantiateBcs> {
     if (!CommitteeUpdateEvent.cachedBcs) {
       CommitteeUpdateEvent.cachedBcs = CommitteeUpdateEvent.instantiateBcs()
     }
@@ -722,7 +722,7 @@ export class CommitteeMemberUrlUpdateEvent implements StructClass {
   private static cachedBcs: ReturnType<typeof CommitteeMemberUrlUpdateEvent.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CommitteeMemberUrlUpdateEvent.instantiateBcs> {
     if (!CommitteeMemberUrlUpdateEvent.cachedBcs) {
       CommitteeMemberUrlUpdateEvent.cachedBcs = CommitteeMemberUrlUpdateEvent.instantiateBcs()
     }
@@ -925,7 +925,7 @@ export class CommitteeMember implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CommitteeMember.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CommitteeMember.instantiateBcs> {
     if (!CommitteeMember.cachedBcs) {
       CommitteeMember.cachedBcs = CommitteeMember.instantiateBcs()
     }
@@ -1135,7 +1135,7 @@ export class CommitteeMemberRegistration implements StructClass {
   private static cachedBcs: ReturnType<typeof CommitteeMemberRegistration.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CommitteeMemberRegistration.instantiateBcs> {
     if (!CommitteeMemberRegistration.cachedBcs) {
       CommitteeMemberRegistration.cachedBcs = CommitteeMemberRegistration.instantiateBcs()
     }

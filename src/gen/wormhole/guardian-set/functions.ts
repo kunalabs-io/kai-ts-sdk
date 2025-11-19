@@ -4,92 +4,89 @@ import { Guardian } from '../guardian/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface NewArgs {
-  u32: number | TransactionArgument
-  vecGuardian: Array<TransactionObjectInput> | TransactionArgument
+  index: number | TransactionArgument
+  guardians: Array<TransactionObjectInput> | TransactionArgument
 }
 
 export function new_(tx: Transaction, args: NewArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::new`,
-    arguments: [pure(tx, args.u32, `u32`), vector(tx, `${Guardian.$typeName}`, args.vecGuardian)],
+    arguments: [pure(tx, args.index, `u32`), vector(tx, `${Guardian.$typeName}`, args.guardians)],
   })
 }
 
-export function index(tx: Transaction, guardianSet: TransactionObjectInput) {
-  return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_set::index`,
-    arguments: [obj(tx, guardianSet)],
-  })
+export function index(tx: Transaction, self: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::guardian_set::index`, arguments: [obj(tx, self)] })
 }
 
-export function indexAsU64(tx: Transaction, guardianSet: TransactionObjectInput) {
+export function indexAsU64(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::index_as_u64`,
-    arguments: [obj(tx, guardianSet)],
+    arguments: [obj(tx, self)],
   })
 }
 
-export function guardians(tx: Transaction, guardianSet: TransactionObjectInput) {
+export function guardians(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::guardians`,
-    arguments: [obj(tx, guardianSet)],
+    arguments: [obj(tx, self)],
   })
 }
 
 export interface GuardianAtArgs {
-  guardianSet: TransactionObjectInput
-  u64: bigint | TransactionArgument
+  self: TransactionObjectInput
+  index: bigint | TransactionArgument
 }
 
 export function guardianAt(tx: Transaction, args: GuardianAtArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::guardian_at`,
-    arguments: [obj(tx, args.guardianSet), pure(tx, args.u64, `u64`)],
+    arguments: [obj(tx, args.self), pure(tx, args.index, `u64`)],
   })
 }
 
-export function expirationTimestampMs(tx: Transaction, guardianSet: TransactionObjectInput) {
+export function expirationTimestampMs(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::expiration_timestamp_ms`,
-    arguments: [obj(tx, guardianSet)],
+    arguments: [obj(tx, self)],
   })
 }
 
 export interface IsActiveArgs {
-  guardianSet: TransactionObjectInput
+  self: TransactionObjectInput
   clock: TransactionObjectInput
 }
 
 export function isActive(tx: Transaction, args: IsActiveArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::is_active`,
-    arguments: [obj(tx, args.guardianSet), obj(tx, args.clock)],
+    arguments: [obj(tx, args.self), obj(tx, args.clock)],
   })
 }
 
-export function numGuardians(tx: Transaction, guardianSet: TransactionObjectInput) {
+export function numGuardians(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::num_guardians`,
-    arguments: [obj(tx, guardianSet)],
+    arguments: [obj(tx, self)],
   })
 }
 
-export function quorum(tx: Transaction, guardianSet: TransactionObjectInput) {
+export function quorum(tx: Transaction, self: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::quorum`,
-    arguments: [obj(tx, guardianSet)],
+    arguments: [obj(tx, self)],
   })
 }
 
 export interface SetExpirationArgs {
-  guardianSet: TransactionObjectInput
-  u32: number | TransactionArgument
-  clock: TransactionObjectInput
+  self: TransactionObjectInput
+  secondsToLive: number | TransactionArgument
+  theClock: TransactionObjectInput
 }
 
 export function setExpiration(tx: Transaction, args: SetExpirationArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::guardian_set::set_expiration`,
-    arguments: [obj(tx, args.guardianSet), pure(tx, args.u32, `u32`), obj(tx, args.clock)],
+    arguments: [obj(tx, args.self), pure(tx, args.secondsToLive, `u32`), obj(tx, args.theClock)],
   })
 }

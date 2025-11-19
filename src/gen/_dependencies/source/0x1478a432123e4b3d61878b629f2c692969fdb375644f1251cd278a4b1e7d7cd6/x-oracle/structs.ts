@@ -120,7 +120,7 @@ export class X_ORACLE implements StructClass {
 
   private static cachedBcs: ReturnType<typeof X_ORACLE.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof X_ORACLE.instantiateBcs> {
     if (!X_ORACLE.cachedBcs) {
       X_ORACLE.cachedBcs = X_ORACLE.instantiateBcs()
     }
@@ -305,7 +305,7 @@ export class XOracle implements StructClass {
 
   private static cachedBcs: ReturnType<typeof XOracle.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof XOracle.instantiateBcs> {
     if (!XOracle.cachedBcs) {
       XOracle.cachedBcs = XOracle.instantiateBcs()
     }
@@ -538,7 +538,7 @@ export class XOraclePolicyCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof XOraclePolicyCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof XOraclePolicyCap.instantiateBcs> {
     if (!XOraclePolicyCap.cachedBcs) {
       XOraclePolicyCap.cachedBcs = XOraclePolicyCap.instantiateBcs()
     }
@@ -757,7 +757,7 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
   private static cachedBcs: ReturnType<typeof XOraclePriceUpdateRequest.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof XOraclePriceUpdateRequest.instantiateBcs> {
     if (!XOraclePriceUpdateRequest.cachedBcs) {
       XOraclePriceUpdateRequest.cachedBcs = XOraclePriceUpdateRequest.instantiateBcs()
     }

@@ -99,7 +99,7 @@ export class Guardian implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Guardian.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Guardian.instantiateBcs> {
     if (!Guardian.cachedBcs) {
       Guardian.cachedBcs = Guardian.instantiateBcs()
     }

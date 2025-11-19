@@ -115,7 +115,7 @@ export class ObligationAccessStore implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationAccessStore.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationAccessStore.instantiateBcs> {
     if (!ObligationAccessStore.cachedBcs) {
       ObligationAccessStore.cachedBcs = ObligationAccessStore.instantiateBcs()
     }

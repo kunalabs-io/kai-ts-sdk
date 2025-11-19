@@ -7,13 +7,13 @@ export function new_(tx: Transaction) {
 }
 
 export interface ConsumeArgs {
-  consumedVaAs: TransactionObjectInput
-  bytes32: TransactionObjectInput
+  self: TransactionObjectInput
+  digest: TransactionObjectInput
 }
 
 export function consume(tx: Transaction, args: ConsumeArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::consumed_vaas::consume`,
-    arguments: [obj(tx, args.consumedVaAs), obj(tx, args.bytes32)],
+    arguments: [obj(tx, args.self), obj(tx, args.digest)],
   })
 }

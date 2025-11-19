@@ -1,8 +1,4 @@
-import {
-  Transaction,
-  TransactionArgument,
-  TransactionObjectArgument,
-} from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectArgument } from '@mysten/sui/transactions'
 import { CoinInfo } from '../coin-info'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { Price } from '../price'
@@ -11,7 +7,7 @@ export interface RouterSwapBalanceArgs {
   tx: Transaction
   inInfo: CoinInfo<PhantomTypeArgument>
   outInfo: CoinInfo<PhantomTypeArgument>
-  balanceIn: TransactionArgument
+  balanceIn: TransactionObjectArgument
   amountIn: bigint
   sender: string
   slippage: number
@@ -22,7 +18,7 @@ export interface RouterSwapCoinArgs {
   tx: Transaction
   inInfo: CoinInfo<PhantomTypeArgument>
   outInfo: CoinInfo<PhantomTypeArgument>
-  coinIn: TransactionArgument
+  coinIn: TransactionObjectArgument
   amountIn: bigint
   sender: string
   slippage: number
@@ -43,7 +39,7 @@ export interface RouterSwapExactOutBalanceArgs {
   tx: Transaction
   inInfo: CoinInfo<PhantomTypeArgument>
   outInfo: CoinInfo<PhantomTypeArgument>
-  balanceIn: TransactionArgument
+  balanceIn: TransactionObjectArgument
   amountOut: bigint
   sender: string
   /** The allowed swap slippage, e.g. 0.01 is 1% */
@@ -55,7 +51,7 @@ export interface RouterSwapExactOutCoinArgs {
   tx: Transaction
   inInfo: CoinInfo<PhantomTypeArgument>
   outInfo: CoinInfo<PhantomTypeArgument>
-  coinIn: TransactionArgument
+  coinIn: TransactionObjectArgument
   amountOut: bigint
   sender: string
   slippage: number

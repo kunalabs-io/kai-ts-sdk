@@ -166,7 +166,7 @@ export class GenesisValidatorMetadata implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GenesisValidatorMetadata.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GenesisValidatorMetadata.instantiateBcs> {
     if (!GenesisValidatorMetadata.cachedBcs) {
       GenesisValidatorMetadata.cachedBcs = GenesisValidatorMetadata.instantiateBcs()
     }
@@ -464,7 +464,7 @@ export class GenesisChainParameters implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GenesisChainParameters.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GenesisChainParameters.instantiateBcs> {
     if (!GenesisChainParameters.cachedBcs) {
       GenesisChainParameters.cachedBcs = GenesisChainParameters.instantiateBcs()
     }
@@ -733,7 +733,7 @@ export class TokenDistributionSchedule implements StructClass {
   private static cachedBcs: ReturnType<typeof TokenDistributionSchedule.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TokenDistributionSchedule.instantiateBcs> {
     if (!TokenDistributionSchedule.cachedBcs) {
       TokenDistributionSchedule.cachedBcs = TokenDistributionSchedule.instantiateBcs()
     }
@@ -942,7 +942,7 @@ export class TokenAllocation implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TokenAllocation.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TokenAllocation.instantiateBcs> {
     if (!TokenAllocation.cachedBcs) {
       TokenAllocation.cachedBcs = TokenAllocation.instantiateBcs()
     }

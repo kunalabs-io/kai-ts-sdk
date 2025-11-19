@@ -120,7 +120,7 @@ export class GovernanceInstruction implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceInstruction.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceInstruction.instantiateBcs> {
     if (!GovernanceInstruction.cachedBcs) {
       GovernanceInstruction.cachedBcs = GovernanceInstruction.instantiateBcs()
     }

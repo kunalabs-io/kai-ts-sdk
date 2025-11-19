@@ -110,7 +110,7 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
 
   private static cachedBcs: ReturnType<typeof COIN_DECIMALS_REGISTRY.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof COIN_DECIMALS_REGISTRY.instantiateBcs> {
     if (!COIN_DECIMALS_REGISTRY.cachedBcs) {
       COIN_DECIMALS_REGISTRY.cachedBcs = COIN_DECIMALS_REGISTRY.instantiateBcs()
     }
@@ -292,7 +292,7 @@ export class CoinDecimalsRegistry implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CoinDecimalsRegistry.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CoinDecimalsRegistry.instantiateBcs> {
     if (!CoinDecimalsRegistry.cachedBcs) {
       CoinDecimalsRegistry.cachedBcs = CoinDecimalsRegistry.instantiateBcs()
     }
@@ -497,7 +497,7 @@ export class CoinDecimalsRegistered implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CoinDecimalsRegistered.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CoinDecimalsRegistered.instantiateBcs> {
     if (!CoinDecimalsRegistered.cachedBcs) {
       CoinDecimalsRegistered.cachedBcs = CoinDecimalsRegistered.instantiateBcs()
     }

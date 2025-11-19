@@ -1,5 +1,4 @@
 import * as reified from '../../_framework/reified'
-import { ID } from '../../_dependencies/onchain/0x2/object/structs'
 import {
   PhantomReified,
   Reified,
@@ -14,6 +13,7 @@ import {
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
+import { ID } from '../../sui/object/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -122,7 +122,7 @@ export class WormholeMessage implements StructClass {
 
   private static cachedBcs: ReturnType<typeof WormholeMessage.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WormholeMessage.instantiateBcs> {
     if (!WormholeMessage.cachedBcs) {
       WormholeMessage.cachedBcs = WormholeMessage.instantiateBcs()
     }
@@ -327,7 +327,7 @@ export class MessageTicket implements StructClass {
 
   private static cachedBcs: ReturnType<typeof MessageTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof MessageTicket.instantiateBcs> {
     if (!MessageTicket.cachedBcs) {
       MessageTicket.cachedBcs = MessageTicket.instantiateBcs()
     }

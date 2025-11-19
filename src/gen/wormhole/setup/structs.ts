@@ -1,4 +1,3 @@
-import { UID } from '../../_dependencies/onchain/0x2/object/structs'
 import {
   PhantomReified,
   Reified,
@@ -11,6 +10,7 @@ import {
   phantom,
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import { UID } from '../../sui/object/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -99,7 +99,7 @@ export class DeployerCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeployerCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeployerCap.instantiateBcs> {
     if (!DeployerCap.cachedBcs) {
       DeployerCap.cachedBcs = DeployerCap.instantiateBcs()
     }

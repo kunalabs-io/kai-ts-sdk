@@ -105,7 +105,7 @@ export class StorageFund implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StorageFund.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StorageFund.instantiateBcs> {
     if (!StorageFund.cachedBcs) {
       StorageFund.cachedBcs = StorageFund.instantiateBcs()
     }

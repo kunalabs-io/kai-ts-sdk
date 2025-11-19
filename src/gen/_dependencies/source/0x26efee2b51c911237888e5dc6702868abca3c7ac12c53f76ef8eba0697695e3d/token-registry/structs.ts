@@ -28,7 +28,7 @@ import { Vector } from '../../../../_framework/vector'
 import { String } from '../../../../move-stdlib/ascii/structs'
 import { UID } from '../../../../sui/object/structs'
 import { Table } from '../../../../sui/table/structs'
-import { ExternalAddress } from '../../0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/external-address/structs'
+import { ExternalAddress } from '../../../../wormhole/external-address/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -129,7 +129,7 @@ export class TokenRegistry implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TokenRegistry.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TokenRegistry.instantiateBcs> {
     if (!TokenRegistry.cachedBcs) {
       TokenRegistry.cachedBcs = TokenRegistry.instantiateBcs()
     }
@@ -342,7 +342,7 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof VerifiedAsset.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VerifiedAsset.instantiateBcs> {
     if (!VerifiedAsset.cachedBcs) {
       VerifiedAsset.cachedBcs = VerifiedAsset.instantiateBcs()
     }
@@ -576,7 +576,7 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Key.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Key.instantiateBcs> {
     if (!Key.cachedBcs) {
       Key.cachedBcs = Key.instantiateBcs()
     }
@@ -794,7 +794,7 @@ export class CoinTypeKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CoinTypeKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CoinTypeKey.instantiateBcs> {
     if (!CoinTypeKey.cachedBcs) {
       CoinTypeKey.cachedBcs = CoinTypeKey.instantiateBcs()
     }

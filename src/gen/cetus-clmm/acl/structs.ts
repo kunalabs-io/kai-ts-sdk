@@ -99,7 +99,7 @@ export class ACL implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ACL.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ACL.instantiateBcs> {
     if (!ACL.cachedBcs) {
       ACL.cachedBcs = ACL.instantiateBcs()
     }
@@ -285,7 +285,7 @@ export class Member implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Member.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Member.instantiateBcs> {
     if (!Member.cachedBcs) {
       Member.cachedBcs = Member.instantiateBcs()
     }

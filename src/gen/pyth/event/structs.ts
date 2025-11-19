@@ -105,7 +105,7 @@ export class PythInitializationEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PythInitializationEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PythInitializationEvent.instantiateBcs> {
     if (!PythInitializationEvent.cachedBcs) {
       PythInitializationEvent.cachedBcs = PythInitializationEvent.instantiateBcs()
     }
@@ -289,7 +289,7 @@ export class PriceFeedUpdateEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceFeedUpdateEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceFeedUpdateEvent.instantiateBcs> {
     if (!PriceFeedUpdateEvent.cachedBcs) {
       PriceFeedUpdateEvent.cachedBcs = PriceFeedUpdateEvent.instantiateBcs()
     }

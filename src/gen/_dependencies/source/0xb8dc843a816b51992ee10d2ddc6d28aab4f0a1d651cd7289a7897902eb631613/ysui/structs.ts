@@ -95,7 +95,7 @@ export class YSUI implements StructClass {
 
   private static cachedBcs: ReturnType<typeof YSUI.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof YSUI.instantiateBcs> {
     if (!YSUI.cachedBcs) {
       YSUI.cachedBcs = YSUI.instantiateBcs()
     }

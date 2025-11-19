@@ -133,3 +133,28 @@ export function destroySupply(tx: Transaction, typeArg: string, self: Transactio
     arguments: [obj(tx, self)],
   })
 }
+
+export interface SendToAccountArgs {
+  balance: TransactionObjectInput
+  recipient: string | TransactionArgument
+}
+
+export function sendToAccount(tx: Transaction, typeArg: string, args: SendToAccountArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::balance::send_to_account`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, args.balance), pure(tx, args.recipient, `address`)],
+  })
+}
+
+export function withdrawFromAccount(
+  tx: Transaction,
+  typeArg: string,
+  amount: bigint | TransactionArgument
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::balance::withdraw_from_account`,
+    typeArguments: [typeArg],
+    arguments: [pure(tx, amount, `u64`)],
+  })
+}

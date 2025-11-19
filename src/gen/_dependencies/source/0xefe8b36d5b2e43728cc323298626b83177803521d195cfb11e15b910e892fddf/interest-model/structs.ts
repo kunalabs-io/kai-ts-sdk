@@ -140,7 +140,7 @@ export class InterestModel implements StructClass {
 
   private static cachedBcs: ReturnType<typeof InterestModel.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InterestModel.instantiateBcs> {
     if (!InterestModel.cachedBcs) {
       InterestModel.cachedBcs = InterestModel.instantiateBcs()
     }
@@ -387,7 +387,7 @@ export class InterestModelChangeCreated implements StructClass {
   private static cachedBcs: ReturnType<typeof InterestModelChangeCreated.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InterestModelChangeCreated.instantiateBcs> {
     if (!InterestModelChangeCreated.cachedBcs) {
       InterestModelChangeCreated.cachedBcs = InterestModelChangeCreated.instantiateBcs()
     }
@@ -583,7 +583,7 @@ export class InterestModelAdded implements StructClass {
 
   private static cachedBcs: ReturnType<typeof InterestModelAdded.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InterestModelAdded.instantiateBcs> {
     if (!InterestModelAdded.cachedBcs) {
       InterestModelAdded.cachedBcs = InterestModelAdded.instantiateBcs()
     }
@@ -760,7 +760,7 @@ export class InterestModels implements StructClass {
 
   private static cachedBcs: ReturnType<typeof InterestModels.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InterestModels.instantiateBcs> {
     if (!InterestModels.cachedBcs) {
       InterestModels.cachedBcs = InterestModels.instantiateBcs()
     }

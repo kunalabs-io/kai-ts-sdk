@@ -100,7 +100,7 @@ export class RewardFactors implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewardFactors.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardFactors.instantiateBcs> {
     if (!RewardFactors.cachedBcs) {
       RewardFactors.cachedBcs = RewardFactors.instantiateBcs()
     }
@@ -275,7 +275,7 @@ export class RewardFactor implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewardFactor.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewardFactor.instantiateBcs> {
     if (!RewardFactor.cachedBcs) {
       RewardFactor.cachedBcs = RewardFactor.instantiateBcs()
     }

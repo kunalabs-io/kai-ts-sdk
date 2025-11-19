@@ -99,7 +99,7 @@ export class ExternalAddress implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ExternalAddress.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ExternalAddress.instantiateBcs> {
     if (!ExternalAddress.cachedBcs) {
       ExternalAddress.cachedBcs = ExternalAddress.instantiateBcs()
     }

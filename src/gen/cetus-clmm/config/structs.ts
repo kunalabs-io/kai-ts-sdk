@@ -101,7 +101,7 @@ export class AdminCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AdminCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AdminCap.instantiateBcs> {
     if (!AdminCap.cachedBcs) {
       AdminCap.cachedBcs = AdminCap.instantiateBcs()
     }
@@ -268,7 +268,7 @@ export class ProtocolFeeClaimCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ProtocolFeeClaimCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ProtocolFeeClaimCap.instantiateBcs> {
     if (!ProtocolFeeClaimCap.cachedBcs) {
       ProtocolFeeClaimCap.cachedBcs = ProtocolFeeClaimCap.instantiateBcs()
     }
@@ -438,7 +438,7 @@ export class FeeTier implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FeeTier.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FeeTier.instantiateBcs> {
     if (!FeeTier.cachedBcs) {
       FeeTier.cachedBcs = FeeTier.instantiateBcs()
     }
@@ -631,7 +631,7 @@ export class GlobalConfig implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GlobalConfig.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GlobalConfig.instantiateBcs> {
     if (!GlobalConfig.cachedBcs) {
       GlobalConfig.cachedBcs = GlobalConfig.instantiateBcs()
     }
@@ -827,7 +827,7 @@ export class InitConfigEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof InitConfigEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof InitConfigEvent.instantiateBcs> {
     if (!InitConfigEvent.cachedBcs) {
       InitConfigEvent.cachedBcs = InitConfigEvent.instantiateBcs()
     }
@@ -1008,7 +1008,7 @@ export class UpdateFeeRateEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateFeeRateEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateFeeRateEvent.instantiateBcs> {
     if (!UpdateFeeRateEvent.cachedBcs) {
       UpdateFeeRateEvent.cachedBcs = UpdateFeeRateEvent.instantiateBcs()
     }
@@ -1189,7 +1189,7 @@ export class AddFeeTierEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddFeeTierEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddFeeTierEvent.instantiateBcs> {
     if (!AddFeeTierEvent.cachedBcs) {
       AddFeeTierEvent.cachedBcs = AddFeeTierEvent.instantiateBcs()
     }
@@ -1374,7 +1374,7 @@ export class UpdateFeeTierEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateFeeTierEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateFeeTierEvent.instantiateBcs> {
     if (!UpdateFeeTierEvent.cachedBcs) {
       UpdateFeeTierEvent.cachedBcs = UpdateFeeTierEvent.instantiateBcs()
     }
@@ -1559,7 +1559,7 @@ export class DeleteFeeTierEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeleteFeeTierEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeleteFeeTierEvent.instantiateBcs> {
     if (!DeleteFeeTierEvent.cachedBcs) {
       DeleteFeeTierEvent.cachedBcs = DeleteFeeTierEvent.instantiateBcs()
     }
@@ -1743,7 +1743,7 @@ export class SetRolesEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SetRolesEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SetRolesEvent.instantiateBcs> {
     if (!SetRolesEvent.cachedBcs) {
       SetRolesEvent.cachedBcs = SetRolesEvent.instantiateBcs()
     }
@@ -1927,7 +1927,7 @@ export class AddRoleEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AddRoleEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AddRoleEvent.instantiateBcs> {
     if (!AddRoleEvent.cachedBcs) {
       AddRoleEvent.cachedBcs = AddRoleEvent.instantiateBcs()
     }
@@ -2111,7 +2111,7 @@ export class RemoveRoleEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RemoveRoleEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RemoveRoleEvent.instantiateBcs> {
     if (!RemoveRoleEvent.cachedBcs) {
       RemoveRoleEvent.cachedBcs = RemoveRoleEvent.instantiateBcs()
     }
@@ -2291,7 +2291,7 @@ export class RemoveMemberEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RemoveMemberEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RemoveMemberEvent.instantiateBcs> {
     if (!RemoveMemberEvent.cachedBcs) {
       RemoveMemberEvent.cachedBcs = RemoveMemberEvent.instantiateBcs()
     }
@@ -2464,7 +2464,7 @@ export class SetPackageVersion implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SetPackageVersion.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SetPackageVersion.instantiateBcs> {
     if (!SetPackageVersion.cachedBcs) {
       SetPackageVersion.cachedBcs = SetPackageVersion.instantiateBcs()
     }

@@ -102,6 +102,10 @@ export function peelVecU256(tx: Transaction, bcs: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u256`, arguments: [obj(tx, bcs)] })
 }
 
+export function peelEnumTag(tx: Transaction, bcs: TransactionObjectInput) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_enum_tag`, arguments: [obj(tx, bcs)] })
+}
+
 export function peelOptionAddress(tx: Transaction, bcs: TransactionObjectInput) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::bcs::peel_option_address`,

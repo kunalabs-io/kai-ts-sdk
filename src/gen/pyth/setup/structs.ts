@@ -99,7 +99,7 @@ export class DeployerCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DeployerCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DeployerCap.instantiateBcs> {
     if (!DeployerCap.cachedBcs) {
       DeployerCap.cachedBcs = DeployerCap.instantiateBcs()
     }

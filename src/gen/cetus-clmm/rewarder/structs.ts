@@ -116,7 +116,7 @@ export class RewarderManager implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewarderManager.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewarderManager.instantiateBcs> {
     if (!RewarderManager.cachedBcs) {
       RewarderManager.cachedBcs = RewarderManager.instantiateBcs()
     }
@@ -312,7 +312,7 @@ export class Rewarder implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Rewarder.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Rewarder.instantiateBcs> {
     if (!Rewarder.cachedBcs) {
       Rewarder.cachedBcs = Rewarder.instantiateBcs()
     }
@@ -497,7 +497,7 @@ export class RewarderGlobalVault implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewarderGlobalVault.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewarderGlobalVault.instantiateBcs> {
     if (!RewarderGlobalVault.cachedBcs) {
       RewarderGlobalVault.cachedBcs = RewarderGlobalVault.instantiateBcs()
     }
@@ -674,7 +674,7 @@ export class RewarderInitEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RewarderInitEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RewarderInitEvent.instantiateBcs> {
     if (!RewarderInitEvent.cachedBcs) {
       RewarderInitEvent.cachedBcs = RewarderInitEvent.instantiateBcs()
     }
@@ -855,7 +855,7 @@ export class DepositEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof DepositEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DepositEvent.instantiateBcs> {
     if (!DepositEvent.cachedBcs) {
       DepositEvent.cachedBcs = DepositEvent.instantiateBcs()
     }
@@ -1050,7 +1050,7 @@ export class EmergentWithdrawEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof EmergentWithdrawEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof EmergentWithdrawEvent.instantiateBcs> {
     if (!EmergentWithdrawEvent.cachedBcs) {
       EmergentWithdrawEvent.cachedBcs = EmergentWithdrawEvent.instantiateBcs()
     }

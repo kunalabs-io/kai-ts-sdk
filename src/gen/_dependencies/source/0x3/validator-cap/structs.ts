@@ -116,7 +116,7 @@ export class UnverifiedValidatorOperationCap implements StructClass {
     typeof UnverifiedValidatorOperationCap.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UnverifiedValidatorOperationCap.instantiateBcs> {
     if (!UnverifiedValidatorOperationCap.cachedBcs) {
       UnverifiedValidatorOperationCap.cachedBcs = UnverifiedValidatorOperationCap.instantiateBcs()
     }
@@ -314,7 +314,7 @@ export class ValidatorOperationCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorOperationCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorOperationCap.instantiateBcs> {
     if (!ValidatorOperationCap.cachedBcs) {
       ValidatorOperationCap.cachedBcs = ValidatorOperationCap.instantiateBcs()
     }

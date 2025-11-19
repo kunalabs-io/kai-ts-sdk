@@ -99,7 +99,7 @@ export class MigrateComplete implements StructClass {
 
   private static cachedBcs: ReturnType<typeof MigrateComplete.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof MigrateComplete.instantiateBcs> {
     if (!MigrateComplete.cachedBcs) {
       MigrateComplete.cachedBcs = MigrateComplete.instantiateBcs()
     }

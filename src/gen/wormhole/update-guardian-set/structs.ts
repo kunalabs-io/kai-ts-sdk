@@ -102,7 +102,7 @@ export class GovernanceWitness implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceWitness.instantiateBcs> {
     if (!GovernanceWitness.cachedBcs) {
       GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
     }
@@ -275,7 +275,7 @@ export class GuardianSetAdded implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GuardianSetAdded.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GuardianSetAdded.instantiateBcs> {
     if (!GuardianSetAdded.cachedBcs) {
       GuardianSetAdded.cachedBcs = GuardianSetAdded.instantiateBcs()
     }
@@ -448,7 +448,7 @@ export class UpdateGuardianSet implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpdateGuardianSet.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpdateGuardianSet.instantiateBcs> {
     if (!UpdateGuardianSet.cachedBcs) {
       UpdateGuardianSet.cachedBcs = UpdateGuardianSet.instantiateBcs()
     }

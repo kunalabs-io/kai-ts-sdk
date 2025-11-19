@@ -8,6 +8,18 @@ export function init(tx: Transaction, otw: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::pool::init`, arguments: [obj(tx, otw)] })
 }
 
+export interface MintProtocolFeeCollectCapArgs {
+  adminCap: TransactionObjectInput
+  addr: string | TransactionArgument
+}
+
+export function mintProtocolFeeCollectCap(tx: Transaction, args: MintProtocolFeeCollectCapArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::mint_protocol_fee_collect_cap`,
+    arguments: [obj(tx, args.adminCap), pure(tx, args.addr, `address`)],
+  })
+}
+
 export interface NewArgs {
   tickSpacing: number | TransactionArgument
   initSqrtPrice: bigint | TransactionArgument
@@ -194,6 +206,36 @@ export function removeLiquidity(
   })
 }
 
+export interface RemoveLiquidityWithSlippageArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  positionNft: TransactionObjectInput
+  deltaLiquidity: bigint | TransactionArgument
+  minAmountA: bigint | TransactionArgument
+  minAmountB: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function removeLiquidityWithSlippage(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveLiquidityWithSlippageArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::remove_liquidity_with_slippage`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.positionNft),
+      pure(tx, args.deltaLiquidity, `u128`),
+      pure(tx, args.minAmountA, `u64`),
+      pure(tx, args.minAmountB, `u64`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface ClosePositionArgs {
   config: TransactionObjectInput
   pool: TransactionObjectInput
@@ -371,6 +413,23 @@ export function getPositionAmounts(
   })
 }
 
+export interface GetPositionAmountsV2Args {
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function getPositionAmountsV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GetPositionAmountsV2Args
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::get_position_amounts_v2`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
 export interface FlashSwapArgs {
   config: TransactionObjectInput
   pool: TransactionObjectInput
@@ -500,6 +559,24 @@ export function collectProtocolFee(
   })
 }
 
+export interface CollectProtocolFeeWithCapArgs {
+  pool: TransactionObjectInput
+  config: TransactionObjectInput
+  cap: TransactionObjectInput
+}
+
+export function collectProtocolFeeWithCap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CollectProtocolFeeWithCapArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::collect_protocol_fee_with_cap`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), obj(tx, args.config), obj(tx, args.cap)],
+  })
+}
+
 export interface InitializeRewarderArgs {
   config: TransactionObjectInput
   pool: TransactionObjectInput
@@ -580,6 +657,21 @@ export function updateFeeRate(
     target: `${PUBLISHED_AT}::pool::update_fee_rate`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.config), obj(tx, args.pool), pure(tx, args.feeRate, `u64`)],
+  })
+}
+
+export interface UpdatePoolArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  coinA: TransactionObjectInput
+  coinB: TransactionObjectInput
+}
+
+export function updatePool(tx: Transaction, typeArgs: [string, string], args: UpdatePoolArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::update_pool`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), obj(tx, args.pool), obj(tx, args.coinA), obj(tx, args.coinB)],
   })
 }
 
@@ -707,6 +799,187 @@ export function repayFlashLoanWithPartner(
       obj(tx, args.balanceA),
       obj(tx, args.balanceB),
       obj(tx, args.receipt),
+    ],
+  })
+}
+
+export interface InitPositionSnapshotArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  removePercent: bigint | TransactionArgument
+}
+
+export function initPositionSnapshot(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: InitPositionSnapshotArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::init_position_snapshot`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), obj(tx, args.pool), pure(tx, args.removePercent, `u64`)],
+  })
+}
+
+export function positionLiquiditySnapshot(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::position_liquidity_snapshot`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface IsAttackedPositionArgs {
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function isAttackedPosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: IsAttackedPositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::is_attacked_position`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
+export interface GetPositionSnapshotByPositionIdArgs {
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function getPositionSnapshotByPositionId(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GetPositionSnapshotByPositionIdArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::get_position_snapshot_by_position_id`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+  })
+}
+
+export interface ApplyLiquidityCutArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+  cutValue: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function applyLiquidityCut(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ApplyLiquidityCutArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::apply_liquidity_cut`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+      pure(tx, args.cutValue, `u64`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface GovernanceFundInjectionArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  coinA: TransactionObjectInput
+  coinB: TransactionObjectInput
+}
+
+export function governanceFundInjection(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GovernanceFundInjectionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::governance_fund_injection`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.config), obj(tx, args.pool), obj(tx, args.coinA), obj(tx, args.coinB)],
+  })
+}
+
+export interface GovernanceFundWithdrawalArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  amountA: bigint | TransactionArgument
+  amountB: bigint | TransactionArgument
+}
+
+export function governanceFundWithdrawal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: GovernanceFundWithdrawalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::governance_fund_withdrawal`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.amountA, `u64`),
+      pure(tx, args.amountB, `u64`),
+    ],
+  })
+}
+
+export interface EmergencyRemoveMaliciousPositionArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  positionId: string | TransactionArgument
+}
+
+export function emergencyRemoveMaliciousPosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: EmergencyRemoveMaliciousPositionArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::emergency_remove_malicious_position`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
+  })
+}
+
+export interface EmergencyRestorePoolStateArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  targetSqrtPrice: bigint | TransactionArgument
+  currentLiquidity: bigint | TransactionArgument
+  clk: TransactionObjectInput
+}
+
+export function emergencyRestorePoolState(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: EmergencyRestorePoolStateArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::emergency_restore_pool_state`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.targetSqrtPrice, `u128`),
+      pure(tx, args.currentLiquidity, `u128`),
+      obj(tx, args.clk),
     ],
   })
 }
@@ -1330,48 +1603,379 @@ export function stepSwapResultRemainderAmount(
   })
 }
 
-export function positionLiquiditySnapshot(
+export function isAllowSwap(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::position_liquidity_snapshot`,
+    target: `${PUBLISHED_AT}::pool::is_allow_swap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
-export interface IsAttackedPositionArgs {
-  pool: TransactionObjectInput
-  positionId: string | TransactionArgument
-}
-
-export function isAttackedPosition(
+export function isAllowAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: IsAttackedPositionArgs
+  pool: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_attacked_position`,
+    target: `${PUBLISHED_AT}::pool::is_allow_add_liquidity`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [obj(tx, pool)],
   })
 }
 
-export interface GetPositionSnapshotByPositionIdArgs {
-  pool: TransactionObjectInput
-  positionId: string | TransactionArgument
-}
-
-export function getPositionSnapshotByPositionId(
+export function isAllowRemoveLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionSnapshotByPositionIdArgs
+  pool: TransactionObjectInput
 ) {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_snapshot_by_position_id`,
+    target: `${PUBLISHED_AT}::pool::is_allow_remove_liquidity`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [obj(tx, pool)],
   })
+}
+
+export function isAllowFlashLoan(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::is_allow_flash_loan`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function isAllowCollectFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::is_allow_collect_fee`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function isAllowCollectReward(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::is_allow_collect_reward`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface SetPoolStatusArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  disableAddLiquidity: boolean | TransactionArgument
+  disableRemoveLiquidity: boolean | TransactionArgument
+  disableSwap: boolean | TransactionArgument
+  disableFlashLoan: boolean | TransactionArgument
+  disableCollectFee: boolean | TransactionArgument
+  disableCollectReward: boolean | TransactionArgument
+}
+
+export function setPoolStatus(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SetPoolStatusArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::set_pool_status`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.disableAddLiquidity, `bool`),
+      pure(tx, args.disableRemoveLiquidity, `bool`),
+      pure(tx, args.disableSwap, `bool`),
+      pure(tx, args.disableFlashLoan, `bool`),
+      pure(tx, args.disableCollectFee, `bool`),
+      pure(tx, args.disableCollectReward, `bool`),
+    ],
+  })
+}
+
+export interface AddLiquidityInternalArgs {
+  pool: TransactionObjectInput
+  positionNft: TransactionObjectInput
+  byAmount: boolean | TransactionArgument
+  liquidity: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+  fixAmountA: boolean | TransactionArgument
+  timestamp: bigint | TransactionArgument
+}
+
+export function addLiquidityInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddLiquidityInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::add_liquidity_internal`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.positionNft),
+      pure(tx, args.byAmount, `bool`),
+      pure(tx, args.liquidity, `u128`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.fixAmountA, `bool`),
+      pure(tx, args.timestamp, `u64`),
+    ],
+  })
+}
+
+export interface FlashSwapInternalArgs {
+  pool: TransactionObjectInput
+  config: TransactionObjectInput
+  partnerId: string | TransactionArgument
+  refFeeRate: bigint | TransactionArgument
+  a2B: boolean | TransactionArgument
+  byAmountIn: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+  sqrtPriceLimit: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function flashSwapInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashSwapInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::flash_swap_internal`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.config),
+      pure(tx, args.partnerId, `${ID.$typeName}`),
+      pure(tx, args.refFeeRate, `u64`),
+      pure(tx, args.a2B, `bool`),
+      pure(tx, args.byAmountIn, `bool`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.sqrtPriceLimit, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface FlashLoanInternalArgs {
+  config: TransactionObjectInput
+  pool: TransactionObjectInput
+  partnerId: string | TransactionArgument
+  refFeeRate: bigint | TransactionArgument
+  loanA: boolean | TransactionArgument
+  amount: bigint | TransactionArgument
+}
+
+export function flashLoanInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashLoanInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::flash_loan_internal`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.partnerId, `${ID.$typeName}`),
+      pure(tx, args.refFeeRate, `u64`),
+      pure(tx, args.loanA, `bool`),
+      pure(tx, args.amount, `u64`),
+    ],
+  })
+}
+
+export interface SwapInPoolArgs {
+  pool: TransactionObjectInput
+  a2B: boolean | TransactionArgument
+  byAmountIn: boolean | TransactionArgument
+  sqrtPriceLimit: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+  protocolFeeRate: bigint | TransactionArgument
+  refFeeRate: bigint | TransactionArgument
+}
+
+export function swapInPool(tx: Transaction, typeArgs: [string, string], args: SwapInPoolArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::swap_in_pool`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.a2B, `bool`),
+      pure(tx, args.byAmountIn, `bool`),
+      pure(tx, args.sqrtPriceLimit, `u128`),
+      pure(tx, args.amount, `u64`),
+      pure(tx, args.protocolFeeRate, `u64`),
+      pure(tx, args.refFeeRate, `u64`),
+    ],
+  })
+}
+
+export interface UpdateSwapResultArgs {
+  result: TransactionObjectInput
+  amountIn: bigint | TransactionArgument
+  amountOut: bigint | TransactionArgument
+  feeAmount: bigint | TransactionArgument
+}
+
+export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::update_swap_result`,
+    arguments: [
+      obj(tx, args.result),
+      pure(tx, args.amountIn, `u64`),
+      pure(tx, args.amountOut, `u64`),
+      pure(tx, args.feeAmount, `u64`),
+    ],
+  })
+}
+
+export interface UpdatePoolFeeArgs {
+  pool: TransactionObjectInput
+  feeAmount: bigint | TransactionArgument
+  protocolFeeRate: bigint | TransactionArgument
+  a2B: boolean | TransactionArgument
+}
+
+export function updatePoolFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdatePoolFeeArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::update_pool_fee`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.feeAmount, `u64`),
+      pure(tx, args.protocolFeeRate, `u64`),
+      pure(tx, args.a2B, `bool`),
+    ],
+  })
+}
+
+export interface UpdateFlashLoanFeeArgs {
+  pool: TransactionObjectInput
+  feeAmount: bigint | TransactionArgument
+  protocolFeeRate: bigint | TransactionArgument
+  loanA: boolean | TransactionArgument
+}
+
+export function updateFlashLoanFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdateFlashLoanFeeArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::update_flash_loan_fee`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.feeAmount, `u64`),
+      pure(tx, args.protocolFeeRate, `u64`),
+      pure(tx, args.loanA, `bool`),
+    ],
+  })
+}
+
+export interface UpdateFeeGrowthArgs {
+  pool: TransactionObjectInput
+  feeAmount: bigint | TransactionArgument
+  protocolFeeRate: bigint | TransactionArgument
+  isCoinA: boolean | TransactionArgument
+}
+
+export function updateFeeGrowth(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdateFeeGrowthArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::update_fee_growth`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.feeAmount, `u64`),
+      pure(tx, args.protocolFeeRate, `u64`),
+      pure(tx, args.isCoinA, `bool`),
+    ],
+  })
+}
+
+export function collectProtocolFeeInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::collect_protocol_fee_internal`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function markPendingAddLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::mark_pending_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function clearPendingAddLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::clear_pending_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export function assertNoPendingAddLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::assert_no_pending_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface CheckRemainerAmountSubArgs {
+  remainerAmount: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+}
+
+export function checkRemainerAmountSub(tx: Transaction, args: CheckRemainerAmountSubArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pool::check_remainer_amount_sub`,
+    arguments: [pure(tx, args.remainerAmount, `u64`), pure(tx, args.amount, `u64`)],
+  })
+}
+
+export function defaultSwapResult(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::pool::default_swap_result`, arguments: [] })
 }

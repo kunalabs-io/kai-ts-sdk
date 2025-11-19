@@ -118,7 +118,7 @@ export class CreateSpoolAccountEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CreateSpoolAccountEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CreateSpoolAccountEvent.instantiateBcs> {
     if (!CreateSpoolAccountEvent.cachedBcs) {
       CreateSpoolAccountEvent.cachedBcs = CreateSpoolAccountEvent.instantiateBcs()
     }
@@ -333,7 +333,7 @@ export class SpoolAccountUnstakeEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SpoolAccountUnstakeEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SpoolAccountUnstakeEvent.instantiateBcs> {
     if (!SpoolAccountUnstakeEvent.cachedBcs) {
       SpoolAccountUnstakeEvent.cachedBcs = SpoolAccountUnstakeEvent.instantiateBcs()
     }
@@ -566,7 +566,7 @@ export class SpoolAccountStakeEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SpoolAccountStakeEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SpoolAccountStakeEvent.instantiateBcs> {
     if (!SpoolAccountStakeEvent.cachedBcs) {
       SpoolAccountStakeEvent.cachedBcs = SpoolAccountStakeEvent.instantiateBcs()
     }
@@ -823,7 +823,7 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
     typeof SpoolAccountRedeemRewardsEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SpoolAccountRedeemRewardsEvent.instantiateBcs> {
     if (!SpoolAccountRedeemRewardsEvent.cachedBcs) {
       SpoolAccountRedeemRewardsEvent.cachedBcs = SpoolAccountRedeemRewardsEvent.instantiateBcs()
     }
@@ -1109,7 +1109,7 @@ export class SpoolAccountRedeemRewardsEventV2 implements StructClass {
     typeof SpoolAccountRedeemRewardsEventV2.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SpoolAccountRedeemRewardsEventV2.instantiateBcs> {
     if (!SpoolAccountRedeemRewardsEventV2.cachedBcs) {
       SpoolAccountRedeemRewardsEventV2.cachedBcs = SpoolAccountRedeemRewardsEventV2.instantiateBcs()
     }

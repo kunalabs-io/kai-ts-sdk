@@ -98,7 +98,7 @@ export class NormalizedAmount implements StructClass {
 
   private static cachedBcs: ReturnType<typeof NormalizedAmount.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof NormalizedAmount.instantiateBcs> {
     if (!NormalizedAmount.cachedBcs) {
       NormalizedAmount.cachedBcs = NormalizedAmount.instantiateBcs()
     }

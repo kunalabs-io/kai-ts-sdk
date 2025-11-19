@@ -104,7 +104,7 @@ export class AHandleExploitedPosition implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AHandleExploitedPosition.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AHandleExploitedPosition.instantiateBcs> {
     if (!AHandleExploitedPosition.cachedBcs) {
       AHandleExploitedPosition.cachedBcs = AHandleExploitedPosition.instantiateBcs()
     }

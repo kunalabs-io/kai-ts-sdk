@@ -11,7 +11,7 @@ import {
 } from '../../../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../../../_framework/util'
 import { String } from '../../../../move-stdlib/string/structs'
-import { ExternalAddress } from '../../0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/external-address/structs'
+import { ExternalAddress } from '../../../../wormhole/external-address/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -116,7 +116,7 @@ export class AssetMeta implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AssetMeta.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AssetMeta.instantiateBcs> {
     if (!AssetMeta.cachedBcs) {
       AssetMeta.cachedBcs = AssetMeta.instantiateBcs()
     }

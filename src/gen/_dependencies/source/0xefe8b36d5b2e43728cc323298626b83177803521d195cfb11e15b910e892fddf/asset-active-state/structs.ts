@@ -108,7 +108,7 @@ export class BaseAssetActiveStates implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BaseAssetActiveStates.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BaseAssetActiveStates.instantiateBcs> {
     if (!BaseAssetActiveStates.cachedBcs) {
       BaseAssetActiveStates.cachedBcs = BaseAssetActiveStates.instantiateBcs()
     }
@@ -289,7 +289,7 @@ export class CollateralActiveStates implements StructClass {
 
   private static cachedBcs: ReturnType<typeof CollateralActiveStates.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof CollateralActiveStates.instantiateBcs> {
     if (!CollateralActiveStates.cachedBcs) {
       CollateralActiveStates.cachedBcs = CollateralActiveStates.instantiateBcs()
     }
@@ -468,7 +468,7 @@ export class AssetActiveStates implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AssetActiveStates.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AssetActiveStates.instantiateBcs> {
     if (!AssetActiveStates.cachedBcs) {
       AssetActiveStates.cachedBcs = AssetActiveStates.instantiateBcs()
     }

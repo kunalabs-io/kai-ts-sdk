@@ -214,6 +214,32 @@ export function swapRemove(tx: Transaction, typeArg: string, args: SwapRemoveArg
   })
 }
 
+export interface SkipArgs {
+  v: Array<GenericArg> | TransactionArgument
+  n: bigint | TransactionArgument
+}
+
+export function skip(tx: Transaction, typeArg: string, args: SkipArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vector::skip`,
+    typeArguments: [typeArg],
+    arguments: [vector(tx, `${typeArg}`, args.v), pure(tx, args.n, `u64`)],
+  })
+}
+
+export interface TakeArgs {
+  v: Array<GenericArg> | TransactionArgument
+  n: bigint | TransactionArgument
+}
+
+export function take(tx: Transaction, typeArg: string, args: TakeArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vector::take`,
+    typeArguments: [typeArg],
+    arguments: [vector(tx, `${typeArg}`, args.v), pure(tx, args.n, `u64`)],
+  })
+}
+
 export function flatten(
   tx: Transaction,
   typeArg: string,

@@ -8,7 +8,7 @@ import {
   RepayDebtInfo,
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
-import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
+import { Position as BluefinPosition } from '../gen/bluefin_spot/position/structs'
 import { tickIndexToSqrtPriceX64 } from './tick-math'
 import {
   findConfigInfoForPositionBcs,
@@ -34,6 +34,7 @@ import {
   coinWithBalance,
   Transaction,
   TransactionArgument,
+  TransactionObjectArgument,
   TransactionResult,
 } from '@mysten/sui/transactions'
 import { CETUS_GLOBAL_CONFIG_ID, CETUS_REWARDER_GLOBAL_VAULT } from '../constants'
@@ -436,11 +437,11 @@ export interface WithdrawAllRewardsArgs {
 
 export interface WithdrawAllRewardsResult {
   /** The collected X fees */
-  feeX: TransactionArgument
+  feeX: TransactionObjectArgument
   /** The collected Y fees */
-  feeY: TransactionArgument
+  feeY: TransactionObjectArgument
   /** The collected rewards */
-  rewards: { coinInfo: CoinInfo<PhantomTypeArgument>; balance: TransactionArgument }[]
+  rewards: { coinInfo: CoinInfo<PhantomTypeArgument>; balance: TransactionObjectArgument }[]
 }
 
 export interface OwnerTakeStashedRewardArgs {
@@ -459,7 +460,7 @@ export interface WithdrawAllStashedRewardsArgs {
 
 export type WithdrawAllStashedRewardsResult = {
   coinInfo: CoinInfo<PhantomTypeArgument>
-  balance: TransactionArgument
+  balance: TransactionResult
 }[]
 
 export interface ConvertRewardsAndTransferArgs {
@@ -2003,8 +2004,8 @@ export class Position<
   #depositDirect(
     tx: Transaction,
     positionCapId: string,
-    xInBalance: TransactionArgument,
-    yInBalance: TransactionArgument,
+    xInBalance: TransactionObjectArgument,
+    yInBalance: TransactionObjectArgument,
     sender: string
   ) {
     const ta = {
@@ -2088,8 +2089,8 @@ export class Position<
     tx: Transaction,
     xSellAmt: Decimal,
     ySellAmt: Decimal,
-    xInBalance: TransactionArgument,
-    yInBalance: TransactionArgument,
+    xInBalance: TransactionObjectArgument,
+    yInBalance: TransactionObjectArgument,
     sender: string,
     router: Router,
     slippage: number
@@ -2236,7 +2237,7 @@ export class Position<
 
     let xFeeResult: TransactionArgument
     let yFeeResult: TransactionArgument
-    const rewardResults: [CoinInfo<PhantomTypeArgument>, TransactionArgument][] = []
+    const rewardResults: [CoinInfo<PhantomTypeArgument>, TransactionResult][] = []
 
     if (this.isCetus()) {
       const [feeX, feeY] = cetus.rebalanceCollectFee(tx, [ta.X, ta.Y], {
@@ -2351,7 +2352,10 @@ export class Position<
    * @param args - The arguments for the fee collection.
    * @returns the Balance<X> and Balance<Y> of the collected fees.
    */
-  ownerCollectFees(tx: Transaction, args: OwnerCollectFeesArgs) {
+  ownerCollectFees(
+    tx: Transaction,
+    args: OwnerCollectFeesArgs
+  ): [TransactionObjectArgument, TransactionObjectArgument] {
     let fees: TransactionResult
     if (this.isCetus()) {
       fees = cetus.ownerCollectFee(tx, [this.X.typeName, this.Y.typeName], {
@@ -2563,11 +2567,15 @@ export class Position<
 
     const allRewards = new Map<
       string,
-      { coinInfo: CoinInfo<PhantomTypeArgument>; balance: TransactionArgument; amount: bigint }
+      {
+        coinInfo: CoinInfo<PhantomTypeArgument>
+        balance: TransactionObjectArgument
+        amount: bigint
+      }
     >()
     const mergeReward = (
       coinInfo: CoinInfo<PhantomTypeArgument>,
-      rewardBalance: TransactionArgument,
+      rewardBalance: TransactionObjectArgument,
       type: 'x' | 'y' | 'rewards' | 'stashed'
     ) => {
       let amount: bigint
@@ -2807,8 +2815,8 @@ export class Position<
       const collectedFees = this.ownerCollectFees(tx, {
         positionCapId: args.positionCapId,
       })
-      let feeX = collectedFees[0] as TransactionArgument
-      let feeY = collectedFees[1] as TransactionArgument
+      let feeX = collectedFees[0]
+      let feeY = collectedFees[1]
 
       let feeXAmt = rewards.x.int
       if (feeXAmt < compoundThresholdCoins.get(this.X.typeName)!) {

@@ -36,13 +36,13 @@ export function isCursor(type: string): boolean {
   return type.startsWith(`${PKG_V1}::cursor::Cursor` + '<')
 }
 
-export interface CursorFields<T0 extends TypeArgument> {
-  data: ToField<Vector<T0>>
+export interface CursorFields<T extends TypeArgument> {
+  data: ToField<Vector<T>>
 }
 
-export type CursorReified<T0 extends TypeArgument> = Reified<Cursor<T0>, CursorFields<T0>>
+export type CursorReified<T extends TypeArgument> = Reified<Cursor<T>, CursorFields<T>>
 
-export class Cursor<T0 extends TypeArgument> implements StructClass {
+export class Cursor<T extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName = `${PKG_V1}::cursor::Cursor`
@@ -50,44 +50,44 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
   static readonly $isPhantom = [false] as const
 
   readonly $typeName = Cursor.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<T0>}>`
-  readonly $typeArgs: [ToTypeStr<T0>]
+  readonly $fullTypeName: `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<T>}>`
+  readonly $typeArgs: [ToTypeStr<T>]
   readonly $isPhantom = Cursor.$isPhantom
 
-  readonly data: ToField<Vector<T0>>
+  readonly data: ToField<Vector<T>>
 
-  private constructor(typeArgs: [ToTypeStr<T0>], fields: CursorFields<T0>) {
+  private constructor(typeArgs: [ToTypeStr<T>], fields: CursorFields<T>) {
     this.$fullTypeName = composeSuiType(
       Cursor.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<T0>}>`
+    ) as `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
   }
 
-  static reified<T0 extends Reified<TypeArgument, any>>(T0: T0): CursorReified<ToTypeArgument<T0>> {
-    const reifiedBcs = Cursor.bcs(toBcs(T0))
+  static reified<T extends Reified<TypeArgument, any>>(T: T): CursorReified<ToTypeArgument<T>> {
+    const reifiedBcs = Cursor.bcs(toBcs(T))
     return {
       typeName: Cursor.$typeName,
       fullTypeName: composeSuiType(
         Cursor.$typeName,
-        ...[extractType(T0)]
-      ) as `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<ToTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [ToTypeStr<ToTypeArgument<T0>>],
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::cursor::Cursor<${ToTypeStr<ToTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
       isPhantom: Cursor.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => Cursor.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Cursor.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Cursor.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => Cursor.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Cursor.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => Cursor.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => Cursor.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => Cursor.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => Cursor.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => Cursor.fromSuiObjectData(T0, content),
-      fetch: async (client: SuiClient, id: string) => Cursor.fetch(client, T0, id),
-      new: (fields: CursorFields<ToTypeArgument<T0>>) => {
-        return new Cursor([extractType(T0)], fields)
+      fromJSONField: (field: any) => Cursor.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => Cursor.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => Cursor.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => Cursor.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => Cursor.fetch(client, T, id),
+      new: (fields: CursorFields<ToTypeArgument<T>>) => {
+        return new Cursor([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -97,44 +97,44 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     return Cursor.reified
   }
 
-  static phantom<T0 extends Reified<TypeArgument, any>>(
-    T0: T0
-  ): PhantomReified<ToTypeStr<Cursor<ToTypeArgument<T0>>>> {
-    return phantom(Cursor.reified(T0))
+  static phantom<T extends Reified<TypeArgument, any>>(
+    T: T
+  ): PhantomReified<ToTypeStr<Cursor<ToTypeArgument<T>>>> {
+    return phantom(Cursor.reified(T))
   }
   static get p() {
     return Cursor.phantom
   }
 
   private static instantiateBcs() {
-    return <T0 extends BcsType<any>>(T0: T0) =>
-      bcs.struct(`Cursor<${T0.name}>`, {
-        data: bcs.vector(T0),
+    return <T extends BcsType<any>>(T: T) =>
+      bcs.struct(`Cursor<${T.name}>`, {
+        data: bcs.vector(T),
       })
   }
 
   private static cachedBcs: ReturnType<typeof Cursor.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Cursor.instantiateBcs> {
     if (!Cursor.cachedBcs) {
       Cursor.cachedBcs = Cursor.instantiateBcs()
     }
     return Cursor.cachedBcs
   }
 
-  static fromFields<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromFields<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     fields: Record<string, any>
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     return Cursor.reified(typeArg).new({
       data: decodeFromFields(reified.vector(typeArg), fields.data),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     item: FieldsWithTypes
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     if (!isCursor(item.type)) {
       throw new Error('not a Cursor type')
     }
@@ -145,10 +145,10 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromBcs<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     data: Uint8Array
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     const typeArgs = [typeArg]
 
     return Cursor.fromFields(typeArg, Cursor.bcs(toBcs(typeArgs[0])).parse(data))
@@ -156,7 +156,7 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
 
   toJSONField() {
     return {
-      data: fieldToJSON<Vector<T0>>(`vector<${this.$typeArgs[0]}>`, this.data),
+      data: fieldToJSON<Vector<T>>(`vector<${this.$typeArgs[0]}>`, this.data),
     }
   }
 
@@ -164,19 +164,19 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromJSONField<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     field: any
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     return Cursor.reified(typeArg).new({
       data: decodeFromJSONField(reified.vector(typeArg), field.data),
     })
   }
 
-  static fromJSON<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromJSON<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     json: Record<string, any>
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     if (json.$typeName !== Cursor.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
@@ -189,10 +189,10 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     return Cursor.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     content: SuiParsedData
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -202,10 +202,10 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     return Cursor.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     data: SuiObjectData
-  ): Cursor<ToTypeArgument<T0>> {
+  ): Cursor<ToTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCursor(data.bcs.type)) {
         throw new Error(`object at is not a Cursor object`)
@@ -235,11 +235,11 @@ export class Cursor<T0 extends TypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends Reified<TypeArgument, any>>(
+  static async fetch<T extends Reified<TypeArgument, any>>(
     client: SuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string
-  ): Promise<Cursor<ToTypeArgument<T0>>> {
+  ): Promise<Cursor<ToTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
       throw new Error(`error fetching Cursor object at id ${id}: ${res.error.code}`)

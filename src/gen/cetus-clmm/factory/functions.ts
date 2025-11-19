@@ -4,6 +4,10 @@ import { String } from '../../move-stdlib/string/structs'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
+export function init(tx: Transaction) {
+  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::init`, arguments: [] })
+}
+
 export function poolId(tx: Transaction, info: TransactionObjectInput) {
   return tx.moveCall({ target: `${PUBLISHED_AT}::factory::pool_id`, arguments: [obj(tx, info)] })
 }
@@ -99,6 +103,18 @@ export function permissionPairCap(
     target: `${PUBLISHED_AT}::factory::permission_pair_cap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, args.pools), pure(tx, args.tickSpacing, `u32`)],
+  })
+}
+
+export interface InitManagerAndWhitelistArgs {
+  config: TransactionObjectInput
+  pools: TransactionObjectInput
+}
+
+export function initManagerAndWhitelist(tx: Transaction, args: InitManagerAndWhitelistArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::init_manager_and_whitelist`,
+    arguments: [obj(tx, args.config), obj(tx, args.pools)],
   })
 }
 
@@ -273,6 +289,65 @@ export function unregisterPermissionPair(
   })
 }
 
+export interface RegisterPermissionPairInternalArgs {
+  pools: TransactionObjectInput
+  cap: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+}
+
+export function registerPermissionPairInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RegisterPermissionPairInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::register_permission_pair_internal`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pools), obj(tx, args.cap), pure(tx, args.tickSpacing, `u32`)],
+  })
+}
+
+export interface UnregisterPermissionPairInternalArgs {
+  pools: TransactionObjectInput
+  cap: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+}
+
+export function unregisterPermissionPairInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UnregisterPermissionPairInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::unregister_permission_pair_internal`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.pools), obj(tx, args.cap), pure(tx, args.tickSpacing, `u32`)],
+  })
+}
+
+export function addDeniedCoin(tx: Transaction, typeArg: string, pools: TransactionObjectInput) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::add_denied_coin`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, pools)],
+  })
+}
+
+export interface MintPoolCreationCapInternalArgs {
+  pools: TransactionObjectInput
+  coinType: TransactionObjectInput
+}
+
+export function mintPoolCreationCapInternal(
+  tx: Transaction,
+  args: MintPoolCreationCapInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::mint_pool_creation_cap_internal`,
+    arguments: [obj(tx, args.pools), obj(tx, args.coinType)],
+  })
+}
+
 export interface CreatePoolArgs {
   pools: TransactionObjectInput
   config: TransactionObjectInput
@@ -339,6 +414,80 @@ export function createPoolWithLiquidity(
   })
 }
 
+export interface CreatePoolV2_Args {
+  config: TransactionObjectInput
+  pools: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+  initializePrice: bigint | TransactionArgument
+  url: string | TransactionArgument
+  tickLowerIdx: number | TransactionArgument
+  tickUpperIdx: number | TransactionArgument
+  coinA: TransactionObjectInput
+  coinB: TransactionObjectInput
+  metadataA: TransactionObjectInput
+  metadataB: TransactionObjectInput
+  amountA: bigint | TransactionArgument
+  amountB: bigint | TransactionArgument
+  fixAmountA: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function createPoolV2_(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolV2_Args
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::create_pool_v2_`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+      pure(tx, args.initializePrice, `u128`),
+      pure(tx, args.url, `${String.$typeName}`),
+      pure(tx, args.tickLowerIdx, `u32`),
+      pure(tx, args.tickUpperIdx, `u32`),
+      obj(tx, args.coinA),
+      obj(tx, args.coinB),
+      obj(tx, args.metadataA),
+      obj(tx, args.metadataB),
+      pure(tx, args.amountA, `u64`),
+      pure(tx, args.amountB, `u64`),
+      pure(tx, args.fixAmountA, `bool`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CreatePoolInternalArgs {
+  pools: TransactionObjectInput
+  globalConfig: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+  initializePrice: bigint | TransactionArgument
+  url: string | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+export function createPoolInternal(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolInternalArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::create_pool_internal`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.pools),
+      obj(tx, args.globalConfig),
+      pure(tx, args.tickSpacing, `u32`),
+      pure(tx, args.initializePrice, `u128`),
+      pure(tx, args.url, `${String.$typeName}`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
 export interface FetchPoolsArgs {
   pools: TransactionObjectInput
   start: Array<string | TransactionArgument> | TransactionArgument
@@ -365,5 +514,13 @@ export function newPoolKey(
     target: `${PUBLISHED_AT}::factory::new_pool_key`,
     typeArguments: typeArgs,
     arguments: [pure(tx, tickSpacing, `u32`)],
+  })
+}
+
+export function isRightOrder(tx: Transaction, typeArgs: [string, string]) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::factory::is_right_order`,
+    typeArguments: typeArgs,
+    arguments: [],
   })
 }

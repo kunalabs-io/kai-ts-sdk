@@ -1,5 +1,5 @@
 import { PUBLISHED_AT } from '..'
-import { obj, pure } from '../../_framework/util'
+import { GenericArg, generic, obj, pure } from '../../_framework/util'
 import { Option } from '../../move-stdlib/option/structs'
 import { ID } from '../../sui/object/structs'
 import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
@@ -364,6 +364,93 @@ export function withdrawalsDisabled(
     target: `${PUBLISHED_AT}::vault::withdrawals_disabled`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
+  })
+}
+
+export interface SetRateLimiterArgs {
+  cap: TransactionObjectInput
+  vault: TransactionObjectInput
+  rateLimiter: GenericArg
+}
+
+export function setRateLimiter(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: SetRateLimiterArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vault::set_rate_limiter`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.vault),
+      generic(tx, `${typeArgs[2]}`, args.rateLimiter),
+    ],
+  })
+}
+
+export interface RemoveRateLimiterArgs {
+  cap: TransactionObjectInput
+  vault: TransactionObjectInput
+}
+
+export function removeRateLimiter(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveRateLimiterArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vault::remove_rate_limiter`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, args.cap), obj(tx, args.vault)],
+  })
+}
+
+export function hasRateLimiter(
+  tx: Transaction,
+  typeArgs: [string, string],
+  vault: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vault::has_rate_limiter`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, vault)],
+  })
+}
+
+export function rateLimiterMut(
+  tx: Transaction,
+  typeArgs: [string, string],
+  vault: TransactionObjectInput
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vault::rate_limiter_mut`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, vault)],
+  })
+}
+
+export interface SetMaxInflowAndOutflowLimitsArgs {
+  cap: TransactionObjectInput
+  vault: TransactionObjectInput
+  maxInflowLimit: bigint | TransactionArgument | TransactionArgument | null
+  maxOutflowLimit: bigint | TransactionArgument | TransactionArgument | null
+}
+
+export function setMaxInflowAndOutflowLimits(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SetMaxInflowAndOutflowLimitsArgs
+) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::vault::set_max_inflow_and_outflow_limits`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.vault),
+      pure(tx, args.maxInflowLimit, `${Option.$typeName}<u256>`),
+      pure(tx, args.maxOutflowLimit, `${Option.$typeName}<u256>`),
+    ],
   })
 }
 

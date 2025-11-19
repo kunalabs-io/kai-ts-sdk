@@ -12,11 +12,11 @@ import {
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { SupplyPool, SupplyPoolInfo, SUPPLY_POOL_INFOS } from './supply-pool'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
-import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
+import { Position as BluefinPosition } from '../gen/bluefin_spot/position/structs'
 import { Position } from './position'
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { Pool as CetusPool, isPool as isCetusPool } from '../gen/cetus-clmm/pool/structs'
-import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin-spot/pool/structs'
+import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin_spot/pool/structs'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
 import * as bluefin from '../gen/kai-leverage/bluefin-spot/functions'
 import { ClmmPool } from './clmm-pool'
@@ -584,7 +584,7 @@ export class PositionConfig<
         tickB = i32.negFrom(tx, Math.abs(args.tickB))
       }
 
-      const ticket = cetus.createPositionTicket(tx, [this.X.typeName, this.Y.typeName], {
+      const ticket = cetus.createPositionTicketV2(tx, [this.X.typeName, this.Y.typeName], {
         cetusPool: this.data.poolObjectId,
         config: this.id,
         tickA,
@@ -593,6 +593,7 @@ export class PositionConfig<
         principalY: args.balanceUY,
         deltaL: args.liquidity,
         priceInfo,
+        clock: tx.object.clock(),
       })
       cetus.borrowForPositionX(
         tx,
@@ -639,7 +640,7 @@ export class PositionConfig<
         tickB = i32.negFrom(tx, Math.abs(args.tickB))
       }
 
-      const ticket = bluefin.createPositionTicket(tx, [this.X.typeName, this.Y.typeName], {
+      const ticket = bluefin.createPositionTicketV2(tx, [this.X.typeName, this.Y.typeName], {
         bluefinPool: this.data.poolObjectId,
         config: this.id,
         tickA,
@@ -648,6 +649,7 @@ export class PositionConfig<
         principalY: args.balanceUY,
         deltaL: args.liquidity,
         priceInfo,
+        clock: tx.object.clock(),
       })
       bluefin.borrowForPositionX(
         tx,

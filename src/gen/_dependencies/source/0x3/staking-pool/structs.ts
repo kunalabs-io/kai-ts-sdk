@@ -146,7 +146,7 @@ export class StakingPool implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StakingPool.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StakingPool.instantiateBcs> {
     if (!StakingPool.cachedBcs) {
       StakingPool.cachedBcs = StakingPool.instantiateBcs()
     }
@@ -402,7 +402,7 @@ export class PoolTokenExchangeRate implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PoolTokenExchangeRate.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PoolTokenExchangeRate.instantiateBcs> {
     if (!PoolTokenExchangeRate.cachedBcs) {
       PoolTokenExchangeRate.cachedBcs = PoolTokenExchangeRate.instantiateBcs()
     }
@@ -590,7 +590,7 @@ export class StakedSui implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StakedSui.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StakedSui.instantiateBcs> {
     if (!StakedSui.cachedBcs) {
       StakedSui.cachedBcs = StakedSui.instantiateBcs()
     }
@@ -792,7 +792,7 @@ export class FungibleStakedSui implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FungibleStakedSui.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FungibleStakedSui.instantiateBcs> {
     if (!FungibleStakedSui.cachedBcs) {
       FungibleStakedSui.cachedBcs = FungibleStakedSui.instantiateBcs()
     }
@@ -987,7 +987,7 @@ export class FungibleStakedSuiData implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FungibleStakedSuiData.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FungibleStakedSuiData.instantiateBcs> {
     if (!FungibleStakedSuiData.cachedBcs) {
       FungibleStakedSuiData.cachedBcs = FungibleStakedSuiData.instantiateBcs()
     }
@@ -1185,7 +1185,7 @@ export class FungibleStakedSuiDataKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FungibleStakedSuiDataKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FungibleStakedSuiDataKey.instantiateBcs> {
     if (!FungibleStakedSuiDataKey.cachedBcs) {
       FungibleStakedSuiDataKey.cachedBcs = FungibleStakedSuiDataKey.instantiateBcs()
     }
@@ -1279,5 +1279,178 @@ export class FungibleStakedSuiDataKey implements StructClass {
     }
 
     return FungibleStakedSuiDataKey.fromSuiObjectData(res.data)
+  }
+}
+
+/* ============================== UnderflowSuiBalance =============================== */
+
+export function isUnderflowSuiBalance(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `0x3::staking_pool::UnderflowSuiBalance`
+}
+
+export interface UnderflowSuiBalanceFields {
+  dummyField: ToField<'bool'>
+}
+
+export type UnderflowSuiBalanceReified = Reified<UnderflowSuiBalance, UnderflowSuiBalanceFields>
+
+export class UnderflowSuiBalance implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `0x3::staking_pool::UnderflowSuiBalance`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = UnderflowSuiBalance.$typeName
+  readonly $fullTypeName: `0x3::staking_pool::UnderflowSuiBalance`
+  readonly $typeArgs: []
+  readonly $isPhantom = UnderflowSuiBalance.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: UnderflowSuiBalanceFields) {
+    this.$fullTypeName = composeSuiType(
+      UnderflowSuiBalance.$typeName,
+      ...typeArgs
+    ) as `0x3::staking_pool::UnderflowSuiBalance`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): UnderflowSuiBalanceReified {
+    const reifiedBcs = UnderflowSuiBalance.bcs
+    return {
+      typeName: UnderflowSuiBalance.$typeName,
+      fullTypeName: composeSuiType(
+        UnderflowSuiBalance.$typeName,
+        ...[]
+      ) as `0x3::staking_pool::UnderflowSuiBalance`,
+      typeArgs: [] as [],
+      isPhantom: UnderflowSuiBalance.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => UnderflowSuiBalance.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => UnderflowSuiBalance.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => UnderflowSuiBalance.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => UnderflowSuiBalance.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => UnderflowSuiBalance.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => UnderflowSuiBalance.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => UnderflowSuiBalance.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) => UnderflowSuiBalance.fetch(client, id),
+      new: (fields: UnderflowSuiBalanceFields) => {
+        return new UnderflowSuiBalance([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return UnderflowSuiBalance.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<UnderflowSuiBalance>> {
+    return phantom(UnderflowSuiBalance.reified())
+  }
+  static get p() {
+    return UnderflowSuiBalance.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('UnderflowSuiBalance', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof UnderflowSuiBalance.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof UnderflowSuiBalance.instantiateBcs> {
+    if (!UnderflowSuiBalance.cachedBcs) {
+      UnderflowSuiBalance.cachedBcs = UnderflowSuiBalance.instantiateBcs()
+    }
+    return UnderflowSuiBalance.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): UnderflowSuiBalance {
+    return UnderflowSuiBalance.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): UnderflowSuiBalance {
+    if (!isUnderflowSuiBalance(item.type)) {
+      throw new Error('not a UnderflowSuiBalance type')
+    }
+
+    return UnderflowSuiBalance.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): UnderflowSuiBalance {
+    return UnderflowSuiBalance.fromFields(UnderflowSuiBalance.bcs.parse(data))
+  }
+
+  toJSONField() {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): UnderflowSuiBalance {
+    return UnderflowSuiBalance.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): UnderflowSuiBalance {
+    if (json.$typeName !== UnderflowSuiBalance.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return UnderflowSuiBalance.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): UnderflowSuiBalance {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isUnderflowSuiBalance(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a UnderflowSuiBalance object`)
+    }
+    return UnderflowSuiBalance.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): UnderflowSuiBalance {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isUnderflowSuiBalance(data.bcs.type)) {
+        throw new Error(`object at is not a UnderflowSuiBalance object`)
+      }
+
+      return UnderflowSuiBalance.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return UnderflowSuiBalance.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<UnderflowSuiBalance> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(`error fetching UnderflowSuiBalance object at id ${id}: ${res.error.code}`)
+    }
+    if (res.data?.bcs?.dataType !== 'moveObject' || !isUnderflowSuiBalance(res.data.bcs.type)) {
+      throw new Error(`object at id ${id} is not a UnderflowSuiBalance object`)
+    }
+
+    return UnderflowSuiBalance.fromSuiObjectData(res.data)
   }
 }

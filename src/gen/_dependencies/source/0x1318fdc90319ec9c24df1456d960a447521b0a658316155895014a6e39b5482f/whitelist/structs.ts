@@ -102,7 +102,7 @@ export class WhitelistKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof WhitelistKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WhitelistKey.instantiateBcs> {
     if (!WhitelistKey.cachedBcs) {
       WhitelistKey.cachedBcs = WhitelistKey.instantiateBcs()
     }
@@ -271,7 +271,7 @@ export class AllowAllKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AllowAllKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AllowAllKey.instantiateBcs> {
     if (!AllowAllKey.cachedBcs) {
       AllowAllKey.cachedBcs = AllowAllKey.instantiateBcs()
     }
@@ -440,7 +440,7 @@ export class RejectAllKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RejectAllKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RejectAllKey.instantiateBcs> {
     if (!RejectAllKey.cachedBcs) {
       RejectAllKey.cachedBcs = RejectAllKey.instantiateBcs()
     }
@@ -616,7 +616,7 @@ export class WhitelistAddEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof WhitelistAddEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WhitelistAddEvent.instantiateBcs> {
     if (!WhitelistAddEvent.cachedBcs) {
       WhitelistAddEvent.cachedBcs = WhitelistAddEvent.instantiateBcs()
     }
@@ -803,7 +803,7 @@ export class WhitelistRemoveEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof WhitelistRemoveEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WhitelistRemoveEvent.instantiateBcs> {
     if (!WhitelistRemoveEvent.cachedBcs) {
       WhitelistRemoveEvent.cachedBcs = WhitelistRemoveEvent.instantiateBcs()
     }
@@ -982,7 +982,7 @@ export class AllowAllEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AllowAllEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AllowAllEvent.instantiateBcs> {
     if (!AllowAllEvent.cachedBcs) {
       AllowAllEvent.cachedBcs = AllowAllEvent.instantiateBcs()
     }
@@ -1151,7 +1151,7 @@ export class RejectAllEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RejectAllEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RejectAllEvent.instantiateBcs> {
     if (!RejectAllEvent.cachedBcs) {
       RejectAllEvent.cachedBcs = RejectAllEvent.instantiateBcs()
     }
@@ -1327,7 +1327,7 @@ export class SwitchToWhitelistModeEvent implements StructClass {
   private static cachedBcs: ReturnType<typeof SwitchToWhitelistModeEvent.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SwitchToWhitelistModeEvent.instantiateBcs> {
     if (!SwitchToWhitelistModeEvent.cachedBcs) {
       SwitchToWhitelistModeEvent.cachedBcs = SwitchToWhitelistModeEvent.instantiateBcs()
     }

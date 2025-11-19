@@ -116,7 +116,7 @@ export class ACreatePool implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ACreatePool.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ACreatePool.instantiateBcs> {
     if (!ACreatePool.cachedBcs) {
       ACreatePool.cachedBcs = ACreatePool.instantiateBcs()
     }
@@ -285,7 +285,7 @@ export class AConfigLendFacil implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AConfigLendFacil.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AConfigLendFacil.instantiateBcs> {
     if (!AConfigLendFacil.cachedBcs) {
       AConfigLendFacil.cachedBcs = AConfigLendFacil.instantiateBcs()
     }
@@ -458,7 +458,7 @@ export class AConfigFees implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AConfigFees.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AConfigFees.instantiateBcs> {
     if (!AConfigFees.cachedBcs) {
       AConfigFees.cachedBcs = AConfigFees.instantiateBcs()
     }
@@ -627,7 +627,7 @@ export class ATakeFees implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ATakeFees.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ATakeFees.instantiateBcs> {
     if (!ATakeFees.cachedBcs) {
       ATakeFees.cachedBcs = ATakeFees.instantiateBcs()
     }
@@ -796,7 +796,7 @@ export class ADeposit implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ADeposit.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ADeposit.instantiateBcs> {
     if (!ADeposit.cachedBcs) {
       ADeposit.cachedBcs = ADeposit.instantiateBcs()
     }
@@ -965,7 +965,7 @@ export class AMigrate implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AMigrate.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AMigrate.instantiateBcs> {
     if (!AMigrate.cachedBcs) {
       AMigrate.cachedBcs = AMigrate.instantiateBcs()
     }
@@ -1142,7 +1142,7 @@ export class SupplyInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SupplyInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SupplyInfo.instantiateBcs> {
     if (!SupplyInfo.cachedBcs) {
       SupplyInfo.cachedBcs = SupplyInfo.instantiateBcs()
     }
@@ -1331,7 +1331,7 @@ export class WithdrawInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof WithdrawInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WithdrawInfo.instantiateBcs> {
     if (!WithdrawInfo.cachedBcs) {
       WithdrawInfo.cachedBcs = WithdrawInfo.instantiateBcs()
     }
@@ -1512,7 +1512,7 @@ export class LendFacilCap implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LendFacilCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LendFacilCap.instantiateBcs> {
     if (!LendFacilCap.cachedBcs) {
       LendFacilCap.cachedBcs = LendFacilCap.instantiateBcs()
     }
@@ -1700,7 +1700,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof LendFacilInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LendFacilInfo.instantiateBcs> {
     if (!LendFacilInfo.cachedBcs) {
       LendFacilInfo.cachedBcs = LendFacilInfo.instantiateBcs()
     }
@@ -1947,7 +1947,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   private static cachedBcs: ReturnType<typeof FacilDebtShare.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FacilDebtShare.instantiateBcs> {
     if (!FacilDebtShare.cachedBcs) {
       FacilDebtShare.cachedBcs = FacilDebtShare.instantiateBcs()
     }
@@ -2177,7 +2177,7 @@ export class FacilDebtBag implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FacilDebtBag.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FacilDebtBag.instantiateBcs> {
     if (!FacilDebtBag.cachedBcs) {
       FacilDebtBag.cachedBcs = FacilDebtBag.instantiateBcs()
     }
@@ -2410,7 +2410,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
 
   private static cachedBcs: ReturnType<typeof SupplyPool.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SupplyPool.instantiateBcs> {
     if (!SupplyPool.cachedBcs) {
       SupplyPool.cachedBcs = SupplyPool.instantiateBcs()
     }

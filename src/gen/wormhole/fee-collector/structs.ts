@@ -1,6 +1,4 @@
 import * as reified from '../../_framework/reified'
-import { Balance } from '../../_dependencies/onchain/0x2/balance/structs'
-import { SUI } from '../../_dependencies/onchain/0x2/sui/structs'
 import {
   PhantomReified,
   Reified,
@@ -14,6 +12,8 @@ import {
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import { Balance } from '../../sui/balance/structs'
+import { SUI } from '../../sui/sui/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -106,7 +106,7 @@ export class FeeCollector implements StructClass {
 
   private static cachedBcs: ReturnType<typeof FeeCollector.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof FeeCollector.instantiateBcs> {
     if (!FeeCollector.cachedBcs) {
       FeeCollector.cachedBcs = FeeCollector.instantiateBcs()
     }

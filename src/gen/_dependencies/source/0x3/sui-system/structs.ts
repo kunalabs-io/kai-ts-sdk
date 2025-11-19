@@ -102,7 +102,7 @@ export class SuiSystemState implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SuiSystemState.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SuiSystemState.instantiateBcs> {
     if (!SuiSystemState.cachedBcs) {
       SuiSystemState.cachedBcs = SuiSystemState.instantiateBcs()
     }

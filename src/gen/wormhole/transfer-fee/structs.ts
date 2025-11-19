@@ -98,7 +98,7 @@ export class GovernanceWitness implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceWitness.instantiateBcs> {
     if (!GovernanceWitness.cachedBcs) {
       GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
     }
@@ -278,7 +278,7 @@ export class TransferFee implements StructClass {
 
   private static cachedBcs: ReturnType<typeof TransferFee.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TransferFee.instantiateBcs> {
     if (!TransferFee.cachedBcs) {
       TransferFee.cachedBcs = TransferFee.instantiateBcs()
     }

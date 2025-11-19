@@ -75,6 +75,37 @@ export function getPriceLoHiExpoDec(tx: Transaction, args: GetPriceLoHiExpoDecAr
   })
 }
 
+export interface GetEmaPriceLoHiExpoDecArgs {
+  priceInfo: TransactionObjectInput
+  t: TransactionObjectInput
+}
+
+export function getEmaPriceLoHiExpoDec(tx: Transaction, args: GetEmaPriceLoHiExpoDecArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pyth::get_ema_price_lo_hi_expo_dec`,
+    arguments: [obj(tx, args.priceInfo), obj(tx, args.t)],
+  })
+}
+
+export interface DivPriceNumericX128InnerArgs {
+  priceInfo: TransactionObjectInput
+  x: TransactionObjectInput
+  y: TransactionObjectInput
+  useEma: boolean | TransactionArgument
+}
+
+export function divPriceNumericX128Inner(tx: Transaction, args: DivPriceNumericX128InnerArgs) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128_inner`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.x),
+      obj(tx, args.y),
+      pure(tx, args.useEma, `bool`),
+    ],
+  })
+}
+
 export interface DivPriceNumericX128Args {
   priceInfo: TransactionObjectInput
   x: TransactionObjectInput
@@ -84,6 +115,19 @@ export interface DivPriceNumericX128Args {
 export function divPriceNumericX128(tx: Transaction, args: DivPriceNumericX128Args) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128`,
+    arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
+  })
+}
+
+export interface DivEmaPriceNumericX128Args {
+  priceInfo: TransactionObjectInput
+  x: TransactionObjectInput
+  y: TransactionObjectInput
+}
+
+export function divEmaPriceNumericX128(tx: Transaction, args: DivEmaPriceNumericX128Args) {
+  return tx.moveCall({
+    target: `${PUBLISHED_AT}::pyth::div_ema_price_numeric_x128`,
     arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
   })
 }

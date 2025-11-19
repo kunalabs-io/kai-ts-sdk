@@ -4,8 +4,8 @@ import { Transaction, TransactionArgument, TransactionObjectInput } from '@myste
 
 export interface PrepareMessageArgs {
   emitterCap: TransactionObjectInput
-  u32: number | TransactionArgument
-  vecU8: Array<number | TransactionArgument> | TransactionArgument
+  nonce: number | TransactionArgument
+  payload: Array<number | TransactionArgument> | TransactionArgument
 }
 
 export function prepareMessage(tx: Transaction, args: PrepareMessageArgs) {
@@ -13,27 +13,27 @@ export function prepareMessage(tx: Transaction, args: PrepareMessageArgs) {
     target: `${PUBLISHED_AT}::publish_message::prepare_message`,
     arguments: [
       obj(tx, args.emitterCap),
-      pure(tx, args.u32, `u32`),
-      pure(tx, args.vecU8, `vector<u8>`),
+      pure(tx, args.nonce, `u32`),
+      pure(tx, args.payload, `vector<u8>`),
     ],
   })
 }
 
 export interface PublishMessageArgs {
-  state: TransactionObjectInput
-  coin: TransactionObjectInput
-  messageTicket: TransactionObjectInput
-  clock: TransactionObjectInput
+  wormholeState: TransactionObjectInput
+  messageFee: TransactionObjectInput
+  preparedMsg: TransactionObjectInput
+  theClock: TransactionObjectInput
 }
 
 export function publishMessage(tx: Transaction, args: PublishMessageArgs) {
   return tx.moveCall({
     target: `${PUBLISHED_AT}::publish_message::publish_message`,
     arguments: [
-      obj(tx, args.state),
-      obj(tx, args.coin),
-      obj(tx, args.messageTicket),
-      obj(tx, args.clock),
+      obj(tx, args.wormholeState),
+      obj(tx, args.messageFee),
+      obj(tx, args.preparedMsg),
+      obj(tx, args.theClock),
     ],
   })
 }

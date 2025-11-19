@@ -193,7 +193,7 @@ export class ValidatorMetadata implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorMetadata.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorMetadata.instantiateBcs> {
     if (!ValidatorMetadata.cachedBcs) {
       ValidatorMetadata.cachedBcs = ValidatorMetadata.instantiateBcs()
     }
@@ -591,7 +591,7 @@ export class Validator implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Validator.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Validator.instantiateBcs> {
     if (!Validator.cachedBcs) {
       Validator.cachedBcs = Validator.instantiateBcs()
     }
@@ -825,7 +825,7 @@ export class StakingRequestEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof StakingRequestEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof StakingRequestEvent.instantiateBcs> {
     if (!StakingRequestEvent.cachedBcs) {
       StakingRequestEvent.cachedBcs = StakingRequestEvent.instantiateBcs()
     }
@@ -1050,7 +1050,7 @@ export class UnstakingRequestEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UnstakingRequestEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UnstakingRequestEvent.instantiateBcs> {
     if (!UnstakingRequestEvent.cachedBcs) {
       UnstakingRequestEvent.cachedBcs = UnstakingRequestEvent.instantiateBcs()
     }
@@ -1272,7 +1272,7 @@ export class ConvertingToFungibleStakedSuiEvent implements StructClass {
     typeof ConvertingToFungibleStakedSuiEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConvertingToFungibleStakedSuiEvent.instantiateBcs> {
     if (!ConvertingToFungibleStakedSuiEvent.cachedBcs) {
       ConvertingToFungibleStakedSuiEvent.cachedBcs =
         ConvertingToFungibleStakedSuiEvent.instantiateBcs()
@@ -1495,7 +1495,7 @@ export class RedeemingFungibleStakedSuiEvent implements StructClass {
     typeof RedeemingFungibleStakedSuiEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RedeemingFungibleStakedSuiEvent.instantiateBcs> {
     if (!RedeemingFungibleStakedSuiEvent.cachedBcs) {
       RedeemingFungibleStakedSuiEvent.cachedBcs = RedeemingFungibleStakedSuiEvent.instantiateBcs()
     }

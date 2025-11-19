@@ -101,7 +101,7 @@ export class PriceIdentifier implements StructClass {
 
   private static cachedBcs: ReturnType<typeof PriceIdentifier.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof PriceIdentifier.instantiateBcs> {
     if (!PriceIdentifier.cachedBcs) {
       PriceIdentifier.cachedBcs = PriceIdentifier.instantiateBcs()
     }

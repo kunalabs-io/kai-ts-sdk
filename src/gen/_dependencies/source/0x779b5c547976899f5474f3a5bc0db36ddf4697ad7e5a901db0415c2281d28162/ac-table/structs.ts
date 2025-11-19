@@ -180,7 +180,7 @@ export class AcTable<
 
   private static cachedBcs: ReturnType<typeof AcTable.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AcTable.instantiateBcs> {
     if (!AcTable.cachedBcs) {
       AcTable.cachedBcs = AcTable.instantiateBcs()
     }
@@ -459,7 +459,7 @@ export class AcTableOwnership implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AcTableOwnership.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AcTableOwnership.instantiateBcs> {
     if (!AcTableOwnership.cachedBcs) {
       AcTableOwnership.cachedBcs = AcTableOwnership.instantiateBcs()
     }
@@ -643,7 +643,7 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof AcTableCap.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof AcTableCap.instantiateBcs> {
     if (!AcTableCap.cachedBcs) {
       AcTableCap.cachedBcs = AcTableCap.instantiateBcs()
     }

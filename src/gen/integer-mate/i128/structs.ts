@@ -95,7 +95,7 @@ export class I128 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof I128.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof I128.instantiateBcs> {
     if (!I128.cachedBcs) {
       I128.cachedBcs = I128.instantiateBcs()
     }

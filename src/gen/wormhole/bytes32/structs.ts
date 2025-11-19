@@ -101,7 +101,7 @@ export class Bytes32 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Bytes32.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Bytes32.instantiateBcs> {
     if (!Bytes32.cachedBcs) {
       Bytes32.cachedBcs = Bytes32.instantiateBcs()
     }

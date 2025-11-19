@@ -102,7 +102,7 @@ export class ConsumedVAAs implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ConsumedVAAs.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ConsumedVAAs.instantiateBcs> {
     if (!ConsumedVAAs.cachedBcs) {
       ConsumedVAAs.cachedBcs = ConsumedVAAs.instantiateBcs()
     }

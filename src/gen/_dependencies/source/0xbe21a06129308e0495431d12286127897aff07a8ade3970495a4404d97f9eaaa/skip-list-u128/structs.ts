@@ -148,7 +148,7 @@ export class SkipList<V extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SkipList.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SkipList.instantiateBcs> {
     if (!SkipList.cachedBcs) {
       SkipList.cachedBcs = SkipList.instantiateBcs()
     }
@@ -425,7 +425,7 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SkipListNode.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SkipListNode.instantiateBcs> {
     if (!SkipListNode.cachedBcs) {
       SkipListNode.cachedBcs = SkipListNode.instantiateBcs()
     }
@@ -665,7 +665,7 @@ export class Item implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Item.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Item.instantiateBcs> {
     if (!Item.cachedBcs) {
       Item.cachedBcs = Item.instantiateBcs()
     }

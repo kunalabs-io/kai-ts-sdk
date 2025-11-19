@@ -1,4 +1,3 @@
-import { Bytes32 } from '../../_dependencies/source/0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a/bytes32/structs'
 import {
   PhantomReified,
   Reified,
@@ -12,6 +11,7 @@ import {
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
+import { Bytes32 } from '../../wormhole/bytes32/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
@@ -104,7 +104,7 @@ export class ContractUpgraded implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ContractUpgraded.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ContractUpgraded.instantiateBcs> {
     if (!ContractUpgraded.cachedBcs) {
       ContractUpgraded.cachedBcs = ContractUpgraded.instantiateBcs()
     }
@@ -281,7 +281,7 @@ export class UpgradeContract implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpgradeContract.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpgradeContract.instantiateBcs> {
     if (!UpgradeContract.cachedBcs) {
       UpgradeContract.cachedBcs = UpgradeContract.instantiateBcs()
     }

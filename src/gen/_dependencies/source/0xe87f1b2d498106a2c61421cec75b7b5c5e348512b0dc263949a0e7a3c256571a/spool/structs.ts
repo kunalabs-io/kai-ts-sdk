@@ -137,7 +137,7 @@ export class Spool implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Spool.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Spool.instantiateBcs> {
     if (!Spool.cachedBcs) {
       Spool.cachedBcs = Spool.instantiateBcs()
     }

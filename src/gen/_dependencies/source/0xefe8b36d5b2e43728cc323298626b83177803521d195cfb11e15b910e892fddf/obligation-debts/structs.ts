@@ -102,7 +102,7 @@ export class Debt implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Debt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Debt.instantiateBcs> {
     if (!Debt.cachedBcs) {
       Debt.cachedBcs = Debt.instantiateBcs()
     }
@@ -279,7 +279,7 @@ export class ObligationDebts implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationDebts.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationDebts.instantiateBcs> {
     if (!ObligationDebts.cachedBcs) {
       ObligationDebts.cachedBcs = ObligationDebts.instantiateBcs()
     }

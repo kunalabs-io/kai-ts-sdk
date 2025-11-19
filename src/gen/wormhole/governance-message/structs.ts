@@ -38,7 +38,7 @@ export function isDecreeTicket(type: string): boolean {
   return type.startsWith(`${PKG_V1}::governance_message::DecreeTicket` + '<')
 }
 
-export interface DecreeTicketFields<T0 extends PhantomTypeArgument> {
+export interface DecreeTicketFields<T extends PhantomTypeArgument> {
   governanceChain: ToField<'u16'>
   governanceContract: ToField<ExternalAddress>
   moduleName: ToField<Bytes32>
@@ -46,12 +46,12 @@ export interface DecreeTicketFields<T0 extends PhantomTypeArgument> {
   global: ToField<'bool'>
 }
 
-export type DecreeTicketReified<T0 extends PhantomTypeArgument> = Reified<
-  DecreeTicket<T0>,
-  DecreeTicketFields<T0>
+export type DecreeTicketReified<T extends PhantomTypeArgument> = Reified<
+  DecreeTicket<T>,
+  DecreeTicketFields<T>
 >
 
-export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass {
+export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName = `${PKG_V1}::governance_message::DecreeTicket`
@@ -59,8 +59,8 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
   static readonly $isPhantom = [true] as const
 
   readonly $typeName = DecreeTicket.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom = DecreeTicket.$isPhantom
 
   readonly governanceChain: ToField<'u16'>
@@ -69,11 +69,11 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
   readonly action: ToField<'u8'>
   readonly global: ToField<'bool'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: DecreeTicketFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: DecreeTicketFields<T>) {
     this.$fullTypeName = composeSuiType(
       DecreeTicket.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<T0>}>`
+    ) as `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.governanceChain = fields.governanceChain
@@ -83,30 +83,30 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     this.global = fields.global
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): DecreeTicketReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): DecreeTicketReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DecreeTicket.bcs
     return {
       typeName: DecreeTicket.$typeName,
       fullTypeName: composeSuiType(
         DecreeTicket.$typeName,
-        ...[extractType(T0)]
-      ) as `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::governance_message::DecreeTicket<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: DecreeTicket.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => DecreeTicket.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeTicket.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => DecreeTicket.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => DecreeTicket.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeTicket.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => DecreeTicket.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => DecreeTicket.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => DecreeTicket.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => DecreeTicket.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => DecreeTicket.fromSuiObjectData(T0, content),
-      fetch: async (client: SuiClient, id: string) => DecreeTicket.fetch(client, T0, id),
-      new: (fields: DecreeTicketFields<ToPhantomTypeArgument<T0>>) => {
-        return new DecreeTicket([extractType(T0)], fields)
+      fromJSONField: (field: any) => DecreeTicket.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => DecreeTicket.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => DecreeTicket.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => DecreeTicket.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => DecreeTicket.fetch(client, T, id),
+      new: (fields: DecreeTicketFields<ToPhantomTypeArgument<T>>) => {
+        return new DecreeTicket([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -116,10 +116,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     return DecreeTicket.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): PhantomReified<ToTypeStr<DecreeTicket<ToPhantomTypeArgument<T0>>>> {
-    return phantom(DecreeTicket.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<DecreeTicket<ToPhantomTypeArgument<T>>>> {
+    return phantom(DecreeTicket.reified(T))
   }
   static get p() {
     return DecreeTicket.phantom
@@ -137,17 +137,17 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
 
   private static cachedBcs: ReturnType<typeof DecreeTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DecreeTicket.instantiateBcs> {
     if (!DecreeTicket.cachedBcs) {
       DecreeTicket.cachedBcs = DecreeTicket.instantiateBcs()
     }
     return DecreeTicket.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     return DecreeTicket.reified(typeArg).new({
       governanceChain: decodeFromFields('u16', fields.governance_chain),
       governanceContract: decodeFromFields(ExternalAddress.reified(), fields.governance_contract),
@@ -157,10 +157,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     if (!isDecreeTicket(item.type)) {
       throw new Error('not a DecreeTicket type')
     }
@@ -178,10 +178,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     return DecreeTicket.fromFields(typeArg, DecreeTicket.bcs.parse(data))
   }
 
@@ -199,10 +199,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     return DecreeTicket.reified(typeArg).new({
       governanceChain: decodeFromJSONField('u16', field.governanceChain),
       governanceContract: decodeFromJSONField(ExternalAddress.reified(), field.governanceContract),
@@ -212,10 +212,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== DecreeTicket.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
@@ -228,10 +228,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     return DecreeTicket.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -241,10 +241,10 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     return DecreeTicket.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData
-  ): DecreeTicket<ToPhantomTypeArgument<T0>> {
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDecreeTicket(data.bcs.type)) {
         throw new Error(`object at is not a DecreeTicket object`)
@@ -274,11 +274,11 @@ export class DecreeTicket<T0 extends PhantomTypeArgument> implements StructClass
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string
-  ): Promise<DecreeTicket<ToPhantomTypeArgument<T0>>> {
+  ): Promise<DecreeTicket<ToPhantomTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
       throw new Error(`error fetching DecreeTicket object at id ${id}: ${res.error.code}`)
@@ -298,18 +298,18 @@ export function isDecreeReceipt(type: string): boolean {
   return type.startsWith(`${PKG_V1}::governance_message::DecreeReceipt` + '<')
 }
 
-export interface DecreeReceiptFields<T0 extends PhantomTypeArgument> {
+export interface DecreeReceiptFields<T extends PhantomTypeArgument> {
   payload: ToField<Vector<'u8'>>
   digest: ToField<Bytes32>
   sequence: ToField<'u64'>
 }
 
-export type DecreeReceiptReified<T0 extends PhantomTypeArgument> = Reified<
-  DecreeReceipt<T0>,
-  DecreeReceiptFields<T0>
+export type DecreeReceiptReified<T extends PhantomTypeArgument> = Reified<
+  DecreeReceipt<T>,
+  DecreeReceiptFields<T>
 >
 
-export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClass {
+export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName = `${PKG_V1}::governance_message::DecreeReceipt`
@@ -317,19 +317,19 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
   static readonly $isPhantom = [true] as const
 
   readonly $typeName = DecreeReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom = DecreeReceipt.$isPhantom
 
   readonly payload: ToField<Vector<'u8'>>
   readonly digest: ToField<Bytes32>
   readonly sequence: ToField<'u64'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: DecreeReceiptFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: DecreeReceiptFields<T>) {
     this.$fullTypeName = composeSuiType(
       DecreeReceipt.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<T0>}>`
+    ) as `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.payload = fields.payload
@@ -337,30 +337,30 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     this.sequence = fields.sequence
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): DecreeReceiptReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): DecreeReceiptReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DecreeReceipt.bcs
     return {
       typeName: DecreeReceipt.$typeName,
       fullTypeName: composeSuiType(
         DecreeReceipt.$typeName,
-        ...[extractType(T0)]
-      ) as `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)]
+      ) as `${typeof PKG_V1}::governance_message::DecreeReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: DecreeReceipt.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => DecreeReceipt.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => DecreeReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => DecreeReceipt.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => DecreeReceipt.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => DecreeReceipt.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => DecreeReceipt.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => DecreeReceipt.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => DecreeReceipt.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => DecreeReceipt.fromSuiObjectData(T0, content),
-      fetch: async (client: SuiClient, id: string) => DecreeReceipt.fetch(client, T0, id),
-      new: (fields: DecreeReceiptFields<ToPhantomTypeArgument<T0>>) => {
-        return new DecreeReceipt([extractType(T0)], fields)
+      fromJSONField: (field: any) => DecreeReceipt.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => DecreeReceipt.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => DecreeReceipt.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => DecreeReceipt.fromSuiObjectData(T, content),
+      fetch: async (client: SuiClient, id: string) => DecreeReceipt.fetch(client, T, id),
+      new: (fields: DecreeReceiptFields<ToPhantomTypeArgument<T>>) => {
+        return new DecreeReceipt([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -370,10 +370,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     return DecreeReceipt.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0
-  ): PhantomReified<ToTypeStr<DecreeReceipt<ToPhantomTypeArgument<T0>>>> {
-    return phantom(DecreeReceipt.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T
+  ): PhantomReified<ToTypeStr<DecreeReceipt<ToPhantomTypeArgument<T>>>> {
+    return phantom(DecreeReceipt.reified(T))
   }
   static get p() {
     return DecreeReceipt.phantom
@@ -389,17 +389,17 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
 
   private static cachedBcs: ReturnType<typeof DecreeReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof DecreeReceipt.instantiateBcs> {
     if (!DecreeReceipt.cachedBcs) {
       DecreeReceipt.cachedBcs = DecreeReceipt.instantiateBcs()
     }
     return DecreeReceipt.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     return DecreeReceipt.reified(typeArg).new({
       payload: decodeFromFields(reified.vector('u8'), fields.payload),
       digest: decodeFromFields(Bytes32.reified(), fields.digest),
@@ -407,10 +407,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     if (!isDecreeReceipt(item.type)) {
       throw new Error('not a DecreeReceipt type')
     }
@@ -423,10 +423,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     return DecreeReceipt.fromFields(typeArg, DecreeReceipt.bcs.parse(data))
   }
 
@@ -442,10 +442,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     return DecreeReceipt.reified(typeArg).new({
       payload: decodeFromJSONField(reified.vector('u8'), field.payload),
       digest: decodeFromJSONField(Bytes32.reified(), field.digest),
@@ -453,10 +453,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== DecreeReceipt.$typeName) {
       throw new Error('not a WithTwoGenerics json object')
     }
@@ -469,10 +469,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     return DecreeReceipt.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -482,10 +482,10 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     return DecreeReceipt.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData
-  ): DecreeReceipt<ToPhantomTypeArgument<T0>> {
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDecreeReceipt(data.bcs.type)) {
         throw new Error(`object at is not a DecreeReceipt object`)
@@ -515,11 +515,11 @@ export class DecreeReceipt<T0 extends PhantomTypeArgument> implements StructClas
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string
-  ): Promise<DecreeReceipt<ToPhantomTypeArgument<T0>>> {
+  ): Promise<DecreeReceipt<ToPhantomTypeArgument<T>>> {
     const res = await client.getObject({ id, options: { showBcs: true } })
     if (res.error) {
       throw new Error(`error fetching DecreeReceipt object at id ${id}: ${res.error.code}`)

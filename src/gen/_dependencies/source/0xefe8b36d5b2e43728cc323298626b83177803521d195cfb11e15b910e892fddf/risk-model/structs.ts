@@ -100,7 +100,7 @@ export class RiskModels implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RiskModels.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RiskModels.instantiateBcs> {
     if (!RiskModels.cachedBcs) {
       RiskModels.cachedBcs = RiskModels.instantiateBcs()
     }
@@ -293,7 +293,7 @@ export class RiskModel implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RiskModel.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RiskModel.instantiateBcs> {
     if (!RiskModel.cachedBcs) {
       RiskModel.cachedBcs = RiskModel.instantiateBcs()
     }
@@ -529,7 +529,7 @@ export class RiskModelChangeCreated implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RiskModelChangeCreated.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RiskModelChangeCreated.instantiateBcs> {
     if (!RiskModelChangeCreated.cachedBcs) {
       RiskModelChangeCreated.cachedBcs = RiskModelChangeCreated.instantiateBcs()
     }
@@ -720,7 +720,7 @@ export class RiskModelAdded implements StructClass {
 
   private static cachedBcs: ReturnType<typeof RiskModelAdded.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RiskModelAdded.instantiateBcs> {
     if (!RiskModelAdded.cachedBcs) {
       RiskModelAdded.cachedBcs = RiskModelAdded.instantiateBcs()
     }

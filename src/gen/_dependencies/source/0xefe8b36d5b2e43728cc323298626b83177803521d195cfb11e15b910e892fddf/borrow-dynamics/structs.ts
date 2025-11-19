@@ -99,7 +99,7 @@ export class BorrowDynamics implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowDynamics.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowDynamics.instantiateBcs> {
     if (!BorrowDynamics.cachedBcs) {
       BorrowDynamics.cachedBcs = BorrowDynamics.instantiateBcs()
     }
@@ -284,7 +284,7 @@ export class BorrowDynamic implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BorrowDynamic.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BorrowDynamic.instantiateBcs> {
     if (!BorrowDynamic.cachedBcs) {
       BorrowDynamic.cachedBcs = BorrowDynamic.instantiateBcs()
     }

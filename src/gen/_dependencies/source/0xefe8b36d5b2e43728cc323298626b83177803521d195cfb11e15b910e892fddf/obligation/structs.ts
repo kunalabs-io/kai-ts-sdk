@@ -151,7 +151,7 @@ export class Obligation implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Obligation.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Obligation.instantiateBcs> {
     if (!Obligation.cachedBcs) {
       Obligation.cachedBcs = Obligation.instantiateBcs()
     }
@@ -415,7 +415,7 @@ export class ObligationOwnership implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationOwnership.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationOwnership.instantiateBcs> {
     if (!ObligationOwnership.cachedBcs) {
       ObligationOwnership.cachedBcs = ObligationOwnership.instantiateBcs()
     }
@@ -592,7 +592,7 @@ export class ObligationKey implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationKey.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationKey.instantiateBcs> {
     if (!ObligationKey.cachedBcs) {
       ObligationKey.cachedBcs = ObligationKey.instantiateBcs()
     }
@@ -797,7 +797,7 @@ export class ObligationRewardsPointRedeemed implements StructClass {
     typeof ObligationRewardsPointRedeemed.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationRewardsPointRedeemed.instantiateBcs> {
     if (!ObligationRewardsPointRedeemed.cachedBcs) {
       ObligationRewardsPointRedeemed.cachedBcs = ObligationRewardsPointRedeemed.instantiateBcs()
     }
@@ -1009,7 +1009,7 @@ export class ObligationLocked implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationLocked.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationLocked.instantiateBcs> {
     if (!ObligationLocked.cachedBcs) {
       ObligationLocked.cachedBcs = ObligationLocked.instantiateBcs()
     }
@@ -1216,7 +1216,7 @@ export class ObligationUnlocked implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationUnlocked.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationUnlocked.instantiateBcs> {
     if (!ObligationUnlocked.cachedBcs) {
       ObligationUnlocked.cachedBcs = ObligationUnlocked.instantiateBcs()
     }

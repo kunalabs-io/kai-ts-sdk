@@ -1,4 +1,3 @@
-import { ID } from '../../_dependencies/onchain/0x2/object/structs'
 import {
   PhantomReified,
   Reified,
@@ -11,6 +10,7 @@ import {
   phantom,
 } from '../../_framework/reified'
 import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import { ID } from '../../sui/object/structs'
 import { Bytes32 } from '../bytes32/structs'
 import { PKG_V1 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
@@ -100,7 +100,7 @@ export class GovernanceWitness implements StructClass {
 
   private static cachedBcs: ReturnType<typeof GovernanceWitness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof GovernanceWitness.instantiateBcs> {
     if (!GovernanceWitness.cachedBcs) {
       GovernanceWitness.cachedBcs = GovernanceWitness.instantiateBcs()
     }
@@ -277,7 +277,7 @@ export class ContractUpgraded implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ContractUpgraded.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ContractUpgraded.instantiateBcs> {
     if (!ContractUpgraded.cachedBcs) {
       ContractUpgraded.cachedBcs = ContractUpgraded.instantiateBcs()
     }
@@ -454,7 +454,7 @@ export class UpgradeContract implements StructClass {
 
   private static cachedBcs: ReturnType<typeof UpgradeContract.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof UpgradeContract.instantiateBcs> {
     if (!UpgradeContract.cachedBcs) {
       UpgradeContract.cachedBcs = UpgradeContract.instantiateBcs()
     }

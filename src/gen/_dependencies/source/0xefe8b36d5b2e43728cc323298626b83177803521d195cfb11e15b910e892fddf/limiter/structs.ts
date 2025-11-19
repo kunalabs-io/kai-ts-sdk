@@ -114,7 +114,7 @@ export class Limiter implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Limiter.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Limiter.instantiateBcs> {
     if (!Limiter.cachedBcs) {
       Limiter.cachedBcs = Limiter.instantiateBcs()
     }
@@ -311,7 +311,7 @@ export class Limiters implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Limiters.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Limiters.instantiateBcs> {
     if (!Limiters.cachedBcs) {
       Limiters.cachedBcs = Limiters.instantiateBcs()
     }
@@ -484,7 +484,7 @@ export class Segment implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Segment.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Segment.instantiateBcs> {
     if (!Segment.cachedBcs) {
       Segment.cachedBcs = Segment.instantiateBcs()
     }
@@ -684,7 +684,7 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
     typeof LimiterUpdateLimitChangeCreatedEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterUpdateLimitChangeCreatedEvent.instantiateBcs> {
     if (!LimiterUpdateLimitChangeCreatedEvent.cachedBcs) {
       LimiterUpdateLimitChangeCreatedEvent.cachedBcs =
         LimiterUpdateLimitChangeCreatedEvent.instantiateBcs()
@@ -905,7 +905,7 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
     typeof LimiterUpdateParamsChangeCreatedEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterUpdateParamsChangeCreatedEvent.instantiateBcs> {
     if (!LimiterUpdateParamsChangeCreatedEvent.cachedBcs) {
       LimiterUpdateParamsChangeCreatedEvent.cachedBcs =
         LimiterUpdateParamsChangeCreatedEvent.instantiateBcs()
@@ -1121,7 +1121,7 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
     typeof LimiterLimitChangeAppliedEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterLimitChangeAppliedEvent.instantiateBcs> {
     if (!LimiterLimitChangeAppliedEvent.cachedBcs) {
       LimiterLimitChangeAppliedEvent.cachedBcs = LimiterLimitChangeAppliedEvent.instantiateBcs()
     }
@@ -1320,7 +1320,7 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
     typeof LimiterParamsChangeAppliedEvent.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterParamsChangeAppliedEvent.instantiateBcs> {
     if (!LimiterParamsChangeAppliedEvent.cachedBcs) {
       LimiterParamsChangeAppliedEvent.cachedBcs = LimiterParamsChangeAppliedEvent.instantiateBcs()
     }
@@ -1516,7 +1516,7 @@ export class LimiterUpdateLimitChange implements StructClass {
 
   private static cachedBcs: ReturnType<typeof LimiterUpdateLimitChange.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterUpdateLimitChange.instantiateBcs> {
     if (!LimiterUpdateLimitChange.cachedBcs) {
       LimiterUpdateLimitChange.cachedBcs = LimiterUpdateLimitChange.instantiateBcs()
     }
@@ -1715,7 +1715,7 @@ export class LimiterUpdateParamsChange implements StructClass {
   private static cachedBcs: ReturnType<typeof LimiterUpdateParamsChange.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof LimiterUpdateParamsChange.instantiateBcs> {
     if (!LimiterUpdateParamsChange.cachedBcs) {
       LimiterUpdateParamsChange.cachedBcs = LimiterUpdateParamsChange.instantiateBcs()
     }

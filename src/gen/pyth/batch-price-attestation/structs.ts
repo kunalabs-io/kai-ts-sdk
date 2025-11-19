@@ -120,7 +120,7 @@ export class BatchPriceAttestation implements StructClass {
 
   private static cachedBcs: ReturnType<typeof BatchPriceAttestation.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof BatchPriceAttestation.instantiateBcs> {
     if (!BatchPriceAttestation.cachedBcs) {
       BatchPriceAttestation.cachedBcs = BatchPriceAttestation.instantiateBcs()
     }
@@ -326,7 +326,7 @@ export class Header implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Header.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Header.instantiateBcs> {
     if (!Header.cachedBcs) {
       Header.cachedBcs = Header.instantiateBcs()
     }

@@ -101,7 +101,7 @@ export class VotingPowerInfo implements StructClass {
 
   private static cachedBcs: ReturnType<typeof VotingPowerInfo.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VotingPowerInfo.instantiateBcs> {
     if (!VotingPowerInfo.cachedBcs) {
       VotingPowerInfo.cachedBcs = VotingPowerInfo.instantiateBcs()
     }
@@ -286,7 +286,7 @@ export class VotingPowerInfoV2 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof VotingPowerInfoV2.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VotingPowerInfoV2.instantiateBcs> {
     if (!VotingPowerInfoV2.cachedBcs) {
       VotingPowerInfoV2.cachedBcs = VotingPowerInfoV2.instantiateBcs()
     }

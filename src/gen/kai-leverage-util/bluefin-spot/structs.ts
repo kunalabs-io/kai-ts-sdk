@@ -24,7 +24,7 @@ import {
   parseTypeName,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { FlashSwapReceipt } from '../../bluefin-spot/pool/structs'
+import { FlashSwapReceipt } from '../../bluefin_spot/pool/structs'
 import { Option } from '../../move-stdlib/option/structs'
 import { Balance } from '../../sui/balance/structs'
 import { ID } from '../../sui/object/structs'
@@ -169,7 +169,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
 
   private static cachedBcs: ReturnType<typeof RebalanceReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof RebalanceReceipt.instantiateBcs> {
     if (!RebalanceReceipt.cachedBcs) {
       RebalanceReceipt.cachedBcs = RebalanceReceipt.instantiateBcs()
     }
@@ -497,7 +497,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
 
   private static cachedBcs: ReturnType<typeof WrappedFlashSwapReceipt.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WrappedFlashSwapReceipt.instantiateBcs> {
     if (!WrappedFlashSwapReceipt.cachedBcs) {
       WrappedFlashSwapReceipt.cachedBcs = WrappedFlashSwapReceipt.instantiateBcs()
     }

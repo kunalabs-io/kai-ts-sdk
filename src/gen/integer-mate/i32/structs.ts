@@ -92,7 +92,7 @@ export class I32 implements StructClass {
 
   private static cachedBcs: ReturnType<typeof I32.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof I32.instantiateBcs> {
     if (!I32.cachedBcs) {
       I32.cachedBcs = I32.instantiateBcs()
     }

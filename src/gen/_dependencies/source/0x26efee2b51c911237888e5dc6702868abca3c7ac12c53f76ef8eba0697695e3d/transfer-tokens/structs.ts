@@ -146,7 +146,7 @@ export class TransferTicket<T0 extends PhantomTypeArgument> implements StructCla
 
   private static cachedBcs: ReturnType<typeof TransferTicket.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof TransferTicket.instantiateBcs> {
     if (!TransferTicket.cachedBcs) {
       TransferTicket.cachedBcs = TransferTicket.instantiateBcs()
     }

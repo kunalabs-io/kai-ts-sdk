@@ -2,12 +2,7 @@ import { Position } from '../../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../../gen/_framework/reified'
 import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../../constants'
 import { ProtocolHandler } from './protocol-handler'
-import {
-  Transaction,
-  TransactionArgument,
-  TransactionObjectInput,
-  TransactionResult,
-} from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/sui/transactions'
 import * as bluefin from '../../../gen/kai-leverage/bluefin-spot/functions'
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 
@@ -74,7 +69,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayYBalance: TransactionObjectInput
-  ): TransactionArgument {
+  ): TransactionResult {
     return bluefin.liquidateColX(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolYInfo.ST.typeName],
@@ -96,7 +91,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayXBalance: TransactionObjectInput
-  ): TransactionArgument {
+  ): TransactionResult {
     return bluefin.liquidateColY(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolXInfo.ST.typeName],

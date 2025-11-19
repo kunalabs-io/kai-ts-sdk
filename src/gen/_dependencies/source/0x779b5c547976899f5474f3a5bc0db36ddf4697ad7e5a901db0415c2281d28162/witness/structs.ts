@@ -119,7 +119,7 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
 
   private static cachedBcs: ReturnType<typeof WitnessGenerator.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof WitnessGenerator.instantiateBcs> {
     if (!WitnessGenerator.cachedBcs) {
       WitnessGenerator.cachedBcs = WitnessGenerator.instantiateBcs()
     }
@@ -341,7 +341,7 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Witness.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Witness.instantiateBcs> {
     if (!Witness.cachedBcs) {
       Witness.cachedBcs = Witness.instantiateBcs()
     }

@@ -99,7 +99,7 @@ export class ObligationHotPotato implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationHotPotato.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationHotPotato.instantiateBcs> {
     if (!ObligationHotPotato.cachedBcs) {
       ObligationHotPotato.cachedBcs = ObligationHotPotato.instantiateBcs()
     }
@@ -289,7 +289,7 @@ export class ObligationCreatedEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ObligationCreatedEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ObligationCreatedEvent.instantiateBcs> {
     if (!ObligationCreatedEvent.cachedBcs) {
       ObligationCreatedEvent.cachedBcs = ObligationCreatedEvent.instantiateBcs()
     }

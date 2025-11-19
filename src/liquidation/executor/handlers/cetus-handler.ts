@@ -74,7 +74,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayYBalance: TransactionObjectInput
-  ): TransactionArgument {
+  ): TransactionResult {
     return cetus.liquidateColX(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolYInfo.ST.typeName],
@@ -96,7 +96,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput,
     repayXBalance: TransactionObjectInput
-  ): TransactionArgument {
+  ): TransactionResult {
     return cetus.liquidateColY(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolXInfo.ST.typeName],

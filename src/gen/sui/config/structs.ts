@@ -121,7 +121,7 @@ export class Config<WriteCap extends PhantomTypeArgument> implements StructClass
 
   private static cachedBcs: ReturnType<typeof Config.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Config.instantiateBcs> {
     if (!Config.cachedBcs) {
       Config.cachedBcs = Config.instantiateBcs()
     }
@@ -343,7 +343,7 @@ export class Setting<Value extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof Setting.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof Setting.instantiateBcs> {
     if (!Setting.cachedBcs) {
       Setting.cachedBcs = Setting.instantiateBcs()
     }
@@ -585,7 +585,7 @@ export class SettingData<Value extends TypeArgument> implements StructClass {
 
   private static cachedBcs: ReturnType<typeof SettingData.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof SettingData.instantiateBcs> {
     if (!SettingData.cachedBcs) {
       SettingData.cachedBcs = SettingData.instantiateBcs()
     }

@@ -147,7 +147,7 @@ export class ValidatorSet implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorSet.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorSet.instantiateBcs> {
     if (!ValidatorSet.cachedBcs) {
       ValidatorSet.cachedBcs = ValidatorSet.instantiateBcs()
     }
@@ -462,7 +462,7 @@ export class ValidatorEpochInfoEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorEpochInfoEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorEpochInfoEvent.instantiateBcs> {
     if (!ValidatorEpochInfoEvent.cachedBcs) {
       ValidatorEpochInfoEvent.cachedBcs = ValidatorEpochInfoEvent.instantiateBcs()
     }
@@ -760,7 +760,7 @@ export class ValidatorEpochInfoEventV2 implements StructClass {
   private static cachedBcs: ReturnType<typeof ValidatorEpochInfoEventV2.instantiateBcs> | null =
     null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorEpochInfoEventV2.instantiateBcs> {
     if (!ValidatorEpochInfoEventV2.cachedBcs) {
       ValidatorEpochInfoEventV2.cachedBcs = ValidatorEpochInfoEventV2.instantiateBcs()
     }
@@ -1021,7 +1021,7 @@ export class ValidatorJoinEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorJoinEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorJoinEvent.instantiateBcs> {
     if (!ValidatorJoinEvent.cachedBcs) {
       ValidatorJoinEvent.cachedBcs = ValidatorJoinEvent.instantiateBcs()
     }
@@ -1217,7 +1217,7 @@ export class ValidatorLeaveEvent implements StructClass {
 
   private static cachedBcs: ReturnType<typeof ValidatorLeaveEvent.instantiateBcs> | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof ValidatorLeaveEvent.instantiateBcs> {
     if (!ValidatorLeaveEvent.cachedBcs) {
       ValidatorLeaveEvent.cachedBcs = ValidatorLeaveEvent.instantiateBcs()
     }
@@ -1413,7 +1413,7 @@ export class VotingPowerAdmissionStartEpochKey implements StructClass {
     typeof VotingPowerAdmissionStartEpochKey.instantiateBcs
   > | null = null
 
-  static get bcs() {
+  static get bcs(): ReturnType<typeof VotingPowerAdmissionStartEpochKey.instantiateBcs> {
     if (!VotingPowerAdmissionStartEpochKey.cachedBcs) {
       VotingPowerAdmissionStartEpochKey.cachedBcs =
         VotingPowerAdmissionStartEpochKey.instantiateBcs()
