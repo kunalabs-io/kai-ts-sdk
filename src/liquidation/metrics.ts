@@ -12,6 +12,8 @@ export let workerLiquidateOrDeleverageCallAttemptsCount: Counter | undefined
 export let workerLiquidateOrDeleverageCallFailuresCount: Counter | undefined
 export let liquidatePositionAttemptCount: Counter | undefined
 export let liquidatePositionSuccessCount: Counter | undefined
+export let liquidatePositionSkippedLowAssetValueCount: Gauge | undefined
+export let deleveragePositionSkippedLowAssetValueCount: Gauge | undefined
 
 const IO_LATENCY_BUCKETS_MS = [10, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 2000, 3000, 5000]
 
@@ -105,5 +107,15 @@ export function registerAll(meter: Meter) {
     meter,
     'liquidate_position_success_count',
     'Number of successful liquidation transactions'
+  )
+  liquidatePositionSkippedLowAssetValueCount = createGauge(
+    meter,
+    'liquidate_position_skipped_low_asset_value_count',
+    'Number of liquidation positions skipped due to asset value below minimum threshold in current poll cycle'
+  )
+  deleveragePositionSkippedLowAssetValueCount = createGauge(
+    meter,
+    'deleverage_position_skipped_low_asset_value_count',
+    'Number of deleverage positions skipped due to asset value below minimum threshold in current poll cycle'
   )
 }

@@ -159,6 +159,57 @@ export function calcYtConversionRate<T extends PhantomTypeArgument, YT extends P
 
   return Price.fromNumeric(vaultInfo.YT, vaultInfo.T, rate) as Price<YT, T>
 }
+/**
+ * Calculate the amount of underlying asset (T) corresponding to a given amount of yield-bearing tokens (YT).
+ * Rounds down to the nearest integer.
+ *
+ * @param vaultInfo - Vault information
+ * @param vaultData - Data for the vault
+ * @param ytAmount - Amount of yield-bearing tokens (YT)
+ * @param timestampMs - Optional timestamp in milliseconds to calculate balances at a specific time
+ * @returns Amount of underlying asset (T) equivalent to the given YT amount
+ */
+export function calcYtToTAmount(
+  vaultInfo: VaultInfo<PhantomTypeArgument, PhantomTypeArgument>,
+  vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>,
+  ytAmount: bigint,
+  timestampMs?: number
+): bigint {
+  if (vaultInfo.id !== vaultData.id) {
+    throw new Error('VaultInfo and Vault data mismatch')
+  }
+
+  const totalAvailableBalance = calcTotalAvailableBalance(vaultData, timestampMs)
+  const ytSupply = vaultData.lpTreasury.totalSupply.value
+
+  return muldiv(ytAmount, totalAvailableBalance, ytSupply)
+}
+
+/**
+ * Calculate the amount of yield-bearing tokens (YT) corresponding to a given amount of underlying asset (T).
+ * Rounds down to the nearest integer.
+ *
+ * @param vaultInfo - Vault information (for id check only)
+ * @param vaultData - Data for the vault
+ * @param tAmount - Amount of underlying asset (T) being deposited
+ * @param timestampMs - Optional timestamp in milliseconds to calculate balances at a specific time
+ * @returns Amount of yield-bearing tokens (YT) to be minted for the deposit
+ */
+export function calcTToYtAmount(
+  vaultInfo: VaultInfo<PhantomTypeArgument, PhantomTypeArgument>,
+  vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>,
+  tAmount: bigint,
+  timestampMs?: number
+): bigint {
+  if (vaultInfo.id !== vaultData.id) {
+    throw new Error('VaultInfo and Vault data mismatch')
+  }
+
+  const totalAvailableBalance = calcTotalAvailableBalance(vaultData, timestampMs)
+  const ytSupply = vaultData.lpTreasury.totalSupply.value
+
+  return muldiv(tAmount, ytSupply, totalAvailableBalance)
+}
 
 /**
  * Get info about a wallet's position in a vault.

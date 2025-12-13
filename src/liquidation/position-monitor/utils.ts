@@ -12,6 +12,7 @@ import { Decimal } from 'decimal.js'
 import { Logger } from 'pino'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
 import { Amount } from '../../amount'
+import * as metrics from '../metrics'
 
 export interface PriceFeedUpdateInfo {
   feedIds: string[]
@@ -108,6 +109,8 @@ export function filterByLiquidationAndDeleverageNeeded(
   positionSkipList: string[] = []
 ): Map<string, PositionInfo> {
   const positionsToProcess = new Map<string, PositionInfo>()
+  let liquidateSkippedCount = 0
+  let deleverageSkippedCount = 0
 
   for (const info of positionInfos) {
     const { position, config, marginLevel, assetValue } = info
@@ -123,6 +126,10 @@ export function filterByLiquidationAndDeleverageNeeded(
 
     if (marginLevel.lt(config.liqMargin)) {
       if (assetValue?.lt(minAssetValue)) {
+        logger.info(
+          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping liquidation`
+        )
+        liquidateSkippedCount++
         continue
       }
 
@@ -134,6 +141,14 @@ export function filterByLiquidationAndDeleverageNeeded(
     }
 
     if (includeDeleveragePositions && marginLevel.lt(config.deleverageMargin)) {
+      if (assetValue?.lt(minAssetValue)) {
+        logger.info(
+          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping deleverage`
+        )
+        deleverageSkippedCount++
+        continue
+      }
+
       const hasNothingToDeleverage =
         position.lpLiquidity === 0n &&
         ((position.colX.int === 0n && position.colY.int === 0n) ||
@@ -153,6 +168,9 @@ export function filterByLiquidationAndDeleverageNeeded(
       )
     }
   }
+
+  metrics.liquidatePositionSkippedLowAssetValueCount?.record(liquidateSkippedCount)
+  metrics.deleveragePositionSkippedLowAssetValueCount?.record(deleverageSkippedCount)
 
   return positionsToProcess
 }

@@ -15,6 +15,7 @@ import {
   RouterSwapCoinResult,
   SwapExactOutBalanceResult,
   SwapExactOutCoinResult,
+  RouterSwapExactOutBalanceArgs,
 } from '../adapter'
 import { ALL_POOL_INFOS, PoolInfo } from './pool-info'
 import * as cetus from './cetus-swap'
@@ -259,7 +260,9 @@ export class KaiRouterAdapter implements Router {
     throw new Error('not implemented')
   }
 
-  async swapExactOutBalance(): Promise<SwapExactOutBalanceResult> {
+  async swapExactOutBalance(
+    args: RouterSwapExactOutBalanceArgs
+  ): Promise<SwapExactOutBalanceResult> {
     throw new Error('not implemented')
   }
 

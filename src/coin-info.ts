@@ -1,6 +1,7 @@
 import { Amount } from './amount'
 import { extractType, phantom, PhantomReified, PhantomTypeArgument } from './gen/_framework/reified'
 import { compressSuiType } from './gen/_framework/util'
+import { CoinMetadata } from '@mysten/sui/client'
 
 export interface CoinInfoConstructorArgs<T extends PhantomTypeArgument> {
   reified: PhantomReified<T>
@@ -35,6 +36,28 @@ export class CoinInfo<T extends PhantomTypeArgument> {
 
   newAmount(value: bigint): Amount {
     return Amount.fromInt(value, this.decimals)
+  }
+
+  /**
+   * Converts coin metadata to a CoinInfo instance.
+   *
+   * @param coinMetadata - The coin metadata object.
+   * @param coinType - The coin type string (e.g., "0x2::sui::SUI").
+   * @returns A CoinInfo instance.
+   */
+  static fromCoinMetadata(
+    coinMetadata: CoinMetadata,
+    coinType: string
+  ): CoinInfo<PhantomTypeArgument> {
+    return new CoinInfo({
+      reified: phantom(coinType),
+      decimals: coinMetadata.decimals,
+      name: coinMetadata.name,
+      description: coinMetadata.description,
+      symbol: coinMetadata.symbol,
+      displaySymbol: coinMetadata.symbol,
+      iconUrl: coinMetadata.iconUrl || undefined,
+    })
   }
 }
 

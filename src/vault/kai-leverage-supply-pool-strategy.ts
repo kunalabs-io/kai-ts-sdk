@@ -1,5 +1,5 @@
 import { Transaction, TransactionResult } from '@mysten/sui/transactions'
-import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
+import { normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { VaultInfo } from './vault'
 import * as klStrat from '../gen/kai-single-asset-vault/kai-leverage-supply-pool/functions'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
@@ -192,4 +192,19 @@ export const SUPPLY_POOL_STRATEGY_INFOS = {
     policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
     ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
   }),
+}
+
+export function findStrategyInfoById(
+  id: string
+):
+  | KaiLeverageSupplyPoolStrategyInfo<PhantomTypeArgument, PhantomTypeArgument, PhantomTypeArgument>
+  | undefined {
+  const normalizedId = normalizeSuiObjectId(id)
+  return Object.values(SUPPLY_POOL_STRATEGY_INFOS).find(
+    info => info.id === normalizedId
+  ) as KaiLeverageSupplyPoolStrategyInfo<
+    PhantomTypeArgument,
+    PhantomTypeArgument,
+    PhantomTypeArgument
+  >
 }

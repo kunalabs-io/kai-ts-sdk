@@ -85,7 +85,8 @@ export class Amount {
     if (this.decimals === 0) {
       return this.int.toString()
     }
-    return new Decimal(this.int.toString()).div(10 ** this.decimals).toString()
+    const NoSciDecimal = Decimal.clone({ toExpNeg: -1000, toExpPos: 1000 })
+    return new NoSciDecimal(this.int.toString()).div(10 ** this.decimals).toString()
   }
 
   /**
