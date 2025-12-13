@@ -14,7 +14,7 @@ import { I128 } from '../../integer-mate/i128/structs'
 import { I32 } from '../../integer-mate/i32/structs'
 import { String } from '../../move-stdlib/string/structs'
 import { ID } from '../../sui/object/structs'
-import { PKG_V1, PKG_V2, PKG_V4, PKG_V7, PKG_V8 } from '../index'
+import { PKG_V1, PKG_V16, PKG_V2, PKG_V4, PKG_V7, PKG_V8 } from '../index'
 import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
@@ -5520,7 +5520,7 @@ export class PoolRewardReservesIncreased implements StructClass {
 
 export function isPoolIconUrlUpdate(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::events::PoolIconUrlUpdate`
+  return type === `${PKG_V16}::events::PoolIconUrlUpdate`
 }
 
 export interface PoolIconUrlUpdateFields {
@@ -5534,12 +5534,12 @@ export type PoolIconUrlUpdateReified = Reified<PoolIconUrlUpdate, PoolIconUrlUpd
 export class PoolIconUrlUpdate implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::events::PoolIconUrlUpdate`
+  static readonly $typeName = `${PKG_V16}::events::PoolIconUrlUpdate`
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
   readonly $typeName = PoolIconUrlUpdate.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::events::PoolIconUrlUpdate`
+  readonly $fullTypeName: `${typeof PKG_V16}::events::PoolIconUrlUpdate`
   readonly $typeArgs: []
   readonly $isPhantom = PoolIconUrlUpdate.$isPhantom
 
@@ -5551,7 +5551,7 @@ export class PoolIconUrlUpdate implements StructClass {
     this.$fullTypeName = composeSuiType(
       PoolIconUrlUpdate.$typeName,
       ...typeArgs
-    ) as `${typeof PKG_V1}::events::PoolIconUrlUpdate`
+    ) as `${typeof PKG_V16}::events::PoolIconUrlUpdate`
     this.$typeArgs = typeArgs
 
     this.poolId = fields.poolId
@@ -5566,7 +5566,7 @@ export class PoolIconUrlUpdate implements StructClass {
       fullTypeName: composeSuiType(
         PoolIconUrlUpdate.$typeName,
         ...[]
-      ) as `${typeof PKG_V1}::events::PoolIconUrlUpdate`,
+      ) as `${typeof PKG_V16}::events::PoolIconUrlUpdate`,
       typeArgs: [] as [],
       isPhantom: PoolIconUrlUpdate.$isPhantom,
       reifiedTypeArgs: [],

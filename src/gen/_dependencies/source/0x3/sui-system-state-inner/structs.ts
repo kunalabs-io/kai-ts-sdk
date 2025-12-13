@@ -24,6 +24,202 @@ import { bcs } from '@mysten/sui/bcs'
 import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
+/* ============================== ExecutionTimeObservationChunkKey =============================== */
+
+export function isExecutionTimeObservationChunkKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `0x3::sui_system_state_inner::ExecutionTimeObservationChunkKey`
+}
+
+export interface ExecutionTimeObservationChunkKeyFields {
+  chunkIndex: ToField<'u64'>
+}
+
+export type ExecutionTimeObservationChunkKeyReified = Reified<
+  ExecutionTimeObservationChunkKey,
+  ExecutionTimeObservationChunkKeyFields
+>
+
+export class ExecutionTimeObservationChunkKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName = `0x3::sui_system_state_inner::ExecutionTimeObservationChunkKey`
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName = ExecutionTimeObservationChunkKey.$typeName
+  readonly $fullTypeName: `0x3::sui_system_state_inner::ExecutionTimeObservationChunkKey`
+  readonly $typeArgs: []
+  readonly $isPhantom = ExecutionTimeObservationChunkKey.$isPhantom
+
+  readonly chunkIndex: ToField<'u64'>
+
+  private constructor(typeArgs: [], fields: ExecutionTimeObservationChunkKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      ExecutionTimeObservationChunkKey.$typeName,
+      ...typeArgs
+    ) as `0x3::sui_system_state_inner::ExecutionTimeObservationChunkKey`
+    this.$typeArgs = typeArgs
+
+    this.chunkIndex = fields.chunkIndex
+  }
+
+  static reified(): ExecutionTimeObservationChunkKeyReified {
+    const reifiedBcs = ExecutionTimeObservationChunkKey.bcs
+    return {
+      typeName: ExecutionTimeObservationChunkKey.$typeName,
+      fullTypeName: composeSuiType(
+        ExecutionTimeObservationChunkKey.$typeName,
+        ...[]
+      ) as `0x3::sui_system_state_inner::ExecutionTimeObservationChunkKey`,
+      typeArgs: [] as [],
+      isPhantom: ExecutionTimeObservationChunkKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) =>
+        ExecutionTimeObservationChunkKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        ExecutionTimeObservationChunkKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) =>
+        ExecutionTimeObservationChunkKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => ExecutionTimeObservationChunkKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ExecutionTimeObservationChunkKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        ExecutionTimeObservationChunkKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        ExecutionTimeObservationChunkKey.fromSuiObjectData(content),
+      fetch: async (client: SuiClient, id: string) =>
+        ExecutionTimeObservationChunkKey.fetch(client, id),
+      new: (fields: ExecutionTimeObservationChunkKeyFields) => {
+        return new ExecutionTimeObservationChunkKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r() {
+    return ExecutionTimeObservationChunkKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ExecutionTimeObservationChunkKey>> {
+    return phantom(ExecutionTimeObservationChunkKey.reified())
+  }
+  static get p() {
+    return ExecutionTimeObservationChunkKey.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('ExecutionTimeObservationChunkKey', {
+      chunk_index: bcs.u64(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<
+    typeof ExecutionTimeObservationChunkKey.instantiateBcs
+  > | null = null
+
+  static get bcs(): ReturnType<typeof ExecutionTimeObservationChunkKey.instantiateBcs> {
+    if (!ExecutionTimeObservationChunkKey.cachedBcs) {
+      ExecutionTimeObservationChunkKey.cachedBcs = ExecutionTimeObservationChunkKey.instantiateBcs()
+    }
+    return ExecutionTimeObservationChunkKey.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): ExecutionTimeObservationChunkKey {
+    return ExecutionTimeObservationChunkKey.reified().new({
+      chunkIndex: decodeFromFields('u64', fields.chunk_index),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ExecutionTimeObservationChunkKey {
+    if (!isExecutionTimeObservationChunkKey(item.type)) {
+      throw new Error('not a ExecutionTimeObservationChunkKey type')
+    }
+
+    return ExecutionTimeObservationChunkKey.reified().new({
+      chunkIndex: decodeFromFieldsWithTypes('u64', item.fields.chunk_index),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ExecutionTimeObservationChunkKey {
+    return ExecutionTimeObservationChunkKey.fromFields(
+      ExecutionTimeObservationChunkKey.bcs.parse(data)
+    )
+  }
+
+  toJSONField() {
+    return {
+      chunkIndex: this.chunkIndex.toString(),
+    }
+  }
+
+  toJSON() {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ExecutionTimeObservationChunkKey {
+    return ExecutionTimeObservationChunkKey.reified().new({
+      chunkIndex: decodeFromJSONField('u64', field.chunkIndex),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ExecutionTimeObservationChunkKey {
+    if (json.$typeName !== ExecutionTimeObservationChunkKey.$typeName) {
+      throw new Error('not a WithTwoGenerics json object')
+    }
+
+    return ExecutionTimeObservationChunkKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ExecutionTimeObservationChunkKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isExecutionTimeObservationChunkKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a ExecutionTimeObservationChunkKey object`
+      )
+    }
+    return ExecutionTimeObservationChunkKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ExecutionTimeObservationChunkKey {
+    if (data.bcs) {
+      if (
+        data.bcs.dataType !== 'moveObject' ||
+        !isExecutionTimeObservationChunkKey(data.bcs.type)
+      ) {
+        throw new Error(`object at is not a ExecutionTimeObservationChunkKey object`)
+      }
+
+      return ExecutionTimeObservationChunkKey.fromBcs(fromB64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ExecutionTimeObservationChunkKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+    )
+  }
+
+  static async fetch(client: SuiClient, id: string): Promise<ExecutionTimeObservationChunkKey> {
+    const res = await client.getObject({ id, options: { showBcs: true } })
+    if (res.error) {
+      throw new Error(
+        `error fetching ExecutionTimeObservationChunkKey object at id ${id}: ${res.error.code}`
+      )
+    }
+    if (
+      res.data?.bcs?.dataType !== 'moveObject' ||
+      !isExecutionTimeObservationChunkKey(res.data.bcs.type)
+    ) {
+      throw new Error(`object at id ${id} is not a ExecutionTimeObservationChunkKey object`)
+    }
+
+    return ExecutionTimeObservationChunkKey.fromSuiObjectData(res.data)
+  }
+}
+
 /* ============================== SystemParameters =============================== */
 
 export function isSystemParameters(type: string): boolean {

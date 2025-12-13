@@ -26,6 +26,7 @@ export function registerClasses(loader: StructClassLoader) {
   loader.register(stakingPool.UnderflowSuiBalance)
   loader.register(storageFund.StorageFund)
   loader.register(suiSystem.SuiSystemState)
+  loader.register(suiSystemStateInner.ExecutionTimeObservationChunkKey)
   loader.register(suiSystemStateInner.SystemParameters)
   loader.register(suiSystemStateInner.SystemParametersV2)
   loader.register(suiSystemStateInner.SuiSystemStateInner)
