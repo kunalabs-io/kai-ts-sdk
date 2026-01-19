@@ -115,3 +115,55 @@ We follow conventional commit messages:
 4. **Respond to feedback** from maintainers and make requested changes
 
 5. **Wait for approval** - a maintainer will review and merge your PR
+
+## Coding Standards
+
+### TypeScript
+
+- Use TypeScript for all new code
+- Ensure strict type checking passes
+- Avoid using `any` type when possible
+- Use meaningful variable and function names
+
+### Code Style
+
+- Follow the existing code style in the project
+- Use Prettier for formatting (configured in `.prettierrc.json`)
+- Follow ESLint rules (configured in `.eslintrc.cjs`)
+
+### Documentation
+
+- Add JSDoc comments for public APIs
+- Update README.md if adding new features
+- Include code examples where helpful
+
+### File Organization
+
+- Place source files in the `src/` directory
+- Generated code goes in `src/gen/`
+- Follow the existing module structure
+
+## Reporting Issues
+
+When reporting issues, please include:
+
+1. **Description** - A clear description of the issue
+2. **Steps to reproduce** - How to reproduce the problem
+3. **Expected behavior** - What you expected to happen
+4. **Actual behavior** - What actually happened
+5. **Environment** - Node.js version, OS, SDK version
+6. **Code samples** - Minimal code to reproduce (if applicable)
+
+### Feature Requests
+
+For feature requests, please describe:
+
+- The problem you're trying to solve
+- Your proposed solution
+- Any alternatives you've considered
+
+## Questions?
+
+If you have questions about contributing, feel free to open an issue for discussion.
+
+Thank you for contributing to @kunalabs-io/kai! 🎉
