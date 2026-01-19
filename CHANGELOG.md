@@ -112,3 +112,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Bumped util package ID
+
+## [0.5.0] - 2024-07-14
+
+### Added
+- `getAllVaultStats` function
+
+## [0.4.0] - 2024-07-07
+
+### Added
+- DEEP vault support
+- DEEP-SUI Cetus LP configuration
+
+## [0.3.0] - 2024-06-30
+
+### Added
+- Wallet all vault info utility function
+
+### Changed
+- Clarified UX and UY in README
+
+## [0.2.0] - 2024-06-23
+
+### Added
+- USDY token support
+
+### Changed
+- Updated README documentation
+
+## [0.1.0] - 2024-06-16
+
+### Added
+- Initial release
+- Single Asset Vault support (deposit, withdraw, stats)
+- LP Position management (create, reduce, close)
+- Position information and calculations
+- Reward withdrawal and compounding
+- Liquidation framework with position monitoring
+- Support for Cetus and Bluefin protocols
+- TypeScript bindings for Sui Move contracts
