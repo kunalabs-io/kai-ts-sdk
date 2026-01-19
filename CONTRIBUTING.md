@@ -2,6 +2,16 @@
 
 Thank you for your interest in contributing to the Kai Finance TypeScript SDK! We welcome contributions from the community.
 
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Pull Request Process](#pull-request-process)
+- [Coding Standards](#coding-standards)
+- [Reporting Issues](#reporting-issues)
+
 ## Code of Conduct
 
 Please be respectful and considerate in all interactions. We aim to maintain a welcoming and inclusive environment for everyone.
