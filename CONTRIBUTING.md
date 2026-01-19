@@ -58,3 +58,38 @@ Please be respectful and considerate in all interactions. We aim to maintain a w
 | `pnpm lint` | Run ESLint |
 | `pnpm lint:fix` | Run ESLint with auto-fix |
 | `pnpm clean` | Clean build artifacts |
+
+## Making Changes
+
+1. **Create a new branch** for your changes:
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/your-bug-fix
+   ```
+
+2. **Make your changes** following the coding standards
+
+3. **Ensure your changes pass all checks**:
+   ```bash
+   pnpm check
+   pnpm lint
+   ```
+
+4. **Commit your changes** with a clear and descriptive commit message:
+   ```bash
+   git commit -m "feat: add new feature description"
+   # or
+   git commit -m "fix: resolve issue with X"
+   ```
+
+### Commit Message Guidelines
+
+We follow conventional commit messages:
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `refactor:` - Code refactoring
+- `chore:` - Maintenance tasks
+- `test:` - Adding or updating tests
