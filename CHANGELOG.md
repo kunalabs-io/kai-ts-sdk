@@ -73,3 +73,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated package versions in gen
 - Sync changes with Cetus incident fixes
+
+## [0.10.0] - 2024-08-25
+
+### Added
+- `calcLiqFromAmountX` and `calcLiqFromAmountY` functions to position-math
+- Bluefin DEEP/SUI configuration info
+
+### Changed
+- Improved `findVaultInfoById` return type
+
+## [0.9.0] - 2024-08-11
+
+### Added
+- `calcEffectiveInterestRate` method to `Position`
+
+### Changed
+- Regenerated gen files
+- Updated gen.toml for new version of Cetus dependency
+
+## [0.8.0] - 2024-08-04
+
+### Changed
+- Upgraded @mysten/sui dependency
+- Updated SAV gen import paths
+- Regenerated gen files
+
+## [0.7.0] - 2024-07-28
+
+### Fixed
+- Withdraw all stashed rewards when closing position
+
+## [0.6.0] - 2024-07-21
+
+### Fixed
+- Collect stashed rewards properly
+- Fixed USDC icon
+
+### Changed
+- Bumped util package ID
