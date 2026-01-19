@@ -18,3 +18,43 @@ Please be respectful and considerate in all interactions. We aim to maintain a w
    ```bash
    git remote add upstream https://github.com/kunalabs-io/kai-ts-sdk.git
    ```
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- pnpm (package manager)
+
+### Installation
+
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+2. Build the project:
+   ```bash
+   pnpm build
+   ```
+
+3. Run type checking:
+   ```bash
+   pnpm check
+   ```
+
+4. Run linting:
+   ```bash
+   pnpm lint
+   ```
+
+### Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `pnpm build` | Build the project |
+| `pnpm watch` | Build in watch mode |
+| `pnpm check` | Run TypeScript type checking |
+| `pnpm lint` | Run ESLint |
+| `pnpm lint:fix` | Run ESLint with auto-fix |
+| `pnpm clean` | Clean build artifacts |
