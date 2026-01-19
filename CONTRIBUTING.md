@@ -93,3 +93,25 @@ We follow conventional commit messages:
 - `refactor:` - Code refactoring
 - `chore:` - Maintenance tasks
 - `test:` - Adding or updating tests
+
+## Pull Request Process
+
+1. **Update your fork** with the latest upstream changes:
+   ```bash
+   git fetch upstream
+   git rebase upstream/main
+   ```
+
+2. **Push your branch** to your fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+3. **Open a Pull Request** on GitHub with:
+   - A clear title describing the change
+   - A detailed description of what was changed and why
+   - Reference to any related issues (e.g., "Fixes #123")
+
+4. **Respond to feedback** from maintainers and make requested changes
+
+5. **Wait for approval** - a maintainer will review and merge your PR
