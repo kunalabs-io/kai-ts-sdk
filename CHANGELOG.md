@@ -35,3 +35,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Sync changes with upstream protocol
+
+## [0.19.0] - 2024-10-27
+
+### Added
+- New Bluefin configuration support
+
+### Changed
+- Updated `position.reduceAndMaybeDelete` in README
+
+## [0.18.0] - 2024-10-20
+
+### Changed
+- Updated kai-leverage-util published-at to new version
+
+## [0.17.0] - 2024-10-13
+
+### Changed
+- Sync changes with upstream protocol
+
+## [0.16.0] - 2024-10-06
+
+### Changed
+- Sync changes with upstream protocol
+
+## [0.15.0] - 2024-09-29
+
+### Added
+- Liquidation framework README documentation
+
+### Changed
+- Ignore positions below certain asset value threshold
+- Improved metrics handling when undefined
+
+## [0.13.0] - 2024-09-15
+
+### Changed
+- Updated package versions in gen
+- Sync changes with Cetus incident fixes
