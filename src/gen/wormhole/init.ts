@@ -1,3 +1,4 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as bytes20 from './bytes20/structs'
 import * as bytes32 from './bytes32/structs'
 import * as consumedVaas from './consumed-vaas/structs'
@@ -21,9 +22,8 @@ import * as updateGuardianSet from './update-guardian-set/structs'
 import * as upgradeContract from './upgrade-contract/structs'
 import * as vaa from './vaa/structs'
 import * as versionControl from './version-control/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(bytes20.Bytes20)
   loader.register(bytes32.Bytes32)
   loader.register(consumedVaas.ConsumedVAAs)

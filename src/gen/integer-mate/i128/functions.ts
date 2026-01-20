@@ -1,24 +1,38 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function zero(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::zero`, arguments: [] })
-}
-
-export function from(tx: Transaction, v: bigint | TransactionArgument) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::from`, arguments: [pure(tx, v, `u128`)] })
-}
-
-export function negFrom(tx: Transaction, v: bigint | TransactionArgument) {
+export function zero(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::neg_from`,
+    target: `${getPublishedAt('integer-mate')}::i128::zero`,
+    arguments: [],
+  })
+}
+
+export function from(tx: Transaction, v: bigint | TransactionArgument): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::from`,
     arguments: [pure(tx, v, `u128`)],
   })
 }
 
-export function neg(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::neg`, arguments: [obj(tx, v)] })
+export function negFrom(tx: Transaction, v: bigint | TransactionArgument): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::neg_from`,
+    arguments: [pure(tx, v, `u128`)],
+  })
+}
+
+export function neg(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::neg`,
+    arguments: [obj(tx, v)],
+  })
 }
 
 export interface WrappingAddArgs {
@@ -26,10 +40,13 @@ export interface WrappingAddArgs {
   num2: TransactionObjectInput
 }
 
-export function wrappingAdd(tx: Transaction, args: WrappingAddArgs) {
+export function wrappingAdd(tx: Transaction, args: WrappingAddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::wrapping_add`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::wrapping_add`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -38,10 +55,13 @@ export interface AddArgs {
   num2: TransactionObjectInput
 }
 
-export function add(tx: Transaction, args: AddArgs) {
+export function add(tx: Transaction, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::add`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::add`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -50,10 +70,13 @@ export interface OverflowingAddArgs {
   num2: TransactionObjectInput
 }
 
-export function overflowingAdd(tx: Transaction, args: OverflowingAddArgs) {
+export function overflowingAdd(tx: Transaction, args: OverflowingAddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::overflowing_add`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::overflowing_add`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -62,10 +85,13 @@ export interface WrappingSubArgs {
   num2: TransactionObjectInput
 }
 
-export function wrappingSub(tx: Transaction, args: WrappingSubArgs) {
+export function wrappingSub(tx: Transaction, args: WrappingSubArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::wrapping_sub`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::wrapping_sub`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -74,10 +100,13 @@ export interface SubArgs {
   num2: TransactionObjectInput
 }
 
-export function sub(tx: Transaction, args: SubArgs) {
+export function sub(tx: Transaction, args: SubArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::sub`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::sub`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -86,10 +115,13 @@ export interface OverflowingSubArgs {
   num2: TransactionObjectInput
 }
 
-export function overflowingSub(tx: Transaction, args: OverflowingSubArgs) {
+export function overflowingSub(tx: Transaction, args: OverflowingSubArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::overflowing_sub`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::overflowing_sub`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -98,10 +130,13 @@ export interface MulArgs {
   num2: TransactionObjectInput
 }
 
-export function mul(tx: Transaction, args: MulArgs) {
+export function mul(tx: Transaction, args: MulArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::mul`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::mul`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -110,19 +145,28 @@ export interface DivArgs {
   num2: TransactionObjectInput
 }
 
-export function div(tx: Transaction, args: DivArgs) {
+export function div(tx: Transaction, args: DivArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::div`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::div`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
-export function abs(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::abs`, arguments: [obj(tx, v)] })
+export function abs(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::abs`,
+    arguments: [obj(tx, v)],
+  })
 }
 
-export function absU128(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::abs_u128`, arguments: [obj(tx, v)] })
+export function absU128(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::abs_u128`,
+    arguments: [obj(tx, v)],
+  })
 }
 
 export interface ShlArgs {
@@ -130,10 +174,13 @@ export interface ShlArgs {
   shift: number | TransactionArgument
 }
 
-export function shl(tx: Transaction, args: ShlArgs) {
+export function shl(tx: Transaction, args: ShlArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::shl`,
-    arguments: [obj(tx, args.v), pure(tx, args.shift, `u8`)],
+    target: `${getPublishedAt('integer-mate')}::i128::shl`,
+    arguments: [
+      obj(tx, args.v),
+      pure(tx, args.shift, `u8`),
+    ],
   })
 }
 
@@ -142,31 +189,49 @@ export interface ShrArgs {
   shift: number | TransactionArgument
 }
 
-export function shr(tx: Transaction, args: ShrArgs) {
+export function shr(tx: Transaction, args: ShrArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::shr`,
-    arguments: [obj(tx, args.v), pure(tx, args.shift, `u8`)],
+    target: `${getPublishedAt('integer-mate')}::i128::shr`,
+    arguments: [
+      obj(tx, args.v),
+      pure(tx, args.shift, `u8`),
+    ],
   })
 }
 
-export function asU128(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::as_u128`, arguments: [obj(tx, v)] })
+export function asU128(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::as_u128`,
+    arguments: [obj(tx, v)],
+  })
 }
 
-export function asI64(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::as_i64`, arguments: [obj(tx, v)] })
+export function asI64(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::as_i64`,
+    arguments: [obj(tx, v)],
+  })
 }
 
-export function asI32(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::as_i32`, arguments: [obj(tx, v)] })
+export function asI32(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::as_i32`,
+    arguments: [obj(tx, v)],
+  })
 }
 
-export function sign(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::sign`, arguments: [obj(tx, v)] })
+export function sign(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::sign`,
+    arguments: [obj(tx, v)],
+  })
 }
 
-export function isNeg(tx: Transaction, v: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::is_neg`, arguments: [obj(tx, v)] })
+export function isNeg(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::is_neg`,
+    arguments: [obj(tx, v)],
+  })
 }
 
 export interface CmpArgs {
@@ -174,10 +239,13 @@ export interface CmpArgs {
   num2: TransactionObjectInput
 }
 
-export function cmp(tx: Transaction, args: CmpArgs) {
+export function cmp(tx: Transaction, args: CmpArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::cmp`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::cmp`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -186,10 +254,13 @@ export interface EqArgs {
   num2: TransactionObjectInput
 }
 
-export function eq(tx: Transaction, args: EqArgs) {
+export function eq(tx: Transaction, args: EqArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::eq`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::eq`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -198,10 +269,13 @@ export interface GtArgs {
   num2: TransactionObjectInput
 }
 
-export function gt(tx: Transaction, args: GtArgs) {
+export function gt(tx: Transaction, args: GtArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::gt`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::gt`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -210,10 +284,13 @@ export interface GteArgs {
   num2: TransactionObjectInput
 }
 
-export function gte(tx: Transaction, args: GteArgs) {
+export function gte(tx: Transaction, args: GteArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::gte`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::gte`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -222,10 +299,13 @@ export interface LtArgs {
   num2: TransactionObjectInput
 }
 
-export function lt(tx: Transaction, args: LtArgs) {
+export function lt(tx: Transaction, args: LtArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::lt`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::lt`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -234,10 +314,13 @@ export interface LteArgs {
   num2: TransactionObjectInput
 }
 
-export function lte(tx: Transaction, args: LteArgs) {
+export function lte(tx: Transaction, args: LteArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::lte`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::lte`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -246,10 +329,13 @@ export interface OrArgs {
   num2: TransactionObjectInput
 }
 
-export function or(tx: Transaction, args: OrArgs) {
+export function or(tx: Transaction, args: OrArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::or`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::or`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
@@ -258,20 +344,26 @@ export interface AndArgs {
   num2: TransactionObjectInput
 }
 
-export function and(tx: Transaction, args: AndArgs) {
+export function and(tx: Transaction, args: AndArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::and`,
-    arguments: [obj(tx, args.num1), obj(tx, args.num2)],
+    target: `${getPublishedAt('integer-mate')}::i128::and`,
+    arguments: [
+      obj(tx, args.num1),
+      obj(tx, args.num2),
+    ],
   })
 }
 
-export function u128Neg(tx: Transaction, v: bigint | TransactionArgument) {
+export function u128Neg(tx: Transaction, v: bigint | TransactionArgument): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i128::u128_neg`,
+    target: `${getPublishedAt('integer-mate')}::i128::u128_neg`,
     arguments: [pure(tx, v, `u128`)],
   })
 }
 
-export function u8Neg(tx: Transaction, v: number | TransactionArgument) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i128::u8_neg`, arguments: [pure(tx, v, `u8`)] })
+export function u8Neg(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('integer-mate')}::i128::u8_neg`,
+    arguments: [pure(tx, v, `u8`)],
+  })
 }

@@ -1,3 +1,4 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as accessInit from './access-init/structs'
 import * as balanceBag from './balance-bag/structs'
 import * as cetus from './cetus/structs'
@@ -10,9 +11,8 @@ import * as positionCoreClmm from './position-core-clmm/structs'
 import * as positionModelClmm from './position-model-clmm/structs'
 import * as pyth from './pyth/structs'
 import * as supplyPool from './supply-pool/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(accessInit.ACCESS_INIT)
   loader.register(balanceBag.BalanceBag)
   loader.register(cetus.AHandleExploitedPosition)

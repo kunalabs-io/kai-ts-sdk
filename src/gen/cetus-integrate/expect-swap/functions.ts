@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface GetExpectSwapResultArgs {
   a0: TransactionObjectInput
@@ -12,10 +17,10 @@ export interface GetExpectSwapResultArgs {
 export function getExpectSwapResult(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetExpectSwapResultArgs
-) {
+  args: GetExpectSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::get_expect_swap_result`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::get_expect_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -33,9 +38,13 @@ export interface ExpectSwapArgs {
   a3: bigint | TransactionArgument
 }
 
-export function expectSwap(tx: Transaction, typeArgs: [string, string], args: ExpectSwapArgs) {
+export function expectSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ExpectSwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -46,51 +55,74 @@ export function expectSwap(tx: Transaction, typeArgs: [string, string], args: Ex
   })
 }
 
-export function expectSwapResultAmountOut(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultAmountOut(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_out`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_amount_out`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultIsExceed(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultIsExceed(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_is_exceed`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_is_exceed`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultAmountIn(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultAmountIn(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_amount_in`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultAfterSqrtPrice(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultAfterSqrtPrice(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_after_sqrt_price`,
+    target: `${
+      getPublishedAt('cetus-integrate')
+    }::expect_swap::expect_swap_result_after_sqrt_price`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultFeeAmount(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultFeeAmount(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_fee_amount`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_fee_amount`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultStepResults(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultStepResults(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_results`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_step_results`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function expectSwapResultStepsLength(tx: Transaction, a0: TransactionObjectInput) {
+export function expectSwapResultStepsLength(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_steps_length`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::expect_swap_result_steps_length`,
     arguments: [obj(tx, a0)],
   })
 }
@@ -102,59 +134,87 @@ export interface ExpectSwapResultStepSwapResultArgs {
 
 export function expectSwapResultStepSwapResult(
   tx: Transaction,
-  args: ExpectSwapResultStepSwapResultArgs
-) {
+  args: ExpectSwapResultStepSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::expect_swap_result_step_swap_result`,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u64`)],
+    target: `${
+      getPublishedAt('cetus-integrate')
+    }::expect_swap::expect_swap_result_step_swap_result`,
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u64`),
+    ],
   })
 }
 
-export function stepSwapResultAmountIn(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultAmountIn(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_amount_in`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultAmountOut(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultAmountOut(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_amount_out`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_amount_out`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultFeeAmount(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultFeeAmount(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_fee_amount`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_fee_amount`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultCurrentSqrtPrice(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultCurrentSqrtPrice(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_sqrt_price`,
+    target: `${
+      getPublishedAt('cetus-integrate')
+    }::expect_swap::step_swap_result_current_sqrt_price`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultTargetSqrtPrice(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultTargetSqrtPrice(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_target_sqrt_price`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_target_sqrt_price`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultCurrentLiquidity(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultCurrentLiquidity(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_current_liquidity`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_current_liquidity`,
     arguments: [obj(tx, a0)],
   })
 }
 
-export function stepSwapResultRemainderAmount(tx: Transaction, a0: TransactionObjectInput) {
+export function stepSwapResultRemainderAmount(
+  tx: Transaction,
+  a0: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::step_swap_result_remainder_amount`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::step_swap_result_remainder_amount`,
     arguments: [obj(tx, a0)],
   })
 }
@@ -169,9 +229,9 @@ export interface ComputeSwapStepArgs {
   a6: boolean | TransactionArgument
 }
 
-export function computeSwapStep(tx: Transaction, args: ComputeSwapStepArgs) {
+export function computeSwapStep(tx: Transaction, args: ComputeSwapStepArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::expect_swap::compute_swap_step`,
+    target: `${getPublishedAt('cetus-integrate')}::expect_swap::compute_swap_step`,
     arguments: [
       pure(tx, args.a0, `u128`),
       pure(tx, args.a1, `u128`),

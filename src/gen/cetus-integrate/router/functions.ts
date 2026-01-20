@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface SwapArgs {
   globalConfig: TransactionObjectInput
@@ -15,9 +20,13 @@ export interface SwapArgs {
   clock: TransactionObjectInput
 }
 
-export function swap(tx: Transaction, typeArgs: [string, string], args: SwapArgs) {
+export function swap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::swap`,
+    target: `${getPublishedAt('cetus-integrate')}::router::swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.globalConfig),
@@ -48,9 +57,13 @@ export interface SwapAbBcArgs {
   a10: TransactionObjectInput
 }
 
-export function swapAbBc(tx: Transaction, typeArgs: [string, string, string], args: SwapAbBcArgs) {
+export function swapAbBc(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: SwapAbBcArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::swap_ab_bc`,
+    target: `${getPublishedAt('cetus-integrate')}::router::swap_ab_bc`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -82,9 +95,13 @@ export interface SwapAbCbArgs {
   a10: TransactionObjectInput
 }
 
-export function swapAbCb(tx: Transaction, typeArgs: [string, string, string], args: SwapAbCbArgs) {
+export function swapAbCb(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: SwapAbCbArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::swap_ab_cb`,
+    target: `${getPublishedAt('cetus-integrate')}::router::swap_ab_cb`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -116,9 +133,13 @@ export interface SwapBaBcArgs {
   a10: TransactionObjectInput
 }
 
-export function swapBaBc(tx: Transaction, typeArgs: [string, string, string], args: SwapBaBcArgs) {
+export function swapBaBc(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: SwapBaBcArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::swap_ba_bc`,
+    target: `${getPublishedAt('cetus-integrate')}::router::swap_ba_bc`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -150,9 +171,13 @@ export interface SwapBaCbArgs {
   a10: TransactionObjectInput
 }
 
-export function swapBaCb(tx: Transaction, typeArgs: [string, string, string], args: SwapBaCbArgs) {
+export function swapBaCb(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: SwapBaCbArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::swap_ba_cb`,
+    target: `${getPublishedAt('cetus-integrate')}::router::swap_ba_cb`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -182,10 +207,10 @@ export interface CalculateRouterSwapResultArgs {
 export function calculateRouterSwapResult(
   tx: Transaction,
   typeArgs: [string, string, string, string],
-  args: CalculateRouterSwapResultArgs
-) {
+  args: CalculateRouterSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::calculate_router_swap_result`,
+    target: `${getPublishedAt('cetus-integrate')}::router::calculate_router_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -203,10 +228,17 @@ export interface CheckCoinThresholdArgs {
   a1: bigint | TransactionArgument
 }
 
-export function checkCoinThreshold(tx: Transaction, typeArg: string, args: CheckCoinThresholdArgs) {
+export function checkCoinThreshold(
+  tx: Transaction,
+  typeArg: string,
+  args: CheckCoinThresholdArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router::check_coin_threshold`,
+    target: `${getPublishedAt('cetus-integrate')}::router::check_coin_threshold`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u64`)],
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u64`),
+    ],
   })
 }

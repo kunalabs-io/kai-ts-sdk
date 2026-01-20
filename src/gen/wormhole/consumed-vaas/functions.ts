@@ -1,9 +1,17 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::consumed_vaas::new`, arguments: [] })
+export function new_(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('wormhole')}::consumed_vaas::new`,
+    arguments: [],
+  })
 }
 
 export interface ConsumeArgs {
@@ -11,9 +19,12 @@ export interface ConsumeArgs {
   digest: TransactionObjectInput
 }
 
-export function consume(tx: Transaction, args: ConsumeArgs) {
+export function consume(tx: Transaction, args: ConsumeArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::consumed_vaas::consume`,
-    arguments: [obj(tx, args.self), obj(tx, args.digest)],
+    target: `${getPublishedAt('wormhole')}::consumed_vaas::consume`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.digest),
+    ],
   })
 }

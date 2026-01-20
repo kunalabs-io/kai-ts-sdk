@@ -1,26 +1,36 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { ExternalAddress } from '../../wormhole/external-address/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== GovernanceDataSource =============================== */
 
 export function isGovernanceDataSource(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::set_governance_data_source::GovernanceDataSource`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'set_governance_data_source::GovernanceDataSource')
+    }::set_governance_data_source::GovernanceDataSource`
 }
 
 export interface GovernanceDataSourceFields {
@@ -31,17 +41,30 @@ export interface GovernanceDataSourceFields {
 
 export type GovernanceDataSourceReified = Reified<GovernanceDataSource, GovernanceDataSourceFields>
 
+export type GovernanceDataSourceJSONField = {
+  emitterChainId: string
+  emitterAddress: ToJSON<ExternalAddress>
+  initialSequence: string
+}
+
+export type GovernanceDataSourceJSON = {
+  $typeName: typeof GovernanceDataSource.$typeName
+  $typeArgs: []
+} & GovernanceDataSourceJSONField
+
 export class GovernanceDataSource implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::set_governance_data_source::GovernanceDataSource`
+  static readonly $typeName: `${string}::set_governance_data_source::GovernanceDataSource` = `${
+    getTypeOrigin('pyth', 'set_governance_data_source::GovernanceDataSource')
+  }::set_governance_data_source::GovernanceDataSource` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GovernanceDataSource.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set_governance_data_source::GovernanceDataSource`
+  readonly $typeName: typeof GovernanceDataSource.$typeName = GovernanceDataSource.$typeName
+  readonly $fullTypeName: `${string}::set_governance_data_source::GovernanceDataSource`
   readonly $typeArgs: []
-  readonly $isPhantom = GovernanceDataSource.$isPhantom
+  readonly $isPhantom: typeof GovernanceDataSource.$isPhantom = GovernanceDataSource.$isPhantom
 
   readonly emitterChainId: ToField<'u64'>
   readonly emitterAddress: ToField<ExternalAddress>
@@ -50,8 +73,8 @@ export class GovernanceDataSource implements StructClass {
   private constructor(typeArgs: [], fields: GovernanceDataSourceFields) {
     this.$fullTypeName = composeSuiType(
       GovernanceDataSource.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::set_governance_data_source::GovernanceDataSource`
+      ...typeArgs,
+    ) as `${string}::set_governance_data_source::GovernanceDataSource`
     this.$typeArgs = typeArgs
 
     this.emitterChainId = fields.emitterChainId
@@ -65,8 +88,8 @@ export class GovernanceDataSource implements StructClass {
       typeName: GovernanceDataSource.$typeName,
       fullTypeName: composeSuiType(
         GovernanceDataSource.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::set_governance_data_source::GovernanceDataSource`,
+        ...[],
+      ) as `${string}::set_governance_data_source::GovernanceDataSource`,
       typeArgs: [] as [],
       isPhantom: GovernanceDataSource.$isPhantom,
       reifiedTypeArgs: [],
@@ -81,7 +104,8 @@ export class GovernanceDataSource implements StructClass {
         GovernanceDataSource.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         GovernanceDataSource.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GovernanceDataSource.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        GovernanceDataSource.fetch(client, id),
       new: (fields: GovernanceDataSourceFields) => {
         return new GovernanceDataSource([], fields)
       },
@@ -89,14 +113,15 @@ export class GovernanceDataSource implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GovernanceDataSourceReified {
     return GovernanceDataSource.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GovernanceDataSource>> {
     return phantom(GovernanceDataSource.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GovernanceDataSource>> {
     return GovernanceDataSource.phantom()
   }
 
@@ -134,7 +159,7 @@ export class GovernanceDataSource implements StructClass {
       emitterChainId: decodeFromFieldsWithTypes('u64', item.fields.emitter_chain_id),
       emitterAddress: decodeFromFieldsWithTypes(
         ExternalAddress.reified(),
-        item.fields.emitter_address
+        item.fields.emitter_address,
       ),
       initialSequence: decodeFromFieldsWithTypes('u64', item.fields.initial_sequence),
     })
@@ -144,7 +169,7 @@ export class GovernanceDataSource implements StructClass {
     return GovernanceDataSource.fromFields(GovernanceDataSource.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GovernanceDataSourceJSONField {
     return {
       emitterChainId: this.emitterChainId.toString(),
       emitterAddress: this.emitterAddress.toJSONField(),
@@ -152,7 +177,7 @@ export class GovernanceDataSource implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): GovernanceDataSourceJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -166,7 +191,9 @@ export class GovernanceDataSource implements StructClass {
 
   static fromJSON(json: Record<string, any>): GovernanceDataSource {
     if (json.$typeName !== GovernanceDataSource.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GovernanceDataSource json object: expected '${GovernanceDataSource.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GovernanceDataSource.fromJSONField(json)
@@ -178,7 +205,7 @@ export class GovernanceDataSource implements StructClass {
     }
     if (!isGovernanceDataSource(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a GovernanceDataSource object`
+        `object at ${(content.fields as any).id} is not a GovernanceDataSource object`,
       )
     }
     return GovernanceDataSource.fromFieldsWithTypes(content)
@@ -190,25 +217,22 @@ export class GovernanceDataSource implements StructClass {
         throw new Error(`object at is not a GovernanceDataSource object`)
       }
 
-      return GovernanceDataSource.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GovernanceDataSource.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GovernanceDataSource.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GovernanceDataSource> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GovernanceDataSource object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGovernanceDataSource(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceDataSource> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGovernanceDataSource(res.type)) {
       throw new Error(`object at id ${id} is not a GovernanceDataSource object`)
     }
 
-    return GovernanceDataSource.fromSuiObjectData(res.data)
+    return GovernanceDataSource.fromBcs(res.bcsBytes)
   }
 }

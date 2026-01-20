@@ -1,35 +1,52 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
-export function create(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::accumulator::create`, arguments: [] })
+export function create(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::accumulator::create`,
+    arguments: [],
+  })
 }
 
-export function rootId(tx: Transaction, accumulatorRoot: TransactionObjectInput) {
+export function rootId(
+  tx: Transaction,
+  accumulatorRoot: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_id`,
+    target: `${getPublishedAt('sui')}::accumulator::root_id`,
     arguments: [obj(tx, accumulatorRoot)],
   })
 }
 
-export function rootIdMut(tx: Transaction, accumulatorRoot: TransactionObjectInput) {
+export function rootIdMut(
+  tx: Transaction,
+  accumulatorRoot: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_id_mut`,
+    target: `${getPublishedAt('sui')}::accumulator::root_id_mut`,
     arguments: [obj(tx, accumulatorRoot)],
   })
 }
 
-export function createU128(tx: Transaction, value: bigint | TransactionArgument) {
+export function createU128(
+  tx: Transaction,
+  value: bigint | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::create_u128`,
+    target: `${getPublishedAt('sui')}::accumulator::create_u128`,
     arguments: [pure(tx, value, `u128`)],
   })
 }
 
-export function destroyU128(tx: Transaction, u128: TransactionObjectInput) {
+export function destroyU128(tx: Transaction, u128: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::destroy_u128`,
+    target: `${getPublishedAt('sui')}::accumulator::destroy_u128`,
     arguments: [obj(tx, u128)],
   })
 }
@@ -40,16 +57,20 @@ export interface UpdateU128Args {
   split: bigint | TransactionArgument
 }
 
-export function updateU128(tx: Transaction, args: UpdateU128Args) {
+export function updateU128(tx: Transaction, args: UpdateU128Args): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::update_u128`,
-    arguments: [obj(tx, args.u128), pure(tx, args.merge, `u128`), pure(tx, args.split, `u128`)],
+    target: `${getPublishedAt('sui')}::accumulator::update_u128`,
+    arguments: [
+      obj(tx, args.u128),
+      pure(tx, args.merge, `u128`),
+      pure(tx, args.split, `u128`),
+    ],
   })
 }
 
-export function isZeroU128(tx: Transaction, u128: TransactionObjectInput) {
+export function isZeroU128(tx: Transaction, u128: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::is_zero_u128`,
+    target: `${getPublishedAt('sui')}::accumulator::is_zero_u128`,
     arguments: [obj(tx, u128)],
   })
 }
@@ -57,10 +78,10 @@ export function isZeroU128(tx: Transaction, u128: TransactionObjectInput) {
 export function accumulatorKey(
   tx: Transaction,
   typeArg: string,
-  address: string | TransactionArgument
-) {
+  address: string | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::accumulator_key`,
+    target: `${getPublishedAt('sui')}::accumulator::accumulator_key`,
     typeArguments: [typeArg],
     arguments: [pure(tx, address, `address`)],
   })
@@ -69,10 +90,10 @@ export function accumulatorKey(
 export function accumulatorAddress(
   tx: Transaction,
   typeArg: string,
-  address: string | TransactionArgument
-) {
+  address: string | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::accumulator_address`,
+    target: `${getPublishedAt('sui')}::accumulator::accumulator_address`,
     typeArguments: [typeArg],
     arguments: [pure(tx, address, `address`)],
   })
@@ -83,15 +104,19 @@ export interface RootHasAccumulatorArgs {
   name: TransactionObjectInput
 }
 
+/** Balance object methods */
 export function rootHasAccumulator(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RootHasAccumulatorArgs
-) {
+  args: RootHasAccumulatorArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_has_accumulator`,
+    target: `${getPublishedAt('sui')}::accumulator::root_has_accumulator`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.accumulatorRoot), obj(tx, args.name)],
+    arguments: [
+      obj(tx, args.accumulatorRoot),
+      obj(tx, args.name),
+    ],
   })
 }
 
@@ -104,10 +129,10 @@ export interface RootAddAccumulatorArgs {
 export function rootAddAccumulator(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RootAddAccumulatorArgs
-) {
+  args: RootAddAccumulatorArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_add_accumulator`,
+    target: `${getPublishedAt('sui')}::accumulator::root_add_accumulator`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.accumulatorRoot),
@@ -125,12 +150,15 @@ export interface RootBorrowAccumulatorMutArgs {
 export function rootBorrowAccumulatorMut(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RootBorrowAccumulatorMutArgs
-) {
+  args: RootBorrowAccumulatorMutArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_borrow_accumulator_mut`,
+    target: `${getPublishedAt('sui')}::accumulator::root_borrow_accumulator_mut`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.accumulatorRoot), obj(tx, args.name)],
+    arguments: [
+      obj(tx, args.accumulatorRoot),
+      obj(tx, args.name),
+    ],
   })
 }
 
@@ -142,12 +170,15 @@ export interface RootRemoveAccumulatorArgs {
 export function rootRemoveAccumulator(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RootRemoveAccumulatorArgs
-) {
+  args: RootRemoveAccumulatorArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::root_remove_accumulator`,
+    target: `${getPublishedAt('sui')}::accumulator::root_remove_accumulator`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.accumulatorRoot), obj(tx, args.name)],
+    arguments: [
+      obj(tx, args.accumulatorRoot),
+      obj(tx, args.name),
+    ],
   })
 }
 
@@ -157,9 +188,13 @@ export interface EmitDepositEventArgs {
   amount: bigint | TransactionArgument
 }
 
-export function emitDepositEvent(tx: Transaction, typeArg: string, args: EmitDepositEventArgs) {
+export function emitDepositEvent(
+  tx: Transaction,
+  typeArg: string,
+  args: EmitDepositEventArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::emit_deposit_event`,
+    target: `${getPublishedAt('sui')}::accumulator::emit_deposit_event`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.accumulator, `address`),
@@ -175,9 +210,13 @@ export interface EmitWithdrawEventArgs {
   amount: bigint | TransactionArgument
 }
 
-export function emitWithdrawEvent(tx: Transaction, typeArg: string, args: EmitWithdrawEventArgs) {
+export function emitWithdrawEvent(
+  tx: Transaction,
+  typeArg: string,
+  args: EmitWithdrawEventArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator::emit_withdraw_event`,
+    target: `${getPublishedAt('sui')}::accumulator::emit_withdraw_event`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.accumulator, `address`),

@@ -1,25 +1,32 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== UpdateFee =============================== */
 
 export function isUpdateFee(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::set_update_fee::UpdateFee`
+  return type === `${getTypeOrigin('pyth', 'set_update_fee::UpdateFee')}::set_update_fee::UpdateFee`
 }
 
 export interface UpdateFeeFields {
@@ -29,17 +36,29 @@ export interface UpdateFeeFields {
 
 export type UpdateFeeReified = Reified<UpdateFee, UpdateFeeFields>
 
+export type UpdateFeeJSONField = {
+  mantissa: string
+  exponent: string
+}
+
+export type UpdateFeeJSON = {
+  $typeName: typeof UpdateFee.$typeName
+  $typeArgs: []
+} & UpdateFeeJSONField
+
 export class UpdateFee implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::set_update_fee::UpdateFee`
+  static readonly $typeName: `${string}::set_update_fee::UpdateFee` = `${
+    getTypeOrigin('pyth', 'set_update_fee::UpdateFee')
+  }::set_update_fee::UpdateFee` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = UpdateFee.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set_update_fee::UpdateFee`
+  readonly $typeName: typeof UpdateFee.$typeName = UpdateFee.$typeName
+  readonly $fullTypeName: `${string}::set_update_fee::UpdateFee`
   readonly $typeArgs: []
-  readonly $isPhantom = UpdateFee.$isPhantom
+  readonly $isPhantom: typeof UpdateFee.$isPhantom = UpdateFee.$isPhantom
 
   readonly mantissa: ToField<'u64'>
   readonly exponent: ToField<'u64'>
@@ -47,8 +66,8 @@ export class UpdateFee implements StructClass {
   private constructor(typeArgs: [], fields: UpdateFeeFields) {
     this.$fullTypeName = composeSuiType(
       UpdateFee.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::set_update_fee::UpdateFee`
+      ...typeArgs,
+    ) as `${string}::set_update_fee::UpdateFee`
     this.$typeArgs = typeArgs
 
     this.mantissa = fields.mantissa
@@ -61,8 +80,8 @@ export class UpdateFee implements StructClass {
       typeName: UpdateFee.$typeName,
       fullTypeName: composeSuiType(
         UpdateFee.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::set_update_fee::UpdateFee`,
+        ...[],
+      ) as `${string}::set_update_fee::UpdateFee`,
       typeArgs: [] as [],
       isPhantom: UpdateFee.$isPhantom,
       reifiedTypeArgs: [],
@@ -74,7 +93,7 @@ export class UpdateFee implements StructClass {
       fromJSON: (json: Record<string, any>) => UpdateFee.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFee.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateFee.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => UpdateFee.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => UpdateFee.fetch(client, id),
       new: (fields: UpdateFeeFields) => {
         return new UpdateFee([], fields)
       },
@@ -82,14 +101,15 @@ export class UpdateFee implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): UpdateFeeReified {
     return UpdateFee.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<UpdateFee>> {
     return phantom(UpdateFee.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<UpdateFee>> {
     return UpdateFee.phantom()
   }
 
@@ -131,14 +151,14 @@ export class UpdateFee implements StructClass {
     return UpdateFee.fromFields(UpdateFee.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): UpdateFeeJSONField {
     return {
       mantissa: this.mantissa.toString(),
       exponent: this.exponent.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): UpdateFeeJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -151,7 +171,9 @@ export class UpdateFee implements StructClass {
 
   static fromJSON(json: Record<string, any>): UpdateFee {
     if (json.$typeName !== UpdateFee.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a UpdateFee json object: expected '${UpdateFee.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return UpdateFee.fromJSONField(json)
@@ -173,25 +195,22 @@ export class UpdateFee implements StructClass {
         throw new Error(`object at is not a UpdateFee object`)
       }
 
-      return UpdateFee.fromBcs(fromB64(data.bcs.bcsBytes))
+      return UpdateFee.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return UpdateFee.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<UpdateFee> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching UpdateFee object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isUpdateFee(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateFee> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isUpdateFee(res.type)) {
       throw new Error(`object at id ${id} is not a UpdateFee object`)
     }
 
-    return UpdateFee.fromSuiObjectData(res.data)
+    return UpdateFee.fromBcs(res.bcsBytes)
   }
 }

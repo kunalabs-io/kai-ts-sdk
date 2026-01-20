@@ -1,19 +1,31 @@
+/**
+ * APIs for accessing time from move calls, via the `Clock`: a unique
+ * shared object that is created at 0x6 during genesis.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { UID } from '../object/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Clock =============================== */
 
@@ -24,28 +36,63 @@ export function isClock(type: string): boolean {
 
 export interface ClockFields {
   id: ToField<UID>
+  /**
+   * The clock's timestamp, which is set automatically by a
+   * system transaction every time consensus commits a
+   * schedule, or by `sui::clock::increment_for_testing` during
+   * testing.
+   */
   timestampMs: ToField<'u64'>
 }
 
 export type ClockReified = Reified<Clock, ClockFields>
 
+export type ClockJSONField = {
+  id: string
+  timestampMs: string
+}
+
+export type ClockJSON = {
+  $typeName: typeof Clock.$typeName
+  $typeArgs: []
+} & ClockJSONField
+
+/**
+ * Singleton shared object that exposes time to Move calls.  This
+ * object is found at address 0x6, and can only be read (accessed
+ * via an immutable reference) by entry functions.
+ *
+ * Entry Functions that attempt to accept `Clock` by mutable
+ * reference or value will fail to verify, and honest validators
+ * will not sign or execute transactions that use `Clock` as an
+ * input parameter, unless it is passed by immutable reference.
+ */
 export class Clock implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::clock::Clock`
+  static readonly $typeName: `0x2::clock::Clock` = `0x2::clock::Clock` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Clock.$typeName
+  readonly $typeName: typeof Clock.$typeName = Clock.$typeName
   readonly $fullTypeName: `0x2::clock::Clock`
   readonly $typeArgs: []
-  readonly $isPhantom = Clock.$isPhantom
+  readonly $isPhantom: typeof Clock.$isPhantom = Clock.$isPhantom
 
   readonly id: ToField<UID>
+  /**
+   * The clock's timestamp, which is set automatically by a
+   * system transaction every time consensus commits a
+   * schedule, or by `sui::clock::increment_for_testing` during
+   * testing.
+   */
   readonly timestampMs: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: ClockFields) {
-    this.$fullTypeName = composeSuiType(Clock.$typeName, ...typeArgs) as `0x2::clock::Clock`
+    this.$fullTypeName = composeSuiType(
+      Clock.$typeName,
+      ...typeArgs,
+    ) as `0x2::clock::Clock`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -56,7 +103,10 @@ export class Clock implements StructClass {
     const reifiedBcs = Clock.bcs
     return {
       typeName: Clock.$typeName,
-      fullTypeName: composeSuiType(Clock.$typeName, ...[]) as `0x2::clock::Clock`,
+      fullTypeName: composeSuiType(
+        Clock.$typeName,
+        ...[],
+      ) as `0x2::clock::Clock`,
       typeArgs: [] as [],
       isPhantom: Clock.$isPhantom,
       reifiedTypeArgs: [],
@@ -68,7 +118,7 @@ export class Clock implements StructClass {
       fromJSON: (json: Record<string, any>) => Clock.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Clock.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Clock.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Clock.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Clock.fetch(client, id),
       new: (fields: ClockFields) => {
         return new Clock([], fields)
       },
@@ -76,14 +126,15 @@ export class Clock implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ClockReified {
     return Clock.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Clock>> {
     return phantom(Clock.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Clock>> {
     return Clock.phantom()
   }
 
@@ -125,14 +176,14 @@ export class Clock implements StructClass {
     return Clock.fromFields(Clock.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ClockJSONField {
     return {
       id: this.id,
       timestampMs: this.timestampMs.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): ClockJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -145,7 +196,9 @@ export class Clock implements StructClass {
 
   static fromJSON(json: Record<string, any>): Clock {
     if (json.$typeName !== Clock.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Clock json object: expected '${Clock.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Clock.fromJSONField(json)
@@ -167,25 +220,22 @@ export class Clock implements StructClass {
         throw new Error(`object at is not a Clock object`)
       }
 
-      return Clock.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Clock.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Clock.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Clock> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Clock object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isClock(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Clock> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isClock(res.type)) {
       throw new Error(`object at id ${id} is not a Clock object`)
     }
 
-    return Clock.fromSuiObjectData(res.data)
+    return Clock.fromBcs(res.bcsBytes)
   }
 }

@@ -1,9 +1,21 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::sui::new`, arguments: [] })
+/**
+ * Register the `SUI` Coin to acquire its `Supply`.
+ * This should be called only once during genesis creation.
+ */
+export function new_(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::sui::new`,
+    arguments: [],
+  })
 }
 
 export interface TransferArgs {
@@ -11,9 +23,12 @@ export interface TransferArgs {
   recipient: string | TransactionArgument
 }
 
-export function transfer(tx: Transaction, args: TransferArgs) {
+export function transfer(tx: Transaction, args: TransferArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::sui::transfer`,
-    arguments: [obj(tx, args.c), pure(tx, args.recipient, `address`)],
+    target: `${getPublishedAt('sui')}::sui::transfer`,
+    arguments: [
+      obj(tx, args.c),
+      pure(tx, args.recipient, `address`),
+    ],
   })
 }

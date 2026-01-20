@@ -1,57 +1,65 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface DeserializeVectorArgs {
   cur: TransactionObjectInput
   n: bigint | TransactionArgument
 }
 
-export function deserializeVector(tx: Transaction, args: DeserializeVectorArgs) {
+export function deserializeVector(tx: Transaction, args: DeserializeVectorArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_vector`,
-    arguments: [obj(tx, args.cur), pure(tx, args.n, `u64`)],
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_vector`,
+    arguments: [
+      obj(tx, args.cur),
+      pure(tx, args.n, `u64`),
+    ],
   })
 }
 
-export function deserializeU8(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeU8(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_u8`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_u8`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function deserializeU16(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeU16(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_u16`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_u16`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function deserializeU32(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeU32(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_u32`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_u32`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function deserializeI32(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeI32(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_i32`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_i32`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function deserializeU64(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeU64(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_u64`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_u64`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function deserializeI64(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeI64(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::deserialize::deserialize_i64`,
+    target: `${getPublishedAt('pyth')}::deserialize::deserialize_i64`,
     arguments: [obj(tx, cur)],
   })
 }

@@ -1,27 +1,35 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure, vector } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure, vector } from '../../_framework/util'
 
 export function hash(
   tx: Transaction,
-  bytes: Array<number | TransactionArgument> | TransactionArgument
-) {
+  bytes: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::hash`,
+    target: `${getPublishedAt('pyth')}::merkle_tree::hash`,
     arguments: [pure(tx, bytes, `vector<u8>`)],
   })
 }
 
-export function emptyLeafHash(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::merkle_tree::empty_leaf_hash`, arguments: [] })
+export function emptyLeafHash(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('pyth')}::merkle_tree::empty_leaf_hash`,
+    arguments: [],
+  })
 }
 
 export function leafHash(
   tx: Transaction,
-  data: Array<number | TransactionArgument> | TransactionArgument
-) {
+  data: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::leaf_hash`,
+    target: `${getPublishedAt('pyth')}::merkle_tree::leaf_hash`,
     arguments: [pure(tx, data, `vector<u8>`)],
   })
 }
@@ -31,10 +39,13 @@ export interface NodeHashArgs {
   childB: TransactionObjectInput
 }
 
-export function nodeHash(tx: Transaction, args: NodeHashArgs) {
+export function nodeHash(tx: Transaction, args: NodeHashArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::node_hash`,
-    arguments: [obj(tx, args.childA), obj(tx, args.childB)],
+    target: `${getPublishedAt('pyth')}::merkle_tree::node_hash`,
+    arguments: [
+      obj(tx, args.childA),
+      obj(tx, args.childB),
+    ],
   })
 }
 
@@ -43,10 +54,13 @@ export interface GreaterThanArgs {
   b: TransactionObjectInput
 }
 
-export function greaterThan(tx: Transaction, args: GreaterThanArgs) {
+export function greaterThan(tx: Transaction, args: GreaterThanArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::greater_than`,
-    arguments: [obj(tx, args.a), obj(tx, args.b)],
+    target: `${getPublishedAt('pyth')}::merkle_tree::greater_than`,
+    arguments: [
+      obj(tx, args.a),
+      obj(tx, args.b),
+    ],
   })
 }
 
@@ -56,9 +70,13 @@ export interface SetElementArgs {
   index: bigint | TransactionArgument
 }
 
-export function setElement(tx: Transaction, typeArg: string, args: SetElementArgs) {
+export function setElement(
+  tx: Transaction,
+  typeArg: string,
+  args: SetElementArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::set_element`,
+    target: `${getPublishedAt('pyth')}::merkle_tree::set_element`,
     typeArguments: [typeArg],
     arguments: [
       vector(tx, `${typeArg}`, args.a),
@@ -74,9 +92,9 @@ export interface IsProofValidArgs {
   leafData: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function isProofValid(tx: Transaction, args: IsProofValidArgs) {
+export function isProofValid(tx: Transaction, args: IsProofValidArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::is_proof_valid`,
+    target: `${getPublishedAt('pyth')}::merkle_tree::is_proof_valid`,
     arguments: [
       obj(tx, args.encodedProof),
       obj(tx, args.root),
@@ -90,9 +108,12 @@ export interface ConstructProofsArgs {
   depth: number | TransactionArgument
 }
 
-export function constructProofs(tx: Transaction, args: ConstructProofsArgs) {
+export function constructProofs(tx: Transaction, args: ConstructProofsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::merkle_tree::construct_proofs`,
-    arguments: [pure(tx, args.messages, `vector<vector<u8>>`), pure(tx, args.depth, `u8`)],
+    target: `${getPublishedAt('pyth')}::merkle_tree::construct_proofs`,
+    arguments: [
+      pure(tx, args.messages, `vector<vector<u8>>`),
+      pure(tx, args.depth, `u8`),
+    ],
   })
 }

@@ -1,28 +1,40 @@
-import * as reified from '../../_framework/reified'
+/**
+ * This module implements a custom type representing a fixed-size array of
+ * length 20.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Bytes20 =============================== */
 
 export function isBytes20(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::bytes20::Bytes20`
+  return type === `${getTypeOrigin('wormhole', 'bytes20::Bytes20')}::bytes20::Bytes20`
 }
 
 export interface Bytes20Fields {
@@ -31,25 +43,37 @@ export interface Bytes20Fields {
 
 export type Bytes20Reified = Reified<Bytes20, Bytes20Fields>
 
+export type Bytes20JSONField = {
+  data: number[]
+}
+
+export type Bytes20JSON = {
+  $typeName: typeof Bytes20.$typeName
+  $typeArgs: []
+} & Bytes20JSONField
+
+/** Container for `vector<u8>`, which has length == 20. */
 export class Bytes20 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::bytes20::Bytes20`
+  static readonly $typeName: `${string}::bytes20::Bytes20` = `${
+    getTypeOrigin('wormhole', 'bytes20::Bytes20')
+  }::bytes20::Bytes20` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Bytes20.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::bytes20::Bytes20`
+  readonly $typeName: typeof Bytes20.$typeName = Bytes20.$typeName
+  readonly $fullTypeName: `${string}::bytes20::Bytes20`
   readonly $typeArgs: []
-  readonly $isPhantom = Bytes20.$isPhantom
+  readonly $isPhantom: typeof Bytes20.$isPhantom = Bytes20.$isPhantom
 
   readonly data: ToField<Vector<'u8'>>
 
   private constructor(typeArgs: [], fields: Bytes20Fields) {
     this.$fullTypeName = composeSuiType(
       Bytes20.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::bytes20::Bytes20`
+      ...typeArgs,
+    ) as `${string}::bytes20::Bytes20`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
@@ -61,8 +85,8 @@ export class Bytes20 implements StructClass {
       typeName: Bytes20.$typeName,
       fullTypeName: composeSuiType(
         Bytes20.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::bytes20::Bytes20`,
+        ...[],
+      ) as `${string}::bytes20::Bytes20`,
       typeArgs: [] as [],
       isPhantom: Bytes20.$isPhantom,
       reifiedTypeArgs: [],
@@ -74,7 +98,7 @@ export class Bytes20 implements StructClass {
       fromJSON: (json: Record<string, any>) => Bytes20.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Bytes20.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Bytes20.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Bytes20.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Bytes20.fetch(client, id),
       new: (fields: Bytes20Fields) => {
         return new Bytes20([], fields)
       },
@@ -82,14 +106,15 @@ export class Bytes20 implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): Bytes20Reified {
     return Bytes20.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Bytes20>> {
     return phantom(Bytes20.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Bytes20>> {
     return Bytes20.phantom()
   }
 
@@ -109,7 +134,9 @@ export class Bytes20 implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): Bytes20 {
-    return Bytes20.reified().new({ data: decodeFromFields(reified.vector('u8'), fields.data) })
+    return Bytes20.reified().new({
+      data: decodeFromFields(vector('u8'), fields.data),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): Bytes20 {
@@ -118,7 +145,7 @@ export class Bytes20 implements StructClass {
     }
 
     return Bytes20.reified().new({
-      data: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.data),
+      data: decodeFromFieldsWithTypes(vector('u8'), item.fields.data),
     })
   }
 
@@ -126,23 +153,27 @@ export class Bytes20 implements StructClass {
     return Bytes20.fromFields(Bytes20.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): Bytes20JSONField {
     return {
       data: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.data),
     }
   }
 
-  toJSON() {
+  toJSON(): Bytes20JSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): Bytes20 {
-    return Bytes20.reified().new({ data: decodeFromJSONField(reified.vector('u8'), field.data) })
+    return Bytes20.reified().new({
+      data: decodeFromJSONField(vector('u8'), field.data),
+    })
   }
 
   static fromJSON(json: Record<string, any>): Bytes20 {
     if (json.$typeName !== Bytes20.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Bytes20 json object: expected '${Bytes20.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Bytes20.fromJSONField(json)
@@ -164,25 +195,22 @@ export class Bytes20 implements StructClass {
         throw new Error(`object at is not a Bytes20 object`)
       }
 
-      return Bytes20.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Bytes20.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Bytes20.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Bytes20> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Bytes20 object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBytes20(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Bytes20> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBytes20(res.type)) {
       throw new Error(`object at id ${id} is not a Bytes20 object`)
     }
 
-    return Bytes20.fromSuiObjectData(res.data)
+    return Bytes20.fromBcs(res.bcsBytes)
   }
 }

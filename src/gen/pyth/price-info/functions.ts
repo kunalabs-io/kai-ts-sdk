@@ -1,11 +1,23 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function newPriceInfoRegistry(tx: Transaction, parentId: TransactionObjectInput) {
+/**
+ * Creates a table which maps a PriceIdentifier to the
+ * UID (in bytes) of the corresponding Sui PriceInfoObject.
+ */
+export function newPriceInfoRegistry(
+  tx: Transaction,
+  parentId: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::new_price_info_registry`,
+    target: `${getPublishedAt('pyth')}::price_info::new_price_info_registry`,
     arguments: [obj(tx, parentId)],
   })
 }
@@ -16,9 +28,9 @@ export interface AddArgs {
   id: string | TransactionArgument
 }
 
-export function add(tx: Transaction, args: AddArgs) {
+export function add(tx: Transaction, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::add`,
+    target: `${getPublishedAt('pyth')}::price_info::add`,
     arguments: [
       obj(tx, args.parentId),
       obj(tx, args.priceIdentifier),
@@ -32,10 +44,14 @@ export interface GetIdBytesArgs {
   priceIdentifier: TransactionObjectInput
 }
 
-export function getIdBytes(tx: Transaction, args: GetIdBytesArgs) {
+/** Returns ID of price info object corresponding to price_identifier as a byte vector. */
+export function getIdBytes(tx: Transaction, args: GetIdBytesArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_id_bytes`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.priceIdentifier)],
+    target: `${getPublishedAt('pyth')}::price_info::get_id_bytes`,
+    arguments: [
+      obj(tx, args.parentId),
+      obj(tx, args.priceIdentifier),
+    ],
   })
 }
 
@@ -44,10 +60,14 @@ export interface GetIdArgs {
   priceIdentifier: TransactionObjectInput
 }
 
-export function getId(tx: Transaction, args: GetIdArgs) {
+/** Returns ID of price info object corresponding to price_identifier as an ID. */
+export function getId(tx: Transaction, args: GetIdArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_id`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.priceIdentifier)],
+    target: `${getPublishedAt('pyth')}::price_info::get_id`,
+    arguments: [
+      obj(tx, args.parentId),
+      obj(tx, args.priceIdentifier),
+    ],
   })
 }
 
@@ -56,16 +76,22 @@ export interface ContainsArgs {
   priceIdentifier: TransactionObjectInput
 }
 
-export function contains(tx: Transaction, args: ContainsArgs) {
+export function contains(tx: Transaction, args: ContainsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::contains`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.priceIdentifier)],
+    target: `${getPublishedAt('pyth')}::price_info::contains`,
+    arguments: [
+      obj(tx, args.parentId),
+      obj(tx, args.priceIdentifier),
+    ],
   })
 }
 
-export function getBalance(tx: Transaction, priceInfoObject: TransactionObjectInput) {
+export function getBalance(
+  tx: Transaction,
+  priceInfoObject: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_balance`,
+    target: `${getPublishedAt('pyth')}::price_info::get_balance`,
     arguments: [obj(tx, priceInfoObject)],
   })
 }
@@ -75,16 +101,22 @@ export interface DepositFeeCoinsArgs {
   feeCoins: TransactionObjectInput
 }
 
-export function depositFeeCoins(tx: Transaction, args: DepositFeeCoinsArgs) {
+export function depositFeeCoins(tx: Transaction, args: DepositFeeCoinsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::deposit_fee_coins`,
-    arguments: [obj(tx, args.priceInfoObject), obj(tx, args.feeCoins)],
+    target: `${getPublishedAt('pyth')}::price_info::deposit_fee_coins`,
+    arguments: [
+      obj(tx, args.priceInfoObject),
+      obj(tx, args.feeCoins),
+    ],
   })
 }
 
-export function newPriceInfoObject(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function newPriceInfoObject(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::new_price_info_object`,
+    target: `${getPublishedAt('pyth')}::price_info::new_price_info_object`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -95,9 +127,9 @@ export interface NewPriceInfoArgs {
   priceFeed: TransactionObjectInput
 }
 
-export function newPriceInfo(tx: Transaction, args: NewPriceInfoArgs) {
+export function newPriceInfo(tx: Transaction, args: NewPriceInfoArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::new_price_info`,
+    target: `${getPublishedAt('pyth')}::price_info::new_price_info`,
     arguments: [
       pure(tx, args.attestationTime, `u64`),
       pure(tx, args.arrivalTime, `u64`),
@@ -106,47 +138,59 @@ export function newPriceInfo(tx: Transaction, args: NewPriceInfoArgs) {
   })
 }
 
-export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::uid_to_inner`,
+    target: `${getPublishedAt('pyth')}::price_info::uid_to_inner`,
     arguments: [obj(tx, priceInfo)],
   })
 }
 
 export function getPriceInfoFromPriceInfoObject(
   tx: Transaction,
-  priceInfo: TransactionObjectInput
-) {
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_price_info_from_price_info_object`,
+    target: `${getPublishedAt('pyth')}::price_info::get_price_info_from_price_info_object`,
     arguments: [obj(tx, priceInfo)],
   })
 }
 
-export function getPriceIdentifier(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function getPriceIdentifier(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_price_identifier`,
+    target: `${getPublishedAt('pyth')}::price_info::get_price_identifier`,
     arguments: [obj(tx, priceInfo)],
   })
 }
 
-export function getPriceFeed(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function getPriceFeed(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_price_feed`,
+    target: `${getPublishedAt('pyth')}::price_info::get_price_feed`,
     arguments: [obj(tx, priceInfo)],
   })
 }
 
-export function getAttestationTime(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function getAttestationTime(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_attestation_time`,
+    target: `${getPublishedAt('pyth')}::price_info::get_attestation_time`,
     arguments: [obj(tx, priceInfo)],
   })
 }
 
-export function getArrivalTime(tx: Transaction, priceInfo: TransactionObjectInput) {
+export function getArrivalTime(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::get_arrival_time`,
+    target: `${getPublishedAt('pyth')}::price_info::get_arrival_time`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -156,9 +200,15 @@ export interface UpdatePriceInfoObjectArgs {
   priceInfo: TransactionObjectInput
 }
 
-export function updatePriceInfoObject(tx: Transaction, args: UpdatePriceInfoObjectArgs) {
+export function updatePriceInfoObject(
+  tx: Transaction,
+  args: UpdatePriceInfoObjectArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::price_info::update_price_info_object`,
-    arguments: [obj(tx, args.priceInfoObject), obj(tx, args.priceInfo)],
+    target: `${getPublishedAt('pyth')}::price_info::update_price_info_object`,
+    arguments: [
+      obj(tx, args.priceInfoObject),
+      obj(tx, args.priceInfo),
+    ],
   })
 }

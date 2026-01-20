@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface SwapWithPartnerArgs {
   a0: TransactionObjectInput
@@ -19,10 +24,10 @@ export interface SwapWithPartnerArgs {
 export function swapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
-  args: SwapWithPartnerArgs
-) {
+  args: SwapWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router_with_partner::swap_with_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -58,10 +63,10 @@ export interface SwapAbBcWithPartnerArgs {
 export function swapAbBcWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: SwapAbBcWithPartnerArgs
-) {
+  args: SwapAbBcWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router_with_partner::swap_ab_bc_with_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ab_bc_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -98,10 +103,10 @@ export interface SwapAbCbWithPartnerArgs {
 export function swapAbCbWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: SwapAbCbWithPartnerArgs
-) {
+  args: SwapAbCbWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router_with_partner::swap_ab_cb_with_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ab_cb_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -138,10 +143,10 @@ export interface SwapBaBcWithPartnerArgs {
 export function swapBaBcWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: SwapBaBcWithPartnerArgs
-) {
+  args: SwapBaBcWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router_with_partner::swap_ba_bc_with_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ba_bc_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -178,10 +183,10 @@ export interface SwapBaCbWithPartnerArgs {
 export function swapBaCbWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: SwapBaCbWithPartnerArgs
-) {
+  args: SwapBaCbWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::router_with_partner::swap_ba_cb_with_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ba_cb_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

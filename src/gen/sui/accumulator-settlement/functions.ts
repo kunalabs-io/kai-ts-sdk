@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface SettlementPrologueArgs {
   epoch: bigint | TransactionArgument
@@ -8,9 +13,16 @@ export interface SettlementPrologueArgs {
   idx: bigint | TransactionArgument
 }
 
-export function settlementPrologue(tx: Transaction, args: SettlementPrologueArgs) {
+/**
+ * Called by settlement transactions to ensure that the settlement transaction has a unique
+ * digest.
+ */
+export function settlementPrologue(
+  tx: Transaction,
+  args: SettlementPrologueArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator_settlement::settlement_prologue`,
+    target: `${getPublishedAt('sui')}::accumulator_settlement::settlement_prologue`,
     arguments: [
       pure(tx, args.epoch, `u64`),
       pure(tx, args.checkpointHeight, `u64`),
@@ -26,9 +38,13 @@ export interface SettleU128Args {
   split: bigint | TransactionArgument
 }
 
-export function settleU128(tx: Transaction, typeArg: string, args: SettleU128Args) {
+export function settleU128(
+  tx: Transaction,
+  typeArg: string,
+  args: SettleU128Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::accumulator_settlement::settle_u128`,
+    target: `${getPublishedAt('sui')}::accumulator_settlement::settle_u128`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.accumulatorRoot),

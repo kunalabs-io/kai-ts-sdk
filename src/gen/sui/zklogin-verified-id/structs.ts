@@ -1,20 +1,27 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
+import { String } from '../../std/string/structs'
 import { UID } from '../object/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 /* ============================== VerifiedID =============================== */
 
@@ -24,39 +31,67 @@ export function isVerifiedID(type: string): boolean {
 }
 
 export interface VerifiedIDFields {
+  /** The ID of this VerifiedID */
   id: ToField<UID>
+  /** The address this VerifiedID is associated with */
   owner: ToField<'address'>
+  /** The name of the key claim */
   keyClaimName: ToField<String>
+  /** The value of the key claim */
   keyClaimValue: ToField<String>
+  /** The issuer */
   issuer: ToField<String>
+  /** The audience (wallet) */
   audience: ToField<String>
 }
 
 export type VerifiedIDReified = Reified<VerifiedID, VerifiedIDFields>
 
+export type VerifiedIDJSONField = {
+  id: string
+  owner: string
+  keyClaimName: string
+  keyClaimValue: string
+  issuer: string
+  audience: string
+}
+
+export type VerifiedIDJSON = {
+  $typeName: typeof VerifiedID.$typeName
+  $typeArgs: []
+} & VerifiedIDJSONField
+
+/** Possession of a VerifiedID proves that the user's address was created using zklogin and the given parameters. */
 export class VerifiedID implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::zklogin_verified_id::VerifiedID`
+  static readonly $typeName: `0x2::zklogin_verified_id::VerifiedID` =
+    `0x2::zklogin_verified_id::VerifiedID` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = VerifiedID.$typeName
+  readonly $typeName: typeof VerifiedID.$typeName = VerifiedID.$typeName
   readonly $fullTypeName: `0x2::zklogin_verified_id::VerifiedID`
   readonly $typeArgs: []
-  readonly $isPhantom = VerifiedID.$isPhantom
+  readonly $isPhantom: typeof VerifiedID.$isPhantom = VerifiedID.$isPhantom
 
+  /** The ID of this VerifiedID */
   readonly id: ToField<UID>
+  /** The address this VerifiedID is associated with */
   readonly owner: ToField<'address'>
+  /** The name of the key claim */
   readonly keyClaimName: ToField<String>
+  /** The value of the key claim */
   readonly keyClaimValue: ToField<String>
+  /** The issuer */
   readonly issuer: ToField<String>
+  /** The audience (wallet) */
   readonly audience: ToField<String>
 
   private constructor(typeArgs: [], fields: VerifiedIDFields) {
     this.$fullTypeName = composeSuiType(
       VerifiedID.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::zklogin_verified_id::VerifiedID`
     this.$typeArgs = typeArgs
 
@@ -74,7 +109,7 @@ export class VerifiedID implements StructClass {
       typeName: VerifiedID.$typeName,
       fullTypeName: composeSuiType(
         VerifiedID.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::zklogin_verified_id::VerifiedID`,
       typeArgs: [] as [],
       isPhantom: VerifiedID.$isPhantom,
@@ -87,7 +122,7 @@ export class VerifiedID implements StructClass {
       fromJSON: (json: Record<string, any>) => VerifiedID.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VerifiedID.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VerifiedID.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => VerifiedID.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => VerifiedID.fetch(client, id),
       new: (fields: VerifiedIDFields) => {
         return new VerifiedID([], fields)
       },
@@ -95,14 +130,15 @@ export class VerifiedID implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): VerifiedIDReified {
     return VerifiedID.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<VerifiedID>> {
     return phantom(VerifiedID.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<VerifiedID>> {
     return VerifiedID.phantom()
   }
 
@@ -110,8 +146,8 @@ export class VerifiedID implements StructClass {
     return bcs.struct('VerifiedID', {
       id: UID.bcs,
       owner: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
       key_claim_name: String.bcs,
       key_claim_value: String.bcs,
@@ -159,7 +195,7 @@ export class VerifiedID implements StructClass {
     return VerifiedID.fromFields(VerifiedID.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): VerifiedIDJSONField {
     return {
       id: this.id,
       owner: this.owner,
@@ -170,7 +206,7 @@ export class VerifiedID implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): VerifiedIDJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -187,7 +223,9 @@ export class VerifiedID implements StructClass {
 
   static fromJSON(json: Record<string, any>): VerifiedID {
     if (json.$typeName !== VerifiedID.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a VerifiedID json object: expected '${VerifiedID.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return VerifiedID.fromJSONField(json)
@@ -209,25 +247,22 @@ export class VerifiedID implements StructClass {
         throw new Error(`object at is not a VerifiedID object`)
       }
 
-      return VerifiedID.fromBcs(fromB64(data.bcs.bcsBytes))
+      return VerifiedID.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return VerifiedID.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<VerifiedID> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching VerifiedID object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVerifiedID(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<VerifiedID> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isVerifiedID(res.type)) {
       throw new Error(`object at id ${id} is not a VerifiedID object`)
     }
 
-    return VerifiedID.fromSuiObjectData(res.data)
+    return VerifiedID.fromBcs(res.bcsBytes)
   }
 }

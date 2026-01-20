@@ -1,29 +1,46 @@
-import * as reified from '../../_framework/reified'
+/**
+ * This module implements handling a governance VAA to enact updating the
+ * current guardian set to be a new set of guardian public keys. As a part of
+ * this process, the previous guardian set's expiration time is set. Keep in
+ * mind that the current guardian set has no expiration.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Guardian } from '../guardian/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== GovernanceWitness =============================== */
 
 export function isGovernanceWitness(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::update_guardian_set::GovernanceWitness`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'update_guardian_set::GovernanceWitness')
+    }::update_guardian_set::GovernanceWitness`
 }
 
 export interface GovernanceWitnessFields {
@@ -32,25 +49,36 @@ export interface GovernanceWitnessFields {
 
 export type GovernanceWitnessReified = Reified<GovernanceWitness, GovernanceWitnessFields>
 
+export type GovernanceWitnessJSONField = {
+  dummyField: boolean
+}
+
+export type GovernanceWitnessJSON = {
+  $typeName: typeof GovernanceWitness.$typeName
+  $typeArgs: []
+} & GovernanceWitnessJSONField
+
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::update_guardian_set::GovernanceWitness`
+  static readonly $typeName: `${string}::update_guardian_set::GovernanceWitness` = `${
+    getTypeOrigin('wormhole', 'update_guardian_set::GovernanceWitness')
+  }::update_guardian_set::GovernanceWitness` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GovernanceWitness.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::update_guardian_set::GovernanceWitness`
+  readonly $typeName: typeof GovernanceWitness.$typeName = GovernanceWitness.$typeName
+  readonly $fullTypeName: `${string}::update_guardian_set::GovernanceWitness`
   readonly $typeArgs: []
-  readonly $isPhantom = GovernanceWitness.$isPhantom
+  readonly $isPhantom: typeof GovernanceWitness.$isPhantom = GovernanceWitness.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: GovernanceWitnessFields) {
     this.$fullTypeName = composeSuiType(
       GovernanceWitness.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::update_guardian_set::GovernanceWitness`
+      ...typeArgs,
+    ) as `${string}::update_guardian_set::GovernanceWitness`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -62,8 +90,8 @@ export class GovernanceWitness implements StructClass {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
         GovernanceWitness.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::update_guardian_set::GovernanceWitness`,
+        ...[],
+      ) as `${string}::update_guardian_set::GovernanceWitness`,
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -75,7 +103,7 @@ export class GovernanceWitness implements StructClass {
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -83,14 +111,15 @@ export class GovernanceWitness implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GovernanceWitnessReified {
     return GovernanceWitness.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GovernanceWitness>> {
     return phantom(GovernanceWitness.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GovernanceWitness>> {
     return GovernanceWitness.phantom()
   }
 
@@ -129,13 +158,13 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFields(GovernanceWitness.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GovernanceWitnessJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): GovernanceWitnessJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -147,7 +176,9 @@ export class GovernanceWitness implements StructClass {
 
   static fromJSON(json: Record<string, any>): GovernanceWitness {
     if (json.$typeName !== GovernanceWitness.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GovernanceWitness json object: expected '${GovernanceWitness.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GovernanceWitness.fromJSONField(json)
@@ -169,26 +200,23 @@ export class GovernanceWitness implements StructClass {
         throw new Error(`object at is not a GovernanceWitness object`)
       }
 
-      return GovernanceWitness.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GovernanceWitness.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GovernanceWitness.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GovernanceWitness object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGovernanceWitness(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGovernanceWitness(res.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
 
-    return GovernanceWitness.fromSuiObjectData(res.data)
+    return GovernanceWitness.fromBcs(res.bcsBytes)
   }
 }
 
@@ -196,7 +224,10 @@ export class GovernanceWitness implements StructClass {
 
 export function isGuardianSetAdded(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::update_guardian_set::GuardianSetAdded`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'update_guardian_set::GuardianSetAdded')
+    }::update_guardian_set::GuardianSetAdded`
 }
 
 export interface GuardianSetAddedFields {
@@ -205,25 +236,37 @@ export interface GuardianSetAddedFields {
 
 export type GuardianSetAddedReified = Reified<GuardianSetAdded, GuardianSetAddedFields>
 
+export type GuardianSetAddedJSONField = {
+  newIndex: number
+}
+
+export type GuardianSetAddedJSON = {
+  $typeName: typeof GuardianSetAdded.$typeName
+  $typeArgs: []
+} & GuardianSetAddedJSONField
+
+/** Event reflecting a Guardian Set update. */
 export class GuardianSetAdded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::update_guardian_set::GuardianSetAdded`
+  static readonly $typeName: `${string}::update_guardian_set::GuardianSetAdded` = `${
+    getTypeOrigin('wormhole', 'update_guardian_set::GuardianSetAdded')
+  }::update_guardian_set::GuardianSetAdded` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GuardianSetAdded.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::update_guardian_set::GuardianSetAdded`
+  readonly $typeName: typeof GuardianSetAdded.$typeName = GuardianSetAdded.$typeName
+  readonly $fullTypeName: `${string}::update_guardian_set::GuardianSetAdded`
   readonly $typeArgs: []
-  readonly $isPhantom = GuardianSetAdded.$isPhantom
+  readonly $isPhantom: typeof GuardianSetAdded.$isPhantom = GuardianSetAdded.$isPhantom
 
   readonly newIndex: ToField<'u32'>
 
   private constructor(typeArgs: [], fields: GuardianSetAddedFields) {
     this.$fullTypeName = composeSuiType(
       GuardianSetAdded.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::update_guardian_set::GuardianSetAdded`
+      ...typeArgs,
+    ) as `${string}::update_guardian_set::GuardianSetAdded`
     this.$typeArgs = typeArgs
 
     this.newIndex = fields.newIndex
@@ -235,8 +278,8 @@ export class GuardianSetAdded implements StructClass {
       typeName: GuardianSetAdded.$typeName,
       fullTypeName: composeSuiType(
         GuardianSetAdded.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::update_guardian_set::GuardianSetAdded`,
+        ...[],
+      ) as `${string}::update_guardian_set::GuardianSetAdded`,
       typeArgs: [] as [],
       isPhantom: GuardianSetAdded.$isPhantom,
       reifiedTypeArgs: [],
@@ -248,7 +291,7 @@ export class GuardianSetAdded implements StructClass {
       fromJSON: (json: Record<string, any>) => GuardianSetAdded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GuardianSetAdded.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GuardianSetAdded.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GuardianSetAdded.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GuardianSetAdded.fetch(client, id),
       new: (fields: GuardianSetAddedFields) => {
         return new GuardianSetAdded([], fields)
       },
@@ -256,14 +299,15 @@ export class GuardianSetAdded implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GuardianSetAddedReified {
     return GuardianSetAdded.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GuardianSetAdded>> {
     return phantom(GuardianSetAdded.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GuardianSetAdded>> {
     return GuardianSetAdded.phantom()
   }
 
@@ -283,7 +327,9 @@ export class GuardianSetAdded implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): GuardianSetAdded {
-    return GuardianSetAdded.reified().new({ newIndex: decodeFromFields('u32', fields.new_index) })
+    return GuardianSetAdded.reified().new({
+      newIndex: decodeFromFields('u32', fields.new_index),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): GuardianSetAdded {
@@ -300,23 +346,27 @@ export class GuardianSetAdded implements StructClass {
     return GuardianSetAdded.fromFields(GuardianSetAdded.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GuardianSetAddedJSONField {
     return {
       newIndex: this.newIndex,
     }
   }
 
-  toJSON() {
+  toJSON(): GuardianSetAddedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): GuardianSetAdded {
-    return GuardianSetAdded.reified().new({ newIndex: decodeFromJSONField('u32', field.newIndex) })
+    return GuardianSetAdded.reified().new({
+      newIndex: decodeFromJSONField('u32', field.newIndex),
+    })
   }
 
   static fromJSON(json: Record<string, any>): GuardianSetAdded {
     if (json.$typeName !== GuardianSetAdded.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GuardianSetAdded json object: expected '${GuardianSetAdded.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GuardianSetAdded.fromJSONField(json)
@@ -338,26 +388,23 @@ export class GuardianSetAdded implements StructClass {
         throw new Error(`object at is not a GuardianSetAdded object`)
       }
 
-      return GuardianSetAdded.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GuardianSetAdded.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GuardianSetAdded.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GuardianSetAdded> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GuardianSetAdded object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGuardianSetAdded(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GuardianSetAdded> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGuardianSetAdded(res.type)) {
       throw new Error(`object at id ${id} is not a GuardianSetAdded object`)
     }
 
-    return GuardianSetAdded.fromSuiObjectData(res.data)
+    return GuardianSetAdded.fromBcs(res.bcsBytes)
   }
 }
 
@@ -365,7 +412,10 @@ export class GuardianSetAdded implements StructClass {
 
 export function isUpdateGuardianSet(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::update_guardian_set::UpdateGuardianSet`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'update_guardian_set::UpdateGuardianSet')
+    }::update_guardian_set::UpdateGuardianSet`
 }
 
 export interface UpdateGuardianSetFields {
@@ -375,17 +425,29 @@ export interface UpdateGuardianSetFields {
 
 export type UpdateGuardianSetReified = Reified<UpdateGuardianSet, UpdateGuardianSetFields>
 
+export type UpdateGuardianSetJSONField = {
+  newIndex: number
+  guardians: ToJSON<Guardian>[]
+}
+
+export type UpdateGuardianSetJSON = {
+  $typeName: typeof UpdateGuardianSet.$typeName
+  $typeArgs: []
+} & UpdateGuardianSetJSONField
+
 export class UpdateGuardianSet implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::update_guardian_set::UpdateGuardianSet`
+  static readonly $typeName: `${string}::update_guardian_set::UpdateGuardianSet` = `${
+    getTypeOrigin('wormhole', 'update_guardian_set::UpdateGuardianSet')
+  }::update_guardian_set::UpdateGuardianSet` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = UpdateGuardianSet.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::update_guardian_set::UpdateGuardianSet`
+  readonly $typeName: typeof UpdateGuardianSet.$typeName = UpdateGuardianSet.$typeName
+  readonly $fullTypeName: `${string}::update_guardian_set::UpdateGuardianSet`
   readonly $typeArgs: []
-  readonly $isPhantom = UpdateGuardianSet.$isPhantom
+  readonly $isPhantom: typeof UpdateGuardianSet.$isPhantom = UpdateGuardianSet.$isPhantom
 
   readonly newIndex: ToField<'u32'>
   readonly guardians: ToField<Vector<Guardian>>
@@ -393,8 +455,8 @@ export class UpdateGuardianSet implements StructClass {
   private constructor(typeArgs: [], fields: UpdateGuardianSetFields) {
     this.$fullTypeName = composeSuiType(
       UpdateGuardianSet.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::update_guardian_set::UpdateGuardianSet`
+      ...typeArgs,
+    ) as `${string}::update_guardian_set::UpdateGuardianSet`
     this.$typeArgs = typeArgs
 
     this.newIndex = fields.newIndex
@@ -407,8 +469,8 @@ export class UpdateGuardianSet implements StructClass {
       typeName: UpdateGuardianSet.$typeName,
       fullTypeName: composeSuiType(
         UpdateGuardianSet.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::update_guardian_set::UpdateGuardianSet`,
+        ...[],
+      ) as `${string}::update_guardian_set::UpdateGuardianSet`,
       typeArgs: [] as [],
       isPhantom: UpdateGuardianSet.$isPhantom,
       reifiedTypeArgs: [],
@@ -420,7 +482,7 @@ export class UpdateGuardianSet implements StructClass {
       fromJSON: (json: Record<string, any>) => UpdateGuardianSet.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpdateGuardianSet.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateGuardianSet.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => UpdateGuardianSet.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => UpdateGuardianSet.fetch(client, id),
       new: (fields: UpdateGuardianSetFields) => {
         return new UpdateGuardianSet([], fields)
       },
@@ -428,14 +490,15 @@ export class UpdateGuardianSet implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): UpdateGuardianSetReified {
     return UpdateGuardianSet.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<UpdateGuardianSet>> {
     return phantom(UpdateGuardianSet.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<UpdateGuardianSet>> {
     return UpdateGuardianSet.phantom()
   }
 
@@ -458,7 +521,7 @@ export class UpdateGuardianSet implements StructClass {
   static fromFields(fields: Record<string, any>): UpdateGuardianSet {
     return UpdateGuardianSet.reified().new({
       newIndex: decodeFromFields('u32', fields.new_index),
-      guardians: decodeFromFields(reified.vector(Guardian.reified()), fields.guardians),
+      guardians: decodeFromFields(vector(Guardian.reified()), fields.guardians),
     })
   }
 
@@ -469,10 +532,7 @@ export class UpdateGuardianSet implements StructClass {
 
     return UpdateGuardianSet.reified().new({
       newIndex: decodeFromFieldsWithTypes('u32', item.fields.new_index),
-      guardians: decodeFromFieldsWithTypes(
-        reified.vector(Guardian.reified()),
-        item.fields.guardians
-      ),
+      guardians: decodeFromFieldsWithTypes(vector(Guardian.reified()), item.fields.guardians),
     })
   }
 
@@ -480,27 +540,29 @@ export class UpdateGuardianSet implements StructClass {
     return UpdateGuardianSet.fromFields(UpdateGuardianSet.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): UpdateGuardianSetJSONField {
     return {
       newIndex: this.newIndex,
       guardians: fieldToJSON<Vector<Guardian>>(`vector<${Guardian.$typeName}>`, this.guardians),
     }
   }
 
-  toJSON() {
+  toJSON(): UpdateGuardianSetJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): UpdateGuardianSet {
     return UpdateGuardianSet.reified().new({
       newIndex: decodeFromJSONField('u32', field.newIndex),
-      guardians: decodeFromJSONField(reified.vector(Guardian.reified()), field.guardians),
+      guardians: decodeFromJSONField(vector(Guardian.reified()), field.guardians),
     })
   }
 
   static fromJSON(json: Record<string, any>): UpdateGuardianSet {
     if (json.$typeName !== UpdateGuardianSet.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a UpdateGuardianSet json object: expected '${UpdateGuardianSet.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return UpdateGuardianSet.fromJSONField(json)
@@ -522,25 +584,22 @@ export class UpdateGuardianSet implements StructClass {
         throw new Error(`object at is not a UpdateGuardianSet object`)
       }
 
-      return UpdateGuardianSet.fromBcs(fromB64(data.bcs.bcsBytes))
+      return UpdateGuardianSet.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return UpdateGuardianSet.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<UpdateGuardianSet> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching UpdateGuardianSet object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isUpdateGuardianSet(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateGuardianSet> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isUpdateGuardianSet(res.type)) {
       throw new Error(`object at id ${id} is not a UpdateGuardianSet object`)
     }
 
-    return UpdateGuardianSet.fromSuiObjectData(res.data)
+    return UpdateGuardianSet.fromBcs(res.bcsBytes)
   }
 }

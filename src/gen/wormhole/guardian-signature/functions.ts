@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface NewArgs {
   r: TransactionObjectInput
@@ -9,9 +14,10 @@ export interface NewArgs {
   index: number | TransactionArgument
 }
 
-export function new_(tx: Transaction, args: NewArgs) {
+/** Create new `GuardianSignature`. */
+export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::new`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::new`,
     arguments: [
       obj(tx, args.r),
       obj(tx, args.s),
@@ -21,44 +27,53 @@ export function new_(tx: Transaction, args: NewArgs) {
   })
 }
 
-export function r(tx: Transaction, self: TransactionObjectInput) {
+/** 32-byte signature parameter R. */
+export function r(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::r`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::r`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function s(tx: Transaction, self: TransactionObjectInput) {
+/** 32-byte signature parameter S. */
+export function s(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::s`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::s`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function recoveryId(tx: Transaction, self: TransactionObjectInput) {
+/** Signature recovery ID. */
+export function recoveryId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::recovery_id`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::recovery_id`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function index(tx: Transaction, self: TransactionObjectInput) {
+/** Guardian index. */
+export function index(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::index`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::index`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function indexAsU64(tx: Transaction, self: TransactionObjectInput) {
+/** Guardian index as u64. */
+export function indexAsU64(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::index_as_u64`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::index_as_u64`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function toRsv(tx: Transaction, gs: TransactionObjectInput) {
+/**
+ * Serialize elliptic curve paramters as `vector<u8>` of length == 65 to be
+ * consumed by `ecdsa_k1` for public key recovery.
+ */
+export function toRsv(tx: Transaction, gs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::guardian_signature::to_rsv`,
+    target: `${getPublishedAt('wormhole')}::guardian_signature::to_rsv`,
     arguments: [obj(tx, gs)],
   })
 }

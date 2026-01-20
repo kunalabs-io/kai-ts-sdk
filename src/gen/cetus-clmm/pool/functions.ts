@@ -1,11 +1,24 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
+import { String } from '../../std/string/structs'
 import { ID } from '../../sui/object/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction, otw: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::pool::init`, arguments: [obj(tx, otw)] })
+/**
+ * Initialize the pool package
+ * * `otw` - The object type wrapper
+ * * `ctx` - The transaction context
+ */
+export function init(tx: Transaction, otw: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::pool::init`,
+    arguments: [obj(tx, otw)],
+  })
 }
 
 export interface MintProtocolFeeCollectCapArgs {
@@ -13,10 +26,22 @@ export interface MintProtocolFeeCollectCapArgs {
   addr: string | TransactionArgument
 }
 
-export function mintProtocolFeeCollectCap(tx: Transaction, args: MintProtocolFeeCollectCapArgs) {
+/**
+ * Mint a protocol fee collect cap
+ * * `AdminCap` - The admin cap
+ * * `address` - The address to mint the cap to
+ * * `ctx` - The transaction context
+ */
+export function mintProtocolFeeCollectCap(
+  tx: Transaction,
+  args: MintProtocolFeeCollectCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::mint_protocol_fee_collect_cap`,
-    arguments: [obj(tx, args.adminCap), pure(tx, args.addr, `address`)],
+    target: `${getPublishedAt('cetus-clmm')}::pool::mint_protocol_fee_collect_cap`,
+    arguments: [
+      obj(tx, args.adminCap),
+      pure(tx, args.addr, `address`),
+    ],
   })
 }
 
@@ -29,9 +54,22 @@ export interface NewArgs {
   clock: TransactionObjectInput
 }
 
-export function new_(tx: Transaction, typeArgs: [string, string], args: NewArgs) {
+/**
+ * Create a new pool, it only allow call by factory module.
+ * * `tick_spacing` - The spacing between initialized ticks
+ * * `init_sqrt_price` - The clmmpool's initialize sqrt price
+ * * `fee_rate` - The clmmpool's fee rate
+ * * `index` - The index of the pool
+ * * `clock` - The CLOCK of sui framework
+ * * `ctx` - The transaction context
+ */
+export function new_(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: NewArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::new`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::new`,
     typeArguments: typeArgs,
     arguments: [
       pure(tx, args.tickSpacing, `u32`),
@@ -55,9 +93,25 @@ export interface SetDisplayArgs {
   creator: string | TransactionArgument
 }
 
-export function setDisplay(tx: Transaction, typeArgs: [string, string], args: SetDisplayArgs) {
+/**
+ * Set display for pool.
+ * * `config` - The global config object of clmm package.
+ * * `publisher` - The publisher object
+ * * `name` - The name of the pool
+ * * `description` - The description of the pool
+ * * `url` - The URL of the pool
+ * * `link` - The link of the pool
+ * * `website` - The website of the pool
+ * * `creator` - The creator of the pool
+ * * `ctx` - The transaction context
+ */
+export function setDisplay(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SetDisplayArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::set_display`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::set_display`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -79,9 +133,22 @@ export interface OpenPositionArgs {
   tickUpper: number | TransactionArgument
 }
 
-export function openPosition(tx: Transaction, typeArgs: [string, string], args: OpenPositionArgs) {
+/**
+ * Open a position
+ * * `config` - The global config object of clmm package.
+ * * `pool` - The clmmpool object.
+ * * `tick_lower` - The lower tick index of position.
+ * * `tick_upper` - The upper tick index of position.
+ * * `ctx` - The transaction context
+ * * Returns the position NFT
+ */
+export function openPosition(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: OpenPositionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::open_position`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::open_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -100,9 +167,22 @@ export interface AddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
-export function addLiquidity(tx: Transaction, typeArgs: [string, string], args: AddLiquidityArgs) {
+/**
+ * Add liquidity on a position by fix liquidity amount.
+ * * `config` - The global config object of clmm package.
+ * * `pool` - The clmpool object.
+ * * `position_nft` - The position NFT
+ * * `delta_liquidity` - The liquidity amount which you want add.
+ * * `clock` - The `CLOCK` object
+ * * Returns the add liquidity receipt, Flash loan resource for add_liquidity
+ */
+export function addLiquidity(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -123,13 +203,23 @@ export interface AddLiquidityFixCoinArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Add liquidity on a position by fix coin amount.
+ * * `config` - The global config object of clmm package.
+ * * `pool` - The clmmpool object.
+ * * `position_nft` - The position NFT
+ * * `amount` - The coin amount which you want add to position.
+ * * `fix_amount_a` - Whether the fix coin type is CoinTypeA
+ * * `clock` - The `CLOCK` object
+ * * Returns the add liquidity receipt, Flash loan resource for add_liquidity
+ */
 export function addLiquidityFixCoin(
   tx: Transaction,
   typeArgs: [string, string],
-  args: AddLiquidityFixCoinArgs
-) {
+  args: AddLiquidityFixCoinArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::add_liquidity_fix_coin`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_fix_coin`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -142,13 +232,18 @@ export function addLiquidityFixCoin(
   })
 }
 
+/**
+ * Get the amount that needs to be paid for liquidity.
+ * * `receipt` - The refrence of receipt.
+ * * Returns the amount of CoinTypeA that need paid for this receipt.
+ */
 export function addLiquidityPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
-  receipt: TransactionObjectInput
-) {
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::add_liquidity_pay_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -162,13 +257,21 @@ export interface RepayAddLiquidityArgs {
   receipt: TransactionObjectInput
 }
 
+/**
+ * The cost of increasing liquidity for the position.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `balance_a` - The balance of which type is CoinTypeA, if no need pay this coin pass `balance<CoinTypeA>Zero()`
+ * * `balance_b` - The balance of which type is CoinTypeB, if no need pay this coin pass `balance<CoinTypeA>Zero()`
+ * * `receipt` - A flash loan resource that can only delete by this function.
+ */
 export function repayAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayAddLiquidityArgs
-) {
+  args: RepayAddLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::repay_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::repay_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -188,13 +291,21 @@ export interface RemoveLiquidityArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Remove liquidity from a position.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool package.
+ * * `delta_liquidity` - The amount of liquidity will be remove.
+ * * `clock` - The `Clock` object.
+ * * Returns the balance object of CoinTypeA and CoinTypeB.
+ */
 export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RemoveLiquidityArgs
-) {
+  args: RemoveLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::remove_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -219,10 +330,10 @@ export interface RemoveLiquidityWithSlippageArgs {
 export function removeLiquidityWithSlippage(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RemoveLiquidityWithSlippageArgs
-) {
+  args: RemoveLiquidityWithSlippageArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::remove_liquidity_with_slippage`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::remove_liquidity_with_slippage`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -242,15 +353,27 @@ export interface ClosePositionArgs {
   positionNft: TransactionObjectInput
 }
 
+/**
+ * Close the position.
+ * This operation will destroy the `position`, so before calling it, you need to take away all
+ * assets(coin_a,coin_b,rewards) related to this `position`, otherwise it will fail.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position` - The position's NFT
+ */
 export function closePosition(
   tx: Transaction,
   typeArgs: [string, string],
-  args: ClosePositionArgs
-) {
+  args: ClosePositionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::close_position`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::close_position`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool), obj(tx, args.positionNft)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.positionNft),
+    ],
   })
 }
 
@@ -261,9 +384,24 @@ export interface CollectFeeArgs {
   recalculate: boolean | TransactionArgument
 }
 
-export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
+/**
+ * Collect the fee from position.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_nft` - The position's NFT.
+ * * `recalcuate` - There are multiple scenarios where, for example, `add_liquidity`/`remove_liquidity`
+ * will settle fees. If `collect_fee` and these operations are in the same transaction, and `collect_fee`
+ * comes after them, then recalculating will not have any impact on the result. In this case, `recalculate`
+ * can be set to `false` to save gas.
+ * * Returns the balance object of CoinTypeA and CoinTypeB.
+ */
+export function collectFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CollectFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::collect_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -283,13 +421,23 @@ export interface CollectRewardArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Collect rewarder from position.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_nft` - The position's NFT.
+ * * `recalcuate` - This flag is used to specify whether to recalculate the reward for the position,
+ * just like the handling fee.
+ * * `clock` - The `Clock` object.
+ * * Returns the balance object of CoinTypeC.
+ */
 export function collectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: CollectRewardArgs
-) {
+  args: CollectRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::collect_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -309,13 +457,22 @@ export interface CalculateAndUpdateRewardsArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Calculate the positions's rewards and update it and return its.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * `recalcuate` - A flag
+ * * `clock` - The `Clock` object.
+ * * Returns the vector of reward amounts.
+ */
 export function calculateAndUpdateRewards(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalculateAndUpdateRewardsArgs
-) {
+  args: CalculateAndUpdateRewardsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_and_update_rewards`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -333,13 +490,21 @@ export interface CalculateAndUpdateRewardArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Calculate and update the position's rewards and return one of which reward type is `CoinTypeC`.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * `clock` - The `Clock` object.
+ * * Returns the pending reward amount.
+ */
 export function calculateAndUpdateReward(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: CalculateAndUpdateRewardArgs
-) {
+  args: CalculateAndUpdateRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_and_update_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -357,13 +522,21 @@ export interface CalculateAndUpdatePointsArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Calculate and update the position's point and return it.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * `clock` - The `Clock` object.
+ * * Returns the current point of `position`.
+ */
 export function calculateAndUpdatePoints(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalculateAndUpdatePointsArgs
-) {
+  args: CalculateAndUpdatePointsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_and_update_points`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_points`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -380,13 +553,20 @@ export interface CalculateAndUpdateFeeArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Calculate and update the position's fee and return it.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * Returns the fee amount of `CoinTypeA` and `CoinTypeB`.
+ */
 export function calculateAndUpdateFee(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalculateAndUpdateFeeArgs
-) {
+  args: CalculateAndUpdateFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_and_update_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -401,15 +581,24 @@ export interface GetPositionAmountsArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Calculate the position's amount_a/amount_b
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * Returns the amount of `CoinTypeA` and `CoinTypeB`.
+ */
 export function getPositionAmounts(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionAmountsArgs
-) {
+  args: GetPositionAmountsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_amounts`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_amounts`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -418,15 +607,24 @@ export interface GetPositionAmountsV2Args {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Calculate the position's amount_a/amount_b
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The object id of position's NFT.
+ * * Returns the amount of `CoinTypeA` and `CoinTypeB`.
+ */
 export function getPositionAmountsV2(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionAmountsV2Args
-) {
+  args: GetPositionAmountsV2Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_amounts_v2`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_amounts_v2`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -440,9 +638,25 @@ export interface FlashSwapArgs {
   clock: TransactionObjectInput
 }
 
-export function flashSwap(tx: Transaction, typeArgs: [string, string], args: FlashSwapArgs) {
+/**
+ * Flash swap
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `a2b` - One flag, if true, indicates that coin of `CoinTypeA` is exchanged with the coin of `CoinTypeB`,
+ * otherwise it indicates that the coin of `CoinTypeB` is exchanged with the coin of `CoinTypeA`.
+ * * `by_amount_in` - A flag, if set to true, indicates that the next `amount` parameter specifies
+ * the input amount, otherwise it specifies the output amount.
+ * * `amount` - The amount that indicates input or output.
+ * * `sqrt_price_limit` - Price limit, if the swap causes the price to it value, the swap will stop here and return
+ * * `clock` - The `Clock` object.
+ */
+export function flashSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashSwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_swap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -464,13 +678,21 @@ export interface RepayFlashSwapArgs {
   receipt: TransactionObjectInput
 }
 
+/**
+ * Repay for flash swap
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `coin_a` - The object of `CoinTypeA` will pay for flash_swap,
+ * * `coin_b` - The object of `CoinTypeB` will pay for flash_swap,
+ * * `receipt` - The receipt which will be destory.
+ */
 export function repayFlashSwap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashSwapArgs
-) {
+  args: RepayFlashSwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::repay_flash_swap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -493,13 +715,27 @@ export interface FlashSwapWithPartnerArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Flash swap with partner, like flash swap but there has a partner object for receive ref fee.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `partner` - The partner object.
+ * * `a2b` - One flag, if true, indicates that coin of `CoinTypeA` is exchanged with the coin of `CoinTypeB`,
+ * otherwise it indicates that the coin of `CoinTypeB` is exchanged with the coin of `CoinTypeA`.
+ * * `by_amount_in` - A flag, if set to true, indicates that the next `amount` parameter specifies
+ * the input amount, otherwise it specifies the output amount.
+ * * `amount` - The amount that indicates input or output.
+ * * `sqrt_price_limit` - Price limit, if the swap causes the price to it value, the swap will stop here and return
+ * * `clock` - The `Clock` object.
+ * * Returns the balance object of CoinTypeA and CoinTypeB and the flash swap receipt.
+ */
 export function flashSwapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FlashSwapWithPartnerArgs
-) {
+  args: FlashSwapWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_swap_with_partner`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -523,13 +759,22 @@ export interface RepayFlashSwapWithPartnerArgs {
   receipt: TransactionObjectInput
 }
 
+/**
+ * Repay for flash swap with partner for receive ref fee.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `partner` - The partner object.
+ * * `coin_a` - The object of `CoinTypeA` will pay for flash_swap,
+ * * `coin_b` - The object of `CoinTypeB` will pay for flash_swap,
+ * * `receipt` - The receipt which will be destory.
+ */
 export function repayFlashSwapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashSwapWithPartnerArgs
-) {
+  args: RepayFlashSwapWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::repay_flash_swap_with_partner`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -547,15 +792,25 @@ export interface CollectProtocolFeeArgs {
   pool: TransactionObjectInput
 }
 
+/**
+ * Collect the protocol fee by the protocol_feee_claim_authority
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `ctx` - The transaction context.
+ * * Returns the protocol fee balance object of `CoinTypeA` and `CoinTypeB`.
+ */
 export function collectProtocolFee(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CollectProtocolFeeArgs
-) {
+  args: CollectProtocolFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::collect_protocol_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+    ],
   })
 }
 
@@ -565,15 +820,28 @@ export interface CollectProtocolFeeWithCapArgs {
   cap: TransactionObjectInput
 }
 
+/**
+ * Collect protocol fees from a pool using the protocol fee collect capability
+ * This function allows the holder of a ProtocolFeeCollectCap to collect accumulated protocol fees from a pool.
+ * After collection, the protocol fee balances in the pool are reset to 0.
+ * * `pool` - The pool to collect fees from
+ * * `config` - The global config of the CLMM package
+ * * `cap` - The protocol fee collect capability proving authorization.
+ * * Returns the collected protocol fees of coin type A and coin type B
+ */
 export function collectProtocolFeeWithCap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CollectProtocolFeeWithCapArgs
-) {
+  args: CollectProtocolFeeWithCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::collect_protocol_fee_with_cap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee_with_cap`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.config), obj(tx, args.cap)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.config),
+      obj(tx, args.cap),
+    ],
   })
 }
 
@@ -582,15 +850,25 @@ export interface InitializeRewarderArgs {
   pool: TransactionObjectInput
 }
 
+/**
+ * Initialize a `Rewarder` to `Pool` with a reward type of `CoinTypeC`.
+ * Only one `Rewarder` per `CoinType` can exist in `Pool`.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `ctx` - The transaction context.
+ */
 export function initializeRewarder(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: InitializeRewarderArgs
-) {
+  args: InitializeRewarderArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::initialize_rewarder`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::initialize_rewarder`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+    ],
   })
 }
 
@@ -602,13 +880,24 @@ export interface UpdateEmissionArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Update the rewarder emission speed to start the rewarder to generate.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `vault` - The `RewarderGlobalVault` object which stores all the rewards to be distributed by Rewarders.
+ * * `emissions_per_second` - The parameter represents the number of rewards released per second,
+ * which is a fixed-point number with a total of 128 bits, with the decimal part occupying 64 bits.
+ * If a value of 0 is passed in, it indicates that the Rewarder's reward release will be paused.
+ * * `clock` - The `Clock` object.
+ * * `ctx` - The transaction context.
+ */
 export function updateEmission(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: UpdateEmissionArgs
-) {
+  args: UpdateEmissionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_emission`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_emission`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -626,13 +915,20 @@ export interface UpdatePositionUrlArgs {
   url: string | TransactionArgument
 }
 
+/**
+ * Update the position nft image url. Just take effect on the new position
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `url` - The new position nft image url.
+ * * `ctx` - The transaction context.
+ */
 export function updatePositionUrl(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UpdatePositionUrlArgs
-) {
+  args: UpdatePositionUrlArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_position_url`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_position_url`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -648,15 +944,26 @@ export interface UpdateFeeRateArgs {
   feeRate: bigint | TransactionArgument
 }
 
+/**
+ * Update pool fee rate
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `fee_rate` - The pool new fee rate.
+ * * `ctx` - The transaction context.
+ */
 export function updateFeeRate(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UpdateFeeRateArgs
-) {
+  args: UpdateFeeRateArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_fee_rate`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool), pure(tx, args.feeRate, `u64`)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.feeRate, `u64`),
+    ],
   })
 }
 
@@ -667,11 +974,20 @@ export interface UpdatePoolArgs {
   coinB: TransactionObjectInput
 }
 
-export function updatePool(tx: Transaction, typeArgs: [string, string], args: UpdatePoolArgs) {
+export function updatePool(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UpdatePoolArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_pool`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_pool`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool), obj(tx, args.coinA), obj(tx, args.coinB)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.coinA),
+      obj(tx, args.coinB),
+    ],
   })
 }
 
@@ -680,11 +996,26 @@ export interface PauseArgs {
   pool: TransactionObjectInput
 }
 
-export function pause(tx: Transaction, typeArgs: [string, string], args: PauseArgs) {
+/**
+ * Pause the pool.
+ * For special cases, `pause` is used to pause the `Pool`.
+ * `unpause` are disabled.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `ctx` - The transaction context.
+ */
+export function pause(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: PauseArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::pause`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::pause`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+    ],
   })
 }
 
@@ -693,11 +1024,24 @@ export interface UnpauseArgs {
   pool: TransactionObjectInput
 }
 
-export function unpause(tx: Transaction, typeArgs: [string, string], args: UnpauseArgs) {
+/**
+ * Unpause the pool.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `ctx` - The transaction context.
+ */
+export function unpause(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: UnpauseArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::unpause`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::unpause`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+    ],
   })
 }
 
@@ -708,9 +1052,21 @@ export interface FlashLoanArgs {
   amount: bigint | TransactionArgument
 }
 
-export function flashLoan(tx: Transaction, typeArgs: [string, string], args: FlashLoanArgs) {
+/**
+ * Flash loan from pool
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `loan_a` - A flag indicating whether to loan coin A (true) or coin B (false).
+ * * `amount` - The amount to loan.
+ * * Returns (Balance<CoinTypeA>, Balance<CoinTypeB>, FlashLoanReceipt)
+ */
+export function flashLoan(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashLoanArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_loan`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -730,13 +1086,23 @@ export interface FlashLoanWithPartnerArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Flash loan with partner, like flash loan but there has a partner object for receive ref fee.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `partner` - The partner object for receiving ref fee.
+ * * `loan_a` - A flag indicating whether to loan coin A (true) or coin B (false).
+ * * `amount` - The amount to loan.
+ * * `clock` - The CLOCK of sui framework, used to get current timestamp.
+ * * Returns (Balance<CoinTypeA>, Balance<CoinTypeB>, FlashLoanReceipt)
+ */
 export function flashLoanWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FlashLoanWithPartnerArgs
-) {
+  args: FlashLoanWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_loan_with_partner`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -757,13 +1123,21 @@ export interface RepayFlashLoanArgs {
   receipt: TransactionObjectInput
 }
 
+/**
+ * Repay for flash loan
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `balance_a` - The balance of `CoinTypeA` will pay for flash loan,
+ * * `balance_b` - The balance of `CoinTypeB` will pay for flash loan,
+ * * `receipt` - The receipt which will be destroyed.
+ */
 export function repayFlashLoan(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashLoanArgs
-) {
+  args: RepayFlashLoanArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::repay_flash_loan`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_loan`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -784,13 +1158,22 @@ export interface RepayFlashLoanWithPartnerArgs {
   receipt: TransactionObjectInput
 }
 
+/**
+ * Repay for flash loan with partner for receive ref fee.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `partner` - The partner object which will receive ref fee
+ * * `balance_a` - The balance of `CoinTypeA` will pay for flash loan,
+ * * `balance_b` - The balance of `CoinTypeB` will pay for flash loan,
+ * * `receipt` - The receipt which will be destroyed.
+ */
 export function repayFlashLoanWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashLoanWithPartnerArgs
-) {
+  args: RepayFlashLoanWithPartnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::repay_flash_loan_with_partner`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_loan_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -809,25 +1192,41 @@ export interface InitPositionSnapshotArgs {
   removePercent: bigint | TransactionArgument
 }
 
+/**
+ * Initialize the position snapshot storage(dynamic field object under pool) for the pool.
+ * * `config` - The global config of clmm package.
+ * * `pool` - The clmm pool object.
+ * * `remove_percent` - The percent of the position to be removed.
+ * * `ctx` - The transaction context.
+ */
 export function initPositionSnapshot(
   tx: Transaction,
   typeArgs: [string, string],
-  args: InitPositionSnapshotArgs
-) {
+  args: InitPositionSnapshotArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::init_position_snapshot`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::init_position_snapshot`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool), pure(tx, args.removePercent, `u64`)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      pure(tx, args.removePercent, `u64`),
+    ],
   })
 }
 
+/**
+ * Get the position liquidity snapshot of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns the position liquidity snapshot.
+ */
 export function positionLiquiditySnapshot(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::position_liquidity_snapshot`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::position_liquidity_snapshot`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -838,15 +1237,24 @@ export interface IsAttackedPositionArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Check if the position is attacked.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The id of the position.
+ * * Returns true if the position is attacked, otherwise false.
+ */
 export function isAttackedPosition(
   tx: Transaction,
   typeArgs: [string, string],
-  args: IsAttackedPositionArgs
-) {
+  args: IsAttackedPositionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_attacked_position`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_attacked_position`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -855,15 +1263,24 @@ export interface GetPositionSnapshotByPositionIdArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Get the position snapshot by position id.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The id of the position.
+ * * Returns the position snapshot.
+ */
 export function getPositionSnapshotByPositionId(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionSnapshotByPositionIdArgs
-) {
+  args: GetPositionSnapshotByPositionIdArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_snapshot_by_position_id`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_snapshot_by_position_id`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -875,13 +1292,32 @@ export interface ApplyLiquidityCutArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Applies a proportional cut to the liquidity of a specific position.
+ *
+ * Due to the inability to fully restore pool funds once,
+ * we need to reduce each position’s liquidity by a specified delta before reopening the pool.
+ *
+ * This function should be called after data recovery and before reopening the pool for trading.
+ * The first step is to snapshot the user's position to preserve its state before reduction,
+ * which helps support any future liquidation tracking or accounting.
+ *
+ * * `config` - Global configuration object.
+ * * `pool` - The target CLMM pool.
+ * * `position_id` - The id of the position to be adjusted.
+ * * `cut_value` - The usd value of the position to be cut, only be recorded for future tracking or reconciliation.
+ * * `clock` - The current blockchain time context.
+ * * `ctx` - The transaction context used for recording state changes.
+ * [DEPRECATED] Legacy recovery method used after 2025 incident.
+ * No longer in use. Retained only for compatibility. Do not call.
+ */
 export function applyLiquidityCut(
   tx: Transaction,
   typeArgs: [string, string],
-  args: ApplyLiquidityCutArgs
-) {
+  args: ApplyLiquidityCutArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::apply_liquidity_cut`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::apply_liquidity_cut`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -900,15 +1336,30 @@ export interface GovernanceFundInjectionArgs {
   coinB: TransactionObjectInput
 }
 
+/**
+ * Governance-only function to inject tokens into a CLMM pool as part of post-attack recovery.
+ * * `config` - Global configuration object, used to verify governance access.
+ * * `pool` - The target pool to receive the injected tokens.
+ * * `coin_a` - Token A being injected into the pool.
+ * * `coin_b` - Token B being injected into the pool.
+ * * `ctx` - Transaction context.
+ * [DEPRECATED] Legacy recovery method used after 2025 incident.
+ * No longer in use. Retained only for compatibility. Do not call.
+ */
 export function governanceFundInjection(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GovernanceFundInjectionArgs
-) {
+  args: GovernanceFundInjectionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::governance_fund_injection`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::governance_fund_injection`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.config), obj(tx, args.pool), obj(tx, args.coinA), obj(tx, args.coinB)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pool),
+      obj(tx, args.coinA),
+      obj(tx, args.coinB),
+    ],
   })
 }
 
@@ -919,13 +1370,25 @@ export interface GovernanceFundWithdrawalArgs {
   amountB: bigint | TransactionArgument
 }
 
+/**
+ * After the CLMM attack, the pool price must be restored to the current market level.
+ * Due to price shifts between the time of the attack and recovery, asset imbalances may occur.
+ * This method is intended to withdraw surplus assets post-recovery.
+ * * `config` - Global configuration object, used to verify governance access.
+ * * `pool` - The target pool to receive the injected tokens.
+ * * `amount_a` - The amount of token A to withdraw.
+ * * `amount_b` - The amount of token B to withdraw.
+ * * `ctx` - Transaction context.
+ * [DEPRECATED] Legacy recovery method used after 2025 incident.
+ * No longer in use. Retained only for compatibility. Do not call.
+ */
 export function governanceFundWithdrawal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GovernanceFundWithdrawalArgs
-) {
+  args: GovernanceFundWithdrawalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::governance_fund_withdrawal`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::governance_fund_withdrawal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -942,13 +1405,23 @@ export interface EmergencyRemoveMaliciousPositionArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Removes the malicious PositionInfo and, decrease the specified liquidity from both of its associated ticks in the pool.
+ * Here may exsist multiple malicious positions, so this method can be called multiple times.
+ * * `config` - Global configuration object, used to verify governance access.
+ * * `pool` - The target pool to receive the injected tokens.
+ * * `position_id` - The id of the position to be removed.
+ * * `ctx` - Transaction context.
+ * [DEPRECATED] Legacy recovery method used after 2025 incident.
+ * No longer in use. Retained only for compatibility. Do not call.
+ */
 export function emergencyRemoveMaliciousPosition(
   tx: Transaction,
   typeArgs: [string, string],
-  args: EmergencyRemoveMaliciousPositionArgs
-) {
+  args: EmergencyRemoveMaliciousPositionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::emergency_remove_malicious_position`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::emergency_remove_malicious_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -966,13 +1439,27 @@ export interface EmergencyRestorePoolStateArgs {
   clk: TransactionObjectInput
 }
 
+/**
+ * The purpose of this function is to repair the pool state in an emergency scenario. Specifically, it performs the following steps:
+ * - 1. Restores the pool price by swapping to the target_sqrt_price, which should reflect the correct pool price prior to the attack.
+ * - 2. Performs a consistency check by verifying that the resulting current_liquidity after the swap matches the expected value passed in,
+ * ensuring the pool has been correctly restored to a valid state.
+ * * `config` - Global configuration object, used to verify governance access.
+ * * `pool` - The target pool to receive the injected tokens.
+ * * `target_sqrt_price` - The target sqrt price.
+ * * `current_liquidity` - The current liquidity of the pool.
+ * * `clk` - The current blockchain time context.
+ * * `ctx` - Transaction context.
+ * [DEPRECATED] Legacy recovery method used after 2025 incident.
+ * No longer in use. Retained only for compatibility. Do not call.
+ */
 export function emergencyRestorePoolState(
   tx: Transaction,
   typeArgs: [string, string],
-  args: EmergencyRestorePoolStateArgs
-) {
+  args: EmergencyRestorePoolStateArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::emergency_restore_pool_state`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::emergency_restore_pool_state`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -993,9 +1480,22 @@ export interface GetAmountByLiquidityArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getAmountByLiquidity(tx: Transaction, args: GetAmountByLiquidityArgs) {
+/**
+ * Get the coin amount by liquidity
+ * * `tick_lower` - The lower tick.
+ * * `tick_upper` - The upper tick.
+ * * `current_tick_index` - The current tick index.
+ * * `current_sqrt_price` - The current sqrt price.
+ * * `liquidity` - The liquidity.
+ * * `round_up` - Whether to round up.
+ * * Returns (u64, u64)
+ */
+export function getAmountByLiquidity(
+  tx: Transaction,
+  args: GetAmountByLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_amount_by_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_amount_by_liquidity`,
     arguments: [
       obj(tx, args.tickLower),
       obj(tx, args.tickUpper),
@@ -1016,9 +1516,21 @@ export interface GetLiquidityFromAmountArgs {
   isFixedA: boolean | TransactionArgument
 }
 
-export function getLiquidityFromAmount(tx: Transaction, args: GetLiquidityFromAmountArgs) {
+/**
+ * Get the liquidity by amount
+ * * `lower_index` - The lower tick index.
+ * * `upper_index` - The upper tick index.
+ * * `current_tick_index` - The current tick index.
+ * * `current_sqrt_price` - The current sqrt price.
+ * * `amount` - The amount.
+ * * `is_fixed_a` - Whether the amount is fixed for coin A.
+ */
+export function getLiquidityFromAmount(
+  tx: Transaction,
+  args: GetLiquidityFromAmountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_liquidity_from_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_liquidity_from_amount`,
     arguments: [
       obj(tx, args.lowerIndex),
       obj(tx, args.upperIndex),
@@ -1036,15 +1548,26 @@ export interface GetFeeInTickRangeArgs {
   tickUpperIndex: TransactionObjectInput
 }
 
+/**
+ * Get the fee in tick range.
+ * * `pool` - The clmm pool object.
+ * * `tick_lower_index` - The lower tick index.
+ * * `tick_upper_index` - The upper tick index.
+ * * Returns (u128, u128)
+ */
 export function getFeeInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetFeeInTickRangeArgs
-) {
+  args: GetFeeInTickRangeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_fee_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_fee_in_tick_range`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.tickLowerIndex), obj(tx, args.tickUpperIndex)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.tickLowerIndex),
+      obj(tx, args.tickUpperIndex),
+    ],
   })
 }
 
@@ -1054,15 +1577,26 @@ export interface GetRewardsInTickRangeArgs {
   tickUpperIndex: TransactionObjectInput
 }
 
+/**
+ * Get the rewards in tick range.
+ * * `pool` - The clmm pool object.
+ * * `tick_lower_index` - The lower tick index.
+ * * `tick_upper_index` - The upper tick index.
+ * * Returns vector<u128>
+ */
 export function getRewardsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetRewardsInTickRangeArgs
-) {
+  args: GetRewardsInTickRangeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_rewards_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_rewards_in_tick_range`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.tickLowerIndex), obj(tx, args.tickUpperIndex)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.tickLowerIndex),
+      obj(tx, args.tickUpperIndex),
+    ],
   })
 }
 
@@ -1072,15 +1606,26 @@ export interface GetPointsInTickRangeArgs {
   tickUpperIndex: TransactionObjectInput
 }
 
+/**
+ * Get the points in tick range.
+ * * `pool` - The clmm pool object.
+ * * `tick_lower_index` - The lower tick index.
+ * * `tick_upper_index` - The upper tick index.
+ * * Returns u128
+ */
 export function getPointsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPointsInTickRangeArgs
-) {
+  args: GetPointsInTickRangeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_points_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_points_in_tick_range`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.tickLowerIndex), obj(tx, args.tickUpperIndex)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.tickLowerIndex),
+      obj(tx, args.tickUpperIndex),
+    ],
   })
 }
 
@@ -1090,15 +1635,26 @@ export interface GetFeeRewardsPointsInTickRangeArgs {
   tickUpperIndex: TransactionObjectInput
 }
 
+/**
+ * Get the fee, rewards and points in tick range.
+ * * `pool` - The clmm pool object.
+ * * `tick_lower_index` - The lower tick index.
+ * * `tick_upper_index` - The upper tick index.
+ * * Returns (u128, u128, vector<u128>, u128)
+ */
 export function getFeeRewardsPointsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetFeeRewardsPointsInTickRangeArgs
-) {
+  args: GetFeeRewardsPointsInTickRangeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_fee_rewards_points_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_fee_rewards_points_in_tick_range`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.tickLowerIndex), obj(tx, args.tickUpperIndex)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.tickLowerIndex),
+      obj(tx, args.tickUpperIndex),
+    ],
   })
 }
 
@@ -1108,9 +1664,20 @@ export interface FetchTicksArgs {
   limit: bigint | TransactionArgument
 }
 
-export function fetchTicks(tx: Transaction, typeArgs: [string, string], args: FetchTicksArgs) {
+/**
+ * Fetch the ticks.
+ * * `pool` - The clmm pool object.
+ * * `start` - The start vector.
+ * * `limit` - The limit.
+ * * Returns vector<Tick>
+ */
+export function fetchTicks(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FetchTicksArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::fetch_ticks`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::fetch_ticks`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1126,13 +1693,20 @@ export interface FetchPositionsArgs {
   limit: bigint | TransactionArgument
 }
 
+/**
+ * Fetch the positions.
+ * * `pool` - The clmm pool object.
+ * * `start` - The start vector.
+ * * `limit` - The limit.
+ * * Returns vector<PositionInfo>
+ */
 export function fetchPositions(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FetchPositionsArgs
-) {
+  args: FetchPositionsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::fetch_positions`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::fetch_positions`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1149,13 +1723,22 @@ export interface CalculateSwapResultArgs {
   amount: bigint | TransactionArgument
 }
 
+/**
+ * Calculate the swap result.
+ * It is used to perform pre-calculation on swap and does not modify any data.
+ * * `pool` - The clmm pool object.
+ * * `a2b` - The swap direction.
+ * * `by_amount_in` - A flag used to determine whether next arg `amount` represents input or output.
+ * * `amount` - You want to fix the value of the input or output of a swap pre-calculation.
+ * * Returns CalculatedSwapResult
+ */
 export function calculateSwapResult(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalculateSwapResultArgs
-) {
+  args: CalculateSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_swap_result`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1166,153 +1749,239 @@ export function calculateSwapResult(
   })
 }
 
+/**
+ * Get the balances of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns (&Balance<CoinTypeA>, &Balance<CoinTypeB>)
+ */
 export function balances(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::balances`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::balances`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the tick spacing of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns u32
+ */
 export function tickSpacing(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::tick_spacing`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::tick_spacing`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
-export function feeRate(tx: Transaction, typeArgs: [string, string], pool: TransactionObjectInput) {
+/**
+ * Get the fee rate of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns u64
+ */
+export function feeRate(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::fee_rate`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::fee_rate`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the liquidity of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns u128
+ */
 export function liquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the current sqrt price of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns u128
+ */
 export function currentSqrtPrice(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::current_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::current_sqrt_price`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the current tick index of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns I32
+ */
 export function currentTickIndex(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::current_tick_index`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::current_tick_index`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the fees growth global of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns (u128, u128)
+ */
 export function feesGrowthGlobal(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::fees_growth_global`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::fees_growth_global`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the protocol fee of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns (u64, u64)
+ */
 export function protocolFee(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::protocol_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::protocol_fee`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the tick manager of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns &TickManager
+ */
 export function tickManager(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::tick_manager`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::tick_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the position manager of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns &PositionManager
+ */
 export function positionManager(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::position_manager`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::position_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Get the rewarder manager of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns &RewarderManager
+ */
 export function rewarderManager(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::rewarder_manager`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::rewarder_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
-export function isPause(tx: Transaction, typeArgs: [string, string], pool: TransactionObjectInput) {
+/**
+ * Get the pause state of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
+export function isPause(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_pause`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_pause`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
-export function index(tx: Transaction, typeArgs: [string, string], pool: TransactionObjectInput) {
+/**
+ * Get the index of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns u64
+ */
+export function index(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::index`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::index`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
-export function url(tx: Transaction, typeArgs: [string, string], pool: TransactionObjectInput) {
+/**
+ * Get the url of the pool.
+ * * `pool` - The clmm pool object.
+ * * Returns String
+ */
+export function url(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::url`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::url`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1323,11 +1992,24 @@ export interface BorrowTickArgs {
   tickIdx: TransactionObjectInput
 }
 
-export function borrowTick(tx: Transaction, typeArgs: [string, string], args: BorrowTickArgs) {
+/**
+ * Borrow the tick of the pool.
+ * * `pool` - The clmm pool object.
+ * * `tick_idx` - The tick index.
+ * * Returns &Tick
+ */
+export function borrowTick(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: BorrowTickArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::borrow_tick`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::borrow_tick`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), obj(tx, args.tickIdx)],
+    arguments: [
+      obj(tx, args.pool),
+      obj(tx, args.tickIdx),
+    ],
   })
 }
 
@@ -1336,37 +2018,56 @@ export interface BorrowPositionInfoArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Borrow the position info of the pool.
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns &PositionInfo
+ */
 export function borrowPositionInfo(
   tx: Transaction,
   typeArgs: [string, string],
-  args: BorrowPositionInfoArgs
-) {
+  args: BorrowPositionInfoArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::borrow_position_info`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::borrow_position_info`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
+/**
+ * Get the swap pay amount
+ * * `receipt` - The flash swap receipt.
+ * * Returns u64
+ */
 export function swapPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
-  receipt: TransactionObjectInput
-) {
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::swap_pay_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::swap_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
 }
 
+/**
+ * Get the ref fee amount
+ * * `receipt` - The flash swap receipt.
+ * * Returns u64
+ */
 export function refFeeAmount(
   tx: Transaction,
   typeArgs: [string, string],
-  receipt: TransactionObjectInput
-) {
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::ref_fee_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::ref_fee_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -1377,15 +2078,24 @@ export interface GetPositionFeeArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Get the fee from position
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns (u64, u64)
+ */
 export function getPositionFee(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionFeeArgs
-) {
+  args: GetPositionFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_fee`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -1394,15 +2104,24 @@ export interface GetPositionPointsArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Get the points from position
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns u128
+ */
 export function getPositionPoints(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionPointsArgs
-) {
+  args: GetPositionPointsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_points`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_points`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -1411,15 +2130,24 @@ export interface GetPositionRewardsArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Get the rewards amount owned from position
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns vector<u64>
+ */
 export function getPositionRewards(
   tx: Transaction,
   typeArgs: [string, string],
-  args: GetPositionRewardsArgs
-) {
+  args: GetPositionRewardsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_rewards`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_rewards`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -1428,15 +2156,24 @@ export interface GetPositionRewardArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Get the reward amount owned from position
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns u64
+ */
 export function getPositionReward(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: GetPositionRewardArgs
-) {
+  args: GetPositionRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::get_position_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_reward`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -1445,84 +2182,128 @@ export interface IsPositionExistArgs {
   positionId: string | TransactionArgument
 }
 
+/**
+ * Check if the position exists
+ * * `pool` - The clmm pool object.
+ * * `position_id` - The position id.
+ * * Returns bool
+ */
 export function isPositionExist(
   tx: Transaction,
   typeArgs: [string, string],
-  args: IsPositionExistArgs
-) {
+  args: IsPositionExistArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_position_exist`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_position_exist`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pool), pure(tx, args.positionId, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.pool),
+      pure(tx, args.positionId, `${ID.$typeName}`),
+    ],
   })
 }
 
+/**
+ * Get the amount out of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns u64
+ */
 export function calculatedSwapResultAmountOut(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_amount_out`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_amount_out`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Check if the calculated swap result is exceed
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns bool
+ */
 export function calculatedSwapResultIsExceed(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_is_exceed`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_is_exceed`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Get the amount in of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns u64
+ */
 export function calculatedSwapResultAmountIn(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_amount_in`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Get the after sqrt price of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns u128
+ */
 export function calculatedSwapResultAfterSqrtPrice(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_after_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_after_sqrt_price`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Get the fee amount of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns u64
+ */
 export function calculatedSwapResultFeeAmount(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_fee_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_fee_amount`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Get the step results of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns &vector<SwapStepResult>
+ */
 export function calculateSwapResultStepResults(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculate_swap_result_step_results`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_swap_result_step_results`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
 
+/**
+ * Get the length of the step results of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * Returns u64
+ */
 export function calculatedSwapResultStepsLength(
   tx: Transaction,
-  calculatedSwapResult: TransactionObjectInput
-) {
+  calculatedSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_steps_length`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_steps_length`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -1532,144 +2313,227 @@ export interface CalculatedSwapResultStepSwapResultArgs {
   index: bigint | TransactionArgument
 }
 
+/**
+ * Get the step swap result of the calculated swap result
+ * * `calculatedSwapResult` - The calculated swap result.
+ * * `index` - The index of the step swap result.
+ * * Returns &SwapStepResult
+ */
 export function calculatedSwapResultStepSwapResult(
   tx: Transaction,
-  args: CalculatedSwapResultStepSwapResultArgs
-) {
+  args: CalculatedSwapResultStepSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::calculated_swap_result_step_swap_result`,
-    arguments: [obj(tx, args.calculatedSwapResult), pure(tx, args.index, `u64`)],
+    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_step_swap_result`,
+    arguments: [
+      obj(tx, args.calculatedSwapResult),
+      pure(tx, args.index, `u64`),
+    ],
   })
 }
 
-export function stepSwapResultAmountIn(tx: Transaction, stepSwapResult: TransactionObjectInput) {
+/**
+ * Get the amount in of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u64
+ */
+export function stepSwapResultAmountIn(
+  tx: Transaction,
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_amount_in`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
-export function stepSwapResultAmountOut(tx: Transaction, stepSwapResult: TransactionObjectInput) {
+/**
+ * Get the amount out of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u64
+ */
+export function stepSwapResultAmountOut(
+  tx: Transaction,
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_amount_out`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_amount_out`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
-export function stepSwapResultFeeAmount(tx: Transaction, stepSwapResult: TransactionObjectInput) {
+/**
+ * Get the fee amount of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u64
+ */
+export function stepSwapResultFeeAmount(
+  tx: Transaction,
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_fee_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_fee_amount`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
+/**
+ * Get the current sqrt price of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u128
+ */
 export function stepSwapResultCurrentSqrtPrice(
   tx: Transaction,
-  stepSwapResult: TransactionObjectInput
-) {
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_current_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_current_sqrt_price`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
+/**
+ * Get the target sqrt price of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u128
+ */
 export function stepSwapResultTargetSqrtPrice(
   tx: Transaction,
-  stepSwapResult: TransactionObjectInput
-) {
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_target_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_target_sqrt_price`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
+/**
+ * Get the current liquidity of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u128
+ */
 export function stepSwapResultCurrentLiquidity(
   tx: Transaction,
-  stepSwapResult: TransactionObjectInput
-) {
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_current_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_current_liquidity`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
+/**
+ * Get the remainder amount of the step swap result
+ * * `stepSwapResult` - The step swap result.
+ * * Returns u64
+ */
 export function stepSwapResultRemainderAmount(
   tx: Transaction,
-  stepSwapResult: TransactionObjectInput
-) {
+  stepSwapResult: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::step_swap_result_remainder_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_remainder_amount`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
 
+/**
+ * Check if the swap is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowSwap(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_swap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_swap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Check if the add liquidity is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Check if the remove liquidity is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowRemoveLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_remove_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Check if the flash loan is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowFlashLoan(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_flash_loan`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_flash_loan`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Check if the collect fee is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_collect_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_collect_fee`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
 }
 
+/**
+ * Check if the collect reward is allowed
+ * * `pool` - The clmm pool object.
+ * * Returns bool
+ */
 export function isAllowCollectReward(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::is_allow_collect_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_collect_reward`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1686,13 +2550,25 @@ export interface SetPoolStatusArgs {
   disableCollectReward: boolean | TransactionArgument
 }
 
+/**
+ * Set the pool status
+ * * `config` - The global config object.
+ * * `pool` - The clmm pool object.
+ * * `disable_add_liquidity` - The disable add liquidity flag.
+ * * `disable_remove_liquidity` - The disable remove liquidity flag.
+ * * `disable_swap` - The disable swap flag.
+ * * `disable_flash_loan` - The disable flash loan flag.
+ * * `disable_collect_fee` - The disable collect fee flag.
+ * * `disable_collect_reward` - The disable collect reward flag.
+ * * `ctx` - The transaction context.
+ */
 export function setPoolStatus(
   tx: Transaction,
   typeArgs: [string, string],
-  args: SetPoolStatusArgs
-) {
+  args: SetPoolStatusArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::set_pool_status`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::set_pool_status`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1720,10 +2596,10 @@ export interface AddLiquidityInternalArgs {
 export function addLiquidityInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: AddLiquidityInternalArgs
-) {
+  args: AddLiquidityInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::add_liquidity_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1749,13 +2625,14 @@ export interface FlashSwapInternalArgs {
   clock: TransactionObjectInput
 }
 
+/** Swap output coin and flash loan resource. */
 export function flashSwapInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FlashSwapInternalArgs
-) {
+  args: FlashSwapInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_swap_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1780,13 +2657,23 @@ export interface FlashLoanInternalArgs {
   amount: bigint | TransactionArgument
 }
 
+/**
+ * Internal function for flash loan
+ * * `config` - The global config object.
+ * * `pool` - The clmm pool object.
+ * * `partner_id` - The partner object id for receiving ref fee.
+ * * `ref_fee_rate` - The ref fee rate for partner.
+ * * `loan_a` - A flag indicating whether to loan coin A (true) or coin B (false).
+ * * `amount` - The amount to loan.
+ * * Returns (Balance<CoinTypeA>, Balance<CoinTypeB>, FlashLoanReceipt)
+ */
 export function flashLoanInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FlashLoanInternalArgs
-) {
+  args: FlashLoanInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::flash_loan_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1809,9 +2696,24 @@ export interface SwapInPoolArgs {
   refFeeRate: bigint | TransactionArgument
 }
 
-export function swapInPool(tx: Transaction, typeArgs: [string, string], args: SwapInPoolArgs) {
+/**
+ * Swap in pool
+ * * `pool` - The clmm pool object.
+ * * `a2b` - The swap direction.
+ * * `by_amount_in` - A flag used to determine whether next arg `amount` represents input or output.
+ * * `sqrt_price_limit` - The sqrt price limit.
+ * * `amount` - The amount to swap.
+ * * `protocol_fee_rate` - The protocol fee rate.
+ * * `ref_fee_rate` - The ref fee rate.
+ * * Returns SwapResult
+ */
+export function swapInPool(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: SwapInPoolArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::swap_in_pool`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::swap_in_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1832,9 +2734,16 @@ export interface UpdateSwapResultArgs {
   feeAmount: bigint | TransactionArgument
 }
 
-export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs) {
+/**
+ * Update the swap result
+ * * `result` - The swap result.
+ * * `amount_in` - The amount in.
+ * * `amount_out` - The amount out.
+ * * `fee_amount` - The fee amount.
+ */
+export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_swap_result`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_swap_result`,
     arguments: [
       obj(tx, args.result),
       pure(tx, args.amountIn, `u64`),
@@ -1851,13 +2760,21 @@ export interface UpdatePoolFeeArgs {
   a2B: boolean | TransactionArgument
 }
 
+/**
+ * Update the pool's fee_growth_global_[a/b] and return protocol_fee.
+ * * `pool` - The clmm pool object.
+ * * `fee_amount` - The fee amount.
+ * * `protocol_fee_rate` - The protocol fee rate.
+ * * `a2b` - The swap direction.
+ * * Returns u64
+ */
 export function updatePoolFee(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UpdatePoolFeeArgs
-) {
+  args: UpdatePoolFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_pool_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_pool_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1875,13 +2792,21 @@ export interface UpdateFlashLoanFeeArgs {
   loanA: boolean | TransactionArgument
 }
 
+/**
+ * Update the flash loan fee
+ * * `pool` - The clmm pool object.
+ * * `fee_amount` - The fee amount.
+ * * `protocol_fee_rate` - The protocol fee rate.
+ * * `loan_a` - A flag indicating whether to loan coin A (true) or coin B (false).
+ * * Returns u64
+ */
 export function updateFlashLoanFee(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UpdateFlashLoanFeeArgs
-) {
+  args: UpdateFlashLoanFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_flash_loan_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_flash_loan_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1899,13 +2824,21 @@ export interface UpdateFeeGrowthArgs {
   isCoinA: boolean | TransactionArgument
 }
 
+/**
+ * Update the fee growth, internal function
+ * * `pool` - The clmm pool object.
+ * * `fee_amount` - The fee amount.
+ * * `protocol_fee_rate` - The protocol fee rate.
+ * * `is_coin_a` - A flag indicating whether to update coin A (true) or coin B (false).
+ * * Returns u64
+ */
 export function updateFeeGrowth(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UpdateFeeGrowthArgs
-) {
+  args: UpdateFeeGrowthArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::update_fee_growth`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::update_fee_growth`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1916,13 +2849,18 @@ export function updateFeeGrowth(
   })
 }
 
+/**
+ * Collect protocol fee internal
+ * * `pool` - The clmm pool object.
+ * * Returns the balance object of CoinTypeA and CoinTypeB.
+ */
 export function collectProtocolFeeInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::collect_protocol_fee_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee_internal`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1931,10 +2869,10 @@ export function collectProtocolFeeInternal(
 export function markPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::mark_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::mark_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1943,10 +2881,10 @@ export function markPendingAddLiquidity(
 export function clearPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::clear_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::clear_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1955,10 +2893,10 @@ export function clearPendingAddLiquidity(
 export function assertNoPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  pool: TransactionObjectInput
-) {
+  pool: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::assert_no_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::pool::assert_no_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1969,13 +2907,32 @@ export interface CheckRemainerAmountSubArgs {
   amount: bigint | TransactionArgument
 }
 
-export function checkRemainerAmountSub(tx: Transaction, args: CheckRemainerAmountSubArgs) {
+/**
+ * Check the remainer amount sub
+ * * `remainer_amount` - The remainer amount.
+ * * `amount` - The amount.
+ * * Returns u64
+ */
+export function checkRemainerAmountSub(
+  tx: Transaction,
+  args: CheckRemainerAmountSubArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool::check_remainer_amount_sub`,
-    arguments: [pure(tx, args.remainerAmount, `u64`), pure(tx, args.amount, `u64`)],
+    target: `${getPublishedAt('cetus-clmm')}::pool::check_remainer_amount_sub`,
+    arguments: [
+      pure(tx, args.remainerAmount, `u64`),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
-export function defaultSwapResult(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::pool::default_swap_result`, arguments: [] })
+/**
+ * Get the default swap result
+ * * Returns SwapResult
+ */
+export function defaultSwapResult(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::pool::default_swap_result`,
+    arguments: [],
+  })
 }

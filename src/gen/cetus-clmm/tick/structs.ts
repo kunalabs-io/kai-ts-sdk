@@ -1,32 +1,44 @@
-import * as reified from '../../_framework/reified'
-import { SkipList } from '../../_dependencies/source/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/skip-list/structs'
+/**
+ * The `tick` module is a module that is designed to facilitate the management of `tick` owned by `Pool`.
+ * All `tick` related operations of `Pool` are handled by this module.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { SkipList } from '../../_dependencies/move-stl/skip-list/structs'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I128 } from '../../integer-mate/i128/structs'
 import { I32 } from '../../integer-mate/i32/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== TickManager =============================== */
 
 export function isTickManager(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::tick::TickManager`
+  return type === `${getTypeOrigin('cetus-clmm', 'tick::TickManager')}::tick::TickManager`
 }
 
 export interface TickManagerFields {
@@ -36,17 +48,36 @@ export interface TickManagerFields {
 
 export type TickManagerReified = Reified<TickManager, TickManagerFields>
 
+export type TickManagerJSONField = {
+  tickSpacing: number
+  ticks: ToJSON<SkipList<ToPhantom<Tick>>>
+}
+
+export type TickManagerJSON = {
+  $typeName: typeof TickManager.$typeName
+  $typeArgs: []
+} & TickManagerJSONField
+
+/**
+ * Manages ticks of a pool using a SkipList data structure.
+ * The SkipList provides efficient insertion, deletion and lookup of ticks.
+ * Each tick represents a price point in the pool where liquidity can be added or removed.
+ * * `tick_spacing` - The spacing between initialized ticks
+ * * `ticks` - The SkipList containing all initialized ticks
+ */
 export class TickManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::tick::TickManager`
+  static readonly $typeName: `${string}::tick::TickManager` = `${
+    getTypeOrigin('cetus-clmm', 'tick::TickManager')
+  }::tick::TickManager` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = TickManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::tick::TickManager`
+  readonly $typeName: typeof TickManager.$typeName = TickManager.$typeName
+  readonly $fullTypeName: `${string}::tick::TickManager`
   readonly $typeArgs: []
-  readonly $isPhantom = TickManager.$isPhantom
+  readonly $isPhantom: typeof TickManager.$isPhantom = TickManager.$isPhantom
 
   readonly tickSpacing: ToField<'u32'>
   readonly ticks: ToField<SkipList<ToPhantom<Tick>>>
@@ -54,8 +85,8 @@ export class TickManager implements StructClass {
   private constructor(typeArgs: [], fields: TickManagerFields) {
     this.$fullTypeName = composeSuiType(
       TickManager.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::tick::TickManager`
+      ...typeArgs,
+    ) as `${string}::tick::TickManager`
     this.$typeArgs = typeArgs
 
     this.tickSpacing = fields.tickSpacing
@@ -68,8 +99,8 @@ export class TickManager implements StructClass {
       typeName: TickManager.$typeName,
       fullTypeName: composeSuiType(
         TickManager.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::tick::TickManager`,
+        ...[],
+      ) as `${string}::tick::TickManager`,
       typeArgs: [] as [],
       isPhantom: TickManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -81,7 +112,7 @@ export class TickManager implements StructClass {
       fromJSON: (json: Record<string, any>) => TickManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => TickManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TickManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => TickManager.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => TickManager.fetch(client, id),
       new: (fields: TickManagerFields) => {
         return new TickManager([], fields)
       },
@@ -89,14 +120,15 @@ export class TickManager implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): TickManagerReified {
     return TickManager.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<TickManager>> {
     return phantom(TickManager.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<TickManager>> {
     return TickManager.phantom()
   }
 
@@ -119,7 +151,7 @@ export class TickManager implements StructClass {
   static fromFields(fields: Record<string, any>): TickManager {
     return TickManager.reified().new({
       tickSpacing: decodeFromFields('u32', fields.tick_spacing),
-      ticks: decodeFromFields(SkipList.reified(reified.phantom(Tick.reified())), fields.ticks),
+      ticks: decodeFromFields(SkipList.reified(phantom(Tick.reified())), fields.ticks),
     })
   }
 
@@ -131,8 +163,8 @@ export class TickManager implements StructClass {
     return TickManager.reified().new({
       tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
       ticks: decodeFromFieldsWithTypes(
-        SkipList.reified(reified.phantom(Tick.reified())),
-        item.fields.ticks
+        SkipList.reified(phantom(Tick.reified())),
+        item.fields.ticks,
       ),
     })
   }
@@ -141,27 +173,29 @@ export class TickManager implements StructClass {
     return TickManager.fromFields(TickManager.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TickManagerJSONField {
     return {
       tickSpacing: this.tickSpacing,
       ticks: this.ticks.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): TickManagerJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): TickManager {
     return TickManager.reified().new({
       tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
-      ticks: decodeFromJSONField(SkipList.reified(reified.phantom(Tick.reified())), field.ticks),
+      ticks: decodeFromJSONField(SkipList.reified(phantom(Tick.reified())), field.ticks),
     })
   }
 
   static fromJSON(json: Record<string, any>): TickManager {
     if (json.$typeName !== TickManager.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TickManager json object: expected '${TickManager.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return TickManager.fromJSONField(json)
@@ -183,26 +217,23 @@ export class TickManager implements StructClass {
         throw new Error(`object at is not a TickManager object`)
       }
 
-      return TickManager.fromBcs(fromB64(data.bcs.bcsBytes))
+      return TickManager.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TickManager.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<TickManager> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TickManager object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTickManager(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<TickManager> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTickManager(res.type)) {
       throw new Error(`object at id ${id} is not a TickManager object`)
     }
 
-    return TickManager.fromSuiObjectData(res.data)
+    return TickManager.fromBcs(res.bcsBytes)
   }
 }
 
@@ -210,7 +241,7 @@ export class TickManager implements StructClass {
 
 export function isTick(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::tick::Tick`
+  return type === `${getTypeOrigin('cetus-clmm', 'tick::Tick')}::tick::Tick`
 }
 
 export interface TickFields {
@@ -226,17 +257,46 @@ export interface TickFields {
 
 export type TickReified = Reified<Tick, TickFields>
 
+export type TickJSONField = {
+  index: ToJSON<I32>
+  sqrtPrice: string
+  liquidityNet: ToJSON<I128>
+  liquidityGross: string
+  feeGrowthOutsideA: string
+  feeGrowthOutsideB: string
+  pointsGrowthOutside: string
+  rewardsGrowthOutside: string[]
+}
+
+export type TickJSON = {
+  $typeName: typeof Tick.$typeName
+  $typeArgs: []
+} & TickJSONField
+
+/**
+ * Represents the state of a tick in the pool.
+ * * `index` - The tick index
+ * * `sqrt_price` - The sqrt price at this tick
+ * * `liquidity_net` - The net liquidity change when crossing this tick
+ * * `liquidity_gross` - The total liquidity at this tick
+ * * `fee_growth_outside_a` - The fee growth of token A outside this tick
+ * * `fee_growth_outside_b` - The fee growth of token B outside this tick
+ * * `points_growth_outside` - The points growth outside this tick
+ * * `rewards_growth_outside` - The rewards growth outside this tick
+ */
 export class Tick implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::tick::Tick`
+  static readonly $typeName: `${string}::tick::Tick` = `${
+    getTypeOrigin('cetus-clmm', 'tick::Tick')
+  }::tick::Tick` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Tick.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::tick::Tick`
+  readonly $typeName: typeof Tick.$typeName = Tick.$typeName
+  readonly $fullTypeName: `${string}::tick::Tick`
   readonly $typeArgs: []
-  readonly $isPhantom = Tick.$isPhantom
+  readonly $isPhantom: typeof Tick.$isPhantom = Tick.$isPhantom
 
   readonly index: ToField<I32>
   readonly sqrtPrice: ToField<'u128'>
@@ -250,8 +310,8 @@ export class Tick implements StructClass {
   private constructor(typeArgs: [], fields: TickFields) {
     this.$fullTypeName = composeSuiType(
       Tick.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::tick::Tick`
+      ...typeArgs,
+    ) as `${string}::tick::Tick`
     this.$typeArgs = typeArgs
 
     this.index = fields.index
@@ -268,7 +328,10 @@ export class Tick implements StructClass {
     const reifiedBcs = Tick.bcs
     return {
       typeName: Tick.$typeName,
-      fullTypeName: composeSuiType(Tick.$typeName, ...[]) as `${typeof PKG_V1}::tick::Tick`,
+      fullTypeName: composeSuiType(
+        Tick.$typeName,
+        ...[],
+      ) as `${string}::tick::Tick`,
       typeArgs: [] as [],
       isPhantom: Tick.$isPhantom,
       reifiedTypeArgs: [],
@@ -280,7 +343,7 @@ export class Tick implements StructClass {
       fromJSON: (json: Record<string, any>) => Tick.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Tick.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Tick.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Tick.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Tick.fetch(client, id),
       new: (fields: TickFields) => {
         return new Tick([], fields)
       },
@@ -288,14 +351,15 @@ export class Tick implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): TickReified {
     return Tick.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Tick>> {
     return phantom(Tick.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Tick>> {
     return Tick.phantom()
   }
 
@@ -330,7 +394,7 @@ export class Tick implements StructClass {
       feeGrowthOutsideA: decodeFromFields('u128', fields.fee_growth_outside_a),
       feeGrowthOutsideB: decodeFromFields('u128', fields.fee_growth_outside_b),
       pointsGrowthOutside: decodeFromFields('u128', fields.points_growth_outside),
-      rewardsGrowthOutside: decodeFromFields(reified.vector('u128'), fields.rewards_growth_outside),
+      rewardsGrowthOutside: decodeFromFields(vector('u128'), fields.rewards_growth_outside),
     })
   }
 
@@ -348,8 +412,8 @@ export class Tick implements StructClass {
       feeGrowthOutsideB: decodeFromFieldsWithTypes('u128', item.fields.fee_growth_outside_b),
       pointsGrowthOutside: decodeFromFieldsWithTypes('u128', item.fields.points_growth_outside),
       rewardsGrowthOutside: decodeFromFieldsWithTypes(
-        reified.vector('u128'),
-        item.fields.rewards_growth_outside
+        vector('u128'),
+        item.fields.rewards_growth_outside,
       ),
     })
   }
@@ -358,7 +422,7 @@ export class Tick implements StructClass {
     return Tick.fromFields(Tick.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TickJSONField {
     return {
       index: this.index.toJSONField(),
       sqrtPrice: this.sqrtPrice.toString(),
@@ -371,7 +435,7 @@ export class Tick implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): TickJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -384,13 +448,15 @@ export class Tick implements StructClass {
       feeGrowthOutsideA: decodeFromJSONField('u128', field.feeGrowthOutsideA),
       feeGrowthOutsideB: decodeFromJSONField('u128', field.feeGrowthOutsideB),
       pointsGrowthOutside: decodeFromJSONField('u128', field.pointsGrowthOutside),
-      rewardsGrowthOutside: decodeFromJSONField(reified.vector('u128'), field.rewardsGrowthOutside),
+      rewardsGrowthOutside: decodeFromJSONField(vector('u128'), field.rewardsGrowthOutside),
     })
   }
 
   static fromJSON(json: Record<string, any>): Tick {
     if (json.$typeName !== Tick.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Tick json object: expected '${Tick.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Tick.fromJSONField(json)
@@ -412,25 +478,22 @@ export class Tick implements StructClass {
         throw new Error(`object at is not a Tick object`)
       }
 
-      return Tick.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Tick.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Tick.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Tick> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Tick object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTick(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Tick> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTick(res.type)) {
       throw new Error(`object at id ${id} is not a Tick object`)
     }
 
-    return Tick.fromSuiObjectData(res.data)
+    return Tick.fromBcs(res.bcsBytes)
   }
 }

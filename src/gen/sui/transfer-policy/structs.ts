@@ -1,13 +1,30 @@
-import * as reified from '../../_framework/reified'
+/**
+ * Defines the `TransferPolicy` type and the logic to approve `TransferRequest`s.
+ *
+ * - TransferPolicy - is a highly customizable primitive, which provides an
+ * interface for the type owner to set custom transfer rules for every
+ * deal performed in the `Kiosk` or a similar system that integrates with TP.
+ *
+ * - Once a `TransferPolicy<T>` is created for and shared (or frozen), the
+ * type `T` becomes tradable in `Kiosk`s. On every purchase operation, a
+ * `TransferRequest` is created and needs to be confirmed by the `TransferPolicy`
+ * hot potato or transaction will fail.
+ *
+ * - Type owner (creator) can set any Rules as long as the ecosystem supports
+ * them. All of the Rules need to be resolved within a single transaction (eg
+ * pay royalty and pay fixed commission). Once required actions are performed,
+ * the `TransferRequest` can be "confirmed" via `confirm_request` call.
+ *
+ * - `TransferPolicy` aims to be the main interface for creators to control trades
+ * of their types and collect profits if a fee is required on sales. Custom
+ * policies can be removed at any moment, and the change will affect all instances
+ * of the type at once.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeStr,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -15,22 +32,30 @@ import {
   decodeFromJSONField,
   extractType,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { Balance } from '../balance/structs'
 import { ID, UID } from '../object/structs'
 import { SUI } from '../sui/structs'
 import { VecSet } from '../vec-set/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== TransferRequest =============================== */
 
@@ -40,9 +65,26 @@ export function isTransferRequest(type: string): boolean {
 }
 
 export interface TransferRequestFields<T extends PhantomTypeArgument> {
+  /**
+   * The ID of the transferred item. Although the `T` has no
+   * constraints, the main use case for this module is to work
+   * with Objects.
+   */
   item: ToField<ID>
+  /**
+   * Amount of SUI paid for the item. Can be used to
+   * calculate the fee / transfer policy enforcement.
+   */
   paid: ToField<'u64'>
+  /**
+   * The ID of the Kiosk / Safe the object is being sold from.
+   * Can be used by the TransferPolicy implementors.
+   */
   from: ToField<ID>
+  /**
+   * Collected Receipts. Used to verify that all of the rules
+   * were followed and `TransferRequest` can be confirmed.
+   */
   receipts: ToField<VecSet<TypeName>>
 }
 
@@ -51,27 +93,61 @@ export type TransferRequestReified<T extends PhantomTypeArgument> = Reified<
   TransferRequestFields<T>
 >
 
+export type TransferRequestJSONField<T extends PhantomTypeArgument> = {
+  item: string
+  paid: string
+  from: string
+  receipts: ToJSON<VecSet<TypeName>>
+}
+
+export type TransferRequestJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof TransferRequest.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & TransferRequestJSONField<T>
+
+/**
+ * A "Hot Potato" forcing the buyer to get a transfer permission
+ * from the item type (`T`) owner on purchase attempt.
+ */
 export class TransferRequest<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::TransferRequest`
+  static readonly $typeName: `0x2::transfer_policy::TransferRequest` =
+    `0x2::transfer_policy::TransferRequest` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = TransferRequest.$typeName
+  readonly $typeName: typeof TransferRequest.$typeName = TransferRequest.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::TransferRequest<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TransferRequest.$isPhantom
+  readonly $isPhantom: typeof TransferRequest.$isPhantom = TransferRequest.$isPhantom
 
+  /**
+   * The ID of the transferred item. Although the `T` has no
+   * constraints, the main use case for this module is to work
+   * with Objects.
+   */
   readonly item: ToField<ID>
+  /**
+   * Amount of SUI paid for the item. Can be used to
+   * calculate the fee / transfer policy enforcement.
+   */
   readonly paid: ToField<'u64'>
+  /**
+   * The ID of the Kiosk / Safe the object is being sold from.
+   * Can be used by the TransferPolicy implementors.
+   */
   readonly from: ToField<ID>
+  /**
+   * Collected Receipts. Used to verify that all of the rules
+   * were followed and `TransferRequest` can be confirmed.
+   */
   readonly receipts: ToField<VecSet<TypeName>>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TransferRequestFields<T>) {
     this.$fullTypeName = composeSuiType(
       TransferRequest.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::TransferRequest<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -82,14 +158,14 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): TransferRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferRequest.bcs
     return {
       typeName: TransferRequest.$typeName,
       fullTypeName: composeSuiType(
         TransferRequest.$typeName,
-        ...[extractType(T)]
+        ...[extractType(T)],
       ) as `0x2::transfer_policy::TransferRequest<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: TransferRequest.$isPhantom,
@@ -102,7 +178,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
       fromJSON: (json: Record<string, any>) => TransferRequest.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => TransferRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => TransferRequest.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TransferRequest.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => TransferRequest.fetch(client, T, id),
       new: (fields: TransferRequestFields<ToPhantomTypeArgument<T>>) => {
         return new TransferRequest([extractType(T)], fields)
       },
@@ -110,16 +186,17 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
     }
   }
 
-  static get r() {
+  static get r(): typeof TransferRequest.reified {
     return TransferRequest.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<TransferRequest<ToPhantomTypeArgument<T>>>> {
     return phantom(TransferRequest.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof TransferRequest.phantom {
     return TransferRequest.phantom
   }
 
@@ -143,7 +220,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     return TransferRequest.reified(typeArg).new({
       item: decodeFromFields(ID.reified(), fields.item),
@@ -155,7 +232,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     if (!isTransferRequest(item.type)) {
       throw new Error('not a TransferRequest type')
@@ -172,12 +249,12 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     return TransferRequest.fromFields(typeArg, TransferRequest.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TransferRequestJSONField<T> {
     return {
       item: this.item,
       paid: this.paid.toString(),
@@ -186,13 +263,13 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
     }
   }
 
-  toJSON() {
+  toJSON(): TransferRequestJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     return TransferRequest.reified(typeArg).new({
       item: decodeFromJSONField(ID.reified(), field.item),
@@ -204,15 +281,17 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== TransferRequest.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TransferRequest json object: expected '${TransferRequest.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(TransferRequest.$typeName, extractType(typeArg)),
+      composeSuiType(TransferRequest.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return TransferRequest.fromJSONField(typeArg, json)
@@ -220,7 +299,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -233,7 +312,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): TransferRequest<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferRequest(data.bcs.type)) {
@@ -243,41 +322,56 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return TransferRequest.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return TransferRequest.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TransferRequest.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<TransferRequest<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TransferRequest object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTransferRequest(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTransferRequest(res.type)) {
       throw new Error(`object at id ${id} is not a TransferRequest object`)
     }
 
-    return TransferRequest.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferRequest.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -290,7 +384,19 @@ export function isTransferPolicy(type: string): boolean {
 
 export interface TransferPolicyFields<T extends PhantomTypeArgument> {
   id: ToField<UID>
+  /**
+   * The Balance of the `TransferPolicy` which collects `SUI`.
+   * By default, transfer policy does not collect anything , and it's
+   * a matter of an implementation of a specific rule - whether to add
+   * to balance and how much.
+   */
   balance: ToField<Balance<ToPhantom<SUI>>>
+  /**
+   * Set of types of attached rules - used to verify `receipts` when
+   * a `TransferRequest` is received in `confirm_request` function.
+   *
+   * Additionally provides a way to look up currently attached Rules.
+   */
   rules: ToField<VecSet<TypeName>>
 }
 
@@ -299,26 +405,57 @@ export type TransferPolicyReified<T extends PhantomTypeArgument> = Reified<
   TransferPolicyFields<T>
 >
 
+export type TransferPolicyJSONField<T extends PhantomTypeArgument> = {
+  id: string
+  balance: ToJSON<Balance<ToPhantom<SUI>>>
+  rules: ToJSON<VecSet<TypeName>>
+}
+
+export type TransferPolicyJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof TransferPolicy.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & TransferPolicyJSONField<T>
+
+/**
+ * A unique capability that allows the owner of the `T` to authorize
+ * transfers. Can only be created with the `Publisher` object. Although
+ * there's no limitation to how many policies can be created, for most
+ * of the cases there's no need to create more than one since any of the
+ * policies can be used to confirm the `TransferRequest`.
+ */
 export class TransferPolicy<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::TransferPolicy`
+  static readonly $typeName: `0x2::transfer_policy::TransferPolicy` =
+    `0x2::transfer_policy::TransferPolicy` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = TransferPolicy.$typeName
+  readonly $typeName: typeof TransferPolicy.$typeName = TransferPolicy.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::TransferPolicy<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TransferPolicy.$isPhantom
+  readonly $isPhantom: typeof TransferPolicy.$isPhantom = TransferPolicy.$isPhantom
 
   readonly id: ToField<UID>
+  /**
+   * The Balance of the `TransferPolicy` which collects `SUI`.
+   * By default, transfer policy does not collect anything , and it's
+   * a matter of an implementation of a specific rule - whether to add
+   * to balance and how much.
+   */
   readonly balance: ToField<Balance<ToPhantom<SUI>>>
+  /**
+   * Set of types of attached rules - used to verify `receipts` when
+   * a `TransferRequest` is received in `confirm_request` function.
+   *
+   * Additionally provides a way to look up currently attached Rules.
+   */
   readonly rules: ToField<VecSet<TypeName>>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TransferPolicyFields<T>) {
     this.$fullTypeName = composeSuiType(
       TransferPolicy.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::TransferPolicy<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -328,14 +465,14 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): TransferPolicyReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicy.bcs
     return {
       typeName: TransferPolicy.$typeName,
       fullTypeName: composeSuiType(
         TransferPolicy.$typeName,
-        ...[extractType(T)]
+        ...[extractType(T)],
       ) as `0x2::transfer_policy::TransferPolicy<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: TransferPolicy.$isPhantom,
@@ -348,7 +485,7 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
       fromJSON: (json: Record<string, any>) => TransferPolicy.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => TransferPolicy.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => TransferPolicy.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TransferPolicy.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => TransferPolicy.fetch(client, T, id),
       new: (fields: TransferPolicyFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicy([extractType(T)], fields)
       },
@@ -356,16 +493,17 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  static get r() {
+  static get r(): typeof TransferPolicy.reified {
     return TransferPolicy.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<TransferPolicy<ToPhantomTypeArgument<T>>>> {
     return phantom(TransferPolicy.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof TransferPolicy.phantom {
     return TransferPolicy.phantom
   }
 
@@ -388,18 +526,18 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     return TransferPolicy.reified(typeArg).new({
       id: decodeFromFields(UID.reified(), fields.id),
-      balance: decodeFromFields(Balance.reified(reified.phantom(SUI.reified())), fields.balance),
+      balance: decodeFromFields(Balance.reified(phantom(SUI.reified())), fields.balance),
       rules: decodeFromFields(VecSet.reified(TypeName.reified()), fields.rules),
     })
   }
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     if (!isTransferPolicy(item.type)) {
       throw new Error('not a TransferPolicy type')
@@ -409,8 +547,8 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
     return TransferPolicy.reified(typeArg).new({
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       balance: decodeFromFieldsWithTypes(
-        Balance.reified(reified.phantom(SUI.reified())),
-        item.fields.balance
+        Balance.reified(phantom(SUI.reified())),
+        item.fields.balance,
       ),
       rules: decodeFromFieldsWithTypes(VecSet.reified(TypeName.reified()), item.fields.rules),
     })
@@ -418,12 +556,12 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     return TransferPolicy.fromFields(typeArg, TransferPolicy.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TransferPolicyJSONField<T> {
     return {
       id: this.id,
       balance: this.balance.toJSONField(),
@@ -431,32 +569,34 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  toJSON() {
+  toJSON(): TransferPolicyJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     return TransferPolicy.reified(typeArg).new({
       id: decodeFromJSONField(UID.reified(), field.id),
-      balance: decodeFromJSONField(Balance.reified(reified.phantom(SUI.reified())), field.balance),
+      balance: decodeFromJSONField(Balance.reified(phantom(SUI.reified())), field.balance),
       rules: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.rules),
     })
   }
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== TransferPolicy.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TransferPolicy json object: expected '${TransferPolicy.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(TransferPolicy.$typeName, extractType(typeArg)),
+      composeSuiType(TransferPolicy.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return TransferPolicy.fromJSONField(typeArg, json)
@@ -464,7 +604,7 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -477,7 +617,7 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): TransferPolicy<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferPolicy(data.bcs.type)) {
@@ -487,41 +627,56 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return TransferPolicy.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return TransferPolicy.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TransferPolicy.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<TransferPolicy<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TransferPolicy object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTransferPolicy(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTransferPolicy(res.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicy object`)
     }
 
-    return TransferPolicy.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicy.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -542,17 +697,32 @@ export type TransferPolicyCapReified<T extends PhantomTypeArgument> = Reified<
   TransferPolicyCapFields<T>
 >
 
+export type TransferPolicyCapJSONField<T extends PhantomTypeArgument> = {
+  id: string
+  policyId: string
+}
+
+export type TransferPolicyCapJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof TransferPolicyCap.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & TransferPolicyCapJSONField<T>
+
+/**
+ * A Capability granting the owner permission to add/remove rules as well
+ * as to `withdraw` and `destroy_and_withdraw` the `TransferPolicy`.
+ */
 export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::TransferPolicyCap`
+  static readonly $typeName: `0x2::transfer_policy::TransferPolicyCap` =
+    `0x2::transfer_policy::TransferPolicyCap` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = TransferPolicyCap.$typeName
+  readonly $typeName: typeof TransferPolicyCap.$typeName = TransferPolicyCap.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::TransferPolicyCap<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TransferPolicyCap.$isPhantom
+  readonly $isPhantom: typeof TransferPolicyCap.$isPhantom = TransferPolicyCap.$isPhantom
 
   readonly id: ToField<UID>
   readonly policyId: ToField<ID>
@@ -560,7 +730,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TransferPolicyCapFields<T>) {
     this.$fullTypeName = composeSuiType(
       TransferPolicyCap.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::TransferPolicyCap<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -569,14 +739,14 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): TransferPolicyCapReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyCap.bcs
     return {
       typeName: TransferPolicyCap.$typeName,
       fullTypeName: composeSuiType(
         TransferPolicyCap.$typeName,
-        ...[extractType(T)]
+        ...[extractType(T)],
       ) as `0x2::transfer_policy::TransferPolicyCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: TransferPolicyCap.$isPhantom,
@@ -592,7 +762,8 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
         TransferPolicyCap.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyCap.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TransferPolicyCap.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        TransferPolicyCap.fetch(client, T, id),
       new: (fields: TransferPolicyCapFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyCap([extractType(T)], fields)
       },
@@ -600,16 +771,17 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
     }
   }
 
-  static get r() {
+  static get r(): typeof TransferPolicyCap.reified {
     return TransferPolicyCap.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<TransferPolicyCap<ToPhantomTypeArgument<T>>>> {
     return phantom(TransferPolicyCap.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof TransferPolicyCap.phantom {
     return TransferPolicyCap.phantom
   }
 
@@ -631,7 +803,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     return TransferPolicyCap.reified(typeArg).new({
       id: decodeFromFields(UID.reified(), fields.id),
@@ -641,7 +813,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     if (!isTransferPolicyCap(item.type)) {
       throw new Error('not a TransferPolicyCap type')
@@ -656,25 +828,25 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     return TransferPolicyCap.fromFields(typeArg, TransferPolicyCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TransferPolicyCapJSONField<T> {
     return {
       id: this.id,
       policyId: this.policyId,
     }
   }
 
-  toJSON() {
+  toJSON(): TransferPolicyCapJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     return TransferPolicyCap.reified(typeArg).new({
       id: decodeFromJSONField(UID.reified(), field.id),
@@ -684,15 +856,17 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== TransferPolicyCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TransferPolicyCap json object: expected '${TransferPolicyCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(TransferPolicyCap.$typeName, extractType(typeArg)),
+      composeSuiType(TransferPolicyCap.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return TransferPolicyCap.fromJSONField(typeArg, json)
@@ -700,7 +874,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -713,7 +887,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferPolicyCap(data.bcs.type)) {
@@ -723,41 +897,56 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return TransferPolicyCap.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return TransferPolicyCap.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TransferPolicyCap.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<TransferPolicyCap<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TransferPolicyCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTransferPolicyCap(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTransferPolicyCap(res.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyCap object`)
     }
 
-    return TransferPolicyCap.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyCap.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -777,24 +966,38 @@ export type TransferPolicyCreatedReified<T extends PhantomTypeArgument> = Reifie
   TransferPolicyCreatedFields<T>
 >
 
+export type TransferPolicyCreatedJSONField<T extends PhantomTypeArgument> = {
+  id: string
+}
+
+export type TransferPolicyCreatedJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof TransferPolicyCreated.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & TransferPolicyCreatedJSONField<T>
+
+/**
+ * Event that is emitted when a publisher creates a new `TransferPolicyCap`
+ * making the discoverability and tracking the supported types easier.
+ */
 export class TransferPolicyCreated<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::TransferPolicyCreated`
+  static readonly $typeName: `0x2::transfer_policy::TransferPolicyCreated` =
+    `0x2::transfer_policy::TransferPolicyCreated` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = TransferPolicyCreated.$typeName
+  readonly $typeName: typeof TransferPolicyCreated.$typeName = TransferPolicyCreated.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TransferPolicyCreated.$isPhantom
+  readonly $isPhantom: typeof TransferPolicyCreated.$isPhantom = TransferPolicyCreated.$isPhantom
 
   readonly id: ToField<ID>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TransferPolicyCreatedFields<T>) {
     this.$fullTypeName = composeSuiType(
       TransferPolicyCreated.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -802,15 +1005,17 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): TransferPolicyCreatedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyCreated.bcs
     return {
       typeName: TransferPolicyCreated.$typeName,
       fullTypeName: composeSuiType(
         TransferPolicyCreated.$typeName,
-        ...[extractType(T)]
-      ) as `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: TransferPolicyCreated.$isPhantom,
       reifiedTypeArgs: [T],
@@ -825,7 +1030,8 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
         TransferPolicyCreated.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyCreated.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TransferPolicyCreated.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        TransferPolicyCreated.fetch(client, T, id),
       new: (fields: TransferPolicyCreatedFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyCreated([extractType(T)], fields)
       },
@@ -833,16 +1039,17 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
     }
   }
 
-  static get r() {
+  static get r(): typeof TransferPolicyCreated.reified {
     return TransferPolicyCreated.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<TransferPolicyCreated<ToPhantomTypeArgument<T>>>> {
     return phantom(TransferPolicyCreated.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof TransferPolicyCreated.phantom {
     return TransferPolicyCreated.phantom
   }
 
@@ -863,7 +1070,7 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     return TransferPolicyCreated.reified(typeArg).new({
       id: decodeFromFields(ID.reified(), fields.id),
@@ -872,7 +1079,7 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     if (!isTransferPolicyCreated(item.type)) {
       throw new Error('not a TransferPolicyCreated type')
@@ -886,24 +1093,24 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     return TransferPolicyCreated.fromFields(typeArg, TransferPolicyCreated.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TransferPolicyCreatedJSONField<T> {
     return {
       id: this.id,
     }
   }
 
-  toJSON() {
+  toJSON(): TransferPolicyCreatedJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     return TransferPolicyCreated.reified(typeArg).new({
       id: decodeFromJSONField(ID.reified(), field.id),
@@ -912,15 +1119,17 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== TransferPolicyCreated.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TransferPolicyCreated json object: expected '${TransferPolicyCreated.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(TransferPolicyCreated.$typeName, extractType(typeArg)),
+      composeSuiType(TransferPolicyCreated.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return TransferPolicyCreated.fromJSONField(typeArg, json)
@@ -928,14 +1137,14 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isTransferPolicyCreated(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a TransferPolicyCreated object`
+        `object at ${(content.fields as any).id} is not a TransferPolicyCreated object`,
       )
     }
     return TransferPolicyCreated.fromFieldsWithTypes(typeArg, content)
@@ -943,7 +1152,7 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferPolicyCreated(data.bcs.type)) {
@@ -953,41 +1162,56 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return TransferPolicyCreated.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return TransferPolicyCreated.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TransferPolicyCreated.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<TransferPolicyCreated<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching TransferPolicyCreated object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTransferPolicyCreated(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTransferPolicyCreated(res.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyCreated object`)
     }
 
-    return TransferPolicyCreated.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyCreated.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -1007,24 +1231,39 @@ export type TransferPolicyDestroyedReified<T extends PhantomTypeArgument> = Reif
   TransferPolicyDestroyedFields<T>
 >
 
+export type TransferPolicyDestroyedJSONField<T extends PhantomTypeArgument> = {
+  id: string
+}
+
+export type TransferPolicyDestroyedJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof TransferPolicyDestroyed.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & TransferPolicyDestroyedJSONField<T>
+
+/**
+ * Event that is emitted when a publisher destroys a `TransferPolicyCap`.
+ * Allows for tracking supported policies.
+ */
 export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::TransferPolicyDestroyed`
+  static readonly $typeName: `0x2::transfer_policy::TransferPolicyDestroyed` =
+    `0x2::transfer_policy::TransferPolicyDestroyed` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = TransferPolicyDestroyed.$typeName
+  readonly $typeName: typeof TransferPolicyDestroyed.$typeName = TransferPolicyDestroyed.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = TransferPolicyDestroyed.$isPhantom
+  readonly $isPhantom: typeof TransferPolicyDestroyed.$isPhantom =
+    TransferPolicyDestroyed.$isPhantom
 
   readonly id: ToField<ID>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: TransferPolicyDestroyedFields<T>) {
     this.$fullTypeName = composeSuiType(
       TransferPolicyDestroyed.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -1032,15 +1271,17 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): TransferPolicyDestroyedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyDestroyed.bcs
     return {
       typeName: TransferPolicyDestroyed.$typeName,
       fullTypeName: composeSuiType(
         TransferPolicyDestroyed.$typeName,
-        ...[extractType(T)]
-      ) as `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: TransferPolicyDestroyed.$isPhantom,
       reifiedTypeArgs: [T],
@@ -1055,7 +1296,8 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
         TransferPolicyDestroyed.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyDestroyed.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => TransferPolicyDestroyed.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        TransferPolicyDestroyed.fetch(client, T, id),
       new: (fields: TransferPolicyDestroyedFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyDestroyed([extractType(T)], fields)
       },
@@ -1063,16 +1305,17 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
     }
   }
 
-  static get r() {
+  static get r(): typeof TransferPolicyDestroyed.reified {
     return TransferPolicyDestroyed.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<TransferPolicyDestroyed<ToPhantomTypeArgument<T>>>> {
     return phantom(TransferPolicyDestroyed.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof TransferPolicyDestroyed.phantom {
     return TransferPolicyDestroyed.phantom
   }
 
@@ -1093,7 +1336,7 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     return TransferPolicyDestroyed.reified(typeArg).new({
       id: decodeFromFields(ID.reified(), fields.id),
@@ -1102,7 +1345,7 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     if (!isTransferPolicyDestroyed(item.type)) {
       throw new Error('not a TransferPolicyDestroyed type')
@@ -1116,24 +1359,24 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     return TransferPolicyDestroyed.fromFields(typeArg, TransferPolicyDestroyed.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): TransferPolicyDestroyedJSONField<T> {
     return {
       id: this.id,
     }
   }
 
-  toJSON() {
+  toJSON(): TransferPolicyDestroyedJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     return TransferPolicyDestroyed.reified(typeArg).new({
       id: decodeFromJSONField(ID.reified(), field.id),
@@ -1142,15 +1385,17 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== TransferPolicyDestroyed.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a TransferPolicyDestroyed json object: expected '${TransferPolicyDestroyed.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(TransferPolicyDestroyed.$typeName, extractType(typeArg)),
+      composeSuiType(TransferPolicyDestroyed.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return TransferPolicyDestroyed.fromJSONField(typeArg, json)
@@ -1158,14 +1403,14 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isTransferPolicyDestroyed(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a TransferPolicyDestroyed object`
+        `object at ${(content.fields as any).id} is not a TransferPolicyDestroyed object`,
       )
     }
     return TransferPolicyDestroyed.fromFieldsWithTypes(typeArg, content)
@@ -1173,7 +1418,7 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferPolicyDestroyed(data.bcs.type)) {
@@ -1183,43 +1428,56 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return TransferPolicyDestroyed.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return TransferPolicyDestroyed.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return TransferPolicyDestroyed.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<TransferPolicyDestroyed<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching TransferPolicyDestroyed object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isTransferPolicyDestroyed(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isTransferPolicyDestroyed(res.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyDestroyed object`)
     }
 
-    return TransferPolicyDestroyed.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyDestroyed.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -1236,24 +1494,35 @@ export interface RuleKeyFields<T extends PhantomTypeArgument> {
 
 export type RuleKeyReified<T extends PhantomTypeArgument> = Reified<RuleKey<T>, RuleKeyFields<T>>
 
+export type RuleKeyJSONField<T extends PhantomTypeArgument> = {
+  dummyField: boolean
+}
+
+export type RuleKeyJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof RuleKey.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & RuleKeyJSONField<T>
+
+/** Key to store "Rule" configuration for a specific `TransferPolicy`. */
 export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::transfer_policy::RuleKey`
+  static readonly $typeName: `0x2::transfer_policy::RuleKey` =
+    `0x2::transfer_policy::RuleKey` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = RuleKey.$typeName
+  readonly $typeName: typeof RuleKey.$typeName = RuleKey.$typeName
   readonly $fullTypeName: `0x2::transfer_policy::RuleKey<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = RuleKey.$isPhantom
+  readonly $isPhantom: typeof RuleKey.$isPhantom = RuleKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: RuleKeyFields<T>) {
     this.$fullTypeName = composeSuiType(
       RuleKey.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::transfer_policy::RuleKey<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -1261,14 +1530,14 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): RuleKeyReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = RuleKey.bcs
     return {
       typeName: RuleKey.$typeName,
       fullTypeName: composeSuiType(
         RuleKey.$typeName,
-        ...[extractType(T)]
+        ...[extractType(T)],
       ) as `0x2::transfer_policy::RuleKey<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: RuleKey.$isPhantom,
@@ -1281,7 +1550,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
       fromJSON: (json: Record<string, any>) => RuleKey.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => RuleKey.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => RuleKey.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => RuleKey.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RuleKey.fetch(client, T, id),
       new: (fields: RuleKeyFields<ToPhantomTypeArgument<T>>) => {
         return new RuleKey([extractType(T)], fields)
       },
@@ -1289,16 +1558,17 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): typeof RuleKey.reified {
     return RuleKey.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<RuleKey<ToPhantomTypeArgument<T>>>> {
     return phantom(RuleKey.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof RuleKey.phantom {
     return RuleKey.phantom
   }
 
@@ -1319,7 +1589,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     return RuleKey.reified(typeArg).new({
       dummyField: decodeFromFields('bool', fields.dummy_field),
@@ -1328,7 +1598,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     if (!isRuleKey(item.type)) {
       throw new Error('not a RuleKey type')
@@ -1342,24 +1612,24 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     return RuleKey.fromFields(typeArg, RuleKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RuleKeyJSONField<T> {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): RuleKeyJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     return RuleKey.reified(typeArg).new({
       dummyField: decodeFromJSONField('bool', field.dummyField),
@@ -1368,15 +1638,17 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== RuleKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RuleKey json object: expected '${RuleKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(RuleKey.$typeName, extractType(typeArg)),
+      composeSuiType(RuleKey.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return RuleKey.fromJSONField(typeArg, json)
@@ -1384,7 +1656,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1397,7 +1669,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): RuleKey<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRuleKey(data.bcs.type)) {
@@ -1407,40 +1679,55 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return RuleKey.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return RuleKey.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RuleKey.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<RuleKey<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RuleKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRuleKey(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRuleKey(res.type)) {
       throw new Error(`object at id ${id} is not a RuleKey object`)
     }
 
-    return RuleKey.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RuleKey.fromBcs(typeArg, res.bcsBytes)
   }
 }

@@ -1,13 +1,8 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeStr,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -16,29 +11,40 @@ import {
   extractType,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { FlashSwapReceipt } from '../../cetus-clmm/pool/structs'
-import { Option } from '../../move-stdlib/option/structs'
+import { Option } from '../../std/option/structs'
 import { Balance } from '../../sui/balance/structs'
 import { ID } from '../../sui/object/structs'
 import { BatchSwapClaim } from '../batch-swap/structs'
-import { PKG_V1, PKG_V3 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== RebalanceReceipt =============================== */
 
 export function isRebalanceReceipt(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V3}::cetus::RebalanceReceipt` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage-util', 'cetus::RebalanceReceipt')}::cetus::RebalanceReceipt`
+      + '<',
+  )
 }
 
 export interface RebalanceReceiptFields<
@@ -54,24 +60,44 @@ export interface RebalanceReceiptFields<
   collectedY: ToField<Balance<Y>>
 }
 
-export type RebalanceReceiptReified<
+export type RebalanceReceiptReified<X extends PhantomTypeArgument, Y extends PhantomTypeArgument> =
+  Reified<RebalanceReceipt<X, Y>, RebalanceReceiptFields<X, Y>>
+
+export type RebalanceReceiptJSONField<
   X extends PhantomTypeArgument,
   Y extends PhantomTypeArgument,
-> = Reified<RebalanceReceipt<X, Y>, RebalanceReceiptFields<X, Y>>
+> = {
+  positionId: string
+  batchSwapToX: ToJSON<BatchSwapClaim>[]
+  batchSwapToY: ToJSON<BatchSwapClaim>[]
+  fX64: string
+  pX128: string
+  collectedX: ToJSON<Balance<X>>
+  collectedY: ToJSON<Balance<Y>>
+}
+
+export type RebalanceReceiptJSON<X extends PhantomTypeArgument, Y extends PhantomTypeArgument> = {
+  $typeName: typeof RebalanceReceipt.$typeName
+  $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>]
+} & RebalanceReceiptJSONField<X, Y>
 
 export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>
   implements StructClass
 {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::cetus::RebalanceReceipt`
+  static readonly $typeName: `${string}::cetus::RebalanceReceipt` = `${
+    getTypeOrigin('kai-leverage-util', 'cetus::RebalanceReceipt')
+  }::cetus::RebalanceReceipt` as const
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
-  readonly $typeName = RebalanceReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::cetus::RebalanceReceipt<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}>`
+  readonly $typeName: typeof RebalanceReceipt.$typeName = RebalanceReceipt.$typeName
+  readonly $fullTypeName: `${string}::cetus::RebalanceReceipt<${PhantomToTypeStr<
+    X
+  >}, ${PhantomToTypeStr<Y>}>`
   readonly $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>]
-  readonly $isPhantom = RebalanceReceipt.$isPhantom
+  readonly $isPhantom: typeof RebalanceReceipt.$isPhantom = RebalanceReceipt.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly batchSwapToX: ToField<Vector<BatchSwapClaim>>
@@ -83,12 +109,12 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
 
   private constructor(
     typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>],
-    fields: RebalanceReceiptFields<X, Y>
+    fields: RebalanceReceiptFields<X, Y>,
   ) {
     this.$fullTypeName = composeSuiType(
       RebalanceReceipt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::cetus::RebalanceReceipt<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}>`
+      ...typeArgs,
+    ) as `${string}::cetus::RebalanceReceipt<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}>`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -103,14 +129,19 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
   static reified<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
-  >(X: X, Y: Y): RebalanceReceiptReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
+  >(
+    X: X,
+    Y: Y,
+  ): RebalanceReceiptReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     const reifiedBcs = RebalanceReceipt.bcs
     return {
       typeName: RebalanceReceipt.$typeName,
       fullTypeName: composeSuiType(
         RebalanceReceipt.$typeName,
-        ...[extractType(X), extractType(Y)]
-      ) as `${typeof PKG_V3}::cetus::RebalanceReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<X>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}>`,
+        ...[extractType(X), extractType(Y)],
+      ) as `${string}::cetus::RebalanceReceipt<${PhantomToTypeStr<
+        ToPhantomTypeArgument<X>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}>`,
       typeArgs: [extractType(X), extractType(Y)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<X>>,
         PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
@@ -128,7 +159,8 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
         RebalanceReceipt.fromSuiParsedData([X, Y], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RebalanceReceipt.fromSuiObjectData([X, Y], content),
-      fetch: async (client: SuiClient, id: string) => RebalanceReceipt.fetch(client, [X, Y], id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        RebalanceReceipt.fetch(client, [X, Y], id),
       new: (fields: RebalanceReceiptFields<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>>) => {
         return new RebalanceReceipt([extractType(X), extractType(Y)], fields)
       },
@@ -136,7 +168,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     }
   }
 
-  static get r() {
+  static get r(): typeof RebalanceReceipt.reified {
     return RebalanceReceipt.reified
   }
 
@@ -145,13 +177,14 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     X: X,
-    Y: Y
+    Y: Y,
   ): PhantomReified<
     ToTypeStr<RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>>>
   > {
     return phantom(RebalanceReceipt.reified(X, Y))
   }
-  static get p() {
+
+  static get p(): typeof RebalanceReceipt.phantom {
     return RebalanceReceipt.phantom
   }
 
@@ -181,18 +214,12 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     return RebalanceReceipt.reified(typeArgs[0], typeArgs[1]).new({
       positionId: decodeFromFields(ID.reified(), fields.position_id),
-      batchSwapToX: decodeFromFields(
-        reified.vector(BatchSwapClaim.reified()),
-        fields.batch_swap_to_x
-      ),
-      batchSwapToY: decodeFromFields(
-        reified.vector(BatchSwapClaim.reified()),
-        fields.batch_swap_to_y
-      ),
+      batchSwapToX: decodeFromFields(vector(BatchSwapClaim.reified()), fields.batch_swap_to_x),
+      batchSwapToY: decodeFromFields(vector(BatchSwapClaim.reified()), fields.batch_swap_to_y),
       fX64: decodeFromFields('u128', fields.f_x64),
       pX128: decodeFromFields('u256', fields.p_x128),
       collectedX: decodeFromFields(Balance.reified(typeArgs[0]), fields.collected_x),
@@ -205,7 +232,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     if (!isRebalanceReceipt(item.type)) {
       throw new Error('not a RebalanceReceipt type')
@@ -215,12 +242,12 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     return RebalanceReceipt.reified(typeArgs[0], typeArgs[1]).new({
       positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
       batchSwapToX: decodeFromFieldsWithTypes(
-        reified.vector(BatchSwapClaim.reified()),
-        item.fields.batch_swap_to_x
+        vector(BatchSwapClaim.reified()),
+        item.fields.batch_swap_to_x,
       ),
       batchSwapToY: decodeFromFieldsWithTypes(
-        reified.vector(BatchSwapClaim.reified()),
-        item.fields.batch_swap_to_y
+        vector(BatchSwapClaim.reified()),
+        item.fields.batch_swap_to_y,
       ),
       fX64: decodeFromFieldsWithTypes('u128', item.fields.f_x64),
       pX128: decodeFromFieldsWithTypes('u256', item.fields.p_x128),
@@ -234,21 +261,21 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    data: Uint8Array
+    data: Uint8Array,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     return RebalanceReceipt.fromFields(typeArgs, RebalanceReceipt.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RebalanceReceiptJSONField<X, Y> {
     return {
       positionId: this.positionId,
       batchSwapToX: fieldToJSON<Vector<BatchSwapClaim>>(
         `vector<${BatchSwapClaim.$typeName}>`,
-        this.batchSwapToX
+        this.batchSwapToX,
       ),
       batchSwapToY: fieldToJSON<Vector<BatchSwapClaim>>(
         `vector<${BatchSwapClaim.$typeName}>`,
-        this.batchSwapToY
+        this.batchSwapToY,
       ),
       fX64: this.fX64.toString(),
       pX128: this.pX128.toString(),
@@ -257,7 +284,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     }
   }
 
-  toJSON() {
+  toJSON(): RebalanceReceiptJSON<X, Y> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -266,18 +293,12 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    field: any
+    field: any,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     return RebalanceReceipt.reified(typeArgs[0], typeArgs[1]).new({
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
-      batchSwapToX: decodeFromJSONField(
-        reified.vector(BatchSwapClaim.reified()),
-        field.batchSwapToX
-      ),
-      batchSwapToY: decodeFromJSONField(
-        reified.vector(BatchSwapClaim.reified()),
-        field.batchSwapToY
-      ),
+      batchSwapToX: decodeFromJSONField(vector(BatchSwapClaim.reified()), field.batchSwapToX),
+      batchSwapToY: decodeFromJSONField(vector(BatchSwapClaim.reified()), field.batchSwapToY),
       fX64: decodeFromJSONField('u128', field.fX64),
       pX128: decodeFromJSONField('u256', field.pX128),
       collectedX: decodeFromJSONField(Balance.reified(typeArgs[0]), field.collectedX),
@@ -290,15 +311,17 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     if (json.$typeName !== RebalanceReceipt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RebalanceReceipt json object: expected '${RebalanceReceipt.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(RebalanceReceipt.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return RebalanceReceipt.fromJSONField(typeArgs, json)
@@ -309,7 +332,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -325,7 +348,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [X, Y],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRebalanceReceipt(data.bcs.type)) {
@@ -335,7 +358,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 2) {
         throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 2; i++) {
@@ -343,18 +366,18 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return RebalanceReceipt.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return RebalanceReceipt.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RebalanceReceipt.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -362,19 +385,32 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [X, Y],
-    id: string
+    id: string,
   ): Promise<RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RebalanceReceipt object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceReceipt(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRebalanceReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a RebalanceReceipt object`)
     }
 
-    return RebalanceReceipt.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RebalanceReceipt.fromBcs(typeArgs, res.bcsBytes)
   }
 }
 
@@ -382,7 +418,11 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
 
 export function isWrappedFlashSwapReceipt(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::cetus::WrappedFlashSwapReceipt` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage-util', 'cetus::WrappedFlashSwapReceipt')
+    }::cetus::WrappedFlashSwapReceipt` + '<',
+  )
 }
 
 export interface WrappedFlashSwapReceiptFields<
@@ -397,30 +437,54 @@ export type WrappedFlashSwapReceiptReified<
   B extends PhantomTypeArgument,
 > = Reified<WrappedFlashSwapReceipt<A, B>, WrappedFlashSwapReceiptFields<A, B>>
 
+export type WrappedFlashSwapReceiptJSONField<
+  A extends PhantomTypeArgument,
+  B extends PhantomTypeArgument,
+> = {
+  inner: ToJSON<FlashSwapReceipt<A, B>> | null
+}
+
+export type WrappedFlashSwapReceiptJSON<
+  A extends PhantomTypeArgument,
+  B extends PhantomTypeArgument,
+> = {
+  $typeName: typeof WrappedFlashSwapReceipt.$typeName
+  $typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>]
+} & WrappedFlashSwapReceiptJSONField<A, B>
+
+/**
+ * Wrapper for FlashSwapReceipt to allow for optional receipts to handle the case where amount is 0
+ * without aborting
+ */
 export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends PhantomTypeArgument>
   implements StructClass
 {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::cetus::WrappedFlashSwapReceipt`
+  static readonly $typeName: `${string}::cetus::WrappedFlashSwapReceipt` = `${
+    getTypeOrigin('kai-leverage-util', 'cetus::WrappedFlashSwapReceipt')
+  }::cetus::WrappedFlashSwapReceipt` as const
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
-  readonly $typeName = WrappedFlashSwapReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+  readonly $typeName: typeof WrappedFlashSwapReceipt.$typeName = WrappedFlashSwapReceipt.$typeName
+  readonly $fullTypeName: `${string}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<
+    A
+  >}, ${PhantomToTypeStr<B>}>`
   readonly $typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>]
-  readonly $isPhantom = WrappedFlashSwapReceipt.$isPhantom
+  readonly $isPhantom: typeof WrappedFlashSwapReceipt.$isPhantom =
+    WrappedFlashSwapReceipt.$isPhantom
 
   readonly inner: ToField<Option<FlashSwapReceipt<A, B>>>
 
   private constructor(
     typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>],
-    fields: WrappedFlashSwapReceiptFields<A, B>
+    fields: WrappedFlashSwapReceiptFields<A, B>,
   ) {
     this.$fullTypeName = composeSuiType(
       WrappedFlashSwapReceipt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+      ...typeArgs,
+    ) as `${string}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
     this.$typeArgs = typeArgs
 
     this.inner = fields.inner
@@ -431,15 +495,17 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     A: A,
-    B: B
+    B: B,
   ): WrappedFlashSwapReceiptReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     const reifiedBcs = WrappedFlashSwapReceipt.bcs
     return {
       typeName: WrappedFlashSwapReceipt.$typeName,
       fullTypeName: composeSuiType(
         WrappedFlashSwapReceipt.$typeName,
-        ...[extractType(A), extractType(B)]
-      ) as `${typeof PKG_V1}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<ToPhantomTypeArgument<A>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
+        ...[extractType(A), extractType(B)],
+      ) as `${string}::cetus::WrappedFlashSwapReceipt<${PhantomToTypeStr<
+        ToPhantomTypeArgument<A>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
       typeArgs: [extractType(A), extractType(B)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<A>>,
         PhantomToTypeStr<ToPhantomTypeArgument<B>>,
@@ -459,10 +525,10 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
         WrappedFlashSwapReceipt.fromSuiParsedData([A, B], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WrappedFlashSwapReceipt.fromSuiObjectData([A, B], content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         WrappedFlashSwapReceipt.fetch(client, [A, B], id),
       new: (
-        fields: WrappedFlashSwapReceiptFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>
+        fields: WrappedFlashSwapReceiptFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>,
       ) => {
         return new WrappedFlashSwapReceipt([extractType(A), extractType(B)], fields)
       },
@@ -470,7 +536,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     }
   }
 
-  static get r() {
+  static get r(): typeof WrappedFlashSwapReceipt.reified {
     return WrappedFlashSwapReceipt.reified
   }
 
@@ -479,13 +545,14 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     A: A,
-    B: B
+    B: B,
   ): PhantomReified<
     ToTypeStr<WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>>
   > {
     return phantom(WrappedFlashSwapReceipt.reified(A, B))
   }
-  static get p() {
+
+  static get p(): typeof WrappedFlashSwapReceipt.phantom {
     return WrappedFlashSwapReceipt.phantom
   }
 
@@ -509,12 +576,12 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
       inner: decodeFromFields(
         Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
-        fields.inner
+        fields.inner,
       ),
     })
   }
@@ -524,7 +591,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (!isWrappedFlashSwapReceipt(item.type)) {
       throw new Error('not a WrappedFlashSwapReceipt type')
@@ -534,7 +601,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
       inner: decodeFromFieldsWithTypes(
         Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
-        item.fields.inner
+        item.fields.inner,
       ),
     })
   }
@@ -544,21 +611,23 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    data: Uint8Array
+    data: Uint8Array,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return WrappedFlashSwapReceipt.fromFields(typeArgs, WrappedFlashSwapReceipt.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): WrappedFlashSwapReceiptJSONField<A, B> {
     return {
       inner: fieldToJSON<Option<FlashSwapReceipt<A, B>>>(
-        `${Option.$typeName}<${FlashSwapReceipt.$typeName}<${this.$typeArgs[0]}, ${this.$typeArgs[1]}>>`,
-        this.inner
+        `${Option.$typeName}<${FlashSwapReceipt.$typeName}<${this.$typeArgs[0]}, ${
+          this.$typeArgs[1]
+        }>>`,
+        this.inner,
       ),
     }
   }
 
-  toJSON() {
+  toJSON(): WrappedFlashSwapReceiptJSON<A, B> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -567,12 +636,12 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    field: any
+    field: any,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return WrappedFlashSwapReceipt.reified(typeArgs[0], typeArgs[1]).new({
       inner: decodeFromJSONField(
         Option.reified(FlashSwapReceipt.reified(typeArgs[0], typeArgs[1])),
-        field.inner
+        field.inner,
       ),
     })
   }
@@ -582,15 +651,17 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (json.$typeName !== WrappedFlashSwapReceipt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a WrappedFlashSwapReceipt json object: expected '${WrappedFlashSwapReceipt.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(WrappedFlashSwapReceipt.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return WrappedFlashSwapReceipt.fromJSONField(typeArgs, json)
@@ -601,14 +672,14 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isWrappedFlashSwapReceipt(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a WrappedFlashSwapReceipt object`
+        `object at ${(content.fields as any).id} is not a WrappedFlashSwapReceipt object`,
       )
     }
     return WrappedFlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
@@ -619,7 +690,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWrappedFlashSwapReceipt(data.bcs.type)) {
@@ -629,7 +700,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 2) {
         throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 2; i++) {
@@ -637,18 +708,18 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return WrappedFlashSwapReceipt.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return WrappedFlashSwapReceipt.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return WrappedFlashSwapReceipt.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -656,20 +727,31 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [A, B],
-    id: string
+    id: string,
   ): Promise<WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching WrappedFlashSwapReceipt object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWrappedFlashSwapReceipt(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isWrappedFlashSwapReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a WrappedFlashSwapReceipt object`)
     }
 
-    return WrappedFlashSwapReceipt.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WrappedFlashSwapReceipt.fromBcs(typeArgs, res.bcsBytes)
   }
 }

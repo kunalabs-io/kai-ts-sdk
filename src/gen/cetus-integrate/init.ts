@@ -1,9 +1,9 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as expectSwap from './expect-swap/structs'
 import * as fetcherScript from './fetcher-script/structs'
 import * as router from './router/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(expectSwap.ExpectSwapResult)
   loader.register(expectSwap.SwapStepResult)
   loader.register(expectSwap.SwapResult)

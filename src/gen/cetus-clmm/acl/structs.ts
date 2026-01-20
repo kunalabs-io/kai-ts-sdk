@@ -1,27 +1,40 @@
-import * as reified from '../../_framework/reified'
-import { LinkedTable } from '../../_dependencies/source/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/linked-table/structs'
+/**
+ * Fork @https://github.com/pentagonxyz/movemate.git
+ *
+ * `acl` is a simple access control module, where `member` represents a member and `role` represents a type
+ * of permission. A member can have multiple permissions.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
+import { LinkedTable } from '../../_dependencies/move-stl/linked-table/structs'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== ACL =============================== */
 
 export function isACL(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::acl::ACL`
+  return type === `${getTypeOrigin('cetus-clmm', 'acl::ACL')}::acl::ACL`
 }
 
 export interface ACLFields {
@@ -30,22 +43,42 @@ export interface ACLFields {
 
 export type ACLReified = Reified<ACL, ACLFields>
 
+export type ACLJSONField = {
+  permissions: ToJSON<LinkedTable<'address', 'u128'>>
+}
+
+export type ACLJSON = {
+  $typeName: typeof ACL.$typeName
+  $typeArgs: []
+} & ACLJSONField
+
+/**
+ * ACL (Access Control List) struct that manages permissions for members
+ * Contains a mapping of addresses to their permission bitmasks
+ * Each bit in the permission bitmask represents a specific role/permission
+ * The first 128 bits are available for different roles
+ */
 export class ACL implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::acl::ACL`
+  static readonly $typeName: `${string}::acl::ACL` = `${
+    getTypeOrigin('cetus-clmm', 'acl::ACL')
+  }::acl::ACL` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ACL.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::acl::ACL`
+  readonly $typeName: typeof ACL.$typeName = ACL.$typeName
+  readonly $fullTypeName: `${string}::acl::ACL`
   readonly $typeArgs: []
-  readonly $isPhantom = ACL.$isPhantom
+  readonly $isPhantom: typeof ACL.$isPhantom = ACL.$isPhantom
 
   readonly permissions: ToField<LinkedTable<'address', 'u128'>>
 
   private constructor(typeArgs: [], fields: ACLFields) {
-    this.$fullTypeName = composeSuiType(ACL.$typeName, ...typeArgs) as `${typeof PKG_V1}::acl::ACL`
+    this.$fullTypeName = composeSuiType(
+      ACL.$typeName,
+      ...typeArgs,
+    ) as `${string}::acl::ACL`
     this.$typeArgs = typeArgs
 
     this.permissions = fields.permissions
@@ -55,7 +88,10 @@ export class ACL implements StructClass {
     const reifiedBcs = ACL.bcs
     return {
       typeName: ACL.$typeName,
-      fullTypeName: composeSuiType(ACL.$typeName, ...[]) as `${typeof PKG_V1}::acl::ACL`,
+      fullTypeName: composeSuiType(
+        ACL.$typeName,
+        ...[],
+      ) as `${string}::acl::ACL`,
       typeArgs: [] as [],
       isPhantom: ACL.$isPhantom,
       reifiedTypeArgs: [],
@@ -67,7 +103,7 @@ export class ACL implements StructClass {
       fromJSON: (json: Record<string, any>) => ACL.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACL.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACL.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ACL.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ACL.fetch(client, id),
       new: (fields: ACLFields) => {
         return new ACL([], fields)
       },
@@ -75,14 +111,15 @@ export class ACL implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ACLReified {
     return ACL.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ACL>> {
     return phantom(ACL.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ACL>> {
     return ACL.phantom()
   }
 
@@ -90,9 +127,9 @@ export class ACL implements StructClass {
     return bcs.struct('ACL', {
       permissions: LinkedTable.bcs(
         bcs.bytes(32).transform({
-          input: (val: string) => fromHEX(val),
-          output: (val: Uint8Array) => toHEX(val),
-        })
+          input: (val: string) => fromHex(val),
+          output: (val: Uint8Array) => toHex(val),
+        }),
       ),
     })
   }
@@ -109,8 +146,8 @@ export class ACL implements StructClass {
   static fromFields(fields: Record<string, any>): ACL {
     return ACL.reified().new({
       permissions: decodeFromFields(
-        LinkedTable.reified('address', reified.phantom('u128')),
-        fields.permissions
+        LinkedTable.reified('address', phantom('u128')),
+        fields.permissions,
       ),
     })
   }
@@ -122,8 +159,8 @@ export class ACL implements StructClass {
 
     return ACL.reified().new({
       permissions: decodeFromFieldsWithTypes(
-        LinkedTable.reified('address', reified.phantom('u128')),
-        item.fields.permissions
+        LinkedTable.reified('address', phantom('u128')),
+        item.fields.permissions,
       ),
     })
   }
@@ -132,28 +169,30 @@ export class ACL implements StructClass {
     return ACL.fromFields(ACL.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ACLJSONField {
     return {
       permissions: this.permissions.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): ACLJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ACL {
     return ACL.reified().new({
       permissions: decodeFromJSONField(
-        LinkedTable.reified('address', reified.phantom('u128')),
-        field.permissions
+        LinkedTable.reified('address', phantom('u128')),
+        field.permissions,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): ACL {
     if (json.$typeName !== ACL.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ACL json object: expected '${ACL.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ACL.fromJSONField(json)
@@ -175,26 +214,23 @@ export class ACL implements StructClass {
         throw new Error(`object at is not a ACL object`)
       }
 
-      return ACL.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ACL.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ACL.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ACL> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ACL object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isACL(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ACL> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isACL(res.type)) {
       throw new Error(`object at id ${id} is not a ACL object`)
     }
 
-    return ACL.fromSuiObjectData(res.data)
+    return ACL.fromBcs(res.bcsBytes)
   }
 }
 
@@ -202,7 +238,7 @@ export class ACL implements StructClass {
 
 export function isMember(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::acl::Member`
+  return type === `${getTypeOrigin('cetus-clmm', 'acl::Member')}::acl::Member`
 }
 
 export interface MemberFields {
@@ -212,17 +248,34 @@ export interface MemberFields {
 
 export type MemberReified = Reified<Member, MemberFields>
 
+export type MemberJSONField = {
+  address: string
+  permission: string
+}
+
+export type MemberJSON = {
+  $typeName: typeof Member.$typeName
+  $typeArgs: []
+} & MemberJSONField
+
+/**
+ * Member struct representing a member in the ACL system
+ * * `address` - The address of the member
+ * * `permission` - A bitmask of the member's permissions, where each bit represents a specific role
+ */
 export class Member implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::acl::Member`
+  static readonly $typeName: `${string}::acl::Member` = `${
+    getTypeOrigin('cetus-clmm', 'acl::Member')
+  }::acl::Member` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Member.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::acl::Member`
+  readonly $typeName: typeof Member.$typeName = Member.$typeName
+  readonly $fullTypeName: `${string}::acl::Member`
   readonly $typeArgs: []
-  readonly $isPhantom = Member.$isPhantom
+  readonly $isPhantom: typeof Member.$isPhantom = Member.$isPhantom
 
   readonly address: ToField<'address'>
   readonly permission: ToField<'u128'>
@@ -230,8 +283,8 @@ export class Member implements StructClass {
   private constructor(typeArgs: [], fields: MemberFields) {
     this.$fullTypeName = composeSuiType(
       Member.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::acl::Member`
+      ...typeArgs,
+    ) as `${string}::acl::Member`
     this.$typeArgs = typeArgs
 
     this.address = fields.address
@@ -242,7 +295,10 @@ export class Member implements StructClass {
     const reifiedBcs = Member.bcs
     return {
       typeName: Member.$typeName,
-      fullTypeName: composeSuiType(Member.$typeName, ...[]) as `${typeof PKG_V1}::acl::Member`,
+      fullTypeName: composeSuiType(
+        Member.$typeName,
+        ...[],
+      ) as `${string}::acl::Member`,
       typeArgs: [] as [],
       isPhantom: Member.$isPhantom,
       reifiedTypeArgs: [],
@@ -254,7 +310,7 @@ export class Member implements StructClass {
       fromJSON: (json: Record<string, any>) => Member.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Member.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Member.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Member.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Member.fetch(client, id),
       new: (fields: MemberFields) => {
         return new Member([], fields)
       },
@@ -262,22 +318,23 @@ export class Member implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): MemberReified {
     return Member.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Member>> {
     return phantom(Member.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Member>> {
     return Member.phantom()
   }
 
   private static instantiateBcs() {
     return bcs.struct('Member', {
       address: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
       permission: bcs.u128(),
     })
@@ -314,14 +371,14 @@ export class Member implements StructClass {
     return Member.fromFields(Member.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): MemberJSONField {
     return {
       address: this.address,
       permission: this.permission.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): MemberJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -334,7 +391,9 @@ export class Member implements StructClass {
 
   static fromJSON(json: Record<string, any>): Member {
     if (json.$typeName !== Member.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Member json object: expected '${Member.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Member.fromJSONField(json)
@@ -356,25 +415,22 @@ export class Member implements StructClass {
         throw new Error(`object at is not a Member object`)
       }
 
-      return Member.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Member.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Member.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Member> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Member object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isMember(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Member> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isMember(res.type)) {
       throw new Error(`object at id ${id} is not a Member object`)
     }
 
-    return Member.fromSuiObjectData(res.data)
+    return Member.fromBcs(res.bcsBytes)
   }
 }

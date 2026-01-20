@@ -1,7 +1,12 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
 export interface CreatePartnerArgs {
   a0: TransactionObjectInput
@@ -14,9 +19,9 @@ export interface CreatePartnerArgs {
   a7: TransactionObjectInput
 }
 
-export function createPartner(tx: Transaction, args: CreatePartnerArgs) {
+export function createPartner(tx: Transaction, args: CreatePartnerArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner_script::create_partner`,
+    target: `${getPublishedAt('cetus-integrate')}::partner_script::create_partner`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -36,10 +41,17 @@ export interface UpdatePartnerRefFeeRateArgs {
   a2: bigint | TransactionArgument
 }
 
-export function updatePartnerRefFeeRate(tx: Transaction, args: UpdatePartnerRefFeeRateArgs) {
+export function updatePartnerRefFeeRate(
+  tx: Transaction,
+  args: UpdatePartnerRefFeeRateArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner_script::update_partner_ref_fee_rate`,
-    arguments: [obj(tx, args.a0), obj(tx, args.a1), pure(tx, args.a2, `u64`)],
+    target: `${getPublishedAt('cetus-integrate')}::partner_script::update_partner_ref_fee_rate`,
+    arguments: [
+      obj(tx, args.a0),
+      obj(tx, args.a1),
+      pure(tx, args.a2, `u64`),
+    ],
   })
 }
 
@@ -51,9 +63,12 @@ export interface UpdatePartnerTimeRangeArgs {
   a4: TransactionObjectInput
 }
 
-export function updatePartnerTimeRange(tx: Transaction, args: UpdatePartnerTimeRangeArgs) {
+export function updatePartnerTimeRange(
+  tx: Transaction,
+  args: UpdatePartnerTimeRangeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner_script::update_partner_time_range`,
+    target: `${getPublishedAt('cetus-integrate')}::partner_script::update_partner_time_range`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -70,10 +85,18 @@ export interface ClaimRefFeeArgs {
   a2: TransactionObjectInput
 }
 
-export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
+export function claimRefFee(
+  tx: Transaction,
+  typeArg: string,
+  args: ClaimRefFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner_script::claim_ref_fee`,
+    target: `${getPublishedAt('cetus-integrate')}::partner_script::claim_ref_fee`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.a0), obj(tx, args.a1), obj(tx, args.a2)],
+    arguments: [
+      obj(tx, args.a0),
+      obj(tx, args.a1),
+      obj(tx, args.a2),
+    ],
   })
 }

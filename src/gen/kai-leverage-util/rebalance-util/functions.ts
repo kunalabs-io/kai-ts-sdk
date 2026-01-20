@@ -1,6 +1,6 @@
-import { PUBLISHED_AT } from '..'
+import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { pure } from '../../_framework/util'
-import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
 export interface CalcFX64Args {
   sqrtPX64: bigint | TransactionArgument
@@ -8,9 +8,9 @@ export interface CalcFX64Args {
   sqrtPbX64: bigint | TransactionArgument
 }
 
-export function calcFX64(tx: Transaction, args: CalcFX64Args) {
+export function calcFX64(tx: Transaction, args: CalcFX64Args): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rebalance_util::calc_f_x64`,
+    target: `${getPublishedAt('kai-leverage-util')}::rebalance_util::calc_f_x64`,
     arguments: [
       pure(tx, args.sqrtPX64, `u128`),
       pure(tx, args.sqrtPaX64, `u128`),
@@ -26,9 +26,12 @@ export interface CalcXAndYSellAmountsArgs {
   pX128: bigint | TransactionArgument
 }
 
-export function calcXAndYSellAmounts(tx: Transaction, args: CalcXAndYSellAmountsArgs) {
+export function calcXAndYSellAmounts(
+  tx: Transaction,
+  args: CalcXAndYSellAmountsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rebalance_util::calc_x_and_y_sell_amounts`,
+    target: `${getPublishedAt('kai-leverage-util')}::rebalance_util::calc_x_and_y_sell_amounts`,
     arguments: [
       pure(tx, args.haveX, `u64`),
       pure(tx, args.haveY, `u64`),
@@ -46,9 +49,12 @@ export interface CalcRewardSellAmountsArgs {
   priceToYX128: bigint | TransactionArgument
 }
 
-export function calcRewardSellAmounts(tx: Transaction, args: CalcRewardSellAmountsArgs) {
+export function calcRewardSellAmounts(
+  tx: Transaction,
+  args: CalcRewardSellAmountsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rebalance_util::calc_reward_sell_amounts`,
+    target: `${getPublishedAt('kai-leverage-util')}::rebalance_util::calc_reward_sell_amounts`,
     arguments: [
       pure(tx, args.rewardAmount, `u64`),
       pure(tx, args.fX64, `u128`),

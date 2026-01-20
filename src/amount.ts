@@ -104,4 +104,143 @@ export class Amount {
   toDecimal(): Decimal {
     return new Decimal(this.toString())
   }
+
+  /**
+   * Returns true if the amount is zero.
+   */
+  isZero(): boolean {
+    return this.int === 0n
+  }
+
+  /**
+   * Returns true if the amount is positive (greater than zero).
+   */
+  isPositive(): boolean {
+    return this.int > 0n
+  }
+
+  /**
+   * Returns true if the amount is negative (less than zero).
+   */
+  isNegative(): boolean {
+    return this.int < 0n
+  }
+
+  /**
+   * Compares this amount with another.
+   * Returns -1 if this < other, 0 if equal, 1 if this > other.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   * @throws If the decimals don't match.
+   */
+  cmp(other: Amount): -1 | 0 | 1 {
+    if (this.decimals !== other.decimals) {
+      throw new Error('Cannot compare amounts with different decimals')
+    }
+    if (this.int < other.int) return -1
+    if (this.int > other.int) return 1
+    return 0
+  }
+
+  /**
+   * Returns true if this amount is greater than the other.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   */
+  gt(other: Amount): boolean {
+    return this.cmp(other) === 1
+  }
+
+  /**
+   * Returns true if this amount is less than the other.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   */
+  lt(other: Amount): boolean {
+    return this.cmp(other) === -1
+  }
+
+  /**
+   * Returns true if this amount is greater than or equal to the other.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   */
+  gte(other: Amount): boolean {
+    return this.cmp(other) >= 0
+  }
+
+  /**
+   * Returns true if this amount is less than or equal to the other.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   */
+  lte(other: Amount): boolean {
+    return this.cmp(other) <= 0
+  }
+
+  /**
+   * Adds another amount to this one.
+   *
+   * @param other The amount to add (must have the same decimals).
+   * @returns A new Amount representing the sum.
+   * @throws If the decimals don't match.
+   */
+  add(other: Amount): Amount {
+    if (this.decimals !== other.decimals) {
+      throw new Error('Cannot add amounts with different decimals')
+    }
+    return Amount.fromInt(this.int + other.int, this.decimals)
+  }
+
+  /**
+   * Subtracts another amount from this one.
+   *
+   * @param other The amount to subtract (must have the same decimals).
+   * @returns A new Amount representing the difference.
+   * @throws If the decimals don't match.
+   */
+  sub(other: Amount): Amount {
+    if (this.decimals !== other.decimals) {
+      throw new Error('Cannot subtract amounts with different decimals')
+    }
+    return Amount.fromInt(this.int - other.int, this.decimals)
+  }
+
+  /**
+   * Returns the absolute value of this amount.
+   *
+   * @returns A new Amount with the absolute value.
+   */
+  abs(): Amount {
+    return Amount.fromInt(this.int < 0n ? -this.int : this.int, this.decimals)
+  }
+
+  /**
+   * Returns the negation of this amount.
+   *
+   * @returns A new Amount with the negated value.
+   */
+  neg(): Amount {
+    return Amount.fromInt(-this.int, this.decimals)
+  }
+
+  /**
+   * Returns the minimum of this amount and another.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   * @returns The smaller of the two amounts.
+   */
+  min(other: Amount): Amount {
+    return this.lte(other) ? this : other
+  }
+
+  /**
+   * Returns the maximum of this amount and another.
+   *
+   * @param other The amount to compare with (must have the same decimals).
+   * @returns The larger of the two amounts.
+   */
+  max(other: Amount): Amount {
+    return this.gte(other) ? this : other
+  }
 }

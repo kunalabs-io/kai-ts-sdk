@@ -1,24 +1,32 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function deserializeHeader(tx: Transaction, cur: TransactionObjectInput) {
+export function deserializeHeader(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::deserialize_header`,
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::deserialize_header`,
     arguments: [obj(tx, cur)],
   })
 }
 
-export function destroy(tx: Transaction, batch: TransactionObjectInput) {
+export function destroy(tx: Transaction, batch: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::destroy`,
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::destroy`,
     arguments: [obj(tx, batch)],
   })
 }
 
-export function getAttestationCount(tx: Transaction, batch: TransactionObjectInput) {
+export function getAttestationCount(
+  tx: Transaction,
+  batch: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::get_attestation_count`,
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::get_attestation_count`,
     arguments: [obj(tx, batch)],
   })
 }
@@ -28,10 +36,13 @@ export interface GetPriceInfoArgs {
   index: bigint | TransactionArgument
 }
 
-export function getPriceInfo(tx: Transaction, args: GetPriceInfoArgs) {
+export function getPriceInfo(tx: Transaction, args: GetPriceInfoArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::get_price_info`,
-    arguments: [obj(tx, args.batch), pure(tx, args.index, `u64`)],
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::get_price_info`,
+    arguments: [
+      obj(tx, args.batch),
+      pure(tx, args.index, `u64`),
+    ],
   })
 }
 
@@ -40,10 +51,13 @@ export interface DeserializeArgs {
   clock: TransactionObjectInput
 }
 
-export function deserialize(tx: Transaction, args: DeserializeArgs) {
+export function deserialize(tx: Transaction, args: DeserializeArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::deserialize`,
-    arguments: [pure(tx, args.bytes, `vector<u8>`), obj(tx, args.clock)],
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::deserialize`,
+    arguments: [
+      pure(tx, args.bytes, `vector<u8>`),
+      obj(tx, args.clock),
+    ],
   })
 }
 
@@ -52,9 +66,15 @@ export interface DeserializePriceInfoArgs {
   clock: TransactionObjectInput
 }
 
-export function deserializePriceInfo(tx: Transaction, args: DeserializePriceInfoArgs) {
+export function deserializePriceInfo(
+  tx: Transaction,
+  args: DeserializePriceInfoArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::batch_price_attestation::deserialize_price_info`,
-    arguments: [obj(tx, args.cur), obj(tx, args.clock)],
+    target: `${getPublishedAt('pyth')}::batch_price_attestation::deserialize_price_info`,
+    arguments: [
+      obj(tx, args.cur),
+      obj(tx, args.clock),
+    ],
   })
 }

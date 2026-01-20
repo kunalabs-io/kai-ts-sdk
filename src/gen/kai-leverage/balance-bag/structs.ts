@@ -1,29 +1,51 @@
+/**
+ * Collection for managing heterogeneous token balances.
+ *
+ * This module provides a type-safe collection that can store balances for multiple
+ * coin types simultaneously. It's commonly used in scenarios where a single entity
+ * needs to hold and manage various token types, such as collateral management in
+ * lending protocols or multi-asset treasury systems.
+ *
+ * Key properties:
+ * - Maintains summary information for efficient queries
+ * - Supports partial and full withdrawals by token type
+ * - Automatically handles zero-balance cleanup
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
+import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
 import { UID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== BalanceBag =============================== */
 
 export function isBalanceBag(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::balance_bag::BalanceBag`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'balance_bag::BalanceBag')}::balance_bag::BalanceBag`
 }
 
 export interface BalanceBagFields {
@@ -34,17 +56,31 @@ export interface BalanceBagFields {
 
 export type BalanceBagReified = Reified<BalanceBag, BalanceBagFields>
 
+export type BalanceBagJSONField = {
+  id: string
+  amounts: ToJSON<VecMap<TypeName, 'u64'>>
+  inner: ToJSON<Bag>
+}
+
+export type BalanceBagJSON = {
+  $typeName: typeof BalanceBag.$typeName
+  $typeArgs: []
+} & BalanceBagJSONField
+
+/** Collection that stores balances for multiple coin types. */
 export class BalanceBag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::balance_bag::BalanceBag`
+  static readonly $typeName: `${string}::balance_bag::BalanceBag` = `${
+    getTypeOrigin('kai-leverage', 'balance_bag::BalanceBag')
+  }::balance_bag::BalanceBag` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = BalanceBag.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::balance_bag::BalanceBag`
+  readonly $typeName: typeof BalanceBag.$typeName = BalanceBag.$typeName
+  readonly $fullTypeName: `${string}::balance_bag::BalanceBag`
   readonly $typeArgs: []
-  readonly $isPhantom = BalanceBag.$isPhantom
+  readonly $isPhantom: typeof BalanceBag.$isPhantom = BalanceBag.$isPhantom
 
   readonly id: ToField<UID>
   readonly amounts: ToField<VecMap<TypeName, 'u64'>>
@@ -53,8 +89,8 @@ export class BalanceBag implements StructClass {
   private constructor(typeArgs: [], fields: BalanceBagFields) {
     this.$fullTypeName = composeSuiType(
       BalanceBag.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::balance_bag::BalanceBag`
+      ...typeArgs,
+    ) as `${string}::balance_bag::BalanceBag`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -68,8 +104,8 @@ export class BalanceBag implements StructClass {
       typeName: BalanceBag.$typeName,
       fullTypeName: composeSuiType(
         BalanceBag.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::balance_bag::BalanceBag`,
+        ...[],
+      ) as `${string}::balance_bag::BalanceBag`,
       typeArgs: [] as [],
       isPhantom: BalanceBag.$isPhantom,
       reifiedTypeArgs: [],
@@ -81,7 +117,7 @@ export class BalanceBag implements StructClass {
       fromJSON: (json: Record<string, any>) => BalanceBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BalanceBag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BalanceBag.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => BalanceBag.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => BalanceBag.fetch(client, id),
       new: (fields: BalanceBagFields) => {
         return new BalanceBag([], fields)
       },
@@ -89,14 +125,15 @@ export class BalanceBag implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): BalanceBagReified {
     return BalanceBag.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<BalanceBag>> {
     return phantom(BalanceBag.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<BalanceBag>> {
     return BalanceBag.phantom()
   }
 
@@ -134,7 +171,7 @@ export class BalanceBag implements StructClass {
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       amounts: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.amounts
+        item.fields.amounts,
       ),
       inner: decodeFromFieldsWithTypes(Bag.reified(), item.fields.inner),
     })
@@ -144,7 +181,7 @@ export class BalanceBag implements StructClass {
     return BalanceBag.fromFields(BalanceBag.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BalanceBagJSONField {
     return {
       id: this.id,
       amounts: this.amounts.toJSONField(),
@@ -152,7 +189,7 @@ export class BalanceBag implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): BalanceBagJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -166,7 +203,9 @@ export class BalanceBag implements StructClass {
 
   static fromJSON(json: Record<string, any>): BalanceBag {
     if (json.$typeName !== BalanceBag.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a BalanceBag json object: expected '${BalanceBag.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return BalanceBag.fromJSONField(json)
@@ -188,25 +227,22 @@ export class BalanceBag implements StructClass {
         throw new Error(`object at is not a BalanceBag object`)
       }
 
-      return BalanceBag.fromBcs(fromB64(data.bcs.bcsBytes))
+      return BalanceBag.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return BalanceBag.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<BalanceBag> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching BalanceBag object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBalanceBag(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<BalanceBag> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBalanceBag(res.type)) {
       throw new Error(`object at id ${id} is not a BalanceBag object`)
     }
 
-    return BalanceBag.fromSuiObjectData(res.data)
+    return BalanceBag.fromBcs(res.bcsBytes)
   }
 }

@@ -1,29 +1,36 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 import { UpgradeCap } from '../../sui/package/structs'
 import { ConsumedVAAs } from '../../wormhole/consumed-vaas/structs'
 import { DataSource } from '../data-source/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 /* ============================== LatestOnly =============================== */
 
 export function isLatestOnly(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::state::LatestOnly`
+  return type === `${getTypeOrigin('pyth', 'state::LatestOnly')}::state::LatestOnly`
 }
 
 export interface LatestOnlyFields {
@@ -32,25 +39,40 @@ export interface LatestOnlyFields {
 
 export type LatestOnlyReified = Reified<LatestOnly, LatestOnlyFields>
 
+export type LatestOnlyJSONField = {
+  dummyField: boolean
+}
+
+export type LatestOnlyJSON = {
+  $typeName: typeof LatestOnly.$typeName
+  $typeArgs: []
+} & LatestOnlyJSONField
+
+/**
+ * Capability reflecting that the current build version is used to invoke
+ * state methods.
+ */
 export class LatestOnly implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::state::LatestOnly`
+  static readonly $typeName: `${string}::state::LatestOnly` = `${
+    getTypeOrigin('pyth', 'state::LatestOnly')
+  }::state::LatestOnly` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = LatestOnly.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::state::LatestOnly`
+  readonly $typeName: typeof LatestOnly.$typeName = LatestOnly.$typeName
+  readonly $fullTypeName: `${string}::state::LatestOnly`
   readonly $typeArgs: []
-  readonly $isPhantom = LatestOnly.$isPhantom
+  readonly $isPhantom: typeof LatestOnly.$isPhantom = LatestOnly.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: LatestOnlyFields) {
     this.$fullTypeName = composeSuiType(
       LatestOnly.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::state::LatestOnly`
+      ...typeArgs,
+    ) as `${string}::state::LatestOnly`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -62,8 +84,8 @@ export class LatestOnly implements StructClass {
       typeName: LatestOnly.$typeName,
       fullTypeName: composeSuiType(
         LatestOnly.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::state::LatestOnly`,
+        ...[],
+      ) as `${string}::state::LatestOnly`,
       typeArgs: [] as [],
       isPhantom: LatestOnly.$isPhantom,
       reifiedTypeArgs: [],
@@ -75,7 +97,7 @@ export class LatestOnly implements StructClass {
       fromJSON: (json: Record<string, any>) => LatestOnly.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LatestOnly.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LatestOnly.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => LatestOnly.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => LatestOnly.fetch(client, id),
       new: (fields: LatestOnlyFields) => {
         return new LatestOnly([], fields)
       },
@@ -83,14 +105,15 @@ export class LatestOnly implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): LatestOnlyReified {
     return LatestOnly.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<LatestOnly>> {
     return phantom(LatestOnly.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<LatestOnly>> {
     return LatestOnly.phantom()
   }
 
@@ -110,7 +133,9 @@ export class LatestOnly implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): LatestOnly {
-    return LatestOnly.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return LatestOnly.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): LatestOnly {
@@ -127,23 +152,27 @@ export class LatestOnly implements StructClass {
     return LatestOnly.fromFields(LatestOnly.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LatestOnlyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): LatestOnlyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): LatestOnly {
-    return LatestOnly.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return LatestOnly.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): LatestOnly {
     if (json.$typeName !== LatestOnly.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LatestOnly json object: expected '${LatestOnly.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return LatestOnly.fromJSONField(json)
@@ -165,26 +194,23 @@ export class LatestOnly implements StructClass {
         throw new Error(`object at is not a LatestOnly object`)
       }
 
-      return LatestOnly.fromBcs(fromB64(data.bcs.bcsBytes))
+      return LatestOnly.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LatestOnly.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<LatestOnly> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LatestOnly object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLatestOnly(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<LatestOnly> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLatestOnly(res.type)) {
       throw new Error(`object at id ${id} is not a LatestOnly object`)
     }
 
-    return LatestOnly.fromSuiObjectData(res.data)
+    return LatestOnly.fromBcs(res.bcsBytes)
   }
 }
 
@@ -192,7 +218,7 @@ export class LatestOnly implements StructClass {
 
 export function isState(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::state::State`
+  return type === `${getTypeOrigin('pyth', 'state::State')}::state::State`
 }
 
 export interface StateFields {
@@ -208,17 +234,35 @@ export interface StateFields {
 
 export type StateReified = Reified<State, StateFields>
 
+export type StateJSONField = {
+  id: string
+  governanceDataSource: ToJSON<DataSource>
+  stalePriceThreshold: string
+  baseUpdateFee: string
+  feeRecipientAddress: string
+  lastExecutedGovernanceSequence: string
+  consumedVaas: ToJSON<ConsumedVAAs>
+  upgradeCap: ToJSON<UpgradeCap>
+}
+
+export type StateJSON = {
+  $typeName: typeof State.$typeName
+  $typeArgs: []
+} & StateJSONField
+
 export class State implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::state::State`
+  static readonly $typeName: `${string}::state::State` = `${
+    getTypeOrigin('pyth', 'state::State')
+  }::state::State` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = State.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::state::State`
+  readonly $typeName: typeof State.$typeName = State.$typeName
+  readonly $fullTypeName: `${string}::state::State`
   readonly $typeArgs: []
-  readonly $isPhantom = State.$isPhantom
+  readonly $isPhantom: typeof State.$isPhantom = State.$isPhantom
 
   readonly id: ToField<UID>
   readonly governanceDataSource: ToField<DataSource>
@@ -232,8 +276,8 @@ export class State implements StructClass {
   private constructor(typeArgs: [], fields: StateFields) {
     this.$fullTypeName = composeSuiType(
       State.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::state::State`
+      ...typeArgs,
+    ) as `${string}::state::State`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -250,7 +294,10 @@ export class State implements StructClass {
     const reifiedBcs = State.bcs
     return {
       typeName: State.$typeName,
-      fullTypeName: composeSuiType(State.$typeName, ...[]) as `${typeof PKG_V1}::state::State`,
+      fullTypeName: composeSuiType(
+        State.$typeName,
+        ...[],
+      ) as `${string}::state::State`,
       typeArgs: [] as [],
       isPhantom: State.$isPhantom,
       reifiedTypeArgs: [],
@@ -262,7 +309,7 @@ export class State implements StructClass {
       fromJSON: (json: Record<string, any>) => State.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => State.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => State.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => State.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => State.fetch(client, id),
       new: (fields: StateFields) => {
         return new State([], fields)
       },
@@ -270,14 +317,15 @@ export class State implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): StateReified {
     return State.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<State>> {
     return phantom(State.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<State>> {
     return State.phantom()
   }
 
@@ -288,8 +336,8 @@ export class State implements StructClass {
       stale_price_threshold: bcs.u64(),
       base_update_fee: bcs.u64(),
       fee_recipient_address: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
       last_executed_governance_sequence: bcs.u64(),
       consumed_vaas: ConsumedVAAs.bcs,
@@ -315,7 +363,7 @@ export class State implements StructClass {
       feeRecipientAddress: decodeFromFields('address', fields.fee_recipient_address),
       lastExecutedGovernanceSequence: decodeFromFields(
         'u64',
-        fields.last_executed_governance_sequence
+        fields.last_executed_governance_sequence,
       ),
       consumedVaas: decodeFromFields(ConsumedVAAs.reified(), fields.consumed_vaas),
       upgradeCap: decodeFromFields(UpgradeCap.reified(), fields.upgrade_cap),
@@ -331,14 +379,14 @@ export class State implements StructClass {
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       governanceDataSource: decodeFromFieldsWithTypes(
         DataSource.reified(),
-        item.fields.governance_data_source
+        item.fields.governance_data_source,
       ),
       stalePriceThreshold: decodeFromFieldsWithTypes('u64', item.fields.stale_price_threshold),
       baseUpdateFee: decodeFromFieldsWithTypes('u64', item.fields.base_update_fee),
       feeRecipientAddress: decodeFromFieldsWithTypes('address', item.fields.fee_recipient_address),
       lastExecutedGovernanceSequence: decodeFromFieldsWithTypes(
         'u64',
-        item.fields.last_executed_governance_sequence
+        item.fields.last_executed_governance_sequence,
       ),
       consumedVaas: decodeFromFieldsWithTypes(ConsumedVAAs.reified(), item.fields.consumed_vaas),
       upgradeCap: decodeFromFieldsWithTypes(UpgradeCap.reified(), item.fields.upgrade_cap),
@@ -349,7 +397,7 @@ export class State implements StructClass {
     return State.fromFields(State.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): StateJSONField {
     return {
       id: this.id,
       governanceDataSource: this.governanceDataSource.toJSONField(),
@@ -362,7 +410,7 @@ export class State implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): StateJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -375,7 +423,7 @@ export class State implements StructClass {
       feeRecipientAddress: decodeFromJSONField('address', field.feeRecipientAddress),
       lastExecutedGovernanceSequence: decodeFromJSONField(
         'u64',
-        field.lastExecutedGovernanceSequence
+        field.lastExecutedGovernanceSequence,
       ),
       consumedVaas: decodeFromJSONField(ConsumedVAAs.reified(), field.consumedVaas),
       upgradeCap: decodeFromJSONField(UpgradeCap.reified(), field.upgradeCap),
@@ -384,7 +432,9 @@ export class State implements StructClass {
 
   static fromJSON(json: Record<string, any>): State {
     if (json.$typeName !== State.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a State json object: expected '${State.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return State.fromJSONField(json)
@@ -406,26 +456,23 @@ export class State implements StructClass {
         throw new Error(`object at is not a State object`)
       }
 
-      return State.fromBcs(fromB64(data.bcs.bcsBytes))
+      return State.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return State.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<State> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching State object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isState(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<State> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isState(res.type)) {
       throw new Error(`object at id ${id} is not a State object`)
     }
 
-    return State.fromSuiObjectData(res.data)
+    return State.fromBcs(res.bcsBytes)
   }
 }
 
@@ -433,7 +480,7 @@ export class State implements StructClass {
 
 export function isCurrentDigest(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::state::CurrentDigest`
+  return type === `${getTypeOrigin('pyth', 'state::CurrentDigest')}::state::CurrentDigest`
 }
 
 export interface CurrentDigestFields {
@@ -442,25 +489,36 @@ export interface CurrentDigestFields {
 
 export type CurrentDigestReified = Reified<CurrentDigest, CurrentDigestFields>
 
+export type CurrentDigestJSONField = {
+  dummyField: boolean
+}
+
+export type CurrentDigestJSON = {
+  $typeName: typeof CurrentDigest.$typeName
+  $typeArgs: []
+} & CurrentDigestJSONField
+
 export class CurrentDigest implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::state::CurrentDigest`
+  static readonly $typeName: `${string}::state::CurrentDigest` = `${
+    getTypeOrigin('pyth', 'state::CurrentDigest')
+  }::state::CurrentDigest` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = CurrentDigest.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::state::CurrentDigest`
+  readonly $typeName: typeof CurrentDigest.$typeName = CurrentDigest.$typeName
+  readonly $fullTypeName: `${string}::state::CurrentDigest`
   readonly $typeArgs: []
-  readonly $isPhantom = CurrentDigest.$isPhantom
+  readonly $isPhantom: typeof CurrentDigest.$isPhantom = CurrentDigest.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: CurrentDigestFields) {
     this.$fullTypeName = composeSuiType(
       CurrentDigest.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::state::CurrentDigest`
+      ...typeArgs,
+    ) as `${string}::state::CurrentDigest`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -472,8 +530,8 @@ export class CurrentDigest implements StructClass {
       typeName: CurrentDigest.$typeName,
       fullTypeName: composeSuiType(
         CurrentDigest.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::state::CurrentDigest`,
+        ...[],
+      ) as `${string}::state::CurrentDigest`,
       typeArgs: [] as [],
       isPhantom: CurrentDigest.$isPhantom,
       reifiedTypeArgs: [],
@@ -485,7 +543,7 @@ export class CurrentDigest implements StructClass {
       fromJSON: (json: Record<string, any>) => CurrentDigest.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => CurrentDigest.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CurrentDigest.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CurrentDigest.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => CurrentDigest.fetch(client, id),
       new: (fields: CurrentDigestFields) => {
         return new CurrentDigest([], fields)
       },
@@ -493,14 +551,15 @@ export class CurrentDigest implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): CurrentDigestReified {
     return CurrentDigest.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<CurrentDigest>> {
     return phantom(CurrentDigest.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<CurrentDigest>> {
     return CurrentDigest.phantom()
   }
 
@@ -520,7 +579,9 @@ export class CurrentDigest implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): CurrentDigest {
-    return CurrentDigest.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return CurrentDigest.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): CurrentDigest {
@@ -537,13 +598,13 @@ export class CurrentDigest implements StructClass {
     return CurrentDigest.fromFields(CurrentDigest.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): CurrentDigestJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): CurrentDigestJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -555,7 +616,9 @@ export class CurrentDigest implements StructClass {
 
   static fromJSON(json: Record<string, any>): CurrentDigest {
     if (json.$typeName !== CurrentDigest.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CurrentDigest json object: expected '${CurrentDigest.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return CurrentDigest.fromJSONField(json)
@@ -577,25 +640,22 @@ export class CurrentDigest implements StructClass {
         throw new Error(`object at is not a CurrentDigest object`)
       }
 
-      return CurrentDigest.fromBcs(fromB64(data.bcs.bcsBytes))
+      return CurrentDigest.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CurrentDigest.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<CurrentDigest> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching CurrentDigest object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCurrentDigest(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<CurrentDigest> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCurrentDigest(res.type)) {
       throw new Error(`object at id ${id} is not a CurrentDigest object`)
     }
 
-    return CurrentDigest.fromSuiObjectData(res.data)
+    return CurrentDigest.fromBcs(res.bcsBytes)
   }
 }

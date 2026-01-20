@@ -1,34 +1,57 @@
-import * as reified from '../../_framework/reified'
-import { LinkedTable } from '../../_dependencies/source/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/linked-table/structs'
+/**
+ * The `position` module is designed for the convenience of the `Pool`'s position and all `position` related
+ * operations are completed by this module. Regarding the `position` of `clmmpool`,
+ * there are several points that need to be explained:
+ *
+ * 1. `clmmpool` specifies the ownership of the `position` through an `Object` named `position_nft`,
+ * rather than a wallet address. This means that whoever owns the `position_nft` owns the position it holds.
+ * This also means that `clmmpool`'s `position` can be transferred between users freely.
+ * 2. `position_nft` records some basic information about the position, but these data do not participate in the
+ * related calculations of the position, they are only used for display. The data that actually participates in the
+ * calculation is stored in `position_info`, which corresponds one-to-one with `position_nft` and is stored in
+ * `PositionManager`. The reason for this design is that in our other contracts, we need to read the information of
+ * multiple positions in the `Pool`.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { LinkedTable } from '../../_dependencies/move-stl/linked-table/structs'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
-import { String } from '../../move-stdlib/string/structs'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import { String } from '../../std/string/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { ID, UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== PositionManager =============================== */
 
 export function isPositionManager(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position::PositionManager`
+  return type
+    === `${getTypeOrigin('cetus-clmm', 'position::PositionManager')}::position::PositionManager`
 }
 
 export interface PositionManagerFields {
@@ -39,17 +62,36 @@ export interface PositionManagerFields {
 
 export type PositionManagerReified = Reified<PositionManager, PositionManagerFields>
 
+export type PositionManagerJSONField = {
+  tickSpacing: number
+  positionIndex: string
+  positions: ToJSON<LinkedTable<ID, ToPhantom<PositionInfo>>>
+}
+
+export type PositionManagerJSON = {
+  $typeName: typeof PositionManager.$typeName
+  $typeArgs: []
+} & PositionManagerJSONField
+
+/**
+ * The position manager for Cetus CLMM pools
+ * * `tick_spacing` - The tick spacing for this position manager
+ * * `position_index` - The index counter for positions
+ * * `positions` - A linked table mapping position IDs to their PositionInfo
+ */
 export class PositionManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position::PositionManager`
+  static readonly $typeName: `${string}::position::PositionManager` = `${
+    getTypeOrigin('cetus-clmm', 'position::PositionManager')
+  }::position::PositionManager` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::PositionManager`
+  readonly $typeName: typeof PositionManager.$typeName = PositionManager.$typeName
+  readonly $fullTypeName: `${string}::position::PositionManager`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionManager.$isPhantom
+  readonly $isPhantom: typeof PositionManager.$isPhantom = PositionManager.$isPhantom
 
   readonly tickSpacing: ToField<'u32'>
   readonly positionIndex: ToField<'u64'>
@@ -58,8 +100,8 @@ export class PositionManager implements StructClass {
   private constructor(typeArgs: [], fields: PositionManagerFields) {
     this.$fullTypeName = composeSuiType(
       PositionManager.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::PositionManager`
+      ...typeArgs,
+    ) as `${string}::position::PositionManager`
     this.$typeArgs = typeArgs
 
     this.tickSpacing = fields.tickSpacing
@@ -73,8 +115,8 @@ export class PositionManager implements StructClass {
       typeName: PositionManager.$typeName,
       fullTypeName: composeSuiType(
         PositionManager.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::PositionManager`,
+        ...[],
+      ) as `${string}::position::PositionManager`,
       typeArgs: [] as [],
       isPhantom: PositionManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -86,7 +128,7 @@ export class PositionManager implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionManager.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionManager.fetch(client, id),
       new: (fields: PositionManagerFields) => {
         return new PositionManager([], fields)
       },
@@ -94,14 +136,15 @@ export class PositionManager implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionManagerReified {
     return PositionManager.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionManager>> {
     return phantom(PositionManager.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionManager>> {
     return PositionManager.phantom()
   }
 
@@ -127,8 +170,8 @@ export class PositionManager implements StructClass {
       tickSpacing: decodeFromFields('u32', fields.tick_spacing),
       positionIndex: decodeFromFields('u64', fields.position_index),
       positions: decodeFromFields(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        fields.positions
+        LinkedTable.reified(ID.reified(), phantom(PositionInfo.reified())),
+        fields.positions,
       ),
     })
   }
@@ -142,8 +185,8 @@ export class PositionManager implements StructClass {
       tickSpacing: decodeFromFieldsWithTypes('u32', item.fields.tick_spacing),
       positionIndex: decodeFromFieldsWithTypes('u64', item.fields.position_index),
       positions: decodeFromFieldsWithTypes(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        item.fields.positions
+        LinkedTable.reified(ID.reified(), phantom(PositionInfo.reified())),
+        item.fields.positions,
       ),
     })
   }
@@ -152,7 +195,7 @@ export class PositionManager implements StructClass {
     return PositionManager.fromFields(PositionManager.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionManagerJSONField {
     return {
       tickSpacing: this.tickSpacing,
       positionIndex: this.positionIndex.toString(),
@@ -160,7 +203,7 @@ export class PositionManager implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionManagerJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -169,15 +212,17 @@ export class PositionManager implements StructClass {
       tickSpacing: decodeFromJSONField('u32', field.tickSpacing),
       positionIndex: decodeFromJSONField('u64', field.positionIndex),
       positions: decodeFromJSONField(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionInfo.reified())),
-        field.positions
+        LinkedTable.reified(ID.reified(), phantom(PositionInfo.reified())),
+        field.positions,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): PositionManager {
     if (json.$typeName !== PositionManager.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionManager json object: expected '${PositionManager.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionManager.fromJSONField(json)
@@ -199,26 +244,23 @@ export class PositionManager implements StructClass {
         throw new Error(`object at is not a PositionManager object`)
       }
 
-      return PositionManager.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionManager.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionManager.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionManager> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionManager object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionManager(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionManager> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionManager(res.type)) {
       throw new Error(`object at id ${id} is not a PositionManager object`)
     }
 
-    return PositionManager.fromSuiObjectData(res.data)
+    return PositionManager.fromBcs(res.bcsBytes)
   }
 }
 
@@ -226,7 +268,7 @@ export class PositionManager implements StructClass {
 
 export function isPOSITION(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position::POSITION`
+  return type === `${getTypeOrigin('cetus-clmm', 'position::POSITION')}::position::POSITION`
 }
 
 export interface POSITIONFields {
@@ -235,25 +277,36 @@ export interface POSITIONFields {
 
 export type POSITIONReified = Reified<POSITION, POSITIONFields>
 
+export type POSITIONJSONField = {
+  dummyField: boolean
+}
+
+export type POSITIONJSON = {
+  $typeName: typeof POSITION.$typeName
+  $typeArgs: []
+} & POSITIONJSONField
+
 export class POSITION implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position::POSITION`
+  static readonly $typeName: `${string}::position::POSITION` = `${
+    getTypeOrigin('cetus-clmm', 'position::POSITION')
+  }::position::POSITION` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = POSITION.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::POSITION`
+  readonly $typeName: typeof POSITION.$typeName = POSITION.$typeName
+  readonly $fullTypeName: `${string}::position::POSITION`
   readonly $typeArgs: []
-  readonly $isPhantom = POSITION.$isPhantom
+  readonly $isPhantom: typeof POSITION.$isPhantom = POSITION.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: POSITIONFields) {
     this.$fullTypeName = composeSuiType(
       POSITION.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::POSITION`
+      ...typeArgs,
+    ) as `${string}::position::POSITION`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -265,8 +318,8 @@ export class POSITION implements StructClass {
       typeName: POSITION.$typeName,
       fullTypeName: composeSuiType(
         POSITION.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::POSITION`,
+        ...[],
+      ) as `${string}::position::POSITION`,
       typeArgs: [] as [],
       isPhantom: POSITION.$isPhantom,
       reifiedTypeArgs: [],
@@ -278,7 +331,7 @@ export class POSITION implements StructClass {
       fromJSON: (json: Record<string, any>) => POSITION.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => POSITION.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => POSITION.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => POSITION.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => POSITION.fetch(client, id),
       new: (fields: POSITIONFields) => {
         return new POSITION([], fields)
       },
@@ -286,14 +339,15 @@ export class POSITION implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): POSITIONReified {
     return POSITION.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<POSITION>> {
     return phantom(POSITION.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<POSITION>> {
     return POSITION.phantom()
   }
 
@@ -313,7 +367,9 @@ export class POSITION implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): POSITION {
-    return POSITION.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return POSITION.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): POSITION {
@@ -330,23 +386,27 @@ export class POSITION implements StructClass {
     return POSITION.fromFields(POSITION.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): POSITIONJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): POSITIONJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): POSITION {
-    return POSITION.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return POSITION.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): POSITION {
     if (json.$typeName !== POSITION.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a POSITION json object: expected '${POSITION.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return POSITION.fromJSONField(json)
@@ -368,26 +428,23 @@ export class POSITION implements StructClass {
         throw new Error(`object at is not a POSITION object`)
       }
 
-      return POSITION.fromBcs(fromB64(data.bcs.bcsBytes))
+      return POSITION.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return POSITION.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<POSITION> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching POSITION object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPOSITION(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<POSITION> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPOSITION(res.type)) {
       throw new Error(`object at id ${id} is not a POSITION object`)
     }
 
-    return POSITION.fromSuiObjectData(res.data)
+    return POSITION.fromBcs(res.bcsBytes)
   }
 }
 
@@ -395,7 +452,7 @@ export class POSITION implements StructClass {
 
 export function isPosition(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position::Position`
+  return type === `${getTypeOrigin('cetus-clmm', 'position::Position')}::position::Position`
 }
 
 export interface PositionFields {
@@ -414,17 +471,52 @@ export interface PositionFields {
 
 export type PositionReified = Reified<Position, PositionFields>
 
+export type PositionJSONField = {
+  id: string
+  pool: string
+  index: string
+  coinTypeA: string
+  coinTypeB: string
+  name: string
+  description: string
+  url: string
+  tickLowerIndex: ToJSON<I32>
+  tickUpperIndex: ToJSON<I32>
+  liquidity: string
+}
+
+export type PositionJSON = {
+  $typeName: typeof Position.$typeName
+  $typeArgs: []
+} & PositionJSONField
+
+/**
+ * The Cetus clmmpool's position NFT.
+ * * `id` - The unique identifier for this Position object
+ * * `pool` - The pool ID
+ * * `index` - The position index
+ * * `coin_type_a` - The type name of coin A
+ * * `coin_type_b` - The type name of coin B
+ * * `name` - The name of the position
+ * * `description` - The description of the position
+ * * `url` - The URL of the position
+ * * `tick_lower_index` - The lower tick index
+ * * `tick_upper_index` - The upper tick index
+ * * `liquidity` - The liquidity of the position
+ */
 export class Position implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position::Position`
+  static readonly $typeName: `${string}::position::Position` = `${
+    getTypeOrigin('cetus-clmm', 'position::Position')
+  }::position::Position` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Position.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::Position`
+  readonly $typeName: typeof Position.$typeName = Position.$typeName
+  readonly $fullTypeName: `${string}::position::Position`
   readonly $typeArgs: []
-  readonly $isPhantom = Position.$isPhantom
+  readonly $isPhantom: typeof Position.$isPhantom = Position.$isPhantom
 
   readonly id: ToField<UID>
   readonly pool: ToField<ID>
@@ -441,8 +533,8 @@ export class Position implements StructClass {
   private constructor(typeArgs: [], fields: PositionFields) {
     this.$fullTypeName = composeSuiType(
       Position.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::Position`
+      ...typeArgs,
+    ) as `${string}::position::Position`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -464,8 +556,8 @@ export class Position implements StructClass {
       typeName: Position.$typeName,
       fullTypeName: composeSuiType(
         Position.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::Position`,
+        ...[],
+      ) as `${string}::position::Position`,
       typeArgs: [] as [],
       isPhantom: Position.$isPhantom,
       reifiedTypeArgs: [],
@@ -477,7 +569,7 @@ export class Position implements StructClass {
       fromJSON: (json: Record<string, any>) => Position.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Position.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Position.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Position.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Position.fetch(client, id),
       new: (fields: PositionFields) => {
         return new Position([], fields)
       },
@@ -485,14 +577,15 @@ export class Position implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionReified {
     return Position.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Position>> {
     return phantom(Position.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Position>> {
     return Position.phantom()
   }
 
@@ -561,13 +654,13 @@ export class Position implements StructClass {
     return Position.fromFields(Position.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionJSONField {
     return {
       id: this.id,
       pool: this.pool,
       index: this.index.toString(),
-      coinTypeA: this.coinTypeA.toJSONField(),
-      coinTypeB: this.coinTypeB.toJSONField(),
+      coinTypeA: this.coinTypeA,
+      coinTypeB: this.coinTypeB,
       name: this.name,
       description: this.description,
       url: this.url,
@@ -577,7 +670,7 @@ export class Position implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -599,7 +692,9 @@ export class Position implements StructClass {
 
   static fromJSON(json: Record<string, any>): Position {
     if (json.$typeName !== Position.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Position json object: expected '${Position.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Position.fromJSONField(json)
@@ -621,26 +716,23 @@ export class Position implements StructClass {
         throw new Error(`object at is not a Position object`)
       }
 
-      return Position.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Position.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Position.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Position> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Position object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPosition(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Position> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPosition(res.type)) {
       throw new Error(`object at id ${id} is not a Position object`)
     }
 
-    return Position.fromSuiObjectData(res.data)
+    return Position.fromBcs(res.bcsBytes)
   }
 }
 
@@ -648,7 +740,7 @@ export class Position implements StructClass {
 
 export function isPositionInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position::PositionInfo`
+  return type === `${getTypeOrigin('cetus-clmm', 'position::PositionInfo')}::position::PositionInfo`
 }
 
 export interface PositionInfoFields {
@@ -667,17 +759,52 @@ export interface PositionInfoFields {
 
 export type PositionInfoReified = Reified<PositionInfo, PositionInfoFields>
 
+export type PositionInfoJSONField = {
+  positionId: string
+  liquidity: string
+  tickLowerIndex: ToJSON<I32>
+  tickUpperIndex: ToJSON<I32>
+  feeGrowthInsideA: string
+  feeGrowthInsideB: string
+  feeOwnedA: string
+  feeOwnedB: string
+  pointsOwned: string
+  pointsGrowthInside: string
+  rewards: ToJSON<PositionReward>[]
+}
+
+export type PositionInfoJSON = {
+  $typeName: typeof PositionInfo.$typeName
+  $typeArgs: []
+} & PositionInfoJSONField
+
+/**
+ * The PositionInfo struct that stores the position info
+ * * `position_id` - The unique identifier for this PositionInfo object
+ * * `liquidity` - The liquidity of the position
+ * * `tick_lower_index` - The lower tick index
+ * * `tick_upper_index` - The upper tick index
+ * * `fee_growth_inside_a` - The fee growth inside of coin A
+ * * `fee_growth_inside_b` - The fee growth inside of coin B
+ * * `fee_owned_a` - The fee owned of coin A
+ * * `fee_owned_b` - The fee owned of coin B
+ * * `points_owned` - The points owned of the position
+ * * `points_growth_inside` - The points growth inside of the position
+ * * `rewards` - The rewards of the position
+ */
 export class PositionInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position::PositionInfo`
+  static readonly $typeName: `${string}::position::PositionInfo` = `${
+    getTypeOrigin('cetus-clmm', 'position::PositionInfo')
+  }::position::PositionInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::PositionInfo`
+  readonly $typeName: typeof PositionInfo.$typeName = PositionInfo.$typeName
+  readonly $fullTypeName: `${string}::position::PositionInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionInfo.$isPhantom
+  readonly $isPhantom: typeof PositionInfo.$isPhantom = PositionInfo.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly liquidity: ToField<'u128'>
@@ -694,8 +821,8 @@ export class PositionInfo implements StructClass {
   private constructor(typeArgs: [], fields: PositionInfoFields) {
     this.$fullTypeName = composeSuiType(
       PositionInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::PositionInfo`
+      ...typeArgs,
+    ) as `${string}::position::PositionInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -717,8 +844,8 @@ export class PositionInfo implements StructClass {
       typeName: PositionInfo.$typeName,
       fullTypeName: composeSuiType(
         PositionInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::PositionInfo`,
+        ...[],
+      ) as `${string}::position::PositionInfo`,
       typeArgs: [] as [],
       isPhantom: PositionInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -730,7 +857,7 @@ export class PositionInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionInfo.fetch(client, id),
       new: (fields: PositionInfoFields) => {
         return new PositionInfo([], fields)
       },
@@ -738,14 +865,15 @@ export class PositionInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionInfoReified {
     return PositionInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionInfo>> {
     return phantom(PositionInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionInfo>> {
     return PositionInfo.phantom()
   }
 
@@ -786,7 +914,7 @@ export class PositionInfo implements StructClass {
       feeOwnedB: decodeFromFields('u64', fields.fee_owned_b),
       pointsOwned: decodeFromFields('u128', fields.points_owned),
       pointsGrowthInside: decodeFromFields('u128', fields.points_growth_inside),
-      rewards: decodeFromFields(reified.vector(PositionReward.reified()), fields.rewards),
+      rewards: decodeFromFields(vector(PositionReward.reified()), fields.rewards),
     })
   }
 
@@ -806,10 +934,7 @@ export class PositionInfo implements StructClass {
       feeOwnedB: decodeFromFieldsWithTypes('u64', item.fields.fee_owned_b),
       pointsOwned: decodeFromFieldsWithTypes('u128', item.fields.points_owned),
       pointsGrowthInside: decodeFromFieldsWithTypes('u128', item.fields.points_growth_inside),
-      rewards: decodeFromFieldsWithTypes(
-        reified.vector(PositionReward.reified()),
-        item.fields.rewards
-      ),
+      rewards: decodeFromFieldsWithTypes(vector(PositionReward.reified()), item.fields.rewards),
     })
   }
 
@@ -817,7 +942,7 @@ export class PositionInfo implements StructClass {
     return PositionInfo.fromFields(PositionInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionInfoJSONField {
     return {
       positionId: this.positionId,
       liquidity: this.liquidity.toString(),
@@ -831,12 +956,12 @@ export class PositionInfo implements StructClass {
       pointsGrowthInside: this.pointsGrowthInside.toString(),
       rewards: fieldToJSON<Vector<PositionReward>>(
         `vector<${PositionReward.$typeName}>`,
-        this.rewards
+        this.rewards,
       ),
     }
   }
 
-  toJSON() {
+  toJSON(): PositionInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -852,13 +977,15 @@ export class PositionInfo implements StructClass {
       feeOwnedB: decodeFromJSONField('u64', field.feeOwnedB),
       pointsOwned: decodeFromJSONField('u128', field.pointsOwned),
       pointsGrowthInside: decodeFromJSONField('u128', field.pointsGrowthInside),
-      rewards: decodeFromJSONField(reified.vector(PositionReward.reified()), field.rewards),
+      rewards: decodeFromJSONField(vector(PositionReward.reified()), field.rewards),
     })
   }
 
   static fromJSON(json: Record<string, any>): PositionInfo {
     if (json.$typeName !== PositionInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionInfo json object: expected '${PositionInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionInfo.fromJSONField(json)
@@ -880,26 +1007,23 @@ export class PositionInfo implements StructClass {
         throw new Error(`object at is not a PositionInfo object`)
       }
 
-      return PositionInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionInfo(res.type)) {
       throw new Error(`object at id ${id} is not a PositionInfo object`)
     }
 
-    return PositionInfo.fromSuiObjectData(res.data)
+    return PositionInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -907,7 +1031,8 @@ export class PositionInfo implements StructClass {
 
 export function isPositionReward(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position::PositionReward`
+  return type
+    === `${getTypeOrigin('cetus-clmm', 'position::PositionReward')}::position::PositionReward`
 }
 
 export interface PositionRewardFields {
@@ -917,17 +1042,34 @@ export interface PositionRewardFields {
 
 export type PositionRewardReified = Reified<PositionReward, PositionRewardFields>
 
+export type PositionRewardJSONField = {
+  growthInside: string
+  amountOwned: string
+}
+
+export type PositionRewardJSON = {
+  $typeName: typeof PositionReward.$typeName
+  $typeArgs: []
+} & PositionRewardJSONField
+
+/**
+ * The Position's rewarder
+ * * `growth_inside` - The growth inside of the reward
+ * * `amount_owned` - The amount owned of the reward
+ */
 export class PositionReward implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position::PositionReward`
+  static readonly $typeName: `${string}::position::PositionReward` = `${
+    getTypeOrigin('cetus-clmm', 'position::PositionReward')
+  }::position::PositionReward` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionReward.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position::PositionReward`
+  readonly $typeName: typeof PositionReward.$typeName = PositionReward.$typeName
+  readonly $fullTypeName: `${string}::position::PositionReward`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionReward.$isPhantom
+  readonly $isPhantom: typeof PositionReward.$isPhantom = PositionReward.$isPhantom
 
   readonly growthInside: ToField<'u128'>
   readonly amountOwned: ToField<'u64'>
@@ -935,8 +1077,8 @@ export class PositionReward implements StructClass {
   private constructor(typeArgs: [], fields: PositionRewardFields) {
     this.$fullTypeName = composeSuiType(
       PositionReward.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position::PositionReward`
+      ...typeArgs,
+    ) as `${string}::position::PositionReward`
     this.$typeArgs = typeArgs
 
     this.growthInside = fields.growthInside
@@ -949,8 +1091,8 @@ export class PositionReward implements StructClass {
       typeName: PositionReward.$typeName,
       fullTypeName: composeSuiType(
         PositionReward.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position::PositionReward`,
+        ...[],
+      ) as `${string}::position::PositionReward`,
       typeArgs: [] as [],
       isPhantom: PositionReward.$isPhantom,
       reifiedTypeArgs: [],
@@ -962,7 +1104,7 @@ export class PositionReward implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionReward.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionReward.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionReward.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionReward.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionReward.fetch(client, id),
       new: (fields: PositionRewardFields) => {
         return new PositionReward([], fields)
       },
@@ -970,14 +1112,15 @@ export class PositionReward implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionRewardReified {
     return PositionReward.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionReward>> {
     return phantom(PositionReward.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionReward>> {
     return PositionReward.phantom()
   }
 
@@ -1019,14 +1162,14 @@ export class PositionReward implements StructClass {
     return PositionReward.fromFields(PositionReward.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionRewardJSONField {
     return {
       growthInside: this.growthInside.toString(),
       amountOwned: this.amountOwned.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): PositionRewardJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1039,7 +1182,9 @@ export class PositionReward implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionReward {
     if (json.$typeName !== PositionReward.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionReward json object: expected '${PositionReward.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionReward.fromJSONField(json)
@@ -1061,25 +1206,22 @@ export class PositionReward implements StructClass {
         throw new Error(`object at is not a PositionReward object`)
       }
 
-      return PositionReward.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionReward.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionReward.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionReward> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionReward object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionReward(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionReward> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionReward(res.type)) {
       throw new Error(`object at id ${id} is not a PositionReward object`)
     }
 
-    return PositionReward.fromSuiObjectData(res.data)
+    return PositionReward.fromBcs(res.bcsBytes)
   }
 }

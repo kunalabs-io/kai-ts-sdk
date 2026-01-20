@@ -1,12 +1,25 @@
+/**
+ * Equity share management system for supply pools, with fungible equity coin minting.
+ *
+ * This module provides the core infrastructure for tracking equity stakes in pools or other systems.
+ * It implements a share-based system where equity is represented as shares that maintain their
+ * proportional value even as the total pool value changes due to deposits, withdrawals, or yield accrual.
+ *
+ * In addition to share-based accounting, this module supports minting equity as fungible coins,
+ * enabling seamless integration with token-based protocols and facilitating transferability of ownership positions.
+ *
+ * Importantly, this system is designed to prevent value leakage due to integer arithmetic rounding:
+ * whenever fractional values arise from division or share calculations, the rounding is always
+ * performed in a way that favors the pool rather than the withdrawing party. This ensures
+ * that the system never underestimates liabilities or overestimates ownership due to rounding,
+ * preserving the solvency and integrity of the protocol.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeStr,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -14,24 +27,34 @@ import {
   decodeFromJSONField,
   extractType,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeStr,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
 import { TreasuryCap } from '../../sui/coin/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== EquityShareBalance =============================== */
 
 export function isEquityShareBalance(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::equity::EquityShareBalance` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'equity::EquityShareBalance')}::equity::EquityShareBalance`
+      + '<',
+  )
 }
 
 export interface EquityShareBalanceFields<T extends PhantomTypeArgument> {
@@ -43,40 +66,52 @@ export type EquityShareBalanceReified<T extends PhantomTypeArgument> = Reified<
   EquityShareBalanceFields<T>
 >
 
+export type EquityShareBalanceJSONField<T extends PhantomTypeArgument> = {
+  valueX64: string
+}
+
+export type EquityShareBalanceJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof EquityShareBalance.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & EquityShareBalanceJSONField<T>
+
+/** Represents a balance of equity shares in Q64.64 format. */
 export class EquityShareBalance<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::equity::EquityShareBalance`
+  static readonly $typeName: `${string}::equity::EquityShareBalance` = `${
+    getTypeOrigin('kai-leverage', 'equity::EquityShareBalance')
+  }::equity::EquityShareBalance` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = EquityShareBalance.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::equity::EquityShareBalance<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof EquityShareBalance.$typeName = EquityShareBalance.$typeName
+  readonly $fullTypeName: `${string}::equity::EquityShareBalance<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = EquityShareBalance.$isPhantom
+  readonly $isPhantom: typeof EquityShareBalance.$isPhantom = EquityShareBalance.$isPhantom
 
   readonly valueX64: ToField<'u128'>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: EquityShareBalanceFields<T>) {
     this.$fullTypeName = composeSuiType(
       EquityShareBalance.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::equity::EquityShareBalance<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::equity::EquityShareBalance<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.valueX64 = fields.valueX64
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): EquityShareBalanceReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = EquityShareBalance.bcs
     return {
       typeName: EquityShareBalance.$typeName,
       fullTypeName: composeSuiType(
         EquityShareBalance.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::equity::EquityShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::equity::EquityShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: EquityShareBalance.$isPhantom,
       reifiedTypeArgs: [T],
@@ -91,7 +126,8 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
         EquityShareBalance.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         EquityShareBalance.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => EquityShareBalance.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        EquityShareBalance.fetch(client, T, id),
       new: (fields: EquityShareBalanceFields<ToPhantomTypeArgument<T>>) => {
         return new EquityShareBalance([extractType(T)], fields)
       },
@@ -99,16 +135,17 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
     }
   }
 
-  static get r() {
+  static get r(): typeof EquityShareBalance.reified {
     return EquityShareBalance.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<EquityShareBalance<ToPhantomTypeArgument<T>>>> {
     return phantom(EquityShareBalance.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof EquityShareBalance.phantom {
     return EquityShareBalance.phantom
   }
 
@@ -129,7 +166,7 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     return EquityShareBalance.reified(typeArg).new({
       valueX64: decodeFromFields('u128', fields.value_x64),
@@ -138,7 +175,7 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     if (!isEquityShareBalance(item.type)) {
       throw new Error('not a EquityShareBalance type')
@@ -152,24 +189,24 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     return EquityShareBalance.fromFields(typeArg, EquityShareBalance.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EquityShareBalanceJSONField<T> {
     return {
       valueX64: this.valueX64.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): EquityShareBalanceJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     return EquityShareBalance.reified(typeArg).new({
       valueX64: decodeFromJSONField('u128', field.valueX64),
@@ -178,15 +215,17 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== EquityShareBalance.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EquityShareBalance json object: expected '${EquityShareBalance.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(EquityShareBalance.$typeName, extractType(typeArg)),
+      composeSuiType(EquityShareBalance.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return EquityShareBalance.fromJSONField(typeArg, json)
@@ -194,7 +233,7 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -207,7 +246,7 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): EquityShareBalance<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEquityShareBalance(data.bcs.type)) {
@@ -217,41 +256,56 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return EquityShareBalance.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return EquityShareBalance.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EquityShareBalance.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<EquityShareBalance<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EquityShareBalance object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEquityShareBalance(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEquityShareBalance(res.type)) {
       throw new Error(`object at id ${id} is not a EquityShareBalance object`)
     }
 
-    return EquityShareBalance.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return EquityShareBalance.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -259,7 +313,9 @@ export class EquityShareBalance<T extends PhantomTypeArgument> implements Struct
 
 export function isEquityRegistry(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::equity::EquityRegistry` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'equity::EquityRegistry')}::equity::EquityRegistry` + '<',
+  )
 }
 
 export interface EquityRegistryFields<T extends PhantomTypeArgument> {
@@ -272,17 +328,30 @@ export type EquityRegistryReified<T extends PhantomTypeArgument> = Reified<
   EquityRegistryFields<T>
 >
 
+export type EquityRegistryJSONField<T extends PhantomTypeArgument> = {
+  supplyX64: string
+  underlyingValueX64: string
+}
+
+export type EquityRegistryJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof EquityRegistry.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & EquityRegistryJSONField<T>
+
+/** Registry tracking total equity shares and underlying asset value. */
 export class EquityRegistry<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::equity::EquityRegistry`
+  static readonly $typeName: `${string}::equity::EquityRegistry` = `${
+    getTypeOrigin('kai-leverage', 'equity::EquityRegistry')
+  }::equity::EquityRegistry` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = EquityRegistry.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::equity::EquityRegistry<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof EquityRegistry.$typeName = EquityRegistry.$typeName
+  readonly $fullTypeName: `${string}::equity::EquityRegistry<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = EquityRegistry.$isPhantom
+  readonly $isPhantom: typeof EquityRegistry.$isPhantom = EquityRegistry.$isPhantom
 
   readonly supplyX64: ToField<'u128'>
   readonly underlyingValueX64: ToField<'u128'>
@@ -290,8 +359,8 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: EquityRegistryFields<T>) {
     this.$fullTypeName = composeSuiType(
       EquityRegistry.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::equity::EquityRegistry<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::equity::EquityRegistry<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.supplyX64 = fields.supplyX64
@@ -299,15 +368,15 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): EquityRegistryReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = EquityRegistry.bcs
     return {
       typeName: EquityRegistry.$typeName,
       fullTypeName: composeSuiType(
         EquityRegistry.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::equity::EquityRegistry<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::equity::EquityRegistry<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: EquityRegistry.$isPhantom,
       reifiedTypeArgs: [T],
@@ -319,7 +388,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
       fromJSON: (json: Record<string, any>) => EquityRegistry.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => EquityRegistry.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => EquityRegistry.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => EquityRegistry.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => EquityRegistry.fetch(client, T, id),
       new: (fields: EquityRegistryFields<ToPhantomTypeArgument<T>>) => {
         return new EquityRegistry([extractType(T)], fields)
       },
@@ -327,16 +396,17 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  static get r() {
+  static get r(): typeof EquityRegistry.reified {
     return EquityRegistry.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<EquityRegistry<ToPhantomTypeArgument<T>>>> {
     return phantom(EquityRegistry.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof EquityRegistry.phantom {
     return EquityRegistry.phantom
   }
 
@@ -358,7 +428,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     return EquityRegistry.reified(typeArg).new({
       supplyX64: decodeFromFields('u128', fields.supply_x64),
@@ -368,7 +438,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     if (!isEquityRegistry(item.type)) {
       throw new Error('not a EquityRegistry type')
@@ -383,25 +453,25 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     return EquityRegistry.fromFields(typeArg, EquityRegistry.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EquityRegistryJSONField<T> {
     return {
       supplyX64: this.supplyX64.toString(),
       underlyingValueX64: this.underlyingValueX64.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): EquityRegistryJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     return EquityRegistry.reified(typeArg).new({
       supplyX64: decodeFromJSONField('u128', field.supplyX64),
@@ -411,15 +481,17 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== EquityRegistry.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EquityRegistry json object: expected '${EquityRegistry.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(EquityRegistry.$typeName, extractType(typeArg)),
+      composeSuiType(EquityRegistry.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return EquityRegistry.fromJSONField(typeArg, json)
@@ -427,7 +499,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -440,7 +512,7 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): EquityRegistry<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEquityRegistry(data.bcs.type)) {
@@ -450,41 +522,56 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return EquityRegistry.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return EquityRegistry.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EquityRegistry.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<EquityRegistry<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EquityRegistry object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEquityRegistry(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEquityRegistry(res.type)) {
       throw new Error(`object at id ${id} is not a EquityRegistry object`)
     }
 
-    return EquityRegistry.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return EquityRegistry.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -492,7 +579,9 @@ export class EquityRegistry<T extends PhantomTypeArgument> implements StructClas
 
 export function isEquityTreasury(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::equity::EquityTreasury` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'equity::EquityTreasury')}::equity::EquityTreasury` + '<',
+  )
 }
 
 export interface EquityTreasuryFields<T extends PhantomTypeArgument> {
@@ -505,17 +594,30 @@ export type EquityTreasuryReified<T extends PhantomTypeArgument> = Reified<
   EquityTreasuryFields<T>
 >
 
+export type EquityTreasuryJSONField<T extends PhantomTypeArgument> = {
+  registry: ToJSON<EquityRegistry<T>>
+  cap: ToJSON<TreasuryCap<T>>
+}
+
+export type EquityTreasuryJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof EquityTreasury.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & EquityTreasuryJSONField<T>
+
+/** Treasury combining equity registry with coin minting capability. */
 export class EquityTreasury<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::equity::EquityTreasury`
+  static readonly $typeName: `${string}::equity::EquityTreasury` = `${
+    getTypeOrigin('kai-leverage', 'equity::EquityTreasury')
+  }::equity::EquityTreasury` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = EquityTreasury.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::equity::EquityTreasury<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof EquityTreasury.$typeName = EquityTreasury.$typeName
+  readonly $fullTypeName: `${string}::equity::EquityTreasury<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = EquityTreasury.$isPhantom
+  readonly $isPhantom: typeof EquityTreasury.$isPhantom = EquityTreasury.$isPhantom
 
   readonly registry: ToField<EquityRegistry<T>>
   readonly cap: ToField<TreasuryCap<T>>
@@ -523,8 +625,8 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: EquityTreasuryFields<T>) {
     this.$fullTypeName = composeSuiType(
       EquityTreasury.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::equity::EquityTreasury<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::equity::EquityTreasury<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.registry = fields.registry
@@ -532,15 +634,15 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): EquityTreasuryReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = EquityTreasury.bcs
     return {
       typeName: EquityTreasury.$typeName,
       fullTypeName: composeSuiType(
         EquityTreasury.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V1}::equity::EquityTreasury<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::equity::EquityTreasury<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: EquityTreasury.$isPhantom,
       reifiedTypeArgs: [T],
@@ -552,7 +654,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
       fromJSON: (json: Record<string, any>) => EquityTreasury.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => EquityTreasury.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => EquityTreasury.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => EquityTreasury.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => EquityTreasury.fetch(client, T, id),
       new: (fields: EquityTreasuryFields<ToPhantomTypeArgument<T>>) => {
         return new EquityTreasury([extractType(T)], fields)
       },
@@ -560,16 +662,17 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  static get r() {
+  static get r(): typeof EquityTreasury.reified {
     return EquityTreasury.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<EquityTreasury<ToPhantomTypeArgument<T>>>> {
     return phantom(EquityTreasury.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof EquityTreasury.phantom {
     return EquityTreasury.phantom
   }
 
@@ -591,7 +694,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     return EquityTreasury.reified(typeArg).new({
       registry: decodeFromFields(EquityRegistry.reified(typeArg), fields.registry),
@@ -601,7 +704,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     if (!isEquityTreasury(item.type)) {
       throw new Error('not a EquityTreasury type')
@@ -616,25 +719,25 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     return EquityTreasury.fromFields(typeArg, EquityTreasury.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EquityTreasuryJSONField<T> {
     return {
       registry: this.registry.toJSONField(),
       cap: this.cap.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): EquityTreasuryJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     return EquityTreasury.reified(typeArg).new({
       registry: decodeFromJSONField(EquityRegistry.reified(typeArg), field.registry),
@@ -644,15 +747,17 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== EquityTreasury.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EquityTreasury json object: expected '${EquityTreasury.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(EquityTreasury.$typeName, extractType(typeArg)),
+      composeSuiType(EquityTreasury.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return EquityTreasury.fromJSONField(typeArg, json)
@@ -660,7 +765,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -673,7 +778,7 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): EquityTreasury<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEquityTreasury(data.bcs.type)) {
@@ -683,40 +788,55 @@ export class EquityTreasury<T extends PhantomTypeArgument> implements StructClas
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return EquityTreasury.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return EquityTreasury.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EquityTreasury.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<EquityTreasury<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EquityTreasury object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEquityTreasury(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEquityTreasury(res.type)) {
       throw new Error(`object at id ${id} is not a EquityTreasury object`)
     }
 
-    return EquityTreasury.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return EquityTreasury.fromBcs(typeArg, res.bcsBytes)
   }
 }

@@ -1,12 +1,10 @@
-import * as reified from '../../_framework/reified'
+/** A set data structure. */
+
+import { bcs, BcsType } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeArgument,
-  ToTypeStr,
-  TypeArgument,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -15,27 +13,34 @@ import {
   extractType,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
   toBcs,
+  ToField,
+  ToJSON,
+  ToTypeArgument,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
+  TypeArgument,
+  vector,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Table } from '../../sui/table/structs'
-import { PKG_V1 } from '../index'
-import { BcsType, bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Unit =============================== */
 
 export function isUnit(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::set::Unit`
+  return type === `${getTypeOrigin('pyth', 'set::Unit')}::set::Unit`
 }
 
 export interface UnitFields {
@@ -44,25 +49,37 @@ export interface UnitFields {
 
 export type UnitReified = Reified<Unit, UnitFields>
 
+export type UnitJSONField = {
+  dummyField: boolean
+}
+
+export type UnitJSON = {
+  $typeName: typeof Unit.$typeName
+  $typeArgs: []
+} & UnitJSONField
+
+/** Empty struct. Used as the value type in mappings to encode a set */
 export class Unit implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::set::Unit`
+  static readonly $typeName: `${string}::set::Unit` = `${
+    getTypeOrigin('pyth', 'set::Unit')
+  }::set::Unit` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Unit.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set::Unit`
+  readonly $typeName: typeof Unit.$typeName = Unit.$typeName
+  readonly $fullTypeName: `${string}::set::Unit`
   readonly $typeArgs: []
-  readonly $isPhantom = Unit.$isPhantom
+  readonly $isPhantom: typeof Unit.$isPhantom = Unit.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: UnitFields) {
     this.$fullTypeName = composeSuiType(
       Unit.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::set::Unit`
+      ...typeArgs,
+    ) as `${string}::set::Unit`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -72,7 +89,10 @@ export class Unit implements StructClass {
     const reifiedBcs = Unit.bcs
     return {
       typeName: Unit.$typeName,
-      fullTypeName: composeSuiType(Unit.$typeName, ...[]) as `${typeof PKG_V1}::set::Unit`,
+      fullTypeName: composeSuiType(
+        Unit.$typeName,
+        ...[],
+      ) as `${string}::set::Unit`,
       typeArgs: [] as [],
       isPhantom: Unit.$isPhantom,
       reifiedTypeArgs: [],
@@ -84,7 +104,7 @@ export class Unit implements StructClass {
       fromJSON: (json: Record<string, any>) => Unit.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Unit.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Unit.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Unit.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Unit.fetch(client, id),
       new: (fields: UnitFields) => {
         return new Unit([], fields)
       },
@@ -92,14 +112,15 @@ export class Unit implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): UnitReified {
     return Unit.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Unit>> {
     return phantom(Unit.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Unit>> {
     return Unit.phantom()
   }
 
@@ -119,7 +140,9 @@ export class Unit implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): Unit {
-    return Unit.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return Unit.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): Unit {
@@ -136,23 +159,27 @@ export class Unit implements StructClass {
     return Unit.fromFields(Unit.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): UnitJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): UnitJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): Unit {
-    return Unit.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return Unit.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): Unit {
     if (json.$typeName !== Unit.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Unit json object: expected '${Unit.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Unit.fromJSONField(json)
@@ -174,26 +201,23 @@ export class Unit implements StructClass {
         throw new Error(`object at is not a Unit object`)
       }
 
-      return Unit.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Unit.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Unit.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Unit> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Unit object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isUnit(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Unit> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isUnit(res.type)) {
       throw new Error(`object at id ${id} is not a Unit object`)
     }
 
-    return Unit.fromSuiObjectData(res.data)
+    return Unit.fromBcs(res.bcsBytes)
   }
 }
 
@@ -201,7 +225,7 @@ export class Unit implements StructClass {
 
 export function isSet(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::set::Set` + '<')
+  return type.startsWith(`${getTypeOrigin('pyth', 'set::Set')}::set::Set` + '<')
 }
 
 export interface SetFields<A extends TypeArgument> {
@@ -211,17 +235,33 @@ export interface SetFields<A extends TypeArgument> {
 
 export type SetReified<A extends TypeArgument> = Reified<Set<A>, SetFields<A>>
 
+export type SetJSONField<A extends TypeArgument> = {
+  keys: ToJSON<A>[]
+  elems: ToJSON<Table<ToPhantom<A>, ToPhantom<Unit>>>
+}
+
+export type SetJSON<A extends TypeArgument> = {
+  $typeName: typeof Set.$typeName
+  $typeArgs: [ToTypeStr<A>]
+} & SetJSONField<A>
+
+/**
+ * A set containing elements of type `A` with support for membership
+ * checking.
+ */
 export class Set<A extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::set::Set`
+  static readonly $typeName: `${string}::set::Set` = `${
+    getTypeOrigin('pyth', 'set::Set')
+  }::set::Set` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
-  readonly $typeName = Set.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set::Set<${ToTypeStr<A>}>`
+  readonly $typeName: typeof Set.$typeName = Set.$typeName
+  readonly $fullTypeName: `${string}::set::Set<${ToTypeStr<A>}>`
   readonly $typeArgs: [ToTypeStr<A>]
-  readonly $isPhantom = Set.$isPhantom
+  readonly $isPhantom: typeof Set.$isPhantom = Set.$isPhantom
 
   readonly keys: ToField<Vector<A>>
   readonly elems: ToField<Table<ToPhantom<A>, ToPhantom<Unit>>>
@@ -229,22 +269,24 @@ export class Set<A extends TypeArgument> implements StructClass {
   private constructor(typeArgs: [ToTypeStr<A>], fields: SetFields<A>) {
     this.$fullTypeName = composeSuiType(
       Set.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::set::Set<${ToTypeStr<A>}>`
+      ...typeArgs,
+    ) as `${string}::set::Set<${ToTypeStr<A>}>`
     this.$typeArgs = typeArgs
 
     this.keys = fields.keys
     this.elems = fields.elems
   }
 
-  static reified<A extends Reified<TypeArgument, any>>(A: A): SetReified<ToTypeArgument<A>> {
+  static reified<A extends Reified<TypeArgument, any>>(
+    A: A,
+  ): SetReified<ToTypeArgument<A>> {
     const reifiedBcs = Set.bcs(toBcs(A))
     return {
       typeName: Set.$typeName,
       fullTypeName: composeSuiType(
         Set.$typeName,
-        ...[extractType(A)]
-      ) as `${typeof PKG_V1}::set::Set<${ToTypeStr<ToTypeArgument<A>>}>`,
+        ...[extractType(A)],
+      ) as `${string}::set::Set<${ToTypeStr<ToTypeArgument<A>>}>`,
       typeArgs: [extractType(A)] as [ToTypeStr<ToTypeArgument<A>>],
       isPhantom: Set.$isPhantom,
       reifiedTypeArgs: [A],
@@ -256,7 +298,7 @@ export class Set<A extends TypeArgument> implements StructClass {
       fromJSON: (json: Record<string, any>) => Set.fromJSON(A, json),
       fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(A, content),
       fromSuiObjectData: (content: SuiObjectData) => Set.fromSuiObjectData(A, content),
-      fetch: async (client: SuiClient, id: string) => Set.fetch(client, A, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Set.fetch(client, A, id),
       new: (fields: SetFields<ToTypeArgument<A>>) => {
         return new Set([extractType(A)], fields)
       },
@@ -264,16 +306,17 @@ export class Set<A extends TypeArgument> implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): typeof Set.reified {
     return Set.reified
   }
 
   static phantom<A extends Reified<TypeArgument, any>>(
-    A: A
+    A: A,
   ): PhantomReified<ToTypeStr<Set<ToTypeArgument<A>>>> {
     return phantom(Set.reified(A))
   }
-  static get p() {
+
+  static get p(): typeof Set.phantom {
     return Set.phantom
   }
 
@@ -296,20 +339,20 @@ export class Set<A extends TypeArgument> implements StructClass {
 
   static fromFields<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): Set<ToTypeArgument<A>> {
     return Set.reified(typeArg).new({
-      keys: decodeFromFields(reified.vector(typeArg), fields.keys),
+      keys: decodeFromFields(vector(typeArg), fields.keys),
       elems: decodeFromFields(
-        Table.reified(reified.phantom(typeArg), reified.phantom(Unit.reified())),
-        fields.elems
+        Table.reified(phantom(typeArg), phantom(Unit.reified())),
+        fields.elems,
       ),
     })
   }
 
   static fromFieldsWithTypes<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): Set<ToTypeArgument<A>> {
     if (!isSet(item.type)) {
       throw new Error('not a Set type')
@@ -317,58 +360,59 @@ export class Set<A extends TypeArgument> implements StructClass {
     assertFieldsWithTypesArgsMatch(item, [typeArg])
 
     return Set.reified(typeArg).new({
-      keys: decodeFromFieldsWithTypes(reified.vector(typeArg), item.fields.keys),
+      keys: decodeFromFieldsWithTypes(vector(typeArg), item.fields.keys),
       elems: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom(typeArg), reified.phantom(Unit.reified())),
-        item.fields.elems
+        Table.reified(phantom(typeArg), phantom(Unit.reified())),
+        item.fields.elems,
       ),
     })
   }
 
   static fromBcs<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    data: Uint8Array
+    data: Uint8Array,
   ): Set<ToTypeArgument<A>> {
     const typeArgs = [typeArg]
-
-    return Set.fromFields(typeArg, Set.bcs(toBcs(typeArgs[0])).parse(data))
+    return Set.fromFields(typeArg, Set.bcs(toBcs(typeArg)).parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SetJSONField<A> {
     return {
       keys: fieldToJSON<Vector<A>>(`vector<${this.$typeArgs[0]}>`, this.keys),
       elems: this.elems.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): SetJSON<A> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    field: any
+    field: any,
   ): Set<ToTypeArgument<A>> {
     return Set.reified(typeArg).new({
-      keys: decodeFromJSONField(reified.vector(typeArg), field.keys),
+      keys: decodeFromJSONField(vector(typeArg), field.keys),
       elems: decodeFromJSONField(
-        Table.reified(reified.phantom(typeArg), reified.phantom(Unit.reified())),
-        field.elems
+        Table.reified(phantom(typeArg), phantom(Unit.reified())),
+        field.elems,
       ),
     })
   }
 
   static fromJSON<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): Set<ToTypeArgument<A>> {
     if (json.$typeName !== Set.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Set json object: expected '${Set.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(Set.$typeName, extractType(typeArg)),
+      composeSuiType(Set.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return Set.fromJSONField(typeArg, json)
@@ -376,7 +420,7 @@ export class Set<A extends TypeArgument> implements StructClass {
 
   static fromSuiParsedData<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): Set<ToTypeArgument<A>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -389,7 +433,7 @@ export class Set<A extends TypeArgument> implements StructClass {
 
   static fromSuiObjectData<A extends Reified<TypeArgument, any>>(
     typeArg: A,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): Set<ToTypeArgument<A>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSet(data.bcs.type)) {
@@ -399,40 +443,55 @@ export class Set<A extends TypeArgument> implements StructClass {
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return Set.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return Set.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Set.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<A extends Reified<TypeArgument, any>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: A,
-    id: string
+    id: string,
   ): Promise<Set<ToTypeArgument<A>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Set object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSet(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSet(res.type)) {
       throw new Error(`object at id ${id} is not a Set object`)
     }
 
-    return Set.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Set.fromBcs(typeArg, res.bcsBytes)
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@kunalabs-io/kai",
-  "version": "0.24.0",
+  "version": "0.25.0",
   "license": "Apache-2.0",
   "author": "Kuna Labs <build@kunalabs.io>",
   "main": "./dist/index.cjs",
@@ -32,7 +32,9 @@
     "watch": "pnpm build --watch",
     "check": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@cetusprotocol/aggregator-sdk": "0.12.1",
@@ -56,6 +58,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.4.2",
     "tsup": "^8.3.5",
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "vitest": "^2.1.0"
   }
 }

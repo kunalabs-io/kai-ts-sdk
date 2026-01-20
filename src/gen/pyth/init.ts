@@ -1,3 +1,4 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as batchPriceAttestation from './batch-price-attestation/structs'
 import * as contractUpgrade from './contract-upgrade/structs'
 import * as dataSource from './data-source/structs'
@@ -22,9 +23,8 @@ import * as set from './set/structs'
 import * as setup from './setup/structs'
 import * as state from './state/structs'
 import * as versionControl from './version-control/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(batchPriceAttestation.BatchPriceAttestation)
   loader.register(batchPriceAttestation.Header)
   loader.register(contractUpgrade.ContractUpgraded)

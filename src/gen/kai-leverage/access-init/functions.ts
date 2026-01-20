@@ -1,7 +1,15 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction, otw: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::access_init::init`, arguments: [obj(tx, otw)] })
+export function init(tx: Transaction, otw: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::access_init::init`,
+    arguments: [obj(tx, otw)],
+  })
 }

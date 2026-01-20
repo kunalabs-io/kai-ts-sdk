@@ -1,11 +1,20 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Element } from './structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function bytes(tx: Transaction, typeArg: string, e: TransactionObjectInput) {
+export function bytes(
+  tx: Transaction,
+  typeArg: string,
+  e: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::bytes`,
+    target: `${getPublishedAt('sui')}::group_ops::bytes`,
     typeArguments: [typeArg],
     arguments: [obj(tx, e)],
   })
@@ -16,11 +25,14 @@ export interface EqualArgs {
   e2: TransactionObjectInput
 }
 
-export function equal(tx: Transaction, typeArg: string, args: EqualArgs) {
+export function equal(tx: Transaction, typeArg: string, args: EqualArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::equal`,
+    target: `${getPublishedAt('sui')}::group_ops::equal`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.e1), obj(tx, args.e2)],
+    arguments: [
+      obj(tx, args.e1),
+      obj(tx, args.e2),
+    ],
   })
 }
 
@@ -30,9 +42,13 @@ export interface FromBytesArgs {
   isTrusted: boolean | TransactionArgument
 }
 
-export function fromBytes(tx: Transaction, typeArg: string, args: FromBytesArgs) {
+export function fromBytes(
+  tx: Transaction,
+  typeArg: string,
+  args: FromBytesArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::from_bytes`,
+    target: `${getPublishedAt('sui')}::group_ops::from_bytes`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.type, `u8`),
@@ -48,11 +64,15 @@ export interface AddArgs {
   e2: TransactionObjectInput
 }
 
-export function add(tx: Transaction, typeArg: string, args: AddArgs) {
+export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::add`,
+    target: `${getPublishedAt('sui')}::group_ops::add`,
     typeArguments: [typeArg],
-    arguments: [pure(tx, args.type, `u8`), obj(tx, args.e1), obj(tx, args.e2)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      obj(tx, args.e1),
+      obj(tx, args.e2),
+    ],
   })
 }
 
@@ -62,11 +82,15 @@ export interface SubArgs {
   e2: TransactionObjectInput
 }
 
-export function sub(tx: Transaction, typeArg: string, args: SubArgs) {
+export function sub(tx: Transaction, typeArg: string, args: SubArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::sub`,
+    target: `${getPublishedAt('sui')}::group_ops::sub`,
     typeArguments: [typeArg],
-    arguments: [pure(tx, args.type, `u8`), obj(tx, args.e1), obj(tx, args.e2)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      obj(tx, args.e1),
+      obj(tx, args.e2),
+    ],
   })
 }
 
@@ -76,11 +100,15 @@ export interface MulArgs {
   e: TransactionObjectInput
 }
 
-export function mul(tx: Transaction, typeArgs: [string, string], args: MulArgs) {
+export function mul(tx: Transaction, typeArgs: [string, string], args: MulArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::mul`,
+    target: `${getPublishedAt('sui')}::group_ops::mul`,
     typeArguments: typeArgs,
-    arguments: [pure(tx, args.type, `u8`), obj(tx, args.scalar), obj(tx, args.e)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      obj(tx, args.scalar),
+      obj(tx, args.e),
+    ],
   })
 }
 
@@ -90,11 +118,16 @@ export interface DivArgs {
   e: TransactionObjectInput
 }
 
-export function div(tx: Transaction, typeArgs: [string, string], args: DivArgs) {
+/** Fails if scalar = 0. Else returns 1/scalar * e. */
+export function div(tx: Transaction, typeArgs: [string, string], args: DivArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::div`,
+    target: `${getPublishedAt('sui')}::group_ops::div`,
     typeArguments: typeArgs,
-    arguments: [pure(tx, args.type, `u8`), obj(tx, args.scalar), obj(tx, args.e)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      obj(tx, args.scalar),
+      obj(tx, args.e),
+    ],
   })
 }
 
@@ -103,11 +136,14 @@ export interface HashToArgs {
   m: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function hashTo(tx: Transaction, typeArg: string, args: HashToArgs) {
+export function hashTo(tx: Transaction, typeArg: string, args: HashToArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::hash_to`,
+    target: `${getPublishedAt('sui')}::group_ops::hash_to`,
     typeArguments: [typeArg],
-    arguments: [pure(tx, args.type, `u8`), pure(tx, args.m, `vector<u8>`)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      pure(tx, args.m, `vector<u8>`),
+    ],
   })
 }
 
@@ -117,13 +153,18 @@ export interface MultiScalarMultiplicationArgs {
   elements: Array<TransactionObjectInput> | TransactionArgument
 }
 
+/**
+ * Aborts with `EInputTooLong` if the vectors are too long.
+ *
+ * This function is currently only enabled on Devnet.
+ */
 export function multiScalarMultiplication(
   tx: Transaction,
   typeArgs: [string, string],
-  args: MultiScalarMultiplicationArgs
-) {
+  args: MultiScalarMultiplicationArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::multi_scalar_multiplication`,
+    target: `${getPublishedAt('sui')}::group_ops::multi_scalar_multiplication`,
     typeArguments: typeArgs,
     arguments: [
       pure(tx, args.type, `u8`),
@@ -139,11 +180,19 @@ export interface PairingArgs {
   e2: TransactionObjectInput
 }
 
-export function pairing(tx: Transaction, typeArgs: [string, string, string], args: PairingArgs) {
+export function pairing(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: PairingArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::pairing`,
+    target: `${getPublishedAt('sui')}::group_ops::pairing`,
     typeArguments: typeArgs,
-    arguments: [pure(tx, args.type, `u8`), obj(tx, args.e1), obj(tx, args.e2)],
+    arguments: [
+      pure(tx, args.type, `u8`),
+      obj(tx, args.e1),
+      obj(tx, args.e2),
+    ],
   })
 }
 
@@ -153,11 +202,19 @@ export interface ConvertArgs {
   e: TransactionObjectInput
 }
 
-export function convert(tx: Transaction, typeArgs: [string, string], args: ConvertArgs) {
+export function convert(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: ConvertArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::convert`,
+    target: `${getPublishedAt('sui')}::group_ops::convert`,
     typeArguments: typeArgs,
-    arguments: [pure(tx, args.fromType, `u8`), pure(tx, args.toType, `u8`), obj(tx, args.e)],
+    arguments: [
+      pure(tx, args.fromType, `u8`),
+      pure(tx, args.toType, `u8`),
+      obj(tx, args.e),
+    ],
   })
 }
 
@@ -166,9 +223,9 @@ export interface SumArgs {
   terms: Array<TransactionObjectInput> | TransactionArgument
 }
 
-export function sum(tx: Transaction, typeArg: string, args: SumArgs) {
+export function sum(tx: Transaction, typeArg: string, args: SumArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::sum`,
+    target: `${getPublishedAt('sui')}::group_ops::sum`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.type, `u8`),
@@ -182,10 +239,13 @@ export interface InternalValidateArgs {
   bytes: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalValidate(tx: Transaction, args: InternalValidateArgs) {
+export function internalValidate(tx: Transaction, args: InternalValidateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_validate`,
-    arguments: [pure(tx, args.type, `u8`), pure(tx, args.bytes, `vector<u8>`)],
+    target: `${getPublishedAt('sui')}::group_ops::internal_validate`,
+    arguments: [
+      pure(tx, args.type, `u8`),
+      pure(tx, args.bytes, `vector<u8>`),
+    ],
   })
 }
 
@@ -195,9 +255,9 @@ export interface InternalAddArgs {
   e2: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalAdd(tx: Transaction, args: InternalAddArgs) {
+export function internalAdd(tx: Transaction, args: InternalAddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_add`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_add`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.e1, `vector<u8>`),
@@ -212,9 +272,9 @@ export interface InternalSubArgs {
   e2: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalSub(tx: Transaction, args: InternalSubArgs) {
+export function internalSub(tx: Transaction, args: InternalSubArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_sub`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_sub`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.e1, `vector<u8>`),
@@ -229,9 +289,9 @@ export interface InternalMulArgs {
   e2: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalMul(tx: Transaction, args: InternalMulArgs) {
+export function internalMul(tx: Transaction, args: InternalMulArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_mul`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_mul`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.e1, `vector<u8>`),
@@ -246,9 +306,9 @@ export interface InternalDivArgs {
   e2: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalDiv(tx: Transaction, args: InternalDivArgs) {
+export function internalDiv(tx: Transaction, args: InternalDivArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_div`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_div`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.e1, `vector<u8>`),
@@ -262,10 +322,13 @@ export interface InternalHashToArgs {
   m: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalHashTo(tx: Transaction, args: InternalHashToArgs) {
+export function internalHashTo(tx: Transaction, args: InternalHashToArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_hash_to`,
-    arguments: [pure(tx, args.type, `u8`), pure(tx, args.m, `vector<u8>`)],
+    target: `${getPublishedAt('sui')}::group_ops::internal_hash_to`,
+    arguments: [
+      pure(tx, args.type, `u8`),
+      pure(tx, args.m, `vector<u8>`),
+    ],
   })
 }
 
@@ -275,9 +338,12 @@ export interface InternalMultiScalarMulArgs {
   elements: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalMultiScalarMul(tx: Transaction, args: InternalMultiScalarMulArgs) {
+export function internalMultiScalarMul(
+  tx: Transaction,
+  args: InternalMultiScalarMulArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_multi_scalar_mul`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_multi_scalar_mul`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.scalars, `vector<u8>`),
@@ -292,9 +358,9 @@ export interface InternalPairingArgs {
   e2: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalPairing(tx: Transaction, args: InternalPairingArgs) {
+export function internalPairing(tx: Transaction, args: InternalPairingArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_pairing`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_pairing`,
     arguments: [
       pure(tx, args.type, `u8`),
       pure(tx, args.e1, `vector<u8>`),
@@ -309,9 +375,9 @@ export interface InternalConvertArgs {
   e: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function internalConvert(tx: Transaction, args: InternalConvertArgs) {
+export function internalConvert(tx: Transaction, args: InternalConvertArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_convert`,
+    target: `${getPublishedAt('sui')}::group_ops::internal_convert`,
     arguments: [
       pure(tx, args.fromType, `u8`),
       pure(tx, args.toType, `u8`),
@@ -325,10 +391,13 @@ export interface InternalSumArgs {
   e: Array<Array<number | TransactionArgument> | TransactionArgument> | TransactionArgument
 }
 
-export function internalSum(tx: Transaction, args: InternalSumArgs) {
+export function internalSum(tx: Transaction, args: InternalSumArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::internal_sum`,
-    arguments: [pure(tx, args.type, `u8`), pure(tx, args.e, `vector<vector<u8>>`)],
+    target: `${getPublishedAt('sui')}::group_ops::internal_sum`,
+    arguments: [
+      pure(tx, args.type, `u8`),
+      pure(tx, args.e, `vector<vector<u8>>`),
+    ],
   })
 }
 
@@ -338,9 +407,9 @@ export interface SetAsPrefixArgs {
   buffer: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function setAsPrefix(tx: Transaction, args: SetAsPrefixArgs) {
+export function setAsPrefix(tx: Transaction, args: SetAsPrefixArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::group_ops::set_as_prefix`,
+    target: `${getPublishedAt('sui')}::group_ops::set_as_prefix`,
     arguments: [
       pure(tx, args.x, `u64`),
       pure(tx, args.bigEndian, `bool`),

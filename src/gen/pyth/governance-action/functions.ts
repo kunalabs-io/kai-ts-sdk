@@ -1,59 +1,64 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function fromU8(tx: Transaction, value: number | TransactionArgument) {
+export function fromU8(tx: Transaction, value: number | TransactionArgument): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::from_u8`,
+    target: `${getPublishedAt('pyth')}::governance_action::from_u8`,
     arguments: [pure(tx, value, `u8`)],
   })
 }
 
-export function getValue(tx: Transaction, a: TransactionObjectInput) {
+export function getValue(tx: Transaction, a: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::get_value`,
+    target: `${getPublishedAt('pyth')}::governance_action::get_value`,
     arguments: [obj(tx, a)],
   })
 }
 
-export function newContractUpgrade(tx: Transaction) {
+export function newContractUpgrade(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_contract_upgrade`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_contract_upgrade`,
     arguments: [],
   })
 }
 
-export function newSetGovernanceDataSource(tx: Transaction) {
+export function newSetGovernanceDataSource(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_governance_data_source`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_set_governance_data_source`,
     arguments: [],
   })
 }
 
-export function newSetDataSources(tx: Transaction) {
+export function newSetDataSources(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_data_sources`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_set_data_sources`,
     arguments: [],
   })
 }
 
-export function newSetUpdateFee(tx: Transaction) {
+export function newSetUpdateFee(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_update_fee`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_set_update_fee`,
     arguments: [],
   })
 }
 
-export function newSetStalePriceThreshold(tx: Transaction) {
+export function newSetStalePriceThreshold(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_stale_price_threshold`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_set_stale_price_threshold`,
     arguments: [],
   })
 }
 
-export function newSetFeeRecipient(tx: Transaction) {
+export function newSetFeeRecipient(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_action::new_set_fee_recipient`,
+    target: `${getPublishedAt('pyth')}::governance_action::new_set_fee_recipient`,
     arguments: [],
   })
 }

@@ -1,28 +1,38 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== ExpectSwapResult =============================== */
 
 export function isExpectSwapResult(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::expect_swap::ExpectSwapResult`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResult')
+    }::expect_swap::ExpectSwapResult`
 }
 
 export interface ExpectSwapResultFields {
@@ -37,17 +47,34 @@ export interface ExpectSwapResultFields {
 
 export type ExpectSwapResultReified = Reified<ExpectSwapResult, ExpectSwapResultFields>
 
+export type ExpectSwapResultJSONField = {
+  amountIn: string
+  amountOut: string
+  feeAmount: string
+  feeRate: string
+  afterSqrtPrice: string
+  isExceed: boolean
+  stepResults: ToJSON<SwapStepResult>[]
+}
+
+export type ExpectSwapResultJSON = {
+  $typeName: typeof ExpectSwapResult.$typeName
+  $typeArgs: []
+} & ExpectSwapResultJSONField
+
 export class ExpectSwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::expect_swap::ExpectSwapResult`
+  static readonly $typeName: `${string}::expect_swap::ExpectSwapResult` = `${
+    getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResult')
+  }::expect_swap::ExpectSwapResult` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ExpectSwapResult.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::expect_swap::ExpectSwapResult`
+  readonly $typeName: typeof ExpectSwapResult.$typeName = ExpectSwapResult.$typeName
+  readonly $fullTypeName: `${string}::expect_swap::ExpectSwapResult`
   readonly $typeArgs: []
-  readonly $isPhantom = ExpectSwapResult.$isPhantom
+  readonly $isPhantom: typeof ExpectSwapResult.$isPhantom = ExpectSwapResult.$isPhantom
 
   readonly amountIn: ToField<'u256'>
   readonly amountOut: ToField<'u256'>
@@ -60,8 +87,8 @@ export class ExpectSwapResult implements StructClass {
   private constructor(typeArgs: [], fields: ExpectSwapResultFields) {
     this.$fullTypeName = composeSuiType(
       ExpectSwapResult.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::expect_swap::ExpectSwapResult`
+      ...typeArgs,
+    ) as `${string}::expect_swap::ExpectSwapResult`
     this.$typeArgs = typeArgs
 
     this.amountIn = fields.amountIn
@@ -79,8 +106,8 @@ export class ExpectSwapResult implements StructClass {
       typeName: ExpectSwapResult.$typeName,
       fullTypeName: composeSuiType(
         ExpectSwapResult.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::expect_swap::ExpectSwapResult`,
+        ...[],
+      ) as `${string}::expect_swap::ExpectSwapResult`,
       typeArgs: [] as [],
       isPhantom: ExpectSwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -92,7 +119,7 @@ export class ExpectSwapResult implements StructClass {
       fromJSON: (json: Record<string, any>) => ExpectSwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ExpectSwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ExpectSwapResult.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ExpectSwapResult.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ExpectSwapResult.fetch(client, id),
       new: (fields: ExpectSwapResultFields) => {
         return new ExpectSwapResult([], fields)
       },
@@ -100,14 +127,15 @@ export class ExpectSwapResult implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ExpectSwapResultReified {
     return ExpectSwapResult.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ExpectSwapResult>> {
     return phantom(ExpectSwapResult.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ExpectSwapResult>> {
     return ExpectSwapResult.phantom()
   }
 
@@ -140,7 +168,7 @@ export class ExpectSwapResult implements StructClass {
       feeRate: decodeFromFields('u64', fields.fee_rate),
       afterSqrtPrice: decodeFromFields('u128', fields.after_sqrt_price),
       isExceed: decodeFromFields('bool', fields.is_exceed),
-      stepResults: decodeFromFields(reified.vector(SwapStepResult.reified()), fields.step_results),
+      stepResults: decodeFromFields(vector(SwapStepResult.reified()), fields.step_results),
     })
   }
 
@@ -157,8 +185,8 @@ export class ExpectSwapResult implements StructClass {
       afterSqrtPrice: decodeFromFieldsWithTypes('u128', item.fields.after_sqrt_price),
       isExceed: decodeFromFieldsWithTypes('bool', item.fields.is_exceed),
       stepResults: decodeFromFieldsWithTypes(
-        reified.vector(SwapStepResult.reified()),
-        item.fields.step_results
+        vector(SwapStepResult.reified()),
+        item.fields.step_results,
       ),
     })
   }
@@ -167,7 +195,7 @@ export class ExpectSwapResult implements StructClass {
     return ExpectSwapResult.fromFields(ExpectSwapResult.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ExpectSwapResultJSONField {
     return {
       amountIn: this.amountIn.toString(),
       amountOut: this.amountOut.toString(),
@@ -177,12 +205,12 @@ export class ExpectSwapResult implements StructClass {
       isExceed: this.isExceed,
       stepResults: fieldToJSON<Vector<SwapStepResult>>(
         `vector<${SwapStepResult.$typeName}>`,
-        this.stepResults
+        this.stepResults,
       ),
     }
   }
 
-  toJSON() {
+  toJSON(): ExpectSwapResultJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -194,13 +222,15 @@ export class ExpectSwapResult implements StructClass {
       feeRate: decodeFromJSONField('u64', field.feeRate),
       afterSqrtPrice: decodeFromJSONField('u128', field.afterSqrtPrice),
       isExceed: decodeFromJSONField('bool', field.isExceed),
-      stepResults: decodeFromJSONField(reified.vector(SwapStepResult.reified()), field.stepResults),
+      stepResults: decodeFromJSONField(vector(SwapStepResult.reified()), field.stepResults),
     })
   }
 
   static fromJSON(json: Record<string, any>): ExpectSwapResult {
     if (json.$typeName !== ExpectSwapResult.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ExpectSwapResult json object: expected '${ExpectSwapResult.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ExpectSwapResult.fromJSONField(json)
@@ -222,26 +252,23 @@ export class ExpectSwapResult implements StructClass {
         throw new Error(`object at is not a ExpectSwapResult object`)
       }
 
-      return ExpectSwapResult.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ExpectSwapResult.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ExpectSwapResult.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ExpectSwapResult> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ExpectSwapResult object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isExpectSwapResult(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ExpectSwapResult> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isExpectSwapResult(res.type)) {
       throw new Error(`object at id ${id} is not a ExpectSwapResult object`)
     }
 
-    return ExpectSwapResult.fromSuiObjectData(res.data)
+    return ExpectSwapResult.fromBcs(res.bcsBytes)
   }
 }
 
@@ -249,7 +276,10 @@ export class ExpectSwapResult implements StructClass {
 
 export function isSwapStepResult(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::expect_swap::SwapStepResult`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::SwapStepResult')
+    }::expect_swap::SwapStepResult`
 }
 
 export interface SwapStepResultFields {
@@ -264,17 +294,34 @@ export interface SwapStepResultFields {
 
 export type SwapStepResultReified = Reified<SwapStepResult, SwapStepResultFields>
 
+export type SwapStepResultJSONField = {
+  currentSqrtPrice: string
+  targetSqrtPrice: string
+  currentLiquidity: string
+  amountIn: string
+  amountOut: string
+  feeAmount: string
+  remainderAmount: string
+}
+
+export type SwapStepResultJSON = {
+  $typeName: typeof SwapStepResult.$typeName
+  $typeArgs: []
+} & SwapStepResultJSONField
+
 export class SwapStepResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::expect_swap::SwapStepResult`
+  static readonly $typeName: `${string}::expect_swap::SwapStepResult` = `${
+    getTypeOrigin('cetus-integrate', 'expect_swap::SwapStepResult')
+  }::expect_swap::SwapStepResult` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = SwapStepResult.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::expect_swap::SwapStepResult`
+  readonly $typeName: typeof SwapStepResult.$typeName = SwapStepResult.$typeName
+  readonly $fullTypeName: `${string}::expect_swap::SwapStepResult`
   readonly $typeArgs: []
-  readonly $isPhantom = SwapStepResult.$isPhantom
+  readonly $isPhantom: typeof SwapStepResult.$isPhantom = SwapStepResult.$isPhantom
 
   readonly currentSqrtPrice: ToField<'u128'>
   readonly targetSqrtPrice: ToField<'u128'>
@@ -287,8 +334,8 @@ export class SwapStepResult implements StructClass {
   private constructor(typeArgs: [], fields: SwapStepResultFields) {
     this.$fullTypeName = composeSuiType(
       SwapStepResult.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::expect_swap::SwapStepResult`
+      ...typeArgs,
+    ) as `${string}::expect_swap::SwapStepResult`
     this.$typeArgs = typeArgs
 
     this.currentSqrtPrice = fields.currentSqrtPrice
@@ -306,8 +353,8 @@ export class SwapStepResult implements StructClass {
       typeName: SwapStepResult.$typeName,
       fullTypeName: composeSuiType(
         SwapStepResult.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::expect_swap::SwapStepResult`,
+        ...[],
+      ) as `${string}::expect_swap::SwapStepResult`,
       typeArgs: [] as [],
       isPhantom: SwapStepResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -319,7 +366,7 @@ export class SwapStepResult implements StructClass {
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapStepResult.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SwapStepResult.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => SwapStepResult.fetch(client, id),
       new: (fields: SwapStepResultFields) => {
         return new SwapStepResult([], fields)
       },
@@ -327,14 +374,15 @@ export class SwapStepResult implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): SwapStepResultReified {
     return SwapStepResult.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<SwapStepResult>> {
     return phantom(SwapStepResult.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<SwapStepResult>> {
     return SwapStepResult.phantom()
   }
 
@@ -391,7 +439,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromFields(SwapStepResult.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SwapStepResultJSONField {
     return {
       currentSqrtPrice: this.currentSqrtPrice.toString(),
       targetSqrtPrice: this.targetSqrtPrice.toString(),
@@ -403,7 +451,7 @@ export class SwapStepResult implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): SwapStepResultJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -421,7 +469,9 @@ export class SwapStepResult implements StructClass {
 
   static fromJSON(json: Record<string, any>): SwapStepResult {
     if (json.$typeName !== SwapStepResult.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a SwapStepResult json object: expected '${SwapStepResult.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return SwapStepResult.fromJSONField(json)
@@ -443,26 +493,23 @@ export class SwapStepResult implements StructClass {
         throw new Error(`object at is not a SwapStepResult object`)
       }
 
-      return SwapStepResult.fromBcs(fromB64(data.bcs.bcsBytes))
+      return SwapStepResult.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return SwapStepResult.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<SwapStepResult> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SwapStepResult object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSwapStepResult(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapStepResult> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSwapStepResult(res.type)) {
       throw new Error(`object at id ${id} is not a SwapStepResult object`)
     }
 
-    return SwapStepResult.fromSuiObjectData(res.data)
+    return SwapStepResult.fromBcs(res.bcsBytes)
   }
 }
 
@@ -470,7 +517,8 @@ export class SwapStepResult implements StructClass {
 
 export function isSwapResult(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::expect_swap::SwapResult`
+  return type
+    === `${getTypeOrigin('cetus-integrate', 'expect_swap::SwapResult')}::expect_swap::SwapResult`
 }
 
 export interface SwapResultFields {
@@ -483,17 +531,32 @@ export interface SwapResultFields {
 
 export type SwapResultReified = Reified<SwapResult, SwapResultFields>
 
+export type SwapResultJSONField = {
+  amountIn: string
+  amountOut: string
+  feeAmount: string
+  refFeeAmount: string
+  steps: string
+}
+
+export type SwapResultJSON = {
+  $typeName: typeof SwapResult.$typeName
+  $typeArgs: []
+} & SwapResultJSONField
+
 export class SwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::expect_swap::SwapResult`
+  static readonly $typeName: `${string}::expect_swap::SwapResult` = `${
+    getTypeOrigin('cetus-integrate', 'expect_swap::SwapResult')
+  }::expect_swap::SwapResult` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = SwapResult.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::expect_swap::SwapResult`
+  readonly $typeName: typeof SwapResult.$typeName = SwapResult.$typeName
+  readonly $fullTypeName: `${string}::expect_swap::SwapResult`
   readonly $typeArgs: []
-  readonly $isPhantom = SwapResult.$isPhantom
+  readonly $isPhantom: typeof SwapResult.$isPhantom = SwapResult.$isPhantom
 
   readonly amountIn: ToField<'u256'>
   readonly amountOut: ToField<'u256'>
@@ -504,8 +567,8 @@ export class SwapResult implements StructClass {
   private constructor(typeArgs: [], fields: SwapResultFields) {
     this.$fullTypeName = composeSuiType(
       SwapResult.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::expect_swap::SwapResult`
+      ...typeArgs,
+    ) as `${string}::expect_swap::SwapResult`
     this.$typeArgs = typeArgs
 
     this.amountIn = fields.amountIn
@@ -521,8 +584,8 @@ export class SwapResult implements StructClass {
       typeName: SwapResult.$typeName,
       fullTypeName: composeSuiType(
         SwapResult.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::expect_swap::SwapResult`,
+        ...[],
+      ) as `${string}::expect_swap::SwapResult`,
       typeArgs: [] as [],
       isPhantom: SwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -534,7 +597,7 @@ export class SwapResult implements StructClass {
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapResult.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SwapResult.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => SwapResult.fetch(client, id),
       new: (fields: SwapResultFields) => {
         return new SwapResult([], fields)
       },
@@ -542,14 +605,15 @@ export class SwapResult implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): SwapResultReified {
     return SwapResult.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<SwapResult>> {
     return phantom(SwapResult.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<SwapResult>> {
     return SwapResult.phantom()
   }
 
@@ -600,7 +664,7 @@ export class SwapResult implements StructClass {
     return SwapResult.fromFields(SwapResult.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SwapResultJSONField {
     return {
       amountIn: this.amountIn.toString(),
       amountOut: this.amountOut.toString(),
@@ -610,7 +674,7 @@ export class SwapResult implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): SwapResultJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -626,7 +690,9 @@ export class SwapResult implements StructClass {
 
   static fromJSON(json: Record<string, any>): SwapResult {
     if (json.$typeName !== SwapResult.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a SwapResult json object: expected '${SwapResult.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return SwapResult.fromJSONField(json)
@@ -648,26 +714,23 @@ export class SwapResult implements StructClass {
         throw new Error(`object at is not a SwapResult object`)
       }
 
-      return SwapResult.fromBcs(fromB64(data.bcs.bcsBytes))
+      return SwapResult.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return SwapResult.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<SwapResult> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SwapResult object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSwapResult(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapResult> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSwapResult(res.type)) {
       throw new Error(`object at id ${id} is not a SwapResult object`)
     }
 
-    return SwapResult.fromSuiObjectData(res.data)
+    return SwapResult.fromBcs(res.bcsBytes)
   }
 }
 
@@ -675,7 +738,10 @@ export class SwapResult implements StructClass {
 
 export function isExpectSwapResultEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::expect_swap::ExpectSwapResultEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResultEvent')
+    }::expect_swap::ExpectSwapResultEvent`
 }
 
 export interface ExpectSwapResultEventFields {
@@ -688,17 +754,29 @@ export type ExpectSwapResultEventReified = Reified<
   ExpectSwapResultEventFields
 >
 
+export type ExpectSwapResultEventJSONField = {
+  data: ToJSON<ExpectSwapResult>
+  currentSqrtPrice: string
+}
+
+export type ExpectSwapResultEventJSON = {
+  $typeName: typeof ExpectSwapResultEvent.$typeName
+  $typeArgs: []
+} & ExpectSwapResultEventJSONField
+
 export class ExpectSwapResultEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::expect_swap::ExpectSwapResultEvent`
+  static readonly $typeName: `${string}::expect_swap::ExpectSwapResultEvent` = `${
+    getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResultEvent')
+  }::expect_swap::ExpectSwapResultEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ExpectSwapResultEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::expect_swap::ExpectSwapResultEvent`
+  readonly $typeName: typeof ExpectSwapResultEvent.$typeName = ExpectSwapResultEvent.$typeName
+  readonly $fullTypeName: `${string}::expect_swap::ExpectSwapResultEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = ExpectSwapResultEvent.$isPhantom
+  readonly $isPhantom: typeof ExpectSwapResultEvent.$isPhantom = ExpectSwapResultEvent.$isPhantom
 
   readonly data: ToField<ExpectSwapResult>
   readonly currentSqrtPrice: ToField<'u128'>
@@ -706,8 +784,8 @@ export class ExpectSwapResultEvent implements StructClass {
   private constructor(typeArgs: [], fields: ExpectSwapResultEventFields) {
     this.$fullTypeName = composeSuiType(
       ExpectSwapResultEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::expect_swap::ExpectSwapResultEvent`
+      ...typeArgs,
+    ) as `${string}::expect_swap::ExpectSwapResultEvent`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
@@ -720,8 +798,8 @@ export class ExpectSwapResultEvent implements StructClass {
       typeName: ExpectSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
         ExpectSwapResultEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::expect_swap::ExpectSwapResultEvent`,
+        ...[],
+      ) as `${string}::expect_swap::ExpectSwapResultEvent`,
       typeArgs: [] as [],
       isPhantom: ExpectSwapResultEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -736,7 +814,8 @@ export class ExpectSwapResultEvent implements StructClass {
         ExpectSwapResultEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ExpectSwapResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ExpectSwapResultEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ExpectSwapResultEvent.fetch(client, id),
       new: (fields: ExpectSwapResultEventFields) => {
         return new ExpectSwapResultEvent([], fields)
       },
@@ -744,14 +823,15 @@ export class ExpectSwapResultEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ExpectSwapResultEventReified {
     return ExpectSwapResultEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ExpectSwapResultEvent>> {
     return phantom(ExpectSwapResultEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ExpectSwapResultEvent>> {
     return ExpectSwapResultEvent.phantom()
   }
 
@@ -793,14 +873,14 @@ export class ExpectSwapResultEvent implements StructClass {
     return ExpectSwapResultEvent.fromFields(ExpectSwapResultEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ExpectSwapResultEventJSONField {
     return {
       data: this.data.toJSONField(),
       currentSqrtPrice: this.currentSqrtPrice.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): ExpectSwapResultEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -813,7 +893,9 @@ export class ExpectSwapResultEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): ExpectSwapResultEvent {
     if (json.$typeName !== ExpectSwapResultEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ExpectSwapResultEvent json object: expected '${ExpectSwapResultEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ExpectSwapResultEvent.fromJSONField(json)
@@ -825,7 +907,7 @@ export class ExpectSwapResultEvent implements StructClass {
     }
     if (!isExpectSwapResultEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a ExpectSwapResultEvent object`
+        `object at ${(content.fields as any).id} is not a ExpectSwapResultEvent object`,
       )
     }
     return ExpectSwapResultEvent.fromFieldsWithTypes(content)
@@ -837,25 +919,22 @@ export class ExpectSwapResultEvent implements StructClass {
         throw new Error(`object at is not a ExpectSwapResultEvent object`)
       }
 
-      return ExpectSwapResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ExpectSwapResultEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ExpectSwapResultEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ExpectSwapResultEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ExpectSwapResultEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isExpectSwapResultEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ExpectSwapResultEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isExpectSwapResultEvent(res.type)) {
       throw new Error(`object at id ${id} is not a ExpectSwapResultEvent object`)
     }
 
-    return ExpectSwapResultEvent.fromSuiObjectData(res.data)
+    return ExpectSwapResultEvent.fromBcs(res.bcsBytes)
   }
 }

@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface PrepareMessageArgs {
   emitterCap: TransactionObjectInput
@@ -8,9 +13,18 @@ export interface PrepareMessageArgs {
   payload: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function prepareMessage(tx: Transaction, args: PrepareMessageArgs) {
+/**
+ * `prepare_message` constructs Wormhole message parameters. An
+ * `EmitterCap` provides the capability to send an arbitrary payload.
+ *
+ * NOTE: Integrators of Wormhole should be calling only this method from
+ * their contracts. This method is not guarded by version control (thus not
+ * requiring a reference to the Wormhole `State` object), so it is intended
+ * to work for any package version.
+ */
+export function prepareMessage(tx: Transaction, args: PrepareMessageArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::publish_message::prepare_message`,
+    target: `${getPublishedAt('wormhole')}::publish_message::prepare_message`,
     arguments: [
       obj(tx, args.emitterCap),
       pure(tx, args.nonce, `u32`),
@@ -26,9 +40,26 @@ export interface PublishMessageArgs {
   theClock: TransactionObjectInput
 }
 
-export function publishMessage(tx: Transaction, args: PublishMessageArgs) {
+/**
+ * `publish_message` emits a message as a Sui event. This method uses the
+ * input `EmitterCap` as the registered sender of the
+ * `WormholeMessage`. It also produces a new sequence for this emitter.
+ *
+ * NOTE: This method is guarded by a minimum build version check. This
+ * method could break backward compatibility on an upgrade.
+ *
+ * It is important for integrators to refrain from calling this method
+ * within their contracts. This method is meant to be called in a
+ * transaction block after receiving a `MessageTicket` from calling
+ * `prepare_message` within a contract. If in a circumstance where this
+ * module has a breaking change in an upgrade, `prepare_message` will not
+ * be affected by this change.
+ *
+ * See `prepare_message` for more details.
+ */
+export function publishMessage(tx: Transaction, args: PublishMessageArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::publish_message::publish_message`,
+    target: `${getPublishedAt('wormhole')}::publish_message::publish_message`,
     arguments: [
       obj(tx, args.wormholeState),
       obj(tx, args.messageFee),

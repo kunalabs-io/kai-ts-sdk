@@ -1,10 +1,19 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, obj, pure, vector } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure, vector } from '../../_framework/util'
 
-export function destroy(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
+export function destroy(
+  tx: Transaction,
+  typeArg: string,
+  hotPotatoVector: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::destroy`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::destroy`,
     typeArguments: [typeArg],
     arguments: [obj(tx, hotPotatoVector)],
   })
@@ -13,26 +22,34 @@ export function destroy(tx: Transaction, typeArg: string, hotPotatoVector: Trans
 export function new_(
   tx: Transaction,
   typeArg: string,
-  vec: Array<GenericArg> | TransactionArgument
-) {
+  vec: Array<GenericArg> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::new`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::new`,
     typeArguments: [typeArg],
     arguments: [vector(tx, `${typeArg}`, vec)],
   })
 }
 
-export function length(tx: Transaction, typeArg: string, potato: TransactionObjectInput) {
+export function length(
+  tx: Transaction,
+  typeArg: string,
+  potato: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::length`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::length`,
     typeArguments: [typeArg],
     arguments: [obj(tx, potato)],
   })
 }
 
-export function isEmpty(tx: Transaction, typeArg: string, potato: TransactionObjectInput) {
+export function isEmpty(
+  tx: Transaction,
+  typeArg: string,
+  potato: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::is_empty`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::is_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, potato)],
   })
@@ -43,17 +60,24 @@ export interface BorrowArgs {
   i: bigint | TransactionArgument
 }
 
-export function borrow(tx: Transaction, typeArg: string, args: BorrowArgs) {
+export function borrow(tx: Transaction, typeArg: string, args: BorrowArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::borrow`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::borrow`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.potato), pure(tx, args.i, `u64`)],
+    arguments: [
+      obj(tx, args.potato),
+      pure(tx, args.i, `u64`),
+    ],
   })
 }
 
-export function popBack(tx: Transaction, typeArg: string, hotPotatoVector: TransactionObjectInput) {
+export function popBack(
+  tx: Transaction,
+  typeArg: string,
+  hotPotatoVector: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::hot_potato_vector::pop_back`,
+    target: `${getPublishedAt('pyth')}::hot_potato_vector::pop_back`,
     typeArguments: [typeArg],
     arguments: [obj(tx, hotPotatoVector)],
   })

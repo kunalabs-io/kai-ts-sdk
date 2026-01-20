@@ -1,16 +1,24 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface MigrateArgs {
   pythState: TransactionObjectInput
   receipt: TransactionObjectInput
 }
 
-export function migrate(tx: Transaction, args: MigrateArgs) {
+export function migrate(tx: Transaction, args: MigrateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::migrate::migrate`,
-    arguments: [obj(tx, args.pythState), obj(tx, args.receipt)],
+    target: `${getPublishedAt('pyth')}::migrate::migrate`,
+    arguments: [
+      obj(tx, args.pythState),
+      obj(tx, args.receipt),
+    ],
   })
 }
 
@@ -19,9 +27,12 @@ export interface HandleMigrateArgs {
   receipt: TransactionObjectInput
 }
 
-export function handleMigrate(tx: Transaction, args: HandleMigrateArgs) {
+export function handleMigrate(tx: Transaction, args: HandleMigrateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::migrate::handle_migrate`,
-    arguments: [obj(tx, args.pythState), obj(tx, args.receipt)],
+    target: `${getPublishedAt('pyth')}::migrate::handle_migrate`,
+    arguments: [
+      obj(tx, args.pythState),
+      obj(tx, args.receipt),
+    ],
   })
 }

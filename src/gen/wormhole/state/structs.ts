@@ -1,17 +1,36 @@
-import * as reified from '../../_framework/reified'
+/**
+ * This module implements the global state variables for Wormhole as a shared
+ * object. The `State` object is used to perform anything that requires access
+ * to data that defines the Wormhole contract. Examples of which are publishing
+ * Wormhole messages (requires depositing a message fee), verifying `VAA` by
+ * checking signatures versus an existing Guardian set, and generating new
+ * emitters for Wormhole integrators.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 import { UpgradeCap } from '../../sui/package/structs'
 import { Table } from '../../sui/table/structs'
@@ -19,16 +38,12 @@ import { ConsumedVAAs } from '../consumed-vaas/structs'
 import { ExternalAddress } from '../external-address/structs'
 import { FeeCollector } from '../fee-collector/structs'
 import { GuardianSet } from '../guardian-set/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== LatestOnly =============================== */
 
 export function isLatestOnly(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::state::LatestOnly`
+  return type === `${getTypeOrigin('wormhole', 'state::LatestOnly')}::state::LatestOnly`
 }
 
 export interface LatestOnlyFields {
@@ -37,25 +52,40 @@ export interface LatestOnlyFields {
 
 export type LatestOnlyReified = Reified<LatestOnly, LatestOnlyFields>
 
+export type LatestOnlyJSONField = {
+  dummyField: boolean
+}
+
+export type LatestOnlyJSON = {
+  $typeName: typeof LatestOnly.$typeName
+  $typeArgs: []
+} & LatestOnlyJSONField
+
+/**
+ * Capability reflecting that the current build version is used to invoke
+ * state methods.
+ */
 export class LatestOnly implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::state::LatestOnly`
+  static readonly $typeName: `${string}::state::LatestOnly` = `${
+    getTypeOrigin('wormhole', 'state::LatestOnly')
+  }::state::LatestOnly` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = LatestOnly.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::state::LatestOnly`
+  readonly $typeName: typeof LatestOnly.$typeName = LatestOnly.$typeName
+  readonly $fullTypeName: `${string}::state::LatestOnly`
   readonly $typeArgs: []
-  readonly $isPhantom = LatestOnly.$isPhantom
+  readonly $isPhantom: typeof LatestOnly.$isPhantom = LatestOnly.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: LatestOnlyFields) {
     this.$fullTypeName = composeSuiType(
       LatestOnly.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::state::LatestOnly`
+      ...typeArgs,
+    ) as `${string}::state::LatestOnly`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -67,8 +97,8 @@ export class LatestOnly implements StructClass {
       typeName: LatestOnly.$typeName,
       fullTypeName: composeSuiType(
         LatestOnly.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::state::LatestOnly`,
+        ...[],
+      ) as `${string}::state::LatestOnly`,
       typeArgs: [] as [],
       isPhantom: LatestOnly.$isPhantom,
       reifiedTypeArgs: [],
@@ -80,7 +110,7 @@ export class LatestOnly implements StructClass {
       fromJSON: (json: Record<string, any>) => LatestOnly.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LatestOnly.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LatestOnly.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => LatestOnly.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => LatestOnly.fetch(client, id),
       new: (fields: LatestOnlyFields) => {
         return new LatestOnly([], fields)
       },
@@ -88,14 +118,15 @@ export class LatestOnly implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): LatestOnlyReified {
     return LatestOnly.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<LatestOnly>> {
     return phantom(LatestOnly.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<LatestOnly>> {
     return LatestOnly.phantom()
   }
 
@@ -115,7 +146,9 @@ export class LatestOnly implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): LatestOnly {
-    return LatestOnly.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return LatestOnly.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): LatestOnly {
@@ -132,23 +165,27 @@ export class LatestOnly implements StructClass {
     return LatestOnly.fromFields(LatestOnly.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LatestOnlyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): LatestOnlyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): LatestOnly {
-    return LatestOnly.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return LatestOnly.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): LatestOnly {
     if (json.$typeName !== LatestOnly.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LatestOnly json object: expected '${LatestOnly.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return LatestOnly.fromJSONField(json)
@@ -170,26 +207,23 @@ export class LatestOnly implements StructClass {
         throw new Error(`object at is not a LatestOnly object`)
       }
 
-      return LatestOnly.fromBcs(fromB64(data.bcs.bcsBytes))
+      return LatestOnly.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LatestOnly.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<LatestOnly> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LatestOnly object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLatestOnly(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<LatestOnly> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLatestOnly(res.type)) {
       throw new Error(`object at id ${id} is not a LatestOnly object`)
     }
 
-    return LatestOnly.fromSuiObjectData(res.data)
+    return LatestOnly.fromBcs(res.bcsBytes)
   }
 }
 
@@ -197,50 +231,104 @@ export class LatestOnly implements StructClass {
 
 export function isState(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::state::State`
+  return type === `${getTypeOrigin('wormhole', 'state::State')}::state::State`
 }
 
 export interface StateFields {
   id: ToField<UID>
+  /** Governance chain ID. */
   governanceChain: ToField<'u16'>
+  /** Governance contract address. */
   governanceContract: ToField<ExternalAddress>
+  /** Current active guardian set index. */
   guardianSetIndex: ToField<'u32'>
+  /** All guardian sets (including expired ones). */
   guardianSets: ToField<Table<'u32', ToPhantom<GuardianSet>>>
+  /**
+   * Period for which a guardian set stays active after it has been
+   * replaced.
+   *
+   * NOTE: `Clock` timestamp is in units of ms while this value is in
+   * terms of seconds. See `guardian_set` module for more info.
+   */
   guardianSetSecondsToLive: ToField<'u32'>
+  /**
+   * Consumed VAA hashes to protect against replay. VAAs relevant to
+   * Wormhole are just governance VAAs.
+   */
   consumedVaas: ToField<ConsumedVAAs>
+  /** Wormhole fee collector. */
   feeCollector: ToField<FeeCollector>
+  /** Upgrade capability. */
   upgradeCap: ToField<UpgradeCap>
 }
 
 export type StateReified = Reified<State, StateFields>
 
+export type StateJSONField = {
+  id: string
+  governanceChain: number
+  governanceContract: ToJSON<ExternalAddress>
+  guardianSetIndex: number
+  guardianSets: ToJSON<Table<'u32', ToPhantom<GuardianSet>>>
+  guardianSetSecondsToLive: number
+  consumedVaas: ToJSON<ConsumedVAAs>
+  feeCollector: ToJSON<FeeCollector>
+  upgradeCap: ToJSON<UpgradeCap>
+}
+
+export type StateJSON = {
+  $typeName: typeof State.$typeName
+  $typeArgs: []
+} & StateJSONField
+
+/** Container for all state variables for Wormhole. */
 export class State implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::state::State`
+  static readonly $typeName: `${string}::state::State` = `${
+    getTypeOrigin('wormhole', 'state::State')
+  }::state::State` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = State.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::state::State`
+  readonly $typeName: typeof State.$typeName = State.$typeName
+  readonly $fullTypeName: `${string}::state::State`
   readonly $typeArgs: []
-  readonly $isPhantom = State.$isPhantom
+  readonly $isPhantom: typeof State.$isPhantom = State.$isPhantom
 
   readonly id: ToField<UID>
+  /** Governance chain ID. */
   readonly governanceChain: ToField<'u16'>
+  /** Governance contract address. */
   readonly governanceContract: ToField<ExternalAddress>
+  /** Current active guardian set index. */
   readonly guardianSetIndex: ToField<'u32'>
+  /** All guardian sets (including expired ones). */
   readonly guardianSets: ToField<Table<'u32', ToPhantom<GuardianSet>>>
+  /**
+   * Period for which a guardian set stays active after it has been
+   * replaced.
+   *
+   * NOTE: `Clock` timestamp is in units of ms while this value is in
+   * terms of seconds. See `guardian_set` module for more info.
+   */
   readonly guardianSetSecondsToLive: ToField<'u32'>
+  /**
+   * Consumed VAA hashes to protect against replay. VAAs relevant to
+   * Wormhole are just governance VAAs.
+   */
   readonly consumedVaas: ToField<ConsumedVAAs>
+  /** Wormhole fee collector. */
   readonly feeCollector: ToField<FeeCollector>
+  /** Upgrade capability. */
   readonly upgradeCap: ToField<UpgradeCap>
 
   private constructor(typeArgs: [], fields: StateFields) {
     this.$fullTypeName = composeSuiType(
       State.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::state::State`
+      ...typeArgs,
+    ) as `${string}::state::State`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -258,7 +346,10 @@ export class State implements StructClass {
     const reifiedBcs = State.bcs
     return {
       typeName: State.$typeName,
-      fullTypeName: composeSuiType(State.$typeName, ...[]) as `${typeof PKG_V1}::state::State`,
+      fullTypeName: composeSuiType(
+        State.$typeName,
+        ...[],
+      ) as `${string}::state::State`,
       typeArgs: [] as [],
       isPhantom: State.$isPhantom,
       reifiedTypeArgs: [],
@@ -270,7 +361,7 @@ export class State implements StructClass {
       fromJSON: (json: Record<string, any>) => State.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => State.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => State.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => State.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => State.fetch(client, id),
       new: (fields: StateFields) => {
         return new State([], fields)
       },
@@ -278,14 +369,15 @@ export class State implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): StateReified {
     return State.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<State>> {
     return phantom(State.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<State>> {
     return State.phantom()
   }
 
@@ -319,8 +411,8 @@ export class State implements StructClass {
       governanceContract: decodeFromFields(ExternalAddress.reified(), fields.governance_contract),
       guardianSetIndex: decodeFromFields('u32', fields.guardian_set_index),
       guardianSets: decodeFromFields(
-        Table.reified(reified.phantom('u32'), reified.phantom(GuardianSet.reified())),
-        fields.guardian_sets
+        Table.reified(phantom('u32'), phantom(GuardianSet.reified())),
+        fields.guardian_sets,
       ),
       guardianSetSecondsToLive: decodeFromFields('u32', fields.guardian_set_seconds_to_live),
       consumedVaas: decodeFromFields(ConsumedVAAs.reified(), fields.consumed_vaas),
@@ -339,16 +431,16 @@ export class State implements StructClass {
       governanceChain: decodeFromFieldsWithTypes('u16', item.fields.governance_chain),
       governanceContract: decodeFromFieldsWithTypes(
         ExternalAddress.reified(),
-        item.fields.governance_contract
+        item.fields.governance_contract,
       ),
       guardianSetIndex: decodeFromFieldsWithTypes('u32', item.fields.guardian_set_index),
       guardianSets: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom('u32'), reified.phantom(GuardianSet.reified())),
-        item.fields.guardian_sets
+        Table.reified(phantom('u32'), phantom(GuardianSet.reified())),
+        item.fields.guardian_sets,
       ),
       guardianSetSecondsToLive: decodeFromFieldsWithTypes(
         'u32',
-        item.fields.guardian_set_seconds_to_live
+        item.fields.guardian_set_seconds_to_live,
       ),
       consumedVaas: decodeFromFieldsWithTypes(ConsumedVAAs.reified(), item.fields.consumed_vaas),
       feeCollector: decodeFromFieldsWithTypes(FeeCollector.reified(), item.fields.fee_collector),
@@ -360,7 +452,7 @@ export class State implements StructClass {
     return State.fromFields(State.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): StateJSONField {
     return {
       id: this.id,
       governanceChain: this.governanceChain,
@@ -374,7 +466,7 @@ export class State implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): StateJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -385,8 +477,8 @@ export class State implements StructClass {
       governanceContract: decodeFromJSONField(ExternalAddress.reified(), field.governanceContract),
       guardianSetIndex: decodeFromJSONField('u32', field.guardianSetIndex),
       guardianSets: decodeFromJSONField(
-        Table.reified(reified.phantom('u32'), reified.phantom(GuardianSet.reified())),
-        field.guardianSets
+        Table.reified(phantom('u32'), phantom(GuardianSet.reified())),
+        field.guardianSets,
       ),
       guardianSetSecondsToLive: decodeFromJSONField('u32', field.guardianSetSecondsToLive),
       consumedVaas: decodeFromJSONField(ConsumedVAAs.reified(), field.consumedVaas),
@@ -397,7 +489,9 @@ export class State implements StructClass {
 
   static fromJSON(json: Record<string, any>): State {
     if (json.$typeName !== State.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a State json object: expected '${State.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return State.fromJSONField(json)
@@ -419,25 +513,22 @@ export class State implements StructClass {
         throw new Error(`object at is not a State object`)
       }
 
-      return State.fromBcs(fromB64(data.bcs.bcsBytes))
+      return State.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return State.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<State> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching State object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isState(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<State> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isState(res.type)) {
       throw new Error(`object at id ${id} is not a State object`)
     }
 
-    return State.fromSuiObjectData(res.data)
+    return State.fromBcs(res.bcsBytes)
   }
 }

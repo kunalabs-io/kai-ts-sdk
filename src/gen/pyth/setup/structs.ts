@@ -1,26 +1,33 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== DeployerCap =============================== */
 
 export function isDeployerCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::setup::DeployerCap`
+  return type === `${getTypeOrigin('pyth', 'setup::DeployerCap')}::setup::DeployerCap`
 }
 
 export interface DeployerCapFields {
@@ -29,25 +36,41 @@ export interface DeployerCapFields {
 
 export type DeployerCapReified = Reified<DeployerCap, DeployerCapFields>
 
+export type DeployerCapJSONField = {
+  id: string
+}
+
+export type DeployerCapJSON = {
+  $typeName: typeof DeployerCap.$typeName
+  $typeArgs: []
+} & DeployerCapJSONField
+
+/**
+ * Capability created at `init`, which will be destroyed once
+ * `init_and_share_state` is called. This ensures only the deployer can
+ * create the shared `State`.
+ */
 export class DeployerCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::setup::DeployerCap`
+  static readonly $typeName: `${string}::setup::DeployerCap` = `${
+    getTypeOrigin('pyth', 'setup::DeployerCap')
+  }::setup::DeployerCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeployerCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::setup::DeployerCap`
+  readonly $typeName: typeof DeployerCap.$typeName = DeployerCap.$typeName
+  readonly $fullTypeName: `${string}::setup::DeployerCap`
   readonly $typeArgs: []
-  readonly $isPhantom = DeployerCap.$isPhantom
+  readonly $isPhantom: typeof DeployerCap.$isPhantom = DeployerCap.$isPhantom
 
   readonly id: ToField<UID>
 
   private constructor(typeArgs: [], fields: DeployerCapFields) {
     this.$fullTypeName = composeSuiType(
       DeployerCap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::setup::DeployerCap`
+      ...typeArgs,
+    ) as `${string}::setup::DeployerCap`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -59,8 +82,8 @@ export class DeployerCap implements StructClass {
       typeName: DeployerCap.$typeName,
       fullTypeName: composeSuiType(
         DeployerCap.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::setup::DeployerCap`,
+        ...[],
+      ) as `${string}::setup::DeployerCap`,
       typeArgs: [] as [],
       isPhantom: DeployerCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -72,7 +95,7 @@ export class DeployerCap implements StructClass {
       fromJSON: (json: Record<string, any>) => DeployerCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeployerCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeployerCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeployerCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DeployerCap.fetch(client, id),
       new: (fields: DeployerCapFields) => {
         return new DeployerCap([], fields)
       },
@@ -80,14 +103,15 @@ export class DeployerCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeployerCapReified {
     return DeployerCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeployerCap>> {
     return phantom(DeployerCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeployerCap>> {
     return DeployerCap.phantom()
   }
 
@@ -107,7 +131,9 @@ export class DeployerCap implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): DeployerCap {
-    return DeployerCap.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+    return DeployerCap.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): DeployerCap {
@@ -124,23 +150,27 @@ export class DeployerCap implements StructClass {
     return DeployerCap.fromFields(DeployerCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeployerCapJSONField {
     return {
       id: this.id,
     }
   }
 
-  toJSON() {
+  toJSON(): DeployerCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): DeployerCap {
-    return DeployerCap.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+    return DeployerCap.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+    })
   }
 
   static fromJSON(json: Record<string, any>): DeployerCap {
     if (json.$typeName !== DeployerCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeployerCap json object: expected '${DeployerCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeployerCap.fromJSONField(json)
@@ -162,25 +192,22 @@ export class DeployerCap implements StructClass {
         throw new Error(`object at is not a DeployerCap object`)
       }
 
-      return DeployerCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeployerCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeployerCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeployerCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DeployerCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeployerCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DeployerCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeployerCap(res.type)) {
       throw new Error(`object at id ${id} is not a DeployerCap object`)
     }
 
-    return DeployerCap.fromSuiObjectData(res.data)
+    return DeployerCap.fromBcs(res.bcsBytes)
   }
 }

@@ -1,7 +1,12 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
 export interface CreatePoolV3Args {
   a0: TransactionObjectInput
@@ -17,9 +22,13 @@ export interface CreatePoolV3Args {
   a10: TransactionObjectInput
 }
 
-export function createPoolV3(tx: Transaction, typeArgs: [string, string], args: CreatePoolV3Args) {
+export function createPoolV3(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolV3Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator_v3::create_pool_v3`,
+    target: `${getPublishedAt('cetus-integrate')}::pool_creator_v3::create_pool_v3`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -55,10 +64,12 @@ export interface CreatePoolV3WithCreationCapArgs {
 export function createPoolV3WithCreationCap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolV3WithCreationCapArgs
-) {
+  args: CreatePoolV3WithCreationCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator_v3::create_pool_v3_with_creation_cap`,
+    target: `${
+      getPublishedAt('cetus-integrate')
+    }::pool_creator_v3::create_pool_v3_with_creation_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

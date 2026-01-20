@@ -1,8 +1,13 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { VAA } from '../../wormhole/vaa/structs'
 import { PriceInfo } from '../price-info/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface InitPythArgs {
   deployer: TransactionObjectInput
@@ -17,9 +22,10 @@ export interface InitPythArgs {
   updateFee: bigint | TransactionArgument
 }
 
-export function initPyth(tx: Transaction, args: InitPythArgs) {
+/** Init state and emit event corresponding to Pyth initialization. */
+export function initPyth(tx: Transaction, args: InitPythArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::init_pyth`,
+    target: `${getPublishedAt('pyth')}::pyth::init_pyth`,
     arguments: [
       obj(tx, args.deployer),
       obj(tx, args.upgradeCap),
@@ -40,9 +46,9 @@ export interface ParseDataSourcesArgs {
     | TransactionArgument
 }
 
-export function parseDataSources(tx: Transaction, args: ParseDataSourcesArgs) {
+export function parseDataSources(tx: Transaction, args: ParseDataSourcesArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::parse_data_sources`,
+    target: `${getPublishedAt('pyth')}::pyth::parse_data_sources`,
     arguments: [
       pure(tx, args.emitterChainIds, `vector<u64>`),
       pure(tx, args.emitterAddresses, `vector<vector<u8>>`),
@@ -57,12 +63,13 @@ export interface CreatePriceFeedsUsingAccumulatorArgs {
   clock: TransactionObjectInput
 }
 
+/** Create and share new price feed objects if they don't already exist using accumulator message. */
 export function createPriceFeedsUsingAccumulator(
   tx: Transaction,
-  args: CreatePriceFeedsUsingAccumulatorArgs
-) {
+  args: CreatePriceFeedsUsingAccumulatorArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::create_price_feeds_using_accumulator`,
+    target: `${getPublishedAt('pyth')}::pyth::create_price_feeds_using_accumulator`,
     arguments: [
       obj(tx, args.pythState),
       pure(tx, args.accumulatorMessage, `vector<u8>`),
@@ -78,9 +85,13 @@ export interface CreatePriceFeedsArgs {
   clock: TransactionObjectInput
 }
 
-export function createPriceFeeds(tx: Transaction, args: CreatePriceFeedsArgs) {
+/**
+ * Create and share new price feed objects if they don't already exist using batch price attestation.
+ * The name of the function is kept as is to remain backward compatible
+ */
+export function createPriceFeeds(tx: Transaction, args: CreatePriceFeedsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::create_price_feeds`,
+    target: `${getPublishedAt('pyth')}::pyth::create_price_feeds`,
     arguments: [
       obj(tx, args.pythState),
       vector(tx, `${VAA.$typeName}`, args.verifiedVaas),
@@ -97,10 +108,12 @@ export interface CreateAndSharePriceFeedsUsingVerifiedPriceInfosArgs {
 
 export function createAndSharePriceFeedsUsingVerifiedPriceInfos(
   tx: Transaction,
-  args: CreateAndSharePriceFeedsUsingVerifiedPriceInfosArgs
-) {
+  args: CreateAndSharePriceFeedsUsingVerifiedPriceInfosArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::create_and_share_price_feeds_using_verified_price_infos`,
+    target: `${
+      getPublishedAt('pyth')
+    }::pyth::create_and_share_price_feeds_using_verified_price_infos`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.pythState),
@@ -118,10 +131,10 @@ export interface CreateAuthenticatedPriceInfosUsingAccumulatorArgs {
 
 export function createAuthenticatedPriceInfosUsingAccumulator(
   tx: Transaction,
-  args: CreateAuthenticatedPriceInfosUsingAccumulatorArgs
-) {
+  args: CreateAuthenticatedPriceInfosUsingAccumulatorArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::create_authenticated_price_infos_using_accumulator`,
+    target: `${getPublishedAt('pyth')}::pyth::create_authenticated_price_infos_using_accumulator`,
     arguments: [
       obj(tx, args.pythState),
       pure(tx, args.accumulatorMessage, `vector<u8>`),
@@ -137,9 +150,16 @@ export interface CreatePriceInfosHotPotatoArgs {
   clock: TransactionObjectInput
 }
 
-export function createPriceInfosHotPotato(tx: Transaction, args: CreatePriceInfosHotPotatoArgs) {
+/**
+ * Creates authenticated price infos using batch price attestation
+ * Name is kept as is to remain backward compatible
+ */
+export function createPriceInfosHotPotato(
+  tx: Transaction,
+  args: CreatePriceInfosHotPotatoArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::create_price_infos_hot_potato`,
+    target: `${getPublishedAt('pyth')}::pyth::create_price_infos_hot_potato`,
     arguments: [
       obj(tx, args.pythState),
       vector(tx, `${VAA.$typeName}`, args.verifiedVaas),
@@ -156,9 +176,23 @@ export interface UpdateSinglePriceFeedArgs {
   clock: TransactionObjectInput
 }
 
-export function updateSinglePriceFeed(tx: Transaction, args: UpdateSinglePriceFeedArgs) {
+/**
+ * Update a singular Pyth PriceInfoObject (containing a price feed) with the
+ * price data in the authenticated price infos vector (a vector of PriceInfo objects).
+ *
+ * For more information on the end-to-end process for updating a price feed, please see the README.
+ *
+ * The given fee must contain a sufficient number of coins to pay the update fee for the given vaas.
+ * The update fee amount can be queried by calling get_update_fee(&vaas).
+ *
+ * Please read more information about the update fee here: https://docs.pyth.network/documentation/pythnet-price-feeds/on-demand#fees
+ */
+export function updateSinglePriceFeed(
+  tx: Transaction,
+  args: UpdateSinglePriceFeedArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::update_single_price_feed`,
+    target: `${getPublishedAt('pyth')}::pyth::update_single_price_feed`,
     arguments: [
       obj(tx, args.pythState),
       obj(tx, args.priceUpdates),
@@ -174,10 +208,16 @@ export interface HasSamePriceIdentifierArgs {
   priceInfoObject: TransactionObjectInput
 }
 
-export function hasSamePriceIdentifier(tx: Transaction, args: HasSamePriceIdentifierArgs) {
+export function hasSamePriceIdentifier(
+  tx: Transaction,
+  args: HasSamePriceIdentifierArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::has_same_price_identifier`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.priceInfoObject)],
+    target: `${getPublishedAt('pyth')}::pyth::has_same_price_identifier`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.priceInfoObject),
+    ],
   })
 }
 
@@ -188,9 +228,10 @@ export interface UpdateCacheArgs {
   clock: TransactionObjectInput
 }
 
-export function updateCache(tx: Transaction, args: UpdateCacheArgs) {
+/** Update PriceInfoObject with updated data from a PriceInfo */
+export function updateCache(tx: Transaction, args: UpdateCacheArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::update_cache`,
+    target: `${getPublishedAt('pyth')}::pyth::update_cache`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.update),
@@ -205,10 +246,17 @@ export interface IsFreshUpdateArgs {
   priceInfoObject: TransactionObjectInput
 }
 
-export function isFreshUpdate(tx: Transaction, args: IsFreshUpdateArgs) {
+/**
+ * Determine if the given price update is "fresh": we have nothing newer already cached for that
+ * price feed within a PriceInfoObject.
+ */
+export function isFreshUpdate(tx: Transaction, args: IsFreshUpdateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::is_fresh_update`,
-    arguments: [obj(tx, args.update), obj(tx, args.priceInfoObject)],
+    target: `${getPublishedAt('pyth')}::pyth::is_fresh_update`,
+    arguments: [
+      obj(tx, args.update),
+      obj(tx, args.priceInfoObject),
+    ],
   })
 }
 
@@ -217,10 +265,14 @@ export interface PriceFeedExistsArgs {
   priceIdentifier: TransactionObjectInput
 }
 
-export function priceFeedExists(tx: Transaction, args: PriceFeedExistsArgs) {
+/** Determine if a price feed for the given price_identifier exists */
+export function priceFeedExists(tx: Transaction, args: PriceFeedExistsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::price_feed_exists`,
-    arguments: [obj(tx, args.state), obj(tx, args.priceIdentifier)],
+    target: `${getPublishedAt('pyth')}::pyth::price_feed_exists`,
+    arguments: [
+      obj(tx, args.state),
+      obj(tx, args.priceIdentifier),
+    ],
   })
 }
 
@@ -230,10 +282,29 @@ export interface GetPriceArgs {
   clock: TransactionObjectInput
 }
 
-export function getPrice(tx: Transaction, args: GetPriceArgs) {
+/**
+ * Get the latest available price cached for the given price identifier, if that price is
+ * no older than the stale price threshold.
+ *
+ * Please refer to the documentation at https://docs.pyth.network/documentation/pythnet-price-feeds/best-practices for
+ * how to how this price safely.
+ *
+ * Important: Pyth uses an on-demand update model, where consumers need to update the
+ * cached prices before using them. Please read more about this at https://docs.pyth.network/documentation/pythnet-price-feeds/on-demand.
+ * get_price() is likely to abort unless you call update_price_feeds() to update the cached price
+ * beforehand, as the cached prices may be older than the stale price threshold.
+ *
+ * The price_info_object is a Sui object with the key ability that uniquely
+ * contains a price feed for a given price_identifier.
+ */
+export function getPrice(tx: Transaction, args: GetPriceArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price`,
-    arguments: [obj(tx, args.state), obj(tx, args.priceInfoObject), obj(tx, args.clock)],
+    target: `${getPublishedAt('pyth')}::pyth::get_price`,
+    arguments: [
+      obj(tx, args.state),
+      obj(tx, args.priceInfoObject),
+      obj(tx, args.clock),
+    ],
   })
 }
 
@@ -243,9 +314,16 @@ export interface GetPriceNoOlderThanArgs {
   maxAgeSecs: bigint | TransactionArgument
 }
 
-export function getPriceNoOlderThan(tx: Transaction, args: GetPriceNoOlderThanArgs) {
+/**
+ * Get the latest available price cached for the given price identifier, if that price is
+ * no older than the given age.
+ */
+export function getPriceNoOlderThan(
+  tx: Transaction,
+  args: GetPriceNoOlderThanArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price_no_older_than`,
+    target: `${getPublishedAt('pyth')}::pyth::get_price_no_older_than`,
     arguments: [
       obj(tx, args.priceInfoObject),
       obj(tx, args.clock),
@@ -254,9 +332,22 @@ export function getPriceNoOlderThan(tx: Transaction, args: GetPriceNoOlderThanAr
   })
 }
 
-export function getPriceUnsafe(tx: Transaction, priceInfoObject: TransactionObjectInput) {
+/**
+ * Get the latest available price cached for the given price identifier.
+ *
+ * WARNING: the returned price can be from arbitrarily far in the past.
+ * This function makes no guarantees that the returned price is recent or
+ * useful for any particular application. Users of this function should check
+ * the returned timestamp to ensure that the returned price is sufficiently
+ * recent for their application. The checked get_price_no_older_than()
+ * function should be used in preference to this.
+ */
+export function getPriceUnsafe(
+  tx: Transaction,
+  priceInfoObject: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price_unsafe`,
+    target: `${getPublishedAt('pyth')}::pyth::get_price_unsafe`,
     arguments: [obj(tx, priceInfoObject)],
   })
 }
@@ -266,16 +357,26 @@ export interface AbsDiffArgs {
   y: bigint | TransactionArgument
 }
 
-export function absDiff(tx: Transaction, args: AbsDiffArgs) {
+export function absDiff(tx: Transaction, args: AbsDiffArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::abs_diff`,
-    arguments: [pure(tx, args.x, `u64`), pure(tx, args.y, `u64`)],
+    target: `${getPublishedAt('pyth')}::pyth::abs_diff`,
+    arguments: [
+      pure(tx, args.x, `u64`),
+      pure(tx, args.y, `u64`),
+    ],
   })
 }
 
-export function getStalePriceThresholdSecs(tx: Transaction, state: TransactionObjectInput) {
+/**
+ * Get the stale price threshold: the amount of time after which a cached price
+ * is considered stale and no longer returned by get_price()/get_ema_price().
+ */
+export function getStalePriceThresholdSecs(
+  tx: Transaction,
+  state: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_stale_price_threshold_secs`,
+    target: `${getPublishedAt('pyth')}::pyth::get_stale_price_threshold_secs`,
     arguments: [obj(tx, state)],
   })
 }
@@ -286,10 +387,14 @@ export interface CheckPriceIsFreshArgs {
   maxAgeSecs: bigint | TransactionArgument
 }
 
-export function checkPriceIsFresh(tx: Transaction, args: CheckPriceIsFreshArgs) {
+export function checkPriceIsFresh(tx: Transaction, args: CheckPriceIsFreshArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::check_price_is_fresh`,
-    arguments: [obj(tx, args.price), obj(tx, args.clock), pure(tx, args.maxAgeSecs, `u64`)],
+    target: `${getPublishedAt('pyth')}::pyth::check_price_is_fresh`,
+    arguments: [
+      obj(tx, args.price),
+      obj(tx, args.clock),
+      pure(tx, args.maxAgeSecs, `u64`),
+    ],
   })
 }
 
@@ -298,9 +403,13 @@ export interface GetTotalUpdateFeeArgs {
   n: bigint | TransactionArgument
 }
 
-export function getTotalUpdateFee(tx: Transaction, args: GetTotalUpdateFeeArgs) {
+/** Please read more information about the update fee here: https://docs.pyth.network/documentation/pythnet-price-feeds/on-demand#fees */
+export function getTotalUpdateFee(tx: Transaction, args: GetTotalUpdateFeeArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_total_update_fee`,
-    arguments: [obj(tx, args.pythState), pure(tx, args.n, `u64`)],
+    target: `${getPublishedAt('pyth')}::pyth::get_total_update_fee`,
+    arguments: [
+      obj(tx, args.pythState),
+      pure(tx, args.n, `u64`),
+    ],
   })
 }

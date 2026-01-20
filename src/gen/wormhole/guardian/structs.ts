@@ -1,26 +1,35 @@
+/** This module implements a `Guardian` that warehouses a 20-byte public key. */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Bytes20 } from '../bytes20/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Guardian =============================== */
 
 export function isGuardian(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::guardian::Guardian`
+  return type === `${getTypeOrigin('wormhole', 'guardian::Guardian')}::guardian::Guardian`
 }
 
 export interface GuardianFields {
@@ -29,25 +38,37 @@ export interface GuardianFields {
 
 export type GuardianReified = Reified<Guardian, GuardianFields>
 
+export type GuardianJSONField = {
+  pubkey: ToJSON<Bytes20>
+}
+
+export type GuardianJSON = {
+  $typeName: typeof Guardian.$typeName
+  $typeArgs: []
+} & GuardianJSONField
+
+/** Container for 20-byte Guardian public key. */
 export class Guardian implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::guardian::Guardian`
+  static readonly $typeName: `${string}::guardian::Guardian` = `${
+    getTypeOrigin('wormhole', 'guardian::Guardian')
+  }::guardian::Guardian` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Guardian.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::guardian::Guardian`
+  readonly $typeName: typeof Guardian.$typeName = Guardian.$typeName
+  readonly $fullTypeName: `${string}::guardian::Guardian`
   readonly $typeArgs: []
-  readonly $isPhantom = Guardian.$isPhantom
+  readonly $isPhantom: typeof Guardian.$isPhantom = Guardian.$isPhantom
 
   readonly pubkey: ToField<Bytes20>
 
   private constructor(typeArgs: [], fields: GuardianFields) {
     this.$fullTypeName = composeSuiType(
       Guardian.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::guardian::Guardian`
+      ...typeArgs,
+    ) as `${string}::guardian::Guardian`
     this.$typeArgs = typeArgs
 
     this.pubkey = fields.pubkey
@@ -59,8 +80,8 @@ export class Guardian implements StructClass {
       typeName: Guardian.$typeName,
       fullTypeName: composeSuiType(
         Guardian.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::guardian::Guardian`,
+        ...[],
+      ) as `${string}::guardian::Guardian`,
       typeArgs: [] as [],
       isPhantom: Guardian.$isPhantom,
       reifiedTypeArgs: [],
@@ -72,7 +93,7 @@ export class Guardian implements StructClass {
       fromJSON: (json: Record<string, any>) => Guardian.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Guardian.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Guardian.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Guardian.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Guardian.fetch(client, id),
       new: (fields: GuardianFields) => {
         return new Guardian([], fields)
       },
@@ -80,14 +101,15 @@ export class Guardian implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GuardianReified {
     return Guardian.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Guardian>> {
     return phantom(Guardian.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Guardian>> {
     return Guardian.phantom()
   }
 
@@ -107,7 +129,9 @@ export class Guardian implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): Guardian {
-    return Guardian.reified().new({ pubkey: decodeFromFields(Bytes20.reified(), fields.pubkey) })
+    return Guardian.reified().new({
+      pubkey: decodeFromFields(Bytes20.reified(), fields.pubkey),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): Guardian {
@@ -124,23 +148,27 @@ export class Guardian implements StructClass {
     return Guardian.fromFields(Guardian.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GuardianJSONField {
     return {
       pubkey: this.pubkey.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): GuardianJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): Guardian {
-    return Guardian.reified().new({ pubkey: decodeFromJSONField(Bytes20.reified(), field.pubkey) })
+    return Guardian.reified().new({
+      pubkey: decodeFromJSONField(Bytes20.reified(), field.pubkey),
+    })
   }
 
   static fromJSON(json: Record<string, any>): Guardian {
     if (json.$typeName !== Guardian.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Guardian json object: expected '${Guardian.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Guardian.fromJSONField(json)
@@ -162,25 +190,22 @@ export class Guardian implements StructClass {
         throw new Error(`object at is not a Guardian object`)
       }
 
-      return Guardian.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Guardian.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Guardian.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Guardian> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Guardian object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGuardian(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Guardian> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGuardian(res.type)) {
       throw new Error(`object at id ${id} is not a Guardian object`)
     }
 
-    return Guardian.fromSuiObjectData(res.data)
+    return Guardian.fromBcs(res.bcsBytes)
   }
 }

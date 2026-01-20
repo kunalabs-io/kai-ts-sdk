@@ -1,46 +1,63 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
-export function owner(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Returns the address associated with the given VerifiedID */
+export function owner(tx: Transaction, verifiedId: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::owner`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::owner`,
     arguments: [obj(tx, verifiedId)],
   })
 }
 
-export function keyClaimName(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Returns the name of the key claim associated with the given VerifiedID */
+export function keyClaimName(
+  tx: Transaction,
+  verifiedId: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::key_claim_name`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::key_claim_name`,
     arguments: [obj(tx, verifiedId)],
   })
 }
 
-export function keyClaimValue(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Returns the value of the key claim associated with the given VerifiedID */
+export function keyClaimValue(
+  tx: Transaction,
+  verifiedId: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::key_claim_value`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::key_claim_value`,
     arguments: [obj(tx, verifiedId)],
   })
 }
 
-export function issuer(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Returns the issuer associated with the given VerifiedID */
+export function issuer(tx: Transaction, verifiedId: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::issuer`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::issuer`,
     arguments: [obj(tx, verifiedId)],
   })
 }
 
-export function audience(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Returns the audience (wallet) associated with the given VerifiedID */
+export function audience(tx: Transaction, verifiedId: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::audience`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::audience`,
     arguments: [obj(tx, verifiedId)],
   })
 }
 
-export function delete_(tx: Transaction, verifiedId: TransactionObjectInput) {
+/** Delete a VerifiedID */
+export function delete_(tx: Transaction, verifiedId: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::delete`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::delete`,
     arguments: [obj(tx, verifiedId)],
   })
 }
@@ -53,9 +70,10 @@ export interface VerifyZkloginIdArgs {
   pinHash: bigint | TransactionArgument
 }
 
-export function verifyZkloginId(tx: Transaction, args: VerifyZkloginIdArgs) {
+/** This function has been disabled. */
+export function verifyZkloginId(tx: Transaction, args: VerifyZkloginIdArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::verify_zklogin_id`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::verify_zklogin_id`,
     arguments: [
       pure(tx, args.keyClaimName, `${String.$typeName}`),
       pure(tx, args.keyClaimValue, `${String.$typeName}`),
@@ -75,9 +93,10 @@ export interface CheckZkloginIdArgs {
   pinHash: bigint | TransactionArgument
 }
 
-export function checkZkloginId(tx: Transaction, args: CheckZkloginIdArgs) {
+/** This function has been disabled. */
+export function checkZkloginId(tx: Transaction, args: CheckZkloginIdArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::check_zklogin_id`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::check_zklogin_id`,
     arguments: [
       pure(tx, args.address, `address`),
       pure(tx, args.keyClaimName, `${String.$typeName}`),
@@ -98,9 +117,19 @@ export interface CheckZkloginIdInternalArgs {
   pinHash: bigint | TransactionArgument
 }
 
-export function checkZkloginIdInternal(tx: Transaction, args: CheckZkloginIdInternalArgs) {
+/**
+ * Returns true if `address` was created using zklogin and the given parameters.
+ *
+ * Aborts with `EInvalidInput` if any of `kc_name`, `kc_value`, `iss` and `aud` is not a properly encoded UTF-8
+ * string or if the inputs are longer than the allowed upper bounds: `kc_name` must be at most 32 characters,
+ * `kc_value` must be at most 115 characters and `aud` must be at most 145 characters.
+ */
+export function checkZkloginIdInternal(
+  tx: Transaction,
+  args: CheckZkloginIdInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::zklogin_verified_id::check_zklogin_id_internal`,
+    target: `${getPublishedAt('sui')}::zklogin_verified_id::check_zklogin_id_internal`,
     arguments: [
       pure(tx, args.address, `address`),
       pure(tx, args.keyClaimName, `vector<u8>`),

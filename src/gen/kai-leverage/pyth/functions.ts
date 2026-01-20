@@ -1,9 +1,19 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { ID } from '../../sui/object/structs'
 
-export function create(tx: Transaction, clock: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::pyth::create`, arguments: [obj(tx, clock)] })
+/** Create a new Pyth price info collection. */
+export function create(tx: Transaction, clock: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::pyth::create`,
+    arguments: [obj(tx, clock)],
+  })
 }
 
 export interface AddArgs {
@@ -11,10 +21,14 @@ export interface AddArgs {
   info: TransactionObjectInput
 }
 
-export function add(tx: Transaction, args: AddArgs) {
+/** Add a price info object to the collection. */
+export function add(tx: Transaction, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::add`,
-    arguments: [obj(tx, args.self), obj(tx, args.info)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::add`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.info),
+    ],
   })
 }
 
@@ -24,19 +38,32 @@ export interface ValidateArgs {
   pioAllowlist: TransactionObjectInput
 }
 
-export function validate(tx: Transaction, args: ValidateArgs) {
+/** Validate price info against age limits and allowlist. */
+export function validate(tx: Transaction, args: ValidateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::validate`,
-    arguments: [obj(tx, args.info), pure(tx, args.maxAgeSecs, `u64`), obj(tx, args.pioAllowlist)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::validate`,
+    arguments: [
+      obj(tx, args.info),
+      pure(tx, args.maxAgeSecs, `u64`),
+      obj(tx, args.pioAllowlist),
+    ],
   })
 }
 
-export function maxAgeSecs(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::pyth::max_age_secs`, arguments: [obj(tx, self)] })
+/** Get the maximum age of price feeds in seconds. */
+export function maxAgeSecs(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::pyth::max_age_secs`,
+    arguments: [obj(tx, self)],
+  })
 }
 
-export function decimals(tx: Transaction, type: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::pyth::decimals`, arguments: [obj(tx, type)] })
+/** Get the decimal places for a supported token type. */
+export function decimals(tx: Transaction, type: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::pyth::decimals`,
+    arguments: [obj(tx, type)],
+  })
 }
 
 export interface GetPriceArgs {
@@ -44,10 +71,14 @@ export interface GetPriceArgs {
   type: TransactionObjectInput
 }
 
-export function getPrice(tx: Transaction, args: GetPriceArgs) {
+/** Get the current price for a token type. */
+export function getPrice(tx: Transaction, args: GetPriceArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price`,
-    arguments: [obj(tx, args.self), obj(tx, args.type)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::get_price`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+    ],
   })
 }
 
@@ -56,10 +87,14 @@ export interface GetEmaPriceArgs {
   type: TransactionObjectInput
 }
 
-export function getEmaPrice(tx: Transaction, args: GetEmaPriceArgs) {
+/** Get the EMA price for a token type. */
+export function getEmaPrice(tx: Transaction, args: GetEmaPriceArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_ema_price`,
-    arguments: [obj(tx, args.self), obj(tx, args.type)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::get_ema_price`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+    ],
   })
 }
 
@@ -68,10 +103,16 @@ export interface GetPriceLoHiExpoDecArgs {
   t: TransactionObjectInput
 }
 
-export function getPriceLoHiExpoDec(tx: Transaction, args: GetPriceLoHiExpoDecArgs) {
+export function getPriceLoHiExpoDec(
+  tx: Transaction,
+  args: GetPriceLoHiExpoDecArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_price_lo_hi_expo_dec`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.t)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::get_price_lo_hi_expo_dec`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.t),
+    ],
   })
 }
 
@@ -80,10 +121,16 @@ export interface GetEmaPriceLoHiExpoDecArgs {
   t: TransactionObjectInput
 }
 
-export function getEmaPriceLoHiExpoDec(tx: Transaction, args: GetEmaPriceLoHiExpoDecArgs) {
+export function getEmaPriceLoHiExpoDec(
+  tx: Transaction,
+  args: GetEmaPriceLoHiExpoDecArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::get_ema_price_lo_hi_expo_dec`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.t)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::get_ema_price_lo_hi_expo_dec`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.t),
+    ],
   })
 }
 
@@ -94,9 +141,12 @@ export interface DivPriceNumericX128InnerArgs {
   useEma: boolean | TransactionArgument
 }
 
-export function divPriceNumericX128Inner(tx: Transaction, args: DivPriceNumericX128InnerArgs) {
+export function divPriceNumericX128Inner(
+  tx: Transaction,
+  args: DivPriceNumericX128InnerArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128_inner`,
+    target: `${getPublishedAt('kai-leverage')}::pyth::div_price_numeric_x128_inner`,
     arguments: [
       obj(tx, args.priceInfo),
       obj(tx, args.x),
@@ -112,10 +162,21 @@ export interface DivPriceNumericX128Args {
   y: TransactionObjectInput
 }
 
-export function divPriceNumericX128(tx: Transaction, args: DivPriceNumericX128Args) {
+/**
+ * Returns the price of `Y` in `X` such that `X * price = Y` i.e. `price = Y / X`.
+ * The returned value is in Q64.128 format.
+ */
+export function divPriceNumericX128(
+  tx: Transaction,
+  args: DivPriceNumericX128Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::div_price_numeric_x128`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::div_price_numeric_x128`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.x),
+      obj(tx, args.y),
+    ],
   })
 }
 
@@ -125,9 +186,21 @@ export interface DivEmaPriceNumericX128Args {
   y: TransactionObjectInput
 }
 
-export function divEmaPriceNumericX128(tx: Transaction, args: DivEmaPriceNumericX128Args) {
+/**
+ * Returns the price of `Y` in `X` such that `X * price = Y` i.e. `price = Y / X`.
+ * The returned value is in Q64.128 format.
+ * Uses EMA price instead of spot price.
+ */
+export function divEmaPriceNumericX128(
+  tx: Transaction,
+  args: DivEmaPriceNumericX128Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pyth::div_ema_price_numeric_x128`,
-    arguments: [obj(tx, args.priceInfo), obj(tx, args.x), obj(tx, args.y)],
+    target: `${getPublishedAt('kai-leverage')}::pyth::div_ema_price_numeric_x128`,
+    arguments: [
+      obj(tx, args.priceInfo),
+      obj(tx, args.x),
+      obj(tx, args.y),
+    ],
   })
 }

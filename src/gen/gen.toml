@@ -1,15 +1,15 @@
 [config]
-rpc = "https://rpc.kunalabs.io:443"
+environment = "mainnet"
 
 [packages]
-KaiSingleAssetVault = { local = "../../../../../move/kai/sav/core" }
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.55.0", override = true }
-MoveStdlib = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "mainnet-v1.55.0", override = true }
-CetusClmm = { local = "../../../../../move/_vendor/CetusClmm" }
-CetusIntegrate = { local = "../../../../../move/_vendor/CetusIntegrate" }
-IntegerMate = { local = "../../../../../move/_vendor/IntegerMate", override = true }
-KaiLeverage = { local = "../../../../../move/kai/leverage/core" }
-KaiLeverageUtil = { local = "../../../../../move/kai/leverage/util" }
-Pyth = { local = "../../../../../move/_vendor/Pyth" }
-Wormhole = { local = "../../../../../move/_vendor/Wormhole" }
+kai_sav = { local = "../../../../../move/kai/sav/core" }
+sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.55.0", override = true }
+std = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "mainnet-v1.55.0", override = true }
+cetus_clmm = { local = "../../../../../move/_vendor/CetusClmm" }
+cetus_integrate = { local = "../../../../../move/_vendor/CetusIntegrate" }
+integer_mate = { local = "../../../../../move/_vendor/IntegerMate", override = true }
+kai_leverage = { local = "../../../../../move/kai/leverage/core" }
+kai_leverage_util = { local = "../../../../../move/kai/leverage/util" }
+pyth = { local = "../../../../../move/_vendor/Pyth" }
+wormhole = { local = "../../../../../move/_vendor/Wormhole" }
 bluefin_spot = { local = "../../../../../move/_vendor/bluefin_spot" }

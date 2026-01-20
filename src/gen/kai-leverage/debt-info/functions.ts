@@ -1,17 +1,27 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function empty(tx: Transaction, facilId: string | TransactionArgument) {
+/** Create an empty debt info collection for a lending facility. */
+export function empty(tx: Transaction, facilId: string | TransactionArgument): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::empty`,
+    target: `${getPublishedAt('kai-leverage')}::debt_info::empty`,
     arguments: [pure(tx, facilId, `${ID.$typeName}`)],
   })
 }
 
-export function facilId(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::debt_info::facil_id`, arguments: [obj(tx, self)] })
+/** Get the lending facility ID. */
+export function facilId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::debt_info::facil_id`,
+    arguments: [obj(tx, self)],
+  })
 }
 
 export interface AddArgs {
@@ -19,11 +29,15 @@ export interface AddArgs {
   registry: TransactionObjectInput
 }
 
-export function add(tx: Transaction, typeArg: string, args: AddArgs) {
+/** Add debt information from a debt registry. */
+export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::add`,
+    target: `${getPublishedAt('kai-leverage')}::debt_info::add`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), obj(tx, args.registry)],
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.registry),
+    ],
   })
 }
 
@@ -33,15 +47,20 @@ export interface AddFromSupplyPoolArgs {
   clock: TransactionObjectInput
 }
 
+/** Add debt information from a `SupplyPool`'s debt registry for the matching lending facility. */
 export function addFromSupplyPool(
   tx: Transaction,
   typeArgs: [string, string],
-  args: AddFromSupplyPoolArgs
-) {
+  args: AddFromSupplyPoolArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::add_from_supply_pool`,
+    target: `${getPublishedAt('kai-leverage')}::debt_info::add_from_supply_pool`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.self), obj(tx, args.pool), obj(tx, args.clock)],
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.pool),
+      obj(tx, args.clock),
+    ],
   })
 }
 
@@ -50,10 +69,17 @@ export interface ValidateArgs {
   facilId: string | TransactionArgument
 }
 
-export function validate(tx: Transaction, args: ValidateArgs) {
+/**
+ * Validate debt info and return validated version for calculations. Extra percausion to ensure
+ * the info is for the expected lending facility.
+ */
+export function validate(tx: Transaction, args: ValidateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::validate`,
-    arguments: [obj(tx, args.self), pure(tx, args.facilId, `${ID.$typeName}`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::validate`,
+    arguments: [
+      obj(tx, args.self),
+      pure(tx, args.facilId, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -63,10 +89,14 @@ export interface CalcRepayX64Args {
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRepayX64(tx: Transaction, args: CalcRepayX64Args) {
+export function calcRepayX64(tx: Transaction, args: CalcRepayX64Args): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_x64`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::calc_repay_x64`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+      pure(tx, args.shareValueX64, `u128`),
+    ],
   })
 }
 
@@ -76,10 +106,14 @@ export interface CalcRepayLossyArgs {
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRepayLossy(tx: Transaction, args: CalcRepayLossyArgs) {
+export function calcRepayLossy(tx: Transaction, args: CalcRepayLossyArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_lossy`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::calc_repay_lossy`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+      pure(tx, args.shareValueX64, `u128`),
+    ],
   })
 }
 
@@ -89,10 +123,17 @@ export interface CalcRepayForAmountArgs {
   amount: bigint | TransactionArgument
 }
 
-export function calcRepayForAmount(tx: Transaction, args: CalcRepayForAmountArgs) {
+export function calcRepayForAmount(
+  tx: Transaction,
+  args: CalcRepayForAmountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_for_amount`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.amount, `u64`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::calc_repay_for_amount`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
@@ -102,10 +143,15 @@ export interface CalcRepayBySharesArgs {
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRepayByShares(tx: Transaction, args: CalcRepayBySharesArgs) {
+/** Calculates the debt amount that needs to be repaid for the given amount of debt shares. */
+export function calcRepayByShares(tx: Transaction, args: CalcRepayBySharesArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_shares`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.shareValueX64, `u128`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::calc_repay_by_shares`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+      pure(tx, args.shareValueX64, `u128`),
+    ],
   })
 }
 
@@ -115,9 +161,14 @@ export interface CalcRepayByAmountArgs {
   amount: bigint | TransactionArgument
 }
 
-export function calcRepayByAmount(tx: Transaction, args: CalcRepayByAmountArgs) {
+/** Calculates the debt share amount required to repay the given amount of debt. */
+export function calcRepayByAmount(tx: Transaction, args: CalcRepayByAmountArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::debt_info::calc_repay_by_amount`,
-    arguments: [obj(tx, args.self), obj(tx, args.type), pure(tx, args.amount, `u64`)],
+    target: `${getPublishedAt('kai-leverage')}::debt_info::calc_repay_by_amount`,
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.type),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }

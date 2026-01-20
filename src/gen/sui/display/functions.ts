@@ -1,11 +1,24 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
-export function new_(tx: Transaction, typeArg: string, pub: TransactionObjectInput) {
+/**
+ * Create an empty Display object. It can either be shared empty or filled
+ * with data right away via cheaper `set_owned` method.
+ */
+export function new_(
+  tx: Transaction,
+  typeArg: string,
+  pub: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::new`,
+    target: `${getPublishedAt('sui')}::display::new`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pub)],
   })
@@ -17,9 +30,14 @@ export interface NewWithFieldsArgs {
   values: Array<string | TransactionArgument> | TransactionArgument
 }
 
-export function newWithFields(tx: Transaction, typeArg: string, args: NewWithFieldsArgs) {
+/** Create a new Display<T> object with a set of fields. */
+export function newWithFields(
+  tx: Transaction,
+  typeArg: string,
+  args: NewWithFieldsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::new_with_fields`,
+    target: `${getPublishedAt('sui')}::display::new_with_fields`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.pub),
@@ -29,17 +47,27 @@ export function newWithFields(tx: Transaction, typeArg: string, args: NewWithFie
   })
 }
 
-export function createAndKeep(tx: Transaction, typeArg: string, pub: TransactionObjectInput) {
+/** Create a new empty Display<T> object and keep it. */
+export function createAndKeep(
+  tx: Transaction,
+  typeArg: string,
+  pub: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::create_and_keep`,
+    target: `${getPublishedAt('sui')}::display::create_and_keep`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pub)],
   })
 }
 
-export function updateVersion(tx: Transaction, typeArg: string, display: TransactionObjectInput) {
+/** Manually bump the version and emit an event with the updated version's contents. */
+export function updateVersion(
+  tx: Transaction,
+  typeArg: string,
+  display: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::update_version`,
+    target: `${getPublishedAt('sui')}::display::update_version`,
     typeArguments: [typeArg],
     arguments: [obj(tx, display)],
   })
@@ -51,9 +79,10 @@ export interface AddArgs {
   value: string | TransactionArgument
 }
 
-export function add(tx: Transaction, typeArg: string, args: AddArgs) {
+/** Sets a custom `name` field with the `value`. */
+export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::add`,
+    target: `${getPublishedAt('sui')}::display::add`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -69,9 +98,14 @@ export interface AddMultipleArgs {
   values: Array<string | TransactionArgument> | TransactionArgument
 }
 
-export function addMultiple(tx: Transaction, typeArg: string, args: AddMultipleArgs) {
+/** Sets multiple `fields` with `values`. */
+export function addMultiple(
+  tx: Transaction,
+  typeArg: string,
+  args: AddMultipleArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::add_multiple`,
+    target: `${getPublishedAt('sui')}::display::add_multiple`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -87,9 +121,13 @@ export interface EditArgs {
   value: string | TransactionArgument
 }
 
-export function edit(tx: Transaction, typeArg: string, args: EditArgs) {
+/**
+ * Change the value of the field.
+ * TODO (long run): version changes;
+ */
+export function edit(tx: Transaction, typeArg: string, args: EditArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::edit`,
+    target: `${getPublishedAt('sui')}::display::edit`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -104,41 +142,61 @@ export interface RemoveArgs {
   name: string | TransactionArgument
 }
 
-export function remove(tx: Transaction, typeArg: string, args: RemoveArgs) {
+/** Remove the key from the Display. */
+export function remove(tx: Transaction, typeArg: string, args: RemoveArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::remove`,
+    target: `${getPublishedAt('sui')}::display::remove`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), pure(tx, args.name, `${String.$typeName}`)],
+    arguments: [
+      obj(tx, args.self),
+      pure(tx, args.name, `${String.$typeName}`),
+    ],
   })
 }
 
-export function isAuthorized(tx: Transaction, typeArg: string, pub: TransactionObjectInput) {
+/** Authorization check; can be performed externally to implement protection rules for Display. */
+export function isAuthorized(
+  tx: Transaction,
+  typeArg: string,
+  pub: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::is_authorized`,
+    target: `${getPublishedAt('sui')}::display::is_authorized`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pub)],
   })
 }
 
-export function version(tx: Transaction, typeArg: string, d: TransactionObjectInput) {
+/** Read the `version` field. */
+export function version(
+  tx: Transaction,
+  typeArg: string,
+  d: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::version`,
+    target: `${getPublishedAt('sui')}::display::version`,
     typeArguments: [typeArg],
     arguments: [obj(tx, d)],
   })
 }
 
-export function fields(tx: Transaction, typeArg: string, d: TransactionObjectInput) {
+/** Read the `fields` field. */
+export function fields(
+  tx: Transaction,
+  typeArg: string,
+  d: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::fields`,
+    target: `${getPublishedAt('sui')}::display::fields`,
     typeArguments: [typeArg],
     arguments: [obj(tx, d)],
   })
 }
 
-export function createInternal(tx: Transaction, typeArg: string) {
+/** Internal function to create a new `Display<T>`. */
+export function createInternal(tx: Transaction, typeArg: string): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::create_internal`,
+    target: `${getPublishedAt('sui')}::display::create_internal`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -150,9 +208,14 @@ export interface AddInternalArgs {
   value: string | TransactionArgument
 }
 
-export function addInternal(tx: Transaction, typeArg: string, args: AddInternalArgs) {
+/** Private method for inserting fields without security checks. */
+export function addInternal(
+  tx: Transaction,
+  typeArg: string,
+  args: AddInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::display::add_internal`,
+    target: `${getPublishedAt('sui')}::display::add_internal`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.display),

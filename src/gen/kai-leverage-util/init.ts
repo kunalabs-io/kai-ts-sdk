@@ -1,9 +1,9 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as batchSwap from './batch-swap/structs'
 import * as bluefinSpot from './bluefin-spot/structs'
 import * as cetus from './cetus/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(batchSwap.BatchSwap)
   loader.register(batchSwap.BatchSwapClaim)
   loader.register(bluefinSpot.RebalanceReceipt)

@@ -8,7 +8,7 @@ import {
   RepayDebtInfo,
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
-import { Position as BluefinPosition } from '../gen/bluefin_spot/position/structs'
+import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
 import { tickIndexToSqrtPriceX64 } from './tick-math'
 import {
   findConfigInfoForPositionBcs,
@@ -833,7 +833,7 @@ export class Position<
   get debtSharesX(): bigint {
     const data = this.data as Position_<X, Y, LP>
     const info = data.debtBag.inner.infos.find(i => {
-      const infoType = compressSuiType('0x' + i.assetType.name)
+      const infoType = compressSuiType('0x' + i.assetType)
       const xType = compressSuiType(this.X.typeName)
       return infoType === xType
     })
@@ -852,7 +852,7 @@ export class Position<
   get debtSharesY(): bigint {
     const data = this.data as Position_<X, Y, LP>
     const info = data.debtBag.inner.infos.find(i => {
-      const infoType = compressSuiType('0x' + i.assetType.name)
+      const infoType = compressSuiType('0x' + i.assetType)
       const yType = compressSuiType(this.Y.typeName)
       return infoType === yType
     })
@@ -2334,7 +2334,7 @@ export class Position<
       Uint8Array.from(di.results![0].mutableReferenceOutputs![0][1])
     )
     for (const entry of positionData.ownerRewardStash.amounts.contents) {
-      const coinType = compressSuiType(entry.key.name)
+      const coinType = compressSuiType(entry.key)
       const amount = entry.value
       const coinInfo = COIN_INFO_MAP.get(coinType)
       if (!coinInfo) {

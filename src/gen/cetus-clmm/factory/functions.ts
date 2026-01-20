@@ -1,34 +1,78 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
+import { String } from '../../std/string/structs'
 import { ID } from '../../sui/object/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::init`, arguments: [] })
-}
-
-export function poolId(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::pool_id`, arguments: [obj(tx, info)] })
-}
-
-export function poolKey(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::pool_key`, arguments: [obj(tx, info)] })
-}
-
-export function coinTypes(tx: Transaction, info: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::coin_types`, arguments: [obj(tx, info)] })
-}
-
-export function tickSpacing(tx: Transaction, info: TransactionObjectInput) {
+/**
+ * Initialize the factory
+ * * `ctx` - Transaction context used to initialize the factory
+ */
+export function init(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::tick_spacing`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::init`,
+    arguments: [],
+  })
+}
+
+/**
+ * Get the pool_id from the pool simple info
+ * * `info` - The pool simple info
+ */
+export function poolId(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::factory::pool_id`,
     arguments: [obj(tx, info)],
   })
 }
 
-export function index(tx: Transaction, pools: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::factory::index`, arguments: [obj(tx, pools)] })
+/**
+ * Get the pool_key from the pool simple info
+ * * `info` - The pool simple info
+ */
+export function poolKey(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::factory::pool_key`,
+    arguments: [obj(tx, info)],
+  })
+}
+
+/**
+ * Get the coin types from the pool simple info
+ * * `info` - The pool simple info
+ */
+export function coinTypes(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::factory::coin_types`,
+    arguments: [obj(tx, info)],
+  })
+}
+
+/**
+ * Get the tick spacing from the pool simple info
+ * * `info` - The pool simple info
+ */
+export function tickSpacing(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::factory::tick_spacing`,
+    arguments: [obj(tx, info)],
+  })
+}
+
+/**
+ * Get the pool index from the pools
+ * * `pools` - The pools
+ */
+export function index(tx: Transaction, pools: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::factory::index`,
+    arguments: [obj(tx, pools)],
+  })
 }
 
 export interface PoolSimpleInfoArgs {
@@ -36,24 +80,50 @@ export interface PoolSimpleInfoArgs {
   poolKey: string | TransactionArgument
 }
 
-export function poolSimpleInfo(tx: Transaction, args: PoolSimpleInfoArgs) {
+/**
+ * Get the pool simple info from the pools
+ * * `pools` - The pools
+ * * `pool_key` - The pool key
+ */
+export function poolSimpleInfo(tx: Transaction, args: PoolSimpleInfoArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::pool_simple_info`,
-    arguments: [obj(tx, args.pools), pure(tx, args.poolKey, `${ID.$typeName}`)],
+    target: `${getPublishedAt('cetus-clmm')}::factory::pool_simple_info`,
+    arguments: [
+      obj(tx, args.pools),
+      pure(tx, args.poolKey, `${ID.$typeName}`),
+    ],
   })
 }
 
-export function inAllowedList(tx: Transaction, typeArg: string, pools: TransactionObjectInput) {
+/**
+ * Check if a coin is in the allowed list
+ * * `pools` - The pools
+ * * `Coin` - The coin type
+ */
+export function inAllowedList(
+  tx: Transaction,
+  typeArg: string,
+  pools: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::in_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::in_allowed_list`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
 }
 
-export function inDeniedList(tx: Transaction, typeArg: string, pools: TransactionObjectInput) {
+/**
+ * Check if a coin is in the denied list
+ * * `pools` - The pools
+ * * `Coin` - The coin type
+ */
+export function inDeniedList(
+  tx: Transaction,
+  typeArg: string,
+  pools: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::in_denied_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::in_denied_list`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
@@ -64,11 +134,24 @@ export interface IsAllowedCoinArgs {
   metadata: TransactionObjectInput
 }
 
-export function isAllowedCoin(tx: Transaction, typeArg: string, args: IsAllowedCoinArgs) {
+/**
+ * Check if a coin is allowed
+ * * `pools` - The pools
+ * * `Coin` - The coin type
+ * * `_metadata` - The coin metadata
+ */
+export function isAllowedCoin(
+  tx: Transaction,
+  typeArg: string,
+  args: IsAllowedCoinArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::is_allowed_coin`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::is_allowed_coin`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.pools), obj(tx, args.metadata)],
+    arguments: [
+      obj(tx, args.pools),
+      obj(tx, args.metadata),
+    ],
   })
 }
 
@@ -77,15 +160,25 @@ export interface IsPermissionPairArgs {
   tickSpacing: number | TransactionArgument
 }
 
+/**
+ * Check if a permission pair exists
+ * * `pools` - The pools
+ * * `CoinTypeA` - The type name of the first coin
+ * * `CoinTypeB` - The type name of the second coin
+ * * `tick_spacing` - The tick spacing
+ */
 export function isPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
-  args: IsPermissionPairArgs
-) {
+  args: IsPermissionPairArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::is_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::is_permission_pair`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pools), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
@@ -94,15 +187,25 @@ export interface PermissionPairCapArgs {
   tickSpacing: number | TransactionArgument
 }
 
+/**
+ * Get the permission pair cap from the pools
+ * * `pools` - The pools
+ * * `CoinTypeA` - The type name of the first coin
+ * * `CoinTypeB` - The type name of the second coin
+ * * `tick_spacing` - The tick spacing
+ */
 export function permissionPairCap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: PermissionPairCapArgs
-) {
+  args: PermissionPairCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::permission_pair_cap`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::permission_pair_cap`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pools), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
@@ -111,10 +214,22 @@ export interface InitManagerAndWhitelistArgs {
   pools: TransactionObjectInput
 }
 
-export function initManagerAndWhitelist(tx: Transaction, args: InitManagerAndWhitelistArgs) {
+/**
+ * Initialize the permission pair manager and the whitelist
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to initialize the permission pair manager and the whitelist
+ */
+export function initManagerAndWhitelist(
+  tx: Transaction,
+  args: InitManagerAndWhitelistArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::init_manager_and_whitelist`,
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    target: `${getPublishedAt('cetus-clmm')}::factory::init_manager_and_whitelist`,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -123,11 +238,24 @@ export interface AddAllowedListArgs {
   pools: TransactionObjectInput
 }
 
-export function addAllowedList(tx: Transaction, typeArg: string, args: AddAllowedListArgs) {
+/**
+ * Add a coin to the allowed list
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to add the coin to the allowed list
+ */
+export function addAllowedList(
+  tx: Transaction,
+  typeArg: string,
+  args: AddAllowedListArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::add_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::add_allowed_list`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -136,11 +264,24 @@ export interface RemoveAllowedListArgs {
   pools: TransactionObjectInput
 }
 
-export function removeAllowedList(tx: Transaction, typeArg: string, args: RemoveAllowedListArgs) {
+/**
+ * Remove a coin from the allowed list
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to remove the coin from the allowed list
+ */
+export function removeAllowedList(
+  tx: Transaction,
+  typeArg: string,
+  args: RemoveAllowedListArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::remove_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::remove_allowed_list`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -149,11 +290,24 @@ export interface AddDeniedListArgs {
   pools: TransactionObjectInput
 }
 
-export function addDeniedList(tx: Transaction, typeArg: string, args: AddDeniedListArgs) {
+/**
+ * Add a coin to the denied list
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to add the coin to the denied list
+ */
+export function addDeniedList(
+  tx: Transaction,
+  typeArg: string,
+  args: AddDeniedListArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::add_denied_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::add_denied_list`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -162,11 +316,24 @@ export interface RemoveDeniedListArgs {
   pools: TransactionObjectInput
 }
 
-export function removeDeniedList(tx: Transaction, typeArg: string, args: RemoveDeniedListArgs) {
+/**
+ * Remove a coin from the denied list
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to remove the coin from the denied list
+ */
+export function removeDeniedList(
+  tx: Transaction,
+  typeArg: string,
+  args: RemoveDeniedListArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::remove_denied_list`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::remove_denied_list`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -176,15 +343,26 @@ export interface AddAllowedPairConfigArgs {
   tickSpacing: number | TransactionArgument
 }
 
+/**
+ * Add a allowed pair config
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `tick_spacing` - The tick spacing
+ * * `ctx` - Transaction context used to add the allowed pair config
+ */
 export function addAllowedPairConfig(
   tx: Transaction,
   typeArg: string,
-  args: AddAllowedPairConfigArgs
-) {
+  args: AddAllowedPairConfigArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::add_allowed_pair_config`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::add_allowed_pair_config`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
@@ -194,15 +372,26 @@ export interface RemoveAllowedPairConfigArgs {
   tickSpacing: number | TransactionArgument
 }
 
+/**
+ * Remove a allowed pair config
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `tick_spacing` - The tick spacing
+ * * `ctx` - Transaction context used to remove the allowed pair config
+ */
 export function removeAllowedPairConfig(
   tx: Transaction,
   typeArg: string,
-  args: RemoveAllowedPairConfigArgs
-) {
+  args: RemoveAllowedPairConfigArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::remove_allowed_pair_config`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::remove_allowed_pair_config`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
@@ -212,15 +401,26 @@ export interface MintPoolCreationCapArgs {
   treasuryCap: TransactionObjectInput
 }
 
+/**
+ * Mint a pool creation cap
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `_` - The treasury cap
+ * * `ctx` - Transaction context used to mint the pool creation cap
+ */
 export function mintPoolCreationCap(
   tx: Transaction,
   typeArg: string,
-  args: MintPoolCreationCapArgs
-) {
+  args: MintPoolCreationCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::mint_pool_creation_cap`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools), obj(tx, args.treasuryCap)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+      obj(tx, args.treasuryCap),
+    ],
   })
 }
 
@@ -229,15 +429,24 @@ export interface MintPoolCreationCapByAdminArgs {
   pools: TransactionObjectInput
 }
 
+/**
+ * Mint a pool creation cap by admin
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `ctx` - Transaction context used to mint the pool creation cap by admin
+ */
 export function mintPoolCreationCapByAdmin(
   tx: Transaction,
   typeArg: string,
-  args: MintPoolCreationCapByAdminArgs
-) {
+  args: MintPoolCreationCapByAdminArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::mint_pool_creation_cap_by_admin`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap_by_admin`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.pools)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+    ],
   })
 }
 
@@ -248,13 +457,21 @@ export interface RegisterPermissionPairArgs {
   poolCreationCap: TransactionObjectInput
 }
 
+/**
+ * Register PermissionPair
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `tick_spacing` - The tick spacing
+ * * `pool_creation_cap` - The pool creation cap
+ * * `ctx` - Transaction context used to register the permission pair
+ */
 export function registerPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RegisterPermissionPairArgs
-) {
+  args: RegisterPermissionPairArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::register_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::register_permission_pair`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -272,13 +489,21 @@ export interface UnregisterPermissionPairArgs {
   cap: TransactionObjectInput
 }
 
+/**
+ * Unregister PermissionPair
+ * * `config` - The global config
+ * * `pools` - The pools
+ * * `tick_spacing` - The tick spacing
+ * * `cap` - The pool creation cap
+ * * `ctx` - Transaction context used to unregister the permission pair
+ */
 export function unregisterPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UnregisterPermissionPairArgs
-) {
+  args: UnregisterPermissionPairArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::unregister_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::unregister_permission_pair`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -298,12 +523,16 @@ export interface RegisterPermissionPairInternalArgs {
 export function registerPermissionPairInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RegisterPermissionPairInternalArgs
-) {
+  args: RegisterPermissionPairInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::register_permission_pair_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::register_permission_pair_internal`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pools), obj(tx, args.cap), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.pools),
+      obj(tx, args.cap),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
@@ -316,18 +545,26 @@ export interface UnregisterPermissionPairInternalArgs {
 export function unregisterPermissionPairInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: UnregisterPermissionPairInternalArgs
-) {
+  args: UnregisterPermissionPairInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::unregister_permission_pair_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::unregister_permission_pair_internal`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.pools), obj(tx, args.cap), pure(tx, args.tickSpacing, `u32`)],
+    arguments: [
+      obj(tx, args.pools),
+      obj(tx, args.cap),
+      pure(tx, args.tickSpacing, `u32`),
+    ],
   })
 }
 
-export function addDeniedCoin(tx: Transaction, typeArg: string, pools: TransactionObjectInput) {
+export function addDeniedCoin(
+  tx: Transaction,
+  typeArg: string,
+  pools: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::add_denied_coin`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::add_denied_coin`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
@@ -340,11 +577,14 @@ export interface MintPoolCreationCapInternalArgs {
 
 export function mintPoolCreationCapInternal(
   tx: Transaction,
-  args: MintPoolCreationCapInternalArgs
-) {
+  args: MintPoolCreationCapInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::mint_pool_creation_cap_internal`,
-    arguments: [obj(tx, args.pools), obj(tx, args.coinType)],
+    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap_internal`,
+    arguments: [
+      obj(tx, args.pools),
+      obj(tx, args.coinType),
+    ],
   })
 }
 
@@ -357,9 +597,25 @@ export interface CreatePoolArgs {
   clock: TransactionObjectInput
 }
 
-export function createPool(tx: Transaction, typeArgs: [string, string], args: CreatePoolArgs) {
+/**
+ * Create pool
+ * * `CoinTypeA` - The type name of the first coin
+ * * `CoinTypeB` - The type name of the second coin
+ * * `pools` - The global pools
+ * * `config` - The global config
+ * * `tick_spacing` - The tick spacing of the pool
+ * * `initialize_price` - The initial price of the pool
+ * * `url` - The url of the pool which is used in position nft
+ * * `clock` - The clock
+ * * `ctx` - Transaction context used to create the pool
+ */
+export function createPool(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::create_pool`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -388,13 +644,14 @@ export interface CreatePoolWithLiquidityArgs {
   clock: TransactionObjectInput
 }
 
+/** @Deprecated */
 export function createPoolWithLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolWithLiquidityArgs
-) {
+  args: CreatePoolWithLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::create_pool_with_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_with_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -432,13 +689,32 @@ export interface CreatePoolV2_Args {
   clock: TransactionObjectInput
 }
 
+/**
+ * Create pool and add liquidity.
+ * * `config` - The global config
+ * * `pools` - The global pools
+ * * `tick_spacing` - The tick spacing of the pool
+ * * `initialize_price` - The initial price of the pool
+ * * `url` - The url of the pool which is used in position nft
+ * * `tick_lower_idx` - The lower tick index of the pool
+ * * `tick_upper_idx` - The upper tick index of the pool
+ * * `coin_a` - The coin a
+ * * `coin_b` - The coin b
+ * * `metadata_a` - The metadata of the coin a
+ * * `metadata_b` - The metadata of the coin b
+ * * `amount_a` - The amount of coin a
+ * * `amount_b` - The amount of coin b
+ * * `fix_amount_a` - Fix the amount of coin a or b
+ * * `clock` - The clock
+ * * `ctx` - Transaction context used to create the pool and add liquidity
+ */
 export function createPoolV2_(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolV2_Args
-) {
+  args: CreatePoolV2_Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::create_pool_v2_`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_v2_`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -472,10 +748,10 @@ export interface CreatePoolInternalArgs {
 export function createPoolInternal(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolInternalArgs
-) {
+  args: CreatePoolInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::create_pool_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -494,9 +770,15 @@ export interface FetchPoolsArgs {
   limit: bigint | TransactionArgument
 }
 
-export function fetchPools(tx: Transaction, args: FetchPoolsArgs) {
+/**
+ * Fetch pool simple infos.
+ * * `pools` - The global pools
+ * * `start` - The start pool id
+ * * `limit` - The max number of Pool to fetch
+ */
+export function fetchPools(tx: Transaction, args: FetchPoolsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::fetch_pools`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::fetch_pools`,
     arguments: [
       obj(tx, args.pools),
       pure(tx, args.start, `vector<${ID.$typeName}>`),
@@ -505,21 +787,37 @@ export function fetchPools(tx: Transaction, args: FetchPoolsArgs) {
   })
 }
 
+/**
+ * Generate the pool unique key by CoinTypeA ,CoinTypeB and tick_spacing.
+ * The key is used to check if the pool already exist.
+ * the order or CoinTypeA and CoinTypeB is checked, or error is EInvalidCoinTypeSequence.
+ * if the CoinTypeA and CoinTypeB is the same, error is ESameCoinType.
+ * key = hash([CoinTypeA, CoinTypeB, tick_spacing])
+ *
+ * * `CoinTypeA` - The type name of the first coin
+ * * `CoinTypeB` - The type name of the second coin
+ * * `tick_spacing` - The tick spacing
+ */
 export function newPoolKey(
   tx: Transaction,
   typeArgs: [string, string],
-  tickSpacing: number | TransactionArgument
-) {
+  tickSpacing: number | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::new_pool_key`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::new_pool_key`,
     typeArguments: typeArgs,
     arguments: [pure(tx, tickSpacing, `u32`)],
   })
 }
 
-export function isRightOrder(tx: Transaction, typeArgs: [string, string]) {
+/**
+ * Check if the order of CoinTypeA and CoinTypeB is right
+ * * `CoinTypeA` - The type name of the first coin
+ * * `CoinTypeB` - The type name of the second coin
+ */
+export function isRightOrder(tx: Transaction, typeArgs: [string, string]): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::factory::is_right_order`,
+    target: `${getPublishedAt('cetus-clmm')}::factory::is_right_order`,
     typeArguments: typeArgs,
     arguments: [],
   })

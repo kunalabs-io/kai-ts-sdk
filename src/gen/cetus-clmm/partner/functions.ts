@@ -1,10 +1,22 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::partner::init`, arguments: [] })
+/**
+ * Initialize the `Partners` object to store partner information
+ * * `ctx` - The transaction context used to create the object
+ */
+export function init(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::partner::init`,
+    arguments: [],
+  })
 }
 
 export interface CreatePartnerArgs {
@@ -18,9 +30,21 @@ export interface CreatePartnerArgs {
   clock: TransactionObjectInput
 }
 
-export function createPartner(tx: Transaction, args: CreatePartnerArgs) {
+/**
+ * Create one partner.
+ * * `config` - The global configuration
+ * * `partners` - The mutable reference to the `Partners` object
+ * * `name` - The name of the partner
+ * * `ref_fee_rate` - The reference fee rate for the partner
+ * * `start_time` - The start time of the partner's validity period
+ * * `end_time` - The end time of the partner's validity period
+ * * `recipient` - The address of the recipient
+ * * `clock` - The clock object
+ * * `ctx` - The transaction context
+ */
+export function createPartner(tx: Transaction, args: CreatePartnerArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::create_partner`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::create_partner`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.partners),
@@ -34,34 +58,62 @@ export function createPartner(tx: Transaction, args: CreatePartnerArgs) {
   })
 }
 
-export function name(tx: Transaction, partner: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::partner::name`, arguments: [obj(tx, partner)] })
-}
-
-export function refFeeRate(tx: Transaction, partner: TransactionObjectInput) {
+/**
+ * Get partner name.
+ * * `partner` - The reference to the `Partner` object
+ * * Returns the name of the partner
+ */
+export function name(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::ref_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::name`,
     arguments: [obj(tx, partner)],
   })
 }
 
-export function startTime(tx: Transaction, partner: TransactionObjectInput) {
+/**
+ * get partner ref_fee_rate.
+ * * `partner` - The reference to the `Partner` object
+ * * Returns the reference fee rate for the partner
+ */
+export function refFeeRate(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::start_time`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::ref_fee_rate`,
     arguments: [obj(tx, partner)],
   })
 }
 
-export function endTime(tx: Transaction, partner: TransactionObjectInput) {
+/**
+ * get partner start_time.
+ * * `partner` - The reference to the `Partner` object
+ * * Returns the start time of the partner's validity period
+ */
+export function startTime(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::end_time`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::start_time`,
     arguments: [obj(tx, partner)],
   })
 }
 
-export function balances(tx: Transaction, partner: TransactionObjectInput) {
+/**
+ * get partner end_time.
+ * * `partner` - The reference to the `Partner` object
+ * * Returns the end time of the partner's validity period
+ */
+export function endTime(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::balances`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::end_time`,
+    arguments: [obj(tx, partner)],
+  })
+}
+
+/**
+ * get partner balances.
+ * * `partner` - The reference to the `Partner` object
+ * * Returns the balances of the partner
+ */
+export function balances(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::partner::balances`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -71,10 +123,19 @@ export interface CurrentRefFeeRateArgs {
   currentTime: bigint | TransactionArgument
 }
 
-export function currentRefFeeRate(tx: Transaction, args: CurrentRefFeeRateArgs) {
+/**
+ * check the parter is valid or not, and return the partner ref_fee_rate.
+ * * `partner` - The reference to the `Partner` object
+ * * `current_time` - The current time
+ * * Returns the current reference fee rate for the partner
+ */
+export function currentRefFeeRate(tx: Transaction, args: CurrentRefFeeRateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::current_ref_fee_rate`,
-    arguments: [obj(tx, args.partner), pure(tx, args.currentTime, `u64`)],
+    target: `${getPublishedAt('cetus-clmm')}::partner::current_ref_fee_rate`,
+    arguments: [
+      obj(tx, args.partner),
+      pure(tx, args.currentTime, `u64`),
+    ],
   })
 }
 
@@ -84,10 +145,21 @@ export interface UpdateRefFeeRateArgs {
   newFeeRate: bigint | TransactionArgument
 }
 
-export function updateRefFeeRate(tx: Transaction, args: UpdateRefFeeRateArgs) {
+/**
+ * Update partner ref fee rate.
+ * * `config` - The global configuration
+ * * `partner` - The mutable reference to the `Partner` object
+ * * `new_fee_rate` - The new reference fee rate for the partner
+ * * `ctx` - The transaction context
+ */
+export function updateRefFeeRate(tx: Transaction, args: UpdateRefFeeRateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::update_ref_fee_rate`,
-    arguments: [obj(tx, args.config), obj(tx, args.partner), pure(tx, args.newFeeRate, `u64`)],
+    target: `${getPublishedAt('cetus-clmm')}::partner::update_ref_fee_rate`,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.partner),
+      pure(tx, args.newFeeRate, `u64`),
+    ],
   })
 }
 
@@ -99,9 +171,18 @@ export interface UpdateTimeRangeArgs {
   clock: TransactionObjectInput
 }
 
-export function updateTimeRange(tx: Transaction, args: UpdateTimeRangeArgs) {
+/**
+ * Update partner time range.
+ * * `config` - The global configuration
+ * * `partner` - The mutable reference to the `Partner` object
+ * * `start_time` - The start time of the partner's validity period
+ * * `end_time` - The end time of the partner's validity period
+ * * `clock` - The clock object
+ * * `ctx` - The transaction context
+ */
+export function updateTimeRange(tx: Transaction, args: UpdateTimeRangeArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::update_time_range`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::update_time_range`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.partner),
@@ -117,11 +198,24 @@ export interface ReceiveRefFeeArgs {
   fee: TransactionObjectInput
 }
 
-export function receiveRefFee(tx: Transaction, typeArg: string, args: ReceiveRefFeeArgs) {
+/**
+ * Receive ref fee.
+ * This method is called when swap and partner is provided.
+ * * `partner` - The mutable reference to the `Partner` object
+ * * `fee` - The balance of the fee
+ */
+export function receiveRefFee(
+  tx: Transaction,
+  typeArg: string,
+  args: ReceiveRefFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::receive_ref_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::receive_ref_fee`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.partner), obj(tx, args.fee)],
+    arguments: [
+      obj(tx, args.partner),
+      obj(tx, args.fee),
+    ],
   })
 }
 
@@ -130,15 +224,24 @@ export interface ReceiveRefFeeInternalArgs {
   fee: TransactionObjectInput
 }
 
+/**
+ * Receive ref fee.
+ * This method is called when swap and partner is provided.
+ * * `partner` - The mutable reference to the `Partner` object
+ * * `fee` - The balance of the fee
+ */
 export function receiveRefFeeInternal(
   tx: Transaction,
   typeArg: string,
-  args: ReceiveRefFeeInternalArgs
-) {
+  args: ReceiveRefFeeInternalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::receive_ref_fee_internal`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::receive_ref_fee_internal`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.partner), obj(tx, args.fee)],
+    arguments: [
+      obj(tx, args.partner),
+      obj(tx, args.fee),
+    ],
   })
 }
 
@@ -148,10 +251,25 @@ export interface ClaimRefFeeArgs {
   partner: TransactionObjectInput
 }
 
-export function claimRefFee(tx: Transaction, typeArg: string, args: ClaimRefFeeArgs) {
+/**
+ * The `PartnerCap` owner claim the parter fee by CoinType.
+ * * `config` - The global configuration
+ * * `partner_cap` - The reference to the `PartnerCap` object
+ * * `partner` - The mutable reference to the `Partner` object
+ * * `ctx` - The transaction context
+ */
+export function claimRefFee(
+  tx: Transaction,
+  typeArg: string,
+  args: ClaimRefFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::partner::claim_ref_fee`,
+    target: `${getPublishedAt('cetus-clmm')}::partner::claim_ref_fee`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.partnerCap), obj(tx, args.partner)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.partnerCap),
+      obj(tx, args.partner),
+    ],
   })
 }

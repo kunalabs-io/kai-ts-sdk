@@ -1,29 +1,39 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { PKG_V1 } from '../index'
 import { PriceInfo } from '../price-info/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== BatchPriceAttestation =============================== */
 
 export function isBatchPriceAttestation(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::batch_price_attestation::BatchPriceAttestation`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'batch_price_attestation::BatchPriceAttestation')
+    }::batch_price_attestation::BatchPriceAttestation`
 }
 
 export interface BatchPriceAttestationFields {
@@ -38,17 +48,31 @@ export type BatchPriceAttestationReified = Reified<
   BatchPriceAttestationFields
 >
 
+export type BatchPriceAttestationJSONField = {
+  header: ToJSON<Header>
+  attestationSize: string
+  attestationCount: string
+  priceInfos: ToJSON<PriceInfo>[]
+}
+
+export type BatchPriceAttestationJSON = {
+  $typeName: typeof BatchPriceAttestation.$typeName
+  $typeArgs: []
+} & BatchPriceAttestationJSONField
+
 export class BatchPriceAttestation implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::batch_price_attestation::BatchPriceAttestation`
+  static readonly $typeName: `${string}::batch_price_attestation::BatchPriceAttestation` = `${
+    getTypeOrigin('pyth', 'batch_price_attestation::BatchPriceAttestation')
+  }::batch_price_attestation::BatchPriceAttestation` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = BatchPriceAttestation.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::batch_price_attestation::BatchPriceAttestation`
+  readonly $typeName: typeof BatchPriceAttestation.$typeName = BatchPriceAttestation.$typeName
+  readonly $fullTypeName: `${string}::batch_price_attestation::BatchPriceAttestation`
   readonly $typeArgs: []
-  readonly $isPhantom = BatchPriceAttestation.$isPhantom
+  readonly $isPhantom: typeof BatchPriceAttestation.$isPhantom = BatchPriceAttestation.$isPhantom
 
   readonly header: ToField<Header>
   readonly attestationSize: ToField<'u64'>
@@ -58,8 +82,8 @@ export class BatchPriceAttestation implements StructClass {
   private constructor(typeArgs: [], fields: BatchPriceAttestationFields) {
     this.$fullTypeName = composeSuiType(
       BatchPriceAttestation.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::batch_price_attestation::BatchPriceAttestation`
+      ...typeArgs,
+    ) as `${string}::batch_price_attestation::BatchPriceAttestation`
     this.$typeArgs = typeArgs
 
     this.header = fields.header
@@ -74,8 +98,8 @@ export class BatchPriceAttestation implements StructClass {
       typeName: BatchPriceAttestation.$typeName,
       fullTypeName: composeSuiType(
         BatchPriceAttestation.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::batch_price_attestation::BatchPriceAttestation`,
+        ...[],
+      ) as `${string}::batch_price_attestation::BatchPriceAttestation`,
       typeArgs: [] as [],
       isPhantom: BatchPriceAttestation.$isPhantom,
       reifiedTypeArgs: [],
@@ -90,7 +114,8 @@ export class BatchPriceAttestation implements StructClass {
         BatchPriceAttestation.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BatchPriceAttestation.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => BatchPriceAttestation.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        BatchPriceAttestation.fetch(client, id),
       new: (fields: BatchPriceAttestationFields) => {
         return new BatchPriceAttestation([], fields)
       },
@@ -98,14 +123,15 @@ export class BatchPriceAttestation implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): BatchPriceAttestationReified {
     return BatchPriceAttestation.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<BatchPriceAttestation>> {
     return phantom(BatchPriceAttestation.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<BatchPriceAttestation>> {
     return BatchPriceAttestation.phantom()
   }
 
@@ -132,7 +158,7 @@ export class BatchPriceAttestation implements StructClass {
       header: decodeFromFields(Header.reified(), fields.header),
       attestationSize: decodeFromFields('u64', fields.attestation_size),
       attestationCount: decodeFromFields('u64', fields.attestation_count),
-      priceInfos: decodeFromFields(reified.vector(PriceInfo.reified()), fields.price_infos),
+      priceInfos: decodeFromFields(vector(PriceInfo.reified()), fields.price_infos),
     })
   }
 
@@ -145,10 +171,7 @@ export class BatchPriceAttestation implements StructClass {
       header: decodeFromFieldsWithTypes(Header.reified(), item.fields.header),
       attestationSize: decodeFromFieldsWithTypes('u64', item.fields.attestation_size),
       attestationCount: decodeFromFieldsWithTypes('u64', item.fields.attestation_count),
-      priceInfos: decodeFromFieldsWithTypes(
-        reified.vector(PriceInfo.reified()),
-        item.fields.price_infos
-      ),
+      priceInfos: decodeFromFieldsWithTypes(vector(PriceInfo.reified()), item.fields.price_infos),
     })
   }
 
@@ -156,7 +179,7 @@ export class BatchPriceAttestation implements StructClass {
     return BatchPriceAttestation.fromFields(BatchPriceAttestation.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BatchPriceAttestationJSONField {
     return {
       header: this.header.toJSONField(),
       attestationSize: this.attestationSize.toString(),
@@ -165,7 +188,7 @@ export class BatchPriceAttestation implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): BatchPriceAttestationJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -174,13 +197,15 @@ export class BatchPriceAttestation implements StructClass {
       header: decodeFromJSONField(Header.reified(), field.header),
       attestationSize: decodeFromJSONField('u64', field.attestationSize),
       attestationCount: decodeFromJSONField('u64', field.attestationCount),
-      priceInfos: decodeFromJSONField(reified.vector(PriceInfo.reified()), field.priceInfos),
+      priceInfos: decodeFromJSONField(vector(PriceInfo.reified()), field.priceInfos),
     })
   }
 
   static fromJSON(json: Record<string, any>): BatchPriceAttestation {
     if (json.$typeName !== BatchPriceAttestation.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a BatchPriceAttestation json object: expected '${BatchPriceAttestation.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return BatchPriceAttestation.fromJSONField(json)
@@ -192,7 +217,7 @@ export class BatchPriceAttestation implements StructClass {
     }
     if (!isBatchPriceAttestation(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a BatchPriceAttestation object`
+        `object at ${(content.fields as any).id} is not a BatchPriceAttestation object`,
       )
     }
     return BatchPriceAttestation.fromFieldsWithTypes(content)
@@ -204,26 +229,23 @@ export class BatchPriceAttestation implements StructClass {
         throw new Error(`object at is not a BatchPriceAttestation object`)
       }
 
-      return BatchPriceAttestation.fromBcs(fromB64(data.bcs.bcsBytes))
+      return BatchPriceAttestation.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return BatchPriceAttestation.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<BatchPriceAttestation> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching BatchPriceAttestation object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBatchPriceAttestation(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<BatchPriceAttestation> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBatchPriceAttestation(res.type)) {
       throw new Error(`object at id ${id} is not a BatchPriceAttestation object`)
     }
 
-    return BatchPriceAttestation.fromSuiObjectData(res.data)
+    return BatchPriceAttestation.fromBcs(res.bcsBytes)
   }
 }
 
@@ -231,7 +253,10 @@ export class BatchPriceAttestation implements StructClass {
 
 export function isHeader(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::batch_price_attestation::Header`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'batch_price_attestation::Header')
+    }::batch_price_attestation::Header`
 }
 
 export interface HeaderFields {
@@ -244,17 +269,32 @@ export interface HeaderFields {
 
 export type HeaderReified = Reified<Header, HeaderFields>
 
+export type HeaderJSONField = {
+  magic: string
+  versionMajor: string
+  versionMinor: string
+  headerSize: string
+  payloadId: number
+}
+
+export type HeaderJSON = {
+  $typeName: typeof Header.$typeName
+  $typeArgs: []
+} & HeaderJSONField
+
 export class Header implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::batch_price_attestation::Header`
+  static readonly $typeName: `${string}::batch_price_attestation::Header` = `${
+    getTypeOrigin('pyth', 'batch_price_attestation::Header')
+  }::batch_price_attestation::Header` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Header.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::batch_price_attestation::Header`
+  readonly $typeName: typeof Header.$typeName = Header.$typeName
+  readonly $fullTypeName: `${string}::batch_price_attestation::Header`
   readonly $typeArgs: []
-  readonly $isPhantom = Header.$isPhantom
+  readonly $isPhantom: typeof Header.$isPhantom = Header.$isPhantom
 
   readonly magic: ToField<'u64'>
   readonly versionMajor: ToField<'u64'>
@@ -265,8 +305,8 @@ export class Header implements StructClass {
   private constructor(typeArgs: [], fields: HeaderFields) {
     this.$fullTypeName = composeSuiType(
       Header.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::batch_price_attestation::Header`
+      ...typeArgs,
+    ) as `${string}::batch_price_attestation::Header`
     this.$typeArgs = typeArgs
 
     this.magic = fields.magic
@@ -282,8 +322,8 @@ export class Header implements StructClass {
       typeName: Header.$typeName,
       fullTypeName: composeSuiType(
         Header.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::batch_price_attestation::Header`,
+        ...[],
+      ) as `${string}::batch_price_attestation::Header`,
       typeArgs: [] as [],
       isPhantom: Header.$isPhantom,
       reifiedTypeArgs: [],
@@ -295,7 +335,7 @@ export class Header implements StructClass {
       fromJSON: (json: Record<string, any>) => Header.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Header.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Header.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Header.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Header.fetch(client, id),
       new: (fields: HeaderFields) => {
         return new Header([], fields)
       },
@@ -303,14 +343,15 @@ export class Header implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): HeaderReified {
     return Header.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Header>> {
     return phantom(Header.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Header>> {
     return Header.phantom()
   }
 
@@ -361,7 +402,7 @@ export class Header implements StructClass {
     return Header.fromFields(Header.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): HeaderJSONField {
     return {
       magic: this.magic.toString(),
       versionMajor: this.versionMajor.toString(),
@@ -371,7 +412,7 @@ export class Header implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): HeaderJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -387,7 +428,9 @@ export class Header implements StructClass {
 
   static fromJSON(json: Record<string, any>): Header {
     if (json.$typeName !== Header.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Header json object: expected '${Header.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Header.fromJSONField(json)
@@ -409,25 +452,22 @@ export class Header implements StructClass {
         throw new Error(`object at is not a Header object`)
       }
 
-      return Header.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Header.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Header.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Header> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Header object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isHeader(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Header> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isHeader(res.type)) {
       throw new Error(`object at id ${id} is not a Header object`)
     }
 
-    return Header.fromSuiObjectData(res.data)
+    return Header.fromBcs(res.bcsBytes)
   }
 }

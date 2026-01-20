@@ -1,12 +1,8 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeStr,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -14,25 +10,34 @@ import {
   decodeFromJSONField,
   extractType,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeStr,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 import { ID } from '../../sui/object/structs'
-import { PKG_V3 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== BatchSwap =============================== */
 
 export function isBatchSwap(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V3}::batch_swap::BatchSwap` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwap')}::batch_swap::BatchSwap` + '<',
+  )
 }
 
 export interface BatchSwapFields<A extends PhantomTypeArgument, B extends PhantomTypeArgument> {
@@ -41,49 +46,72 @@ export interface BatchSwapFields<A extends PhantomTypeArgument, B extends Phanto
   out: ToField<Balance<B>>
   totalIn: ToField<'u64'>
   totalOut: ToField<'u64'>
+  /** Number of claims */
   numClaims: ToField<'u64'>
+  /** Total number of claims completed */
   totalClaimed: ToField<'u64'>
   inSwap: ToField<'bool'>
   swapCompleted: ToField<'bool'>
 }
 
-export type BatchSwapReified<
-  A extends PhantomTypeArgument,
-  B extends PhantomTypeArgument,
-> = Reified<BatchSwap<A, B>, BatchSwapFields<A, B>>
+export type BatchSwapReified<A extends PhantomTypeArgument, B extends PhantomTypeArgument> =
+  Reified<BatchSwap<A, B>, BatchSwapFields<A, B>>
+
+export type BatchSwapJSONField<A extends PhantomTypeArgument, B extends PhantomTypeArgument> = {
+  id: string
+  in: ToJSON<Balance<A>>
+  out: ToJSON<Balance<B>>
+  totalIn: string
+  totalOut: string
+  numClaims: string
+  totalClaimed: string
+  inSwap: boolean
+  swapCompleted: boolean
+}
+
+export type BatchSwapJSON<A extends PhantomTypeArgument, B extends PhantomTypeArgument> = {
+  $typeName: typeof BatchSwap.$typeName
+  $typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>]
+} & BatchSwapJSONField<A, B>
 
 export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgument>
   implements StructClass
 {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::batch_swap::BatchSwap`
+  static readonly $typeName: `${string}::batch_swap::BatchSwap` = `${
+    getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwap')
+  }::batch_swap::BatchSwap` as const
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
-  readonly $typeName = BatchSwap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::batch_swap::BatchSwap<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+  readonly $typeName: typeof BatchSwap.$typeName = BatchSwap.$typeName
+  readonly $fullTypeName: `${string}::batch_swap::BatchSwap<${PhantomToTypeStr<
+    A
+  >}, ${PhantomToTypeStr<B>}>`
   readonly $typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>]
-  readonly $isPhantom = BatchSwap.$isPhantom
+  readonly $isPhantom: typeof BatchSwap.$isPhantom = BatchSwap.$isPhantom
 
   readonly id: ToField<ID>
   readonly in: ToField<Balance<A>>
   readonly out: ToField<Balance<B>>
   readonly totalIn: ToField<'u64'>
   readonly totalOut: ToField<'u64'>
+  /** Number of claims */
   readonly numClaims: ToField<'u64'>
+  /** Total number of claims completed */
   readonly totalClaimed: ToField<'u64'>
   readonly inSwap: ToField<'bool'>
   readonly swapCompleted: ToField<'bool'>
 
   private constructor(
     typeArgs: [PhantomToTypeStr<A>, PhantomToTypeStr<B>],
-    fields: BatchSwapFields<A, B>
+    fields: BatchSwapFields<A, B>,
   ) {
     this.$fullTypeName = composeSuiType(
       BatchSwap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::batch_swap::BatchSwap<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
+      ...typeArgs,
+    ) as `${string}::batch_swap::BatchSwap<${PhantomToTypeStr<A>}, ${PhantomToTypeStr<B>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -100,14 +128,19 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
   static reified<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
-  >(A: A, B: B): BatchSwapReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+  >(
+    A: A,
+    B: B,
+  ): BatchSwapReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     const reifiedBcs = BatchSwap.bcs
     return {
       typeName: BatchSwap.$typeName,
       fullTypeName: composeSuiType(
         BatchSwap.$typeName,
-        ...[extractType(A), extractType(B)]
-      ) as `${typeof PKG_V3}::batch_swap::BatchSwap<${PhantomToTypeStr<ToPhantomTypeArgument<A>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
+        ...[extractType(A), extractType(B)],
+      ) as `${string}::batch_swap::BatchSwap<${PhantomToTypeStr<
+        ToPhantomTypeArgument<A>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
       typeArgs: [extractType(A), extractType(B)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<A>>,
         PhantomToTypeStr<ToPhantomTypeArgument<B>>,
@@ -122,7 +155,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       fromJSON: (json: Record<string, any>) => BatchSwap.fromJSON([A, B], json),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwap.fromSuiParsedData([A, B], content),
       fromSuiObjectData: (content: SuiObjectData) => BatchSwap.fromSuiObjectData([A, B], content),
-      fetch: async (client: SuiClient, id: string) => BatchSwap.fetch(client, [A, B], id),
+      fetch: async (client: SupportedSuiClient, id: string) => BatchSwap.fetch(client, [A, B], id),
       new: (fields: BatchSwapFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>) => {
         return new BatchSwap([extractType(A), extractType(B)], fields)
       },
@@ -130,7 +163,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     }
   }
 
-  static get r() {
+  static get r(): typeof BatchSwap.reified {
     return BatchSwap.reified
   }
 
@@ -139,11 +172,12 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     A: A,
-    B: B
+    B: B,
   ): PhantomReified<ToTypeStr<BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>>> {
     return phantom(BatchSwap.reified(A, B))
   }
-  static get p() {
+
+  static get p(): typeof BatchSwap.phantom {
     return BatchSwap.phantom
   }
 
@@ -175,7 +209,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return BatchSwap.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromFields(ID.reified(), fields.id),
@@ -195,7 +229,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (!isBatchSwap(item.type)) {
       throw new Error('not a BatchSwap type')
@@ -220,12 +254,12 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    data: Uint8Array
+    data: Uint8Array,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return BatchSwap.fromFields(typeArgs, BatchSwap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BatchSwapJSONField<A, B> {
     return {
       id: this.id,
       in: this.in.toJSONField(),
@@ -239,14 +273,17 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     }
   }
 
-  toJSON() {
+  toJSON(): BatchSwapJSON<A, B> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
-  >(typeArgs: [A, B], field: any): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+  >(
+    typeArgs: [A, B],
+    field: any,
+  ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     return BatchSwap.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromJSONField(ID.reified(), field.id),
       in: decodeFromJSONField(Balance.reified(typeArgs[0]), field.in),
@@ -265,15 +302,17 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (json.$typeName !== BatchSwap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a BatchSwap json object: expected '${BatchSwap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(BatchSwap.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return BatchSwap.fromJSONField(typeArgs, json)
@@ -284,7 +323,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -300,7 +339,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     B extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [A, B],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBatchSwap(data.bcs.type)) {
@@ -310,7 +349,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 2) {
         throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 2; i++) {
@@ -318,18 +357,18 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return BatchSwap.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return BatchSwap.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return BatchSwap.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -337,19 +376,32 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [A, B],
-    id: string
+    id: string,
   ): Promise<BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching BatchSwap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBatchSwap(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBatchSwap(res.type)) {
       throw new Error(`object at id ${id} is not a BatchSwap object`)
     }
 
-    return BatchSwap.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BatchSwap.fromBcs(typeArgs, res.bcsBytes)
   }
 }
 
@@ -357,7 +409,10 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
 
 export function isBatchSwapClaim(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::batch_swap::BatchSwapClaim`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwapClaim')
+    }::batch_swap::BatchSwapClaim`
 }
 
 export interface BatchSwapClaimFields {
@@ -367,17 +422,29 @@ export interface BatchSwapClaimFields {
 
 export type BatchSwapClaimReified = Reified<BatchSwapClaim, BatchSwapClaimFields>
 
+export type BatchSwapClaimJSONField = {
+  batchSwapId: string
+  amount: string
+}
+
+export type BatchSwapClaimJSON = {
+  $typeName: typeof BatchSwapClaim.$typeName
+  $typeArgs: []
+} & BatchSwapClaimJSONField
+
 export class BatchSwapClaim implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::batch_swap::BatchSwapClaim`
+  static readonly $typeName: `${string}::batch_swap::BatchSwapClaim` = `${
+    getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwapClaim')
+  }::batch_swap::BatchSwapClaim` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = BatchSwapClaim.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::batch_swap::BatchSwapClaim`
+  readonly $typeName: typeof BatchSwapClaim.$typeName = BatchSwapClaim.$typeName
+  readonly $fullTypeName: `${string}::batch_swap::BatchSwapClaim`
   readonly $typeArgs: []
-  readonly $isPhantom = BatchSwapClaim.$isPhantom
+  readonly $isPhantom: typeof BatchSwapClaim.$isPhantom = BatchSwapClaim.$isPhantom
 
   readonly batchSwapId: ToField<ID>
   readonly amount: ToField<'u64'>
@@ -385,8 +452,8 @@ export class BatchSwapClaim implements StructClass {
   private constructor(typeArgs: [], fields: BatchSwapClaimFields) {
     this.$fullTypeName = composeSuiType(
       BatchSwapClaim.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::batch_swap::BatchSwapClaim`
+      ...typeArgs,
+    ) as `${string}::batch_swap::BatchSwapClaim`
     this.$typeArgs = typeArgs
 
     this.batchSwapId = fields.batchSwapId
@@ -399,8 +466,8 @@ export class BatchSwapClaim implements StructClass {
       typeName: BatchSwapClaim.$typeName,
       fullTypeName: composeSuiType(
         BatchSwapClaim.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::batch_swap::BatchSwapClaim`,
+        ...[],
+      ) as `${string}::batch_swap::BatchSwapClaim`,
       typeArgs: [] as [],
       isPhantom: BatchSwapClaim.$isPhantom,
       reifiedTypeArgs: [],
@@ -412,7 +479,7 @@ export class BatchSwapClaim implements StructClass {
       fromJSON: (json: Record<string, any>) => BatchSwapClaim.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwapClaim.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BatchSwapClaim.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => BatchSwapClaim.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => BatchSwapClaim.fetch(client, id),
       new: (fields: BatchSwapClaimFields) => {
         return new BatchSwapClaim([], fields)
       },
@@ -420,14 +487,15 @@ export class BatchSwapClaim implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): BatchSwapClaimReified {
     return BatchSwapClaim.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<BatchSwapClaim>> {
     return phantom(BatchSwapClaim.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<BatchSwapClaim>> {
     return BatchSwapClaim.phantom()
   }
 
@@ -469,14 +537,14 @@ export class BatchSwapClaim implements StructClass {
     return BatchSwapClaim.fromFields(BatchSwapClaim.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BatchSwapClaimJSONField {
     return {
       batchSwapId: this.batchSwapId,
       amount: this.amount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): BatchSwapClaimJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -489,7 +557,9 @@ export class BatchSwapClaim implements StructClass {
 
   static fromJSON(json: Record<string, any>): BatchSwapClaim {
     if (json.$typeName !== BatchSwapClaim.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a BatchSwapClaim json object: expected '${BatchSwapClaim.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return BatchSwapClaim.fromJSONField(json)
@@ -511,25 +581,22 @@ export class BatchSwapClaim implements StructClass {
         throw new Error(`object at is not a BatchSwapClaim object`)
       }
 
-      return BatchSwapClaim.fromBcs(fromB64(data.bcs.bcsBytes))
+      return BatchSwapClaim.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return BatchSwapClaim.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<BatchSwapClaim> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching BatchSwapClaim object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBatchSwapClaim(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<BatchSwapClaim> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBatchSwapClaim(res.type)) {
       throw new Error(`object at id ${id} is not a BatchSwapClaim object`)
     }
 
-    return BatchSwapClaim.fromSuiObjectData(res.data)
+    return BatchSwapClaim.fromBcs(res.bcsBytes)
   }
 }

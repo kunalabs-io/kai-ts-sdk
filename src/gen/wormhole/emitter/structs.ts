@@ -1,26 +1,39 @@
+/**
+ * This module implements a capability (`EmitterCap`), which allows one to send
+ * Wormhole messages. Its external address is determined by the capability's
+ * `id`, which is a 32-byte vector.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { ID, UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== EmitterCreated =============================== */
 
 export function isEmitterCreated(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::emitter::EmitterCreated`
+  return type === `${getTypeOrigin('wormhole', 'emitter::EmitterCreated')}::emitter::EmitterCreated`
 }
 
 export interface EmitterCreatedFields {
@@ -29,25 +42,37 @@ export interface EmitterCreatedFields {
 
 export type EmitterCreatedReified = Reified<EmitterCreated, EmitterCreatedFields>
 
+export type EmitterCreatedJSONField = {
+  emitterCap: string
+}
+
+export type EmitterCreatedJSON = {
+  $typeName: typeof EmitterCreated.$typeName
+  $typeArgs: []
+} & EmitterCreatedJSONField
+
+/** Event reflecting when `new` is called. */
 export class EmitterCreated implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::emitter::EmitterCreated`
+  static readonly $typeName: `${string}::emitter::EmitterCreated` = `${
+    getTypeOrigin('wormhole', 'emitter::EmitterCreated')
+  }::emitter::EmitterCreated` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = EmitterCreated.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::emitter::EmitterCreated`
+  readonly $typeName: typeof EmitterCreated.$typeName = EmitterCreated.$typeName
+  readonly $fullTypeName: `${string}::emitter::EmitterCreated`
   readonly $typeArgs: []
-  readonly $isPhantom = EmitterCreated.$isPhantom
+  readonly $isPhantom: typeof EmitterCreated.$isPhantom = EmitterCreated.$isPhantom
 
   readonly emitterCap: ToField<ID>
 
   private constructor(typeArgs: [], fields: EmitterCreatedFields) {
     this.$fullTypeName = composeSuiType(
       EmitterCreated.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::emitter::EmitterCreated`
+      ...typeArgs,
+    ) as `${string}::emitter::EmitterCreated`
     this.$typeArgs = typeArgs
 
     this.emitterCap = fields.emitterCap
@@ -59,8 +84,8 @@ export class EmitterCreated implements StructClass {
       typeName: EmitterCreated.$typeName,
       fullTypeName: composeSuiType(
         EmitterCreated.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::emitter::EmitterCreated`,
+        ...[],
+      ) as `${string}::emitter::EmitterCreated`,
       typeArgs: [] as [],
       isPhantom: EmitterCreated.$isPhantom,
       reifiedTypeArgs: [],
@@ -72,7 +97,7 @@ export class EmitterCreated implements StructClass {
       fromJSON: (json: Record<string, any>) => EmitterCreated.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCreated.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterCreated.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => EmitterCreated.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => EmitterCreated.fetch(client, id),
       new: (fields: EmitterCreatedFields) => {
         return new EmitterCreated([], fields)
       },
@@ -80,14 +105,15 @@ export class EmitterCreated implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): EmitterCreatedReified {
     return EmitterCreated.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<EmitterCreated>> {
     return phantom(EmitterCreated.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<EmitterCreated>> {
     return EmitterCreated.phantom()
   }
 
@@ -126,13 +152,13 @@ export class EmitterCreated implements StructClass {
     return EmitterCreated.fromFields(EmitterCreated.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EmitterCreatedJSONField {
     return {
       emitterCap: this.emitterCap,
     }
   }
 
-  toJSON() {
+  toJSON(): EmitterCreatedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -144,7 +170,9 @@ export class EmitterCreated implements StructClass {
 
   static fromJSON(json: Record<string, any>): EmitterCreated {
     if (json.$typeName !== EmitterCreated.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EmitterCreated json object: expected '${EmitterCreated.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return EmitterCreated.fromJSONField(json)
@@ -166,26 +194,23 @@ export class EmitterCreated implements StructClass {
         throw new Error(`object at is not a EmitterCreated object`)
       }
 
-      return EmitterCreated.fromBcs(fromB64(data.bcs.bcsBytes))
+      return EmitterCreated.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EmitterCreated.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<EmitterCreated> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EmitterCreated object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmitterCreated(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterCreated> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEmitterCreated(res.type)) {
       throw new Error(`object at id ${id} is not a EmitterCreated object`)
     }
 
-    return EmitterCreated.fromSuiObjectData(res.data)
+    return EmitterCreated.fromBcs(res.bcsBytes)
   }
 }
 
@@ -193,7 +218,8 @@ export class EmitterCreated implements StructClass {
 
 export function isEmitterDestroyed(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::emitter::EmitterDestroyed`
+  return type
+    === `${getTypeOrigin('wormhole', 'emitter::EmitterDestroyed')}::emitter::EmitterDestroyed`
 }
 
 export interface EmitterDestroyedFields {
@@ -202,25 +228,37 @@ export interface EmitterDestroyedFields {
 
 export type EmitterDestroyedReified = Reified<EmitterDestroyed, EmitterDestroyedFields>
 
+export type EmitterDestroyedJSONField = {
+  emitterCap: string
+}
+
+export type EmitterDestroyedJSON = {
+  $typeName: typeof EmitterDestroyed.$typeName
+  $typeArgs: []
+} & EmitterDestroyedJSONField
+
+/** Event reflecting when `destroy` is called. */
 export class EmitterDestroyed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::emitter::EmitterDestroyed`
+  static readonly $typeName: `${string}::emitter::EmitterDestroyed` = `${
+    getTypeOrigin('wormhole', 'emitter::EmitterDestroyed')
+  }::emitter::EmitterDestroyed` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = EmitterDestroyed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::emitter::EmitterDestroyed`
+  readonly $typeName: typeof EmitterDestroyed.$typeName = EmitterDestroyed.$typeName
+  readonly $fullTypeName: `${string}::emitter::EmitterDestroyed`
   readonly $typeArgs: []
-  readonly $isPhantom = EmitterDestroyed.$isPhantom
+  readonly $isPhantom: typeof EmitterDestroyed.$isPhantom = EmitterDestroyed.$isPhantom
 
   readonly emitterCap: ToField<ID>
 
   private constructor(typeArgs: [], fields: EmitterDestroyedFields) {
     this.$fullTypeName = composeSuiType(
       EmitterDestroyed.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::emitter::EmitterDestroyed`
+      ...typeArgs,
+    ) as `${string}::emitter::EmitterDestroyed`
     this.$typeArgs = typeArgs
 
     this.emitterCap = fields.emitterCap
@@ -232,8 +270,8 @@ export class EmitterDestroyed implements StructClass {
       typeName: EmitterDestroyed.$typeName,
       fullTypeName: composeSuiType(
         EmitterDestroyed.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::emitter::EmitterDestroyed`,
+        ...[],
+      ) as `${string}::emitter::EmitterDestroyed`,
       typeArgs: [] as [],
       isPhantom: EmitterDestroyed.$isPhantom,
       reifiedTypeArgs: [],
@@ -245,7 +283,7 @@ export class EmitterDestroyed implements StructClass {
       fromJSON: (json: Record<string, any>) => EmitterDestroyed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterDestroyed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterDestroyed.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => EmitterDestroyed.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => EmitterDestroyed.fetch(client, id),
       new: (fields: EmitterDestroyedFields) => {
         return new EmitterDestroyed([], fields)
       },
@@ -253,14 +291,15 @@ export class EmitterDestroyed implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): EmitterDestroyedReified {
     return EmitterDestroyed.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<EmitterDestroyed>> {
     return phantom(EmitterDestroyed.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<EmitterDestroyed>> {
     return EmitterDestroyed.phantom()
   }
 
@@ -299,13 +338,13 @@ export class EmitterDestroyed implements StructClass {
     return EmitterDestroyed.fromFields(EmitterDestroyed.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EmitterDestroyedJSONField {
     return {
       emitterCap: this.emitterCap,
     }
   }
 
-  toJSON() {
+  toJSON(): EmitterDestroyedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -317,7 +356,9 @@ export class EmitterDestroyed implements StructClass {
 
   static fromJSON(json: Record<string, any>): EmitterDestroyed {
     if (json.$typeName !== EmitterDestroyed.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EmitterDestroyed json object: expected '${EmitterDestroyed.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return EmitterDestroyed.fromJSONField(json)
@@ -339,26 +380,23 @@ export class EmitterDestroyed implements StructClass {
         throw new Error(`object at is not a EmitterDestroyed object`)
       }
 
-      return EmitterDestroyed.fromBcs(fromB64(data.bcs.bcsBytes))
+      return EmitterDestroyed.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EmitterDestroyed.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<EmitterDestroyed> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EmitterDestroyed object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmitterDestroyed(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterDestroyed> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEmitterDestroyed(res.type)) {
       throw new Error(`object at id ${id} is not a EmitterDestroyed object`)
     }
 
-    return EmitterDestroyed.fromSuiObjectData(res.data)
+    return EmitterDestroyed.fromBcs(res.bcsBytes)
   }
 }
 
@@ -366,36 +404,55 @@ export class EmitterDestroyed implements StructClass {
 
 export function isEmitterCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::emitter::EmitterCap`
+  return type === `${getTypeOrigin('wormhole', 'emitter::EmitterCap')}::emitter::EmitterCap`
 }
 
 export interface EmitterCapFields {
   id: ToField<UID>
+  /** Sequence number of the next wormhole message. */
   sequence: ToField<'u64'>
 }
 
 export type EmitterCapReified = Reified<EmitterCap, EmitterCapFields>
 
+export type EmitterCapJSONField = {
+  id: string
+  sequence: string
+}
+
+export type EmitterCapJSON = {
+  $typeName: typeof EmitterCap.$typeName
+  $typeArgs: []
+} & EmitterCapJSONField
+
+/**
+ * `EmitterCap` is a Sui object that gives a user or smart contract the
+ * capability to send Wormhole messages. For every Wormhole message
+ * emitted, a unique `sequence` is used.
+ */
 export class EmitterCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::emitter::EmitterCap`
+  static readonly $typeName: `${string}::emitter::EmitterCap` = `${
+    getTypeOrigin('wormhole', 'emitter::EmitterCap')
+  }::emitter::EmitterCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = EmitterCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::emitter::EmitterCap`
+  readonly $typeName: typeof EmitterCap.$typeName = EmitterCap.$typeName
+  readonly $fullTypeName: `${string}::emitter::EmitterCap`
   readonly $typeArgs: []
-  readonly $isPhantom = EmitterCap.$isPhantom
+  readonly $isPhantom: typeof EmitterCap.$isPhantom = EmitterCap.$isPhantom
 
   readonly id: ToField<UID>
+  /** Sequence number of the next wormhole message. */
   readonly sequence: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: EmitterCapFields) {
     this.$fullTypeName = composeSuiType(
       EmitterCap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::emitter::EmitterCap`
+      ...typeArgs,
+    ) as `${string}::emitter::EmitterCap`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -408,8 +465,8 @@ export class EmitterCap implements StructClass {
       typeName: EmitterCap.$typeName,
       fullTypeName: composeSuiType(
         EmitterCap.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::emitter::EmitterCap`,
+        ...[],
+      ) as `${string}::emitter::EmitterCap`,
       typeArgs: [] as [],
       isPhantom: EmitterCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -421,7 +478,7 @@ export class EmitterCap implements StructClass {
       fromJSON: (json: Record<string, any>) => EmitterCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => EmitterCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => EmitterCap.fetch(client, id),
       new: (fields: EmitterCapFields) => {
         return new EmitterCap([], fields)
       },
@@ -429,14 +486,15 @@ export class EmitterCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): EmitterCapReified {
     return EmitterCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<EmitterCap>> {
     return phantom(EmitterCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<EmitterCap>> {
     return EmitterCap.phantom()
   }
 
@@ -478,14 +536,14 @@ export class EmitterCap implements StructClass {
     return EmitterCap.fromFields(EmitterCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EmitterCapJSONField {
     return {
       id: this.id,
       sequence: this.sequence.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): EmitterCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -498,7 +556,9 @@ export class EmitterCap implements StructClass {
 
   static fromJSON(json: Record<string, any>): EmitterCap {
     if (json.$typeName !== EmitterCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EmitterCap json object: expected '${EmitterCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return EmitterCap.fromJSONField(json)
@@ -520,25 +580,22 @@ export class EmitterCap implements StructClass {
         throw new Error(`object at is not a EmitterCap object`)
       }
 
-      return EmitterCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return EmitterCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EmitterCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<EmitterCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EmitterCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmitterCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEmitterCap(res.type)) {
       throw new Error(`object at id ${id} is not a EmitterCap object`)
     }
 
-    return EmitterCap.fromSuiObjectData(res.data)
+    return EmitterCap.fromBcs(res.bcsBytes)
   }
 }

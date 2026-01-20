@@ -1,25 +1,42 @@
+/**
+ * Note: this module is adapted from Wormhole's version_control.move module.
+ *
+ * This module implements dynamic field keys as empty structs. These keys are
+ * used to determine the latest version for this build. If the current version
+ * is not this build's, then paths through the `state` module will abort.
+ *
+ * See `pyth::state` and `wormhole::package_utils` for more info.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1, PKG_V2 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== V__0_1_2 =============================== */
 
 export function isV__0_1_2(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V2}::version_control::V__0_1_2`
+  return type === `${getTypeOrigin('pyth', 'version_control::V__0_1_2')}::version_control::V__0_1_2`
 }
 
 export interface V__0_1_2Fields {
@@ -28,25 +45,41 @@ export interface V__0_1_2Fields {
 
 export type V__0_1_2Reified = Reified<V__0_1_2, V__0_1_2Fields>
 
+export type V__0_1_2JSONField = {
+  dummyField: boolean
+}
+
+export type V__0_1_2JSON = {
+  $typeName: typeof V__0_1_2.$typeName
+  $typeArgs: []
+} & V__0_1_2JSONField
+
+/**
+ * RELEASE NOTES
+ *
+ * - Gas optimizations on merkle tree verifications
+ */
 export class V__0_1_2 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V2}::version_control::V__0_1_2`
+  static readonly $typeName: `${string}::version_control::V__0_1_2` = `${
+    getTypeOrigin('pyth', 'version_control::V__0_1_2')
+  }::version_control::V__0_1_2` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = V__0_1_2.$typeName
-  readonly $fullTypeName: `${typeof PKG_V2}::version_control::V__0_1_2`
+  readonly $typeName: typeof V__0_1_2.$typeName = V__0_1_2.$typeName
+  readonly $fullTypeName: `${string}::version_control::V__0_1_2`
   readonly $typeArgs: []
-  readonly $isPhantom = V__0_1_2.$isPhantom
+  readonly $isPhantom: typeof V__0_1_2.$isPhantom = V__0_1_2.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: V__0_1_2Fields) {
     this.$fullTypeName = composeSuiType(
       V__0_1_2.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V2}::version_control::V__0_1_2`
+      ...typeArgs,
+    ) as `${string}::version_control::V__0_1_2`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -58,8 +91,8 @@ export class V__0_1_2 implements StructClass {
       typeName: V__0_1_2.$typeName,
       fullTypeName: composeSuiType(
         V__0_1_2.$typeName,
-        ...[]
-      ) as `${typeof PKG_V2}::version_control::V__0_1_2`,
+        ...[],
+      ) as `${string}::version_control::V__0_1_2`,
       typeArgs: [] as [],
       isPhantom: V__0_1_2.$isPhantom,
       reifiedTypeArgs: [],
@@ -71,7 +104,7 @@ export class V__0_1_2 implements StructClass {
       fromJSON: (json: Record<string, any>) => V__0_1_2.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__0_1_2.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => V__0_1_2.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => V__0_1_2.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => V__0_1_2.fetch(client, id),
       new: (fields: V__0_1_2Fields) => {
         return new V__0_1_2([], fields)
       },
@@ -79,14 +112,15 @@ export class V__0_1_2 implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): V__0_1_2Reified {
     return V__0_1_2.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<V__0_1_2>> {
     return phantom(V__0_1_2.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<V__0_1_2>> {
     return V__0_1_2.phantom()
   }
 
@@ -106,7 +140,9 @@ export class V__0_1_2 implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): V__0_1_2 {
-    return V__0_1_2.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return V__0_1_2.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): V__0_1_2 {
@@ -123,23 +159,27 @@ export class V__0_1_2 implements StructClass {
     return V__0_1_2.fromFields(V__0_1_2.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): V__0_1_2JSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): V__0_1_2JSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): V__0_1_2 {
-    return V__0_1_2.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return V__0_1_2.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): V__0_1_2 {
     if (json.$typeName !== V__0_1_2.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a V__0_1_2 json object: expected '${V__0_1_2.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return V__0_1_2.fromJSONField(json)
@@ -161,26 +201,23 @@ export class V__0_1_2 implements StructClass {
         throw new Error(`object at is not a V__0_1_2 object`)
       }
 
-      return V__0_1_2.fromBcs(fromB64(data.bcs.bcsBytes))
+      return V__0_1_2.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return V__0_1_2.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<V__0_1_2> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching V__0_1_2 object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isV__0_1_2(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<V__0_1_2> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isV__0_1_2(res.type)) {
       throw new Error(`object at id ${id} is not a V__0_1_2 object`)
     }
 
-    return V__0_1_2.fromSuiObjectData(res.data)
+    return V__0_1_2.fromBcs(res.bcsBytes)
   }
 }
 
@@ -188,7 +225,7 @@ export class V__0_1_2 implements StructClass {
 
 export function isV__0_1_1(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::version_control::V__0_1_1`
+  return type === `${getTypeOrigin('pyth', 'version_control::V__0_1_1')}::version_control::V__0_1_1`
 }
 
 export interface V__0_1_1Fields {
@@ -197,25 +234,46 @@ export interface V__0_1_1Fields {
 
 export type V__0_1_1Reified = Reified<V__0_1_1, V__0_1_1Fields>
 
+export type V__0_1_1JSONField = {
+  dummyField: boolean
+}
+
+export type V__0_1_1JSON = {
+  $typeName: typeof V__0_1_1.$typeName
+  $typeArgs: []
+} & V__0_1_1JSONField
+
+/**
+ * RELEASE NOTES
+ *
+ * - Refactor state to use package management via
+ * `wormhole::package_utils`.
+ * - Add `MigrateComplete` event in `migrate`.
+ *
+ * Also added `migrate__v__0_1_1` in `wormhole::state`, which is
+ * meant to perform a one-time `State` modification via `migrate`.
+ */
 export class V__0_1_1 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::version_control::V__0_1_1`
+  static readonly $typeName: `${string}::version_control::V__0_1_1` = `${
+    getTypeOrigin('pyth', 'version_control::V__0_1_1')
+  }::version_control::V__0_1_1` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = V__0_1_1.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::version_control::V__0_1_1`
+  readonly $typeName: typeof V__0_1_1.$typeName = V__0_1_1.$typeName
+  readonly $fullTypeName: `${string}::version_control::V__0_1_1`
   readonly $typeArgs: []
-  readonly $isPhantom = V__0_1_1.$isPhantom
+  readonly $isPhantom: typeof V__0_1_1.$isPhantom = V__0_1_1.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: V__0_1_1Fields) {
     this.$fullTypeName = composeSuiType(
       V__0_1_1.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::version_control::V__0_1_1`
+      ...typeArgs,
+    ) as `${string}::version_control::V__0_1_1`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -227,8 +285,8 @@ export class V__0_1_1 implements StructClass {
       typeName: V__0_1_1.$typeName,
       fullTypeName: composeSuiType(
         V__0_1_1.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::version_control::V__0_1_1`,
+        ...[],
+      ) as `${string}::version_control::V__0_1_1`,
       typeArgs: [] as [],
       isPhantom: V__0_1_1.$isPhantom,
       reifiedTypeArgs: [],
@@ -240,7 +298,7 @@ export class V__0_1_1 implements StructClass {
       fromJSON: (json: Record<string, any>) => V__0_1_1.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__0_1_1.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => V__0_1_1.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => V__0_1_1.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => V__0_1_1.fetch(client, id),
       new: (fields: V__0_1_1Fields) => {
         return new V__0_1_1([], fields)
       },
@@ -248,14 +306,15 @@ export class V__0_1_1 implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): V__0_1_1Reified {
     return V__0_1_1.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<V__0_1_1>> {
     return phantom(V__0_1_1.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<V__0_1_1>> {
     return V__0_1_1.phantom()
   }
 
@@ -275,7 +334,9 @@ export class V__0_1_1 implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): V__0_1_1 {
-    return V__0_1_1.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return V__0_1_1.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): V__0_1_1 {
@@ -292,23 +353,27 @@ export class V__0_1_1 implements StructClass {
     return V__0_1_1.fromFields(V__0_1_1.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): V__0_1_1JSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): V__0_1_1JSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): V__0_1_1 {
-    return V__0_1_1.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return V__0_1_1.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): V__0_1_1 {
     if (json.$typeName !== V__0_1_1.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a V__0_1_1 json object: expected '${V__0_1_1.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return V__0_1_1.fromJSONField(json)
@@ -330,26 +395,23 @@ export class V__0_1_1 implements StructClass {
         throw new Error(`object at is not a V__0_1_1 object`)
       }
 
-      return V__0_1_1.fromBcs(fromB64(data.bcs.bcsBytes))
+      return V__0_1_1.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return V__0_1_1.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<V__0_1_1> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching V__0_1_1 object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isV__0_1_1(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<V__0_1_1> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isV__0_1_1(res.type)) {
       throw new Error(`object at id ${id} is not a V__0_1_1 object`)
     }
 
-    return V__0_1_1.fromSuiObjectData(res.data)
+    return V__0_1_1.fromBcs(res.bcsBytes)
   }
 }
 
@@ -357,7 +419,7 @@ export class V__0_1_1 implements StructClass {
 
 export function isV__DUMMY(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::version_control::V__DUMMY`
+  return type === `${getTypeOrigin('pyth', 'version_control::V__DUMMY')}::version_control::V__DUMMY`
 }
 
 export interface V__DUMMYFields {
@@ -366,25 +428,36 @@ export interface V__DUMMYFields {
 
 export type V__DUMMYReified = Reified<V__DUMMY, V__DUMMYFields>
 
+export type V__DUMMYJSONField = {
+  dummyField: boolean
+}
+
+export type V__DUMMYJSON = {
+  $typeName: typeof V__DUMMY.$typeName
+  $typeArgs: []
+} & V__DUMMYJSONField
+
 export class V__DUMMY implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::version_control::V__DUMMY`
+  static readonly $typeName: `${string}::version_control::V__DUMMY` = `${
+    getTypeOrigin('pyth', 'version_control::V__DUMMY')
+  }::version_control::V__DUMMY` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = V__DUMMY.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::version_control::V__DUMMY`
+  readonly $typeName: typeof V__DUMMY.$typeName = V__DUMMY.$typeName
+  readonly $fullTypeName: `${string}::version_control::V__DUMMY`
   readonly $typeArgs: []
-  readonly $isPhantom = V__DUMMY.$isPhantom
+  readonly $isPhantom: typeof V__DUMMY.$isPhantom = V__DUMMY.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: V__DUMMYFields) {
     this.$fullTypeName = composeSuiType(
       V__DUMMY.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::version_control::V__DUMMY`
+      ...typeArgs,
+    ) as `${string}::version_control::V__DUMMY`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -396,8 +469,8 @@ export class V__DUMMY implements StructClass {
       typeName: V__DUMMY.$typeName,
       fullTypeName: composeSuiType(
         V__DUMMY.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::version_control::V__DUMMY`,
+        ...[],
+      ) as `${string}::version_control::V__DUMMY`,
       typeArgs: [] as [],
       isPhantom: V__DUMMY.$isPhantom,
       reifiedTypeArgs: [],
@@ -409,7 +482,7 @@ export class V__DUMMY implements StructClass {
       fromJSON: (json: Record<string, any>) => V__DUMMY.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => V__DUMMY.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => V__DUMMY.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => V__DUMMY.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => V__DUMMY.fetch(client, id),
       new: (fields: V__DUMMYFields) => {
         return new V__DUMMY([], fields)
       },
@@ -417,14 +490,15 @@ export class V__DUMMY implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): V__DUMMYReified {
     return V__DUMMY.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<V__DUMMY>> {
     return phantom(V__DUMMY.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<V__DUMMY>> {
     return V__DUMMY.phantom()
   }
 
@@ -444,7 +518,9 @@ export class V__DUMMY implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): V__DUMMY {
-    return V__DUMMY.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return V__DUMMY.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): V__DUMMY {
@@ -461,23 +537,27 @@ export class V__DUMMY implements StructClass {
     return V__DUMMY.fromFields(V__DUMMY.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): V__DUMMYJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): V__DUMMYJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): V__DUMMY {
-    return V__DUMMY.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return V__DUMMY.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): V__DUMMY {
     if (json.$typeName !== V__DUMMY.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a V__DUMMY json object: expected '${V__DUMMY.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return V__DUMMY.fromJSONField(json)
@@ -499,25 +579,22 @@ export class V__DUMMY implements StructClass {
         throw new Error(`object at is not a V__DUMMY object`)
       }
 
-      return V__DUMMY.fromBcs(fromB64(data.bcs.bcsBytes))
+      return V__DUMMY.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return V__DUMMY.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<V__DUMMY> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching V__DUMMY object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isV__DUMMY(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<V__DUMMY> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isV__DUMMY(res.type)) {
       throw new Error(`object at id ${id} is not a V__DUMMY object`)
     }
 
-    return V__DUMMY.fromSuiObjectData(res.data)
+    return V__DUMMY.fromBcs(res.bcsBytes)
   }
 }

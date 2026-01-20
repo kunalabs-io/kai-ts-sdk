@@ -1,7 +1,12 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
 export interface CreatePoolV2ByCreationCapArgs {
   config: TransactionObjectInput
@@ -18,13 +23,14 @@ export interface CreatePoolV2ByCreationCapArgs {
   clock: TransactionObjectInput
 }
 
+/** DEPRECATED */
 export function createPoolV2ByCreationCap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolV2ByCreationCapArgs
-) {
+  args: CreatePoolV2ByCreationCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator::create_pool_v2_by_creation_cap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool_creator::create_pool_v2_by_creation_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -60,13 +66,32 @@ export interface CreatePoolV2WithCreationCapArgs {
   clock: TransactionObjectInput
 }
 
+/**
+ * Create pool with creation cap
+ * * `config` - The global configuration
+ * * `pools` - The mutable reference to the `Pools` object
+ * * `cap` - The reference to the `PoolCreationCap` object
+ * * `tick_spacing` - The tick spacing
+ * * `initialize_price` - The initial price
+ * * `url` - The URL of the pool
+ * * `tick_lower_idx` - The lower tick index
+ * * `tick_upper_idx` - The upper tick index
+ * * `coin_a` - The coin A
+ * * `coin_b` - The coin B
+ * * `metadata_a` - The metadata of the coin A
+ * * `metadata_b` - The metadata of the coin B
+ * * `fix_amount_a` - Whether to fix the amount of the coin A
+ * * `clock` - The clock object
+ * * `ctx` - The transaction context
+ * * Returns the position, coin A, and coin B
+ */
 export function createPoolV2WithCreationCap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreatePoolV2WithCreationCapArgs
-) {
+  args: CreatePoolV2WithCreationCapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator::create_pool_v2_with_creation_cap`,
+    target: `${getPublishedAt('cetus-clmm')}::pool_creator::create_pool_v2_with_creation_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -103,9 +128,31 @@ export interface CreatePoolV2Args {
   clock: TransactionObjectInput
 }
 
-export function createPoolV2(tx: Transaction, typeArgs: [string, string], args: CreatePoolV2Args) {
+/**
+ * Create pool with custom tick range
+ * * `config` - The global configuration
+ * * `pools` - The mutable reference to the `Pools` object
+ * * `tick_spacing` - The tick spacing
+ * * `initialize_price` - The initial price
+ * * `url` - The URL of the pool
+ * * `tick_lower_idx` - The lower tick index
+ * * `tick_upper_idx` - The upper tick index
+ * * `coin_a` - The coin A
+ * * `coin_b` - The coin B
+ * * `metadata_a` - The metadata of the coin A
+ * * `metadata_b` - The metadata of the coin B
+ * * `fix_amount_a` - Whether to fix the amount of the coin A
+ * * `clock` - The clock object
+ * * `ctx` - The transaction context
+ * * Returns the position, coin A, and coin B
+ */
+export function createPoolV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolV2Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator::create_pool_v2`,
+    target: `${getPublishedAt('cetus-clmm')}::pool_creator::create_pool_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -125,9 +172,17 @@ export function createPoolV2(tx: Transaction, typeArgs: [string, string], args: 
   })
 }
 
-export function fullRangeTickRange(tx: Transaction, tickSpacing: number | TransactionArgument) {
+/**
+ * Get the full range tick range
+ * * `tick_spacing` - The tick spacing
+ * * Returns the full range tick range
+ */
+export function fullRangeTickRange(
+  tx: Transaction,
+  tickSpacing: number | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::pool_creator::full_range_tick_range`,
+    target: `${getPublishedAt('cetus-clmm')}::pool_creator::full_range_tick_range`,
     arguments: [pure(tx, tickSpacing, `u32`)],
   })
 }

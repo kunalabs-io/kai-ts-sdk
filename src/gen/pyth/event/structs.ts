@@ -1,26 +1,34 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { PriceFeed } from '../price-feed/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== PythInitializationEvent =============================== */
 
 export function isPythInitializationEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::event::PythInitializationEvent`
+  return type
+    === `${getTypeOrigin('pyth', 'event::PythInitializationEvent')}::event::PythInitializationEvent`
 }
 
 export interface PythInitializationEventFields {
@@ -32,25 +40,37 @@ export type PythInitializationEventReified = Reified<
   PythInitializationEventFields
 >
 
+export type PythInitializationEventJSONField = {
+  dummyField: boolean
+}
+
+export type PythInitializationEventJSON = {
+  $typeName: typeof PythInitializationEvent.$typeName
+  $typeArgs: []
+} & PythInitializationEventJSONField
+
 export class PythInitializationEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::event::PythInitializationEvent`
+  static readonly $typeName: `${string}::event::PythInitializationEvent` = `${
+    getTypeOrigin('pyth', 'event::PythInitializationEvent')
+  }::event::PythInitializationEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PythInitializationEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::event::PythInitializationEvent`
+  readonly $typeName: typeof PythInitializationEvent.$typeName = PythInitializationEvent.$typeName
+  readonly $fullTypeName: `${string}::event::PythInitializationEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = PythInitializationEvent.$isPhantom
+  readonly $isPhantom: typeof PythInitializationEvent.$isPhantom =
+    PythInitializationEvent.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: PythInitializationEventFields) {
     this.$fullTypeName = composeSuiType(
       PythInitializationEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::event::PythInitializationEvent`
+      ...typeArgs,
+    ) as `${string}::event::PythInitializationEvent`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -62,8 +82,8 @@ export class PythInitializationEvent implements StructClass {
       typeName: PythInitializationEvent.$typeName,
       fullTypeName: composeSuiType(
         PythInitializationEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::event::PythInitializationEvent`,
+        ...[],
+      ) as `${string}::event::PythInitializationEvent`,
       typeArgs: [] as [],
       isPhantom: PythInitializationEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -78,7 +98,8 @@ export class PythInitializationEvent implements StructClass {
         PythInitializationEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PythInitializationEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PythInitializationEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        PythInitializationEvent.fetch(client, id),
       new: (fields: PythInitializationEventFields) => {
         return new PythInitializationEvent([], fields)
       },
@@ -86,14 +107,15 @@ export class PythInitializationEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PythInitializationEventReified {
     return PythInitializationEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PythInitializationEvent>> {
     return phantom(PythInitializationEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PythInitializationEvent>> {
     return PythInitializationEvent.phantom()
   }
 
@@ -132,13 +154,13 @@ export class PythInitializationEvent implements StructClass {
     return PythInitializationEvent.fromFields(PythInitializationEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PythInitializationEventJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): PythInitializationEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -150,7 +172,9 @@ export class PythInitializationEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): PythInitializationEvent {
     if (json.$typeName !== PythInitializationEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PythInitializationEvent json object: expected '${PythInitializationEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PythInitializationEvent.fromJSONField(json)
@@ -162,7 +186,7 @@ export class PythInitializationEvent implements StructClass {
     }
     if (!isPythInitializationEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PythInitializationEvent object`
+        `object at ${(content.fields as any).id} is not a PythInitializationEvent object`,
       )
     }
     return PythInitializationEvent.fromFieldsWithTypes(content)
@@ -174,28 +198,23 @@ export class PythInitializationEvent implements StructClass {
         throw new Error(`object at is not a PythInitializationEvent object`)
       }
 
-      return PythInitializationEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PythInitializationEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PythInitializationEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PythInitializationEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching PythInitializationEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPythInitializationEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PythInitializationEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPythInitializationEvent(res.type)) {
       throw new Error(`object at id ${id} is not a PythInitializationEvent object`)
     }
 
-    return PythInitializationEvent.fromSuiObjectData(res.data)
+    return PythInitializationEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -203,36 +222,54 @@ export class PythInitializationEvent implements StructClass {
 
 export function isPriceFeedUpdateEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::event::PriceFeedUpdateEvent`
+  return type
+    === `${getTypeOrigin('pyth', 'event::PriceFeedUpdateEvent')}::event::PriceFeedUpdateEvent`
 }
 
 export interface PriceFeedUpdateEventFields {
+  /** Value of the price feed */
   priceFeed: ToField<PriceFeed>
+  /** Timestamp of the update */
   timestamp: ToField<'u64'>
 }
 
 export type PriceFeedUpdateEventReified = Reified<PriceFeedUpdateEvent, PriceFeedUpdateEventFields>
 
+export type PriceFeedUpdateEventJSONField = {
+  priceFeed: ToJSON<PriceFeed>
+  timestamp: string
+}
+
+export type PriceFeedUpdateEventJSON = {
+  $typeName: typeof PriceFeedUpdateEvent.$typeName
+  $typeArgs: []
+} & PriceFeedUpdateEventJSONField
+
+/** Signifies that a price feed has been updated */
 export class PriceFeedUpdateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::event::PriceFeedUpdateEvent`
+  static readonly $typeName: `${string}::event::PriceFeedUpdateEvent` = `${
+    getTypeOrigin('pyth', 'event::PriceFeedUpdateEvent')
+  }::event::PriceFeedUpdateEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PriceFeedUpdateEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::event::PriceFeedUpdateEvent`
+  readonly $typeName: typeof PriceFeedUpdateEvent.$typeName = PriceFeedUpdateEvent.$typeName
+  readonly $fullTypeName: `${string}::event::PriceFeedUpdateEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = PriceFeedUpdateEvent.$isPhantom
+  readonly $isPhantom: typeof PriceFeedUpdateEvent.$isPhantom = PriceFeedUpdateEvent.$isPhantom
 
+  /** Value of the price feed */
   readonly priceFeed: ToField<PriceFeed>
+  /** Timestamp of the update */
   readonly timestamp: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: PriceFeedUpdateEventFields) {
     this.$fullTypeName = composeSuiType(
       PriceFeedUpdateEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::event::PriceFeedUpdateEvent`
+      ...typeArgs,
+    ) as `${string}::event::PriceFeedUpdateEvent`
     this.$typeArgs = typeArgs
 
     this.priceFeed = fields.priceFeed
@@ -245,8 +282,8 @@ export class PriceFeedUpdateEvent implements StructClass {
       typeName: PriceFeedUpdateEvent.$typeName,
       fullTypeName: composeSuiType(
         PriceFeedUpdateEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::event::PriceFeedUpdateEvent`,
+        ...[],
+      ) as `${string}::event::PriceFeedUpdateEvent`,
       typeArgs: [] as [],
       isPhantom: PriceFeedUpdateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -261,7 +298,8 @@ export class PriceFeedUpdateEvent implements StructClass {
         PriceFeedUpdateEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PriceFeedUpdateEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PriceFeedUpdateEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        PriceFeedUpdateEvent.fetch(client, id),
       new: (fields: PriceFeedUpdateEventFields) => {
         return new PriceFeedUpdateEvent([], fields)
       },
@@ -269,14 +307,15 @@ export class PriceFeedUpdateEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PriceFeedUpdateEventReified {
     return PriceFeedUpdateEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PriceFeedUpdateEvent>> {
     return phantom(PriceFeedUpdateEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PriceFeedUpdateEvent>> {
     return PriceFeedUpdateEvent.phantom()
   }
 
@@ -318,14 +357,14 @@ export class PriceFeedUpdateEvent implements StructClass {
     return PriceFeedUpdateEvent.fromFields(PriceFeedUpdateEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PriceFeedUpdateEventJSONField {
     return {
       priceFeed: this.priceFeed.toJSONField(),
       timestamp: this.timestamp.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): PriceFeedUpdateEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -338,7 +377,9 @@ export class PriceFeedUpdateEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): PriceFeedUpdateEvent {
     if (json.$typeName !== PriceFeedUpdateEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PriceFeedUpdateEvent json object: expected '${PriceFeedUpdateEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PriceFeedUpdateEvent.fromJSONField(json)
@@ -350,7 +391,7 @@ export class PriceFeedUpdateEvent implements StructClass {
     }
     if (!isPriceFeedUpdateEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PriceFeedUpdateEvent object`
+        `object at ${(content.fields as any).id} is not a PriceFeedUpdateEvent object`,
       )
     }
     return PriceFeedUpdateEvent.fromFieldsWithTypes(content)
@@ -362,25 +403,22 @@ export class PriceFeedUpdateEvent implements StructClass {
         throw new Error(`object at is not a PriceFeedUpdateEvent object`)
       }
 
-      return PriceFeedUpdateEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PriceFeedUpdateEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PriceFeedUpdateEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PriceFeedUpdateEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PriceFeedUpdateEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPriceFeedUpdateEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceFeedUpdateEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPriceFeedUpdateEvent(res.type)) {
       throw new Error(`object at id ${id} is not a PriceFeedUpdateEvent object`)
     }
 
-    return PriceFeedUpdateEvent.fromSuiObjectData(res.data)
+    return PriceFeedUpdateEvent.fromBcs(res.bcsBytes)
   }
 }

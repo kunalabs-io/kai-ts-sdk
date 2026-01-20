@@ -1,19 +1,49 @@
+/**
+ * A bag is a heterogeneous map-like collection. The collection is similar to `sui::table` in that
+ * its keys and values are not stored within the `Bag` value, but instead are stored using Sui's
+ * object system. The `Bag` struct acts only as a handle into the object system to retrieve those
+ * keys and values.
+ * Note that this means that `Bag` values with exactly the same key-value mapping will not be
+ * equal, with `==`, at runtime. For example
+ * ```
+ * let bag1 = bag::new();
+ * let bag2 = bag::new();
+ * bag::add(&mut bag1, 0, false);
+ * bag::add(&mut bag1, 1, true);
+ * bag::add(&mut bag2, 0, false);
+ * bag::add(&mut bag2, 1, true);
+ * // bag1 does not equal bag2, despite having the same entries
+ * assert!(&bag1 != &bag2);
+ * ```
+ * At it's core, `sui::bag` is a wrapper around `UID` that allows for access to
+ * `sui::dynamic_field` while preventing accidentally stranding field values. A `UID` can be
+ * deleted, even if it has dynamic fields associated with it, but a bag, on the other hand, must be
+ * empty to be destroyed.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { UID } from '../object/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Bag =============================== */
 
@@ -23,29 +53,46 @@ export function isBag(type: string): boolean {
 }
 
 export interface BagFields {
+  /** the ID of this bag */
   id: ToField<UID>
+  /** the number of key-value pairs in the bag */
   size: ToField<'u64'>
 }
 
 export type BagReified = Reified<Bag, BagFields>
 
+export type BagJSONField = {
+  id: string
+  size: string
+}
+
+export type BagJSON = {
+  $typeName: typeof Bag.$typeName
+  $typeArgs: []
+} & BagJSONField
+
 export class Bag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::bag::Bag`
+  static readonly $typeName: `0x2::bag::Bag` = `0x2::bag::Bag` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Bag.$typeName
+  readonly $typeName: typeof Bag.$typeName = Bag.$typeName
   readonly $fullTypeName: `0x2::bag::Bag`
   readonly $typeArgs: []
-  readonly $isPhantom = Bag.$isPhantom
+  readonly $isPhantom: typeof Bag.$isPhantom = Bag.$isPhantom
 
+  /** the ID of this bag */
   readonly id: ToField<UID>
+  /** the number of key-value pairs in the bag */
   readonly size: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: BagFields) {
-    this.$fullTypeName = composeSuiType(Bag.$typeName, ...typeArgs) as `0x2::bag::Bag`
+    this.$fullTypeName = composeSuiType(
+      Bag.$typeName,
+      ...typeArgs,
+    ) as `0x2::bag::Bag`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -56,7 +103,10 @@ export class Bag implements StructClass {
     const reifiedBcs = Bag.bcs
     return {
       typeName: Bag.$typeName,
-      fullTypeName: composeSuiType(Bag.$typeName, ...[]) as `0x2::bag::Bag`,
+      fullTypeName: composeSuiType(
+        Bag.$typeName,
+        ...[],
+      ) as `0x2::bag::Bag`,
       typeArgs: [] as [],
       isPhantom: Bag.$isPhantom,
       reifiedTypeArgs: [],
@@ -68,7 +118,7 @@ export class Bag implements StructClass {
       fromJSON: (json: Record<string, any>) => Bag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Bag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Bag.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Bag.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Bag.fetch(client, id),
       new: (fields: BagFields) => {
         return new Bag([], fields)
       },
@@ -76,14 +126,15 @@ export class Bag implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): BagReified {
     return Bag.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Bag>> {
     return phantom(Bag.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Bag>> {
     return Bag.phantom()
   }
 
@@ -125,14 +176,14 @@ export class Bag implements StructClass {
     return Bag.fromFields(Bag.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BagJSONField {
     return {
       id: this.id,
       size: this.size.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): BagJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -145,7 +196,9 @@ export class Bag implements StructClass {
 
   static fromJSON(json: Record<string, any>): Bag {
     if (json.$typeName !== Bag.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Bag json object: expected '${Bag.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Bag.fromJSONField(json)
@@ -167,25 +220,22 @@ export class Bag implements StructClass {
         throw new Error(`object at is not a Bag object`)
       }
 
-      return Bag.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Bag.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Bag.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Bag> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Bag object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBag(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Bag> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBag(res.type)) {
       throw new Error(`object at id ${id} is not a Bag object`)
     }
 
-    return Bag.fromSuiObjectData(res.data)
+    return Bag.fromBcs(res.bcsBytes)
   }
 }

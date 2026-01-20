@@ -1,9 +1,23 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::setup::init`, arguments: [] })
+/**
+ * Called automatically when module is first published. Transfers
+ * `DeployerCap` to sender.
+ *
+ * Only `setup::init_and_share_state` requires `DeployerCap`.
+ */
+export function init(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('wormhole')}::setup::init`,
+    arguments: [],
+  })
 }
 
 export interface CompleteArgs {
@@ -19,9 +33,13 @@ export interface CompleteArgs {
   messageFee: bigint | TransactionArgument
 }
 
-export function complete(tx: Transaction, args: CompleteArgs) {
+/**
+ * Only the owner of the `DeployerCap` can call this method. This
+ * method destroys the capability and shares the `State` object.
+ */
+export function complete(tx: Transaction, args: CompleteArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::setup::complete`,
+    target: `${getPublishedAt('wormhole')}::setup::complete`,
     arguments: [
       obj(tx, args.deployer),
       obj(tx, args.upgradeCap),

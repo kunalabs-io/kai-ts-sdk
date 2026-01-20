@@ -1,26 +1,42 @@
+/**
+ * This module implements a custom type representing a Guardian's signature
+ * with recovery ID of a particular hashed VAA message body. The components of
+ * `GuardianSignature` are used to perform public key recovery using ECDSA.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Bytes32 } from '../bytes32/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== GuardianSignature =============================== */
 
 export function isGuardianSignature(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::guardian_signature::GuardianSignature`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'guardian_signature::GuardianSignature')
+    }::guardian_signature::GuardianSignature`
 }
 
 export interface GuardianSignatureFields {
@@ -32,17 +48,32 @@ export interface GuardianSignatureFields {
 
 export type GuardianSignatureReified = Reified<GuardianSignature, GuardianSignatureFields>
 
+export type GuardianSignatureJSONField = {
+  r: ToJSON<Bytes32>
+  s: ToJSON<Bytes32>
+  recoveryId: number
+  index: number
+}
+
+export type GuardianSignatureJSON = {
+  $typeName: typeof GuardianSignature.$typeName
+  $typeArgs: []
+} & GuardianSignatureJSONField
+
+/** Container for elliptic curve signature parameters and Guardian index. */
 export class GuardianSignature implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::guardian_signature::GuardianSignature`
+  static readonly $typeName: `${string}::guardian_signature::GuardianSignature` = `${
+    getTypeOrigin('wormhole', 'guardian_signature::GuardianSignature')
+  }::guardian_signature::GuardianSignature` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GuardianSignature.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::guardian_signature::GuardianSignature`
+  readonly $typeName: typeof GuardianSignature.$typeName = GuardianSignature.$typeName
+  readonly $fullTypeName: `${string}::guardian_signature::GuardianSignature`
   readonly $typeArgs: []
-  readonly $isPhantom = GuardianSignature.$isPhantom
+  readonly $isPhantom: typeof GuardianSignature.$isPhantom = GuardianSignature.$isPhantom
 
   readonly r: ToField<Bytes32>
   readonly s: ToField<Bytes32>
@@ -52,8 +83,8 @@ export class GuardianSignature implements StructClass {
   private constructor(typeArgs: [], fields: GuardianSignatureFields) {
     this.$fullTypeName = composeSuiType(
       GuardianSignature.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::guardian_signature::GuardianSignature`
+      ...typeArgs,
+    ) as `${string}::guardian_signature::GuardianSignature`
     this.$typeArgs = typeArgs
 
     this.r = fields.r
@@ -68,8 +99,8 @@ export class GuardianSignature implements StructClass {
       typeName: GuardianSignature.$typeName,
       fullTypeName: composeSuiType(
         GuardianSignature.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::guardian_signature::GuardianSignature`,
+        ...[],
+      ) as `${string}::guardian_signature::GuardianSignature`,
       typeArgs: [] as [],
       isPhantom: GuardianSignature.$isPhantom,
       reifiedTypeArgs: [],
@@ -81,7 +112,7 @@ export class GuardianSignature implements StructClass {
       fromJSON: (json: Record<string, any>) => GuardianSignature.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GuardianSignature.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GuardianSignature.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GuardianSignature.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GuardianSignature.fetch(client, id),
       new: (fields: GuardianSignatureFields) => {
         return new GuardianSignature([], fields)
       },
@@ -89,14 +120,15 @@ export class GuardianSignature implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GuardianSignatureReified {
     return GuardianSignature.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GuardianSignature>> {
     return phantom(GuardianSignature.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GuardianSignature>> {
     return GuardianSignature.phantom()
   }
 
@@ -144,7 +176,7 @@ export class GuardianSignature implements StructClass {
     return GuardianSignature.fromFields(GuardianSignature.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GuardianSignatureJSONField {
     return {
       r: this.r.toJSONField(),
       s: this.s.toJSONField(),
@@ -153,7 +185,7 @@ export class GuardianSignature implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): GuardianSignatureJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -168,7 +200,9 @@ export class GuardianSignature implements StructClass {
 
   static fromJSON(json: Record<string, any>): GuardianSignature {
     if (json.$typeName !== GuardianSignature.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GuardianSignature json object: expected '${GuardianSignature.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GuardianSignature.fromJSONField(json)
@@ -190,25 +224,22 @@ export class GuardianSignature implements StructClass {
         throw new Error(`object at is not a GuardianSignature object`)
       }
 
-      return GuardianSignature.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GuardianSignature.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GuardianSignature.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GuardianSignature> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GuardianSignature object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGuardianSignature(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GuardianSignature> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGuardianSignature(res.type)) {
       throw new Error(`object at id ${id} is not a GuardianSignature object`)
     }
 
-    return GuardianSignature.fromSuiObjectData(res.data)
+    return GuardianSignature.fromBcs(res.bcsBytes)
   }
 }

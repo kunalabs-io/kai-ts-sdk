@@ -1,32 +1,42 @@
-import * as reified from '../../_framework/reified'
-import { LinkedTable } from '../../_dependencies/source/0xbe21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa/linked-table/structs'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { LinkedTable } from '../../_dependencies/move-stl/linked-table/structs'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
 import { ID, UID } from '../../sui/object/structs'
-import { PKG_V12 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== PositionLiquiditySnapshot =============================== */
 
 export function isPositionLiquiditySnapshot(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V12}::position_snapshot::PositionLiquiditySnapshot`
+  return type
+    === `${
+      getTypeOrigin('cetus-clmm', 'position_snapshot::PositionLiquiditySnapshot')
+    }::position_snapshot::PositionLiquiditySnapshot`
 }
 
 export interface PositionLiquiditySnapshotFields {
@@ -42,17 +52,42 @@ export type PositionLiquiditySnapshotReified = Reified<
   PositionLiquiditySnapshotFields
 >
 
+export type PositionLiquiditySnapshotJSONField = {
+  id: string
+  currentSqrtPrice: string
+  removePercent: string
+  totalValueCut: string
+  snapshots: ToJSON<LinkedTable<ID, ToPhantom<PositionSnapshot>>>
+}
+
+export type PositionLiquiditySnapshotJSON = {
+  $typeName: typeof PositionLiquiditySnapshot.$typeName
+  $typeArgs: []
+} & PositionLiquiditySnapshotJSONField
+
+/**
+ * PositionLiquiditySnapshot struct that stores the snapshot of the position
+ * * `id` - The unique identifier for this PositionLiquiditySnapshot object
+ * * `current_sqrt_price` - The current sqrt price
+ * * `remove_percent` - The remove percent
+ * * `total_value_cut` - The total value cut
+ * * `snapshots` - A linked table storing the snapshots of the position
+ */
 export class PositionLiquiditySnapshot implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V12}::position_snapshot::PositionLiquiditySnapshot`
+  static readonly $typeName: `${string}::position_snapshot::PositionLiquiditySnapshot` = `${
+    getTypeOrigin('cetus-clmm', 'position_snapshot::PositionLiquiditySnapshot')
+  }::position_snapshot::PositionLiquiditySnapshot` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionLiquiditySnapshot.$typeName
-  readonly $fullTypeName: `${typeof PKG_V12}::position_snapshot::PositionLiquiditySnapshot`
+  readonly $typeName: typeof PositionLiquiditySnapshot.$typeName =
+    PositionLiquiditySnapshot.$typeName
+  readonly $fullTypeName: `${string}::position_snapshot::PositionLiquiditySnapshot`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionLiquiditySnapshot.$isPhantom
+  readonly $isPhantom: typeof PositionLiquiditySnapshot.$isPhantom =
+    PositionLiquiditySnapshot.$isPhantom
 
   readonly id: ToField<UID>
   readonly currentSqrtPrice: ToField<'u128'>
@@ -63,8 +98,8 @@ export class PositionLiquiditySnapshot implements StructClass {
   private constructor(typeArgs: [], fields: PositionLiquiditySnapshotFields) {
     this.$fullTypeName = composeSuiType(
       PositionLiquiditySnapshot.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V12}::position_snapshot::PositionLiquiditySnapshot`
+      ...typeArgs,
+    ) as `${string}::position_snapshot::PositionLiquiditySnapshot`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -80,8 +115,8 @@ export class PositionLiquiditySnapshot implements StructClass {
       typeName: PositionLiquiditySnapshot.$typeName,
       fullTypeName: composeSuiType(
         PositionLiquiditySnapshot.$typeName,
-        ...[]
-      ) as `${typeof PKG_V12}::position_snapshot::PositionLiquiditySnapshot`,
+        ...[],
+      ) as `${string}::position_snapshot::PositionLiquiditySnapshot`,
       typeArgs: [] as [],
       isPhantom: PositionLiquiditySnapshot.$isPhantom,
       reifiedTypeArgs: [],
@@ -96,7 +131,8 @@ export class PositionLiquiditySnapshot implements StructClass {
         PositionLiquiditySnapshot.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PositionLiquiditySnapshot.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionLiquiditySnapshot.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        PositionLiquiditySnapshot.fetch(client, id),
       new: (fields: PositionLiquiditySnapshotFields) => {
         return new PositionLiquiditySnapshot([], fields)
       },
@@ -104,14 +140,15 @@ export class PositionLiquiditySnapshot implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionLiquiditySnapshotReified {
     return PositionLiquiditySnapshot.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionLiquiditySnapshot>> {
     return phantom(PositionLiquiditySnapshot.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionLiquiditySnapshot>> {
     return PositionLiquiditySnapshot.phantom()
   }
 
@@ -142,8 +179,8 @@ export class PositionLiquiditySnapshot implements StructClass {
       removePercent: decodeFromFields('u64', fields.remove_percent),
       totalValueCut: decodeFromFields('u64', fields.total_value_cut),
       snapshots: decodeFromFields(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
-        fields.snapshots
+        LinkedTable.reified(ID.reified(), phantom(PositionSnapshot.reified())),
+        fields.snapshots,
       ),
     })
   }
@@ -159,8 +196,8 @@ export class PositionLiquiditySnapshot implements StructClass {
       removePercent: decodeFromFieldsWithTypes('u64', item.fields.remove_percent),
       totalValueCut: decodeFromFieldsWithTypes('u64', item.fields.total_value_cut),
       snapshots: decodeFromFieldsWithTypes(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
-        item.fields.snapshots
+        LinkedTable.reified(ID.reified(), phantom(PositionSnapshot.reified())),
+        item.fields.snapshots,
       ),
     })
   }
@@ -169,7 +206,7 @@ export class PositionLiquiditySnapshot implements StructClass {
     return PositionLiquiditySnapshot.fromFields(PositionLiquiditySnapshot.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionLiquiditySnapshotJSONField {
     return {
       id: this.id,
       currentSqrtPrice: this.currentSqrtPrice.toString(),
@@ -179,7 +216,7 @@ export class PositionLiquiditySnapshot implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionLiquiditySnapshotJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -190,15 +227,17 @@ export class PositionLiquiditySnapshot implements StructClass {
       removePercent: decodeFromJSONField('u64', field.removePercent),
       totalValueCut: decodeFromJSONField('u64', field.totalValueCut),
       snapshots: decodeFromJSONField(
-        LinkedTable.reified(ID.reified(), reified.phantom(PositionSnapshot.reified())),
-        field.snapshots
+        LinkedTable.reified(ID.reified(), phantom(PositionSnapshot.reified())),
+        field.snapshots,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): PositionLiquiditySnapshot {
     if (json.$typeName !== PositionLiquiditySnapshot.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionLiquiditySnapshot json object: expected '${PositionLiquiditySnapshot.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionLiquiditySnapshot.fromJSONField(json)
@@ -210,7 +249,7 @@ export class PositionLiquiditySnapshot implements StructClass {
     }
     if (!isPositionLiquiditySnapshot(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PositionLiquiditySnapshot object`
+        `object at ${(content.fields as any).id} is not a PositionLiquiditySnapshot object`,
       )
     }
     return PositionLiquiditySnapshot.fromFieldsWithTypes(content)
@@ -222,31 +261,23 @@ export class PositionLiquiditySnapshot implements StructClass {
         throw new Error(`object at is not a PositionLiquiditySnapshot object`)
       }
 
-      return PositionLiquiditySnapshot.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionLiquiditySnapshot.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionLiquiditySnapshot.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionLiquiditySnapshot> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching PositionLiquiditySnapshot object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isPositionLiquiditySnapshot(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionLiquiditySnapshot> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionLiquiditySnapshot(res.type)) {
       throw new Error(`object at id ${id} is not a PositionLiquiditySnapshot object`)
     }
 
-    return PositionLiquiditySnapshot.fromSuiObjectData(res.data)
+    return PositionLiquiditySnapshot.fromBcs(res.bcsBytes)
   }
 }
 
@@ -254,7 +285,10 @@ export class PositionLiquiditySnapshot implements StructClass {
 
 export function isPositionSnapshot(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V12}::position_snapshot::PositionSnapshot`
+  return type
+    === `${
+      getTypeOrigin('cetus-clmm', 'position_snapshot::PositionSnapshot')
+    }::position_snapshot::PositionSnapshot`
 }
 
 export interface PositionSnapshotFields {
@@ -270,17 +304,46 @@ export interface PositionSnapshotFields {
 
 export type PositionSnapshotReified = Reified<PositionSnapshot, PositionSnapshotFields>
 
+export type PositionSnapshotJSONField = {
+  positionId: string
+  liquidity: string
+  tickLowerIndex: ToJSON<I32>
+  tickUpperIndex: ToJSON<I32>
+  feeOwnedA: string
+  feeOwnedB: string
+  rewards: string[]
+  valueCut: string
+}
+
+export type PositionSnapshotJSON = {
+  $typeName: typeof PositionSnapshot.$typeName
+  $typeArgs: []
+} & PositionSnapshotJSONField
+
+/**
+ * PositionSnapshot of a position
+ * * `position_id` - position id
+ * * `liquidity` - liquidity of the position
+ * * `tick_lower_index` - lower tick index
+ * * `tick_upper_index` - upper tick index
+ * * `fee_owned_a` - The fee owned by the position a
+ * * `fee_owned_b` - The fee owned by the position b
+ * * `rewards` - The rewards of the position
+ * * `value_cut` - The value cut of the position
+ */
 export class PositionSnapshot implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V12}::position_snapshot::PositionSnapshot`
+  static readonly $typeName: `${string}::position_snapshot::PositionSnapshot` = `${
+    getTypeOrigin('cetus-clmm', 'position_snapshot::PositionSnapshot')
+  }::position_snapshot::PositionSnapshot` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionSnapshot.$typeName
-  readonly $fullTypeName: `${typeof PKG_V12}::position_snapshot::PositionSnapshot`
+  readonly $typeName: typeof PositionSnapshot.$typeName = PositionSnapshot.$typeName
+  readonly $fullTypeName: `${string}::position_snapshot::PositionSnapshot`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionSnapshot.$isPhantom
+  readonly $isPhantom: typeof PositionSnapshot.$isPhantom = PositionSnapshot.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly liquidity: ToField<'u128'>
@@ -294,8 +357,8 @@ export class PositionSnapshot implements StructClass {
   private constructor(typeArgs: [], fields: PositionSnapshotFields) {
     this.$fullTypeName = composeSuiType(
       PositionSnapshot.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V12}::position_snapshot::PositionSnapshot`
+      ...typeArgs,
+    ) as `${string}::position_snapshot::PositionSnapshot`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -314,8 +377,8 @@ export class PositionSnapshot implements StructClass {
       typeName: PositionSnapshot.$typeName,
       fullTypeName: composeSuiType(
         PositionSnapshot.$typeName,
-        ...[]
-      ) as `${typeof PKG_V12}::position_snapshot::PositionSnapshot`,
+        ...[],
+      ) as `${string}::position_snapshot::PositionSnapshot`,
       typeArgs: [] as [],
       isPhantom: PositionSnapshot.$isPhantom,
       reifiedTypeArgs: [],
@@ -327,7 +390,7 @@ export class PositionSnapshot implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionSnapshot.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionSnapshot.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionSnapshot.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionSnapshot.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionSnapshot.fetch(client, id),
       new: (fields: PositionSnapshotFields) => {
         return new PositionSnapshot([], fields)
       },
@@ -335,14 +398,15 @@ export class PositionSnapshot implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionSnapshotReified {
     return PositionSnapshot.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionSnapshot>> {
     return phantom(PositionSnapshot.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionSnapshot>> {
     return PositionSnapshot.phantom()
   }
 
@@ -376,7 +440,7 @@ export class PositionSnapshot implements StructClass {
       tickUpperIndex: decodeFromFields(I32.reified(), fields.tick_upper_index),
       feeOwnedA: decodeFromFields('u64', fields.fee_owned_a),
       feeOwnedB: decodeFromFields('u64', fields.fee_owned_b),
-      rewards: decodeFromFields(reified.vector('u64'), fields.rewards),
+      rewards: decodeFromFields(vector('u64'), fields.rewards),
       valueCut: decodeFromFields('u64', fields.value_cut),
     })
   }
@@ -393,7 +457,7 @@ export class PositionSnapshot implements StructClass {
       tickUpperIndex: decodeFromFieldsWithTypes(I32.reified(), item.fields.tick_upper_index),
       feeOwnedA: decodeFromFieldsWithTypes('u64', item.fields.fee_owned_a),
       feeOwnedB: decodeFromFieldsWithTypes('u64', item.fields.fee_owned_b),
-      rewards: decodeFromFieldsWithTypes(reified.vector('u64'), item.fields.rewards),
+      rewards: decodeFromFieldsWithTypes(vector('u64'), item.fields.rewards),
       valueCut: decodeFromFieldsWithTypes('u64', item.fields.value_cut),
     })
   }
@@ -402,7 +466,7 @@ export class PositionSnapshot implements StructClass {
     return PositionSnapshot.fromFields(PositionSnapshot.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionSnapshotJSONField {
     return {
       positionId: this.positionId,
       liquidity: this.liquidity.toString(),
@@ -415,7 +479,7 @@ export class PositionSnapshot implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionSnapshotJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -427,14 +491,16 @@ export class PositionSnapshot implements StructClass {
       tickUpperIndex: decodeFromJSONField(I32.reified(), field.tickUpperIndex),
       feeOwnedA: decodeFromJSONField('u64', field.feeOwnedA),
       feeOwnedB: decodeFromJSONField('u64', field.feeOwnedB),
-      rewards: decodeFromJSONField(reified.vector('u64'), field.rewards),
+      rewards: decodeFromJSONField(vector('u64'), field.rewards),
       valueCut: decodeFromJSONField('u64', field.valueCut),
     })
   }
 
   static fromJSON(json: Record<string, any>): PositionSnapshot {
     if (json.$typeName !== PositionSnapshot.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionSnapshot json object: expected '${PositionSnapshot.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionSnapshot.fromJSONField(json)
@@ -456,25 +522,22 @@ export class PositionSnapshot implements StructClass {
         throw new Error(`object at is not a PositionSnapshot object`)
       }
 
-      return PositionSnapshot.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionSnapshot.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionSnapshot.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionSnapshot> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionSnapshot object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionSnapshot(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionSnapshot> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionSnapshot(res.type)) {
       throw new Error(`object at id ${id} is not a PositionSnapshot object`)
     }
 
-    return PositionSnapshot.fromSuiObjectData(res.data)
+    return PositionSnapshot.fromBcs(res.bcsBytes)
   }
 }

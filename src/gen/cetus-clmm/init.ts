@@ -1,3 +1,4 @@
+import { StructClassLoader } from '../_framework/loader'
 import * as acl from './acl/structs'
 import * as config from './config/structs'
 import * as factory from './factory/structs'
@@ -7,9 +8,8 @@ import * as positionSnapshot from './position-snapshot/structs'
 import * as position from './position/structs'
 import * as rewarder from './rewarder/structs'
 import * as tick from './tick/structs'
-import { StructClassLoader } from '../_framework/loader'
 
-export function registerClasses(loader: StructClassLoader) {
+export function registerClasses(loader: StructClassLoader): void {
   loader.register(acl.ACL)
   loader.register(acl.Member)
   loader.register(config.AdminCap)

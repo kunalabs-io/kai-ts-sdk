@@ -1,5 +1,6 @@
-import { compressSuiType, parseTypeName } from './util'
+import { registerClasses } from './init-loader'
 import {
+  phantom,
   PhantomReified,
   PhantomTypeArgument,
   Primitive,
@@ -7,12 +8,11 @@ import {
   StructClass,
   StructClassReified,
   TypeArgument,
+  vector,
   VectorClass,
   VectorClassReified,
-  phantom,
-  vector,
 } from './reified'
-import { registerClasses } from './init-loader'
+import { compressSuiType, parseTypeName } from './util'
 
 export type PrimitiveValue = string | number | boolean | bigint
 
@@ -28,7 +28,7 @@ interface _StructClass {
 export class StructClassLoader {
   private map: Map<string, _StructClass> = new Map()
 
-  register(...classes: _StructClass[]) {
+  register(...classes: _StructClass[]): void {
     for (const cls of classes) {
       this.map.set(cls.$typeName, cls)
     }
@@ -38,7 +38,7 @@ export class StructClassLoader {
   reified(type: `vector<${string}>`): VectorClassReified<VectorClass, any>
   reified(type: string): StructClassReified<StructClass, any>
   reified(
-    type: string
+    type: string,
   ): StructClassReified<StructClass, any> | VectorClassReified<VectorClass, any> | string {
     const { typeName, typeArgs } = parseTypeName(compressSuiType(type))
     switch (typeName) {
@@ -66,7 +66,7 @@ export class StructClassLoader {
     const cls = this.map.get(typeName)!
     if (cls.$numTypeParams !== typeArgs.length) {
       throw new Error(
-        `Type ${typeName} expects ${cls.$numTypeParams} type arguments, but got ${typeArgs.length}`
+        `Type ${typeName} expects ${cls.$numTypeParams} type arguments, but got ${typeArgs.length}`,
       )
     }
 
@@ -84,5 +84,5 @@ export class StructClassLoader {
   }
 }
 
-export const loader = new StructClassLoader()
+export const loader: StructClassLoader = new StructClassLoader()
 registerClasses(loader)

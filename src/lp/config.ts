@@ -12,11 +12,11 @@ import {
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { SupplyPool, SupplyPoolInfo, SUPPLY_POOL_INFOS } from './supply-pool'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
-import { Position as BluefinPosition } from '../gen/bluefin_spot/position/structs'
+import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
 import { Position } from './position'
 import { SuiClient, SuiObjectData } from '@mysten/sui/client'
 import { Pool as CetusPool, isPool as isCetusPool } from '../gen/cetus-clmm/pool/structs'
-import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin_spot/pool/structs'
+import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin-spot/pool/structs'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
 import * as bluefin from '../gen/kai-leverage/bluefin-spot/functions'
 import { ClmmPool } from './clmm-pool'
@@ -994,7 +994,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: true,
-    rewardCoins: [BLUE, stSUI],
+    rewardCoins: [BLUE, SUI, stSUI],
   }),
   new PositionConfigInfo({
     name: 'Bluefin suiUSDT/USDC 0.001%',
@@ -1019,7 +1019,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(suiUSDT.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: true,
-    rewardCoins: [BLUE, stSUI],
+    rewardCoins: [stSUI, BLUE, SUI],
   }),
   new PositionConfigInfo({
     name: 'Bluefin SUI/USDC 0.2%',
@@ -1044,7 +1044,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: false,
-    rewardCoins: [stSUI, BLUE],
+    rewardCoins: [SUI, stSUI, BLUE],
   }),
   new PositionConfigInfo({
     name: 'Bluefin WAL/USDC',
@@ -1069,7 +1069,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(WAL.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: false,
-    rewardCoins: [WAL, stSUI, BLUE],
+    rewardCoins: [WAL, stSUI, BLUE, SUI],
   }),
   new PositionConfigInfo({
     name: 'Cetus USDC/suiUSDT 0.01%',
@@ -1169,7 +1169,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(WAL.p, SUI.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: false,
-    rewardCoins: [BLUE, stSUI, WAL],
+    rewardCoins: [BLUE, stSUI, WAL, SUI],
   }),
   new PositionConfigInfo({
     name: 'Cetus USDC/suiUSDT 0.001%',
@@ -1269,7 +1269,7 @@ export const POSITION_CONFIG_INFOS: Array<
     poolReified: BluefinPool.r(SUI.p, USDC.p) as StructClassReified<StructClass, unknown>,
     isReversedPair: false,
     isStablePair: false,
-    rewardCoins: [BLUE, stSUI],
+    rewardCoins: [BLUE, stSUI, SUI],
   }),
   new PositionConfigInfo({
     name: 'Bluefin DEEP/SUI 0.175%',

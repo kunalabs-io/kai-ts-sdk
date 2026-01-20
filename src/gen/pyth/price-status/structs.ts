@@ -1,25 +1,32 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== PriceStatus =============================== */
 
 export function isPriceStatus(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::price_status::PriceStatus`
+  return type === `${getTypeOrigin('pyth', 'price_status::PriceStatus')}::price_status::PriceStatus`
 }
 
 export interface PriceStatusFields {
@@ -28,25 +35,40 @@ export interface PriceStatusFields {
 
 export type PriceStatusReified = Reified<PriceStatus, PriceStatusFields>
 
+export type PriceStatusJSONField = {
+  status: string
+}
+
+export type PriceStatusJSON = {
+  $typeName: typeof PriceStatus.$typeName
+  $typeArgs: []
+} & PriceStatusJSONField
+
+/**
+ * PriceStatus represents the availability status of a price feed.
+ * Prices should only be used if they have a status of trading.
+ */
 export class PriceStatus implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::price_status::PriceStatus`
+  static readonly $typeName: `${string}::price_status::PriceStatus` = `${
+    getTypeOrigin('pyth', 'price_status::PriceStatus')
+  }::price_status::PriceStatus` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PriceStatus.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::price_status::PriceStatus`
+  readonly $typeName: typeof PriceStatus.$typeName = PriceStatus.$typeName
+  readonly $fullTypeName: `${string}::price_status::PriceStatus`
   readonly $typeArgs: []
-  readonly $isPhantom = PriceStatus.$isPhantom
+  readonly $isPhantom: typeof PriceStatus.$isPhantom = PriceStatus.$isPhantom
 
   readonly status: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: PriceStatusFields) {
     this.$fullTypeName = composeSuiType(
       PriceStatus.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::price_status::PriceStatus`
+      ...typeArgs,
+    ) as `${string}::price_status::PriceStatus`
     this.$typeArgs = typeArgs
 
     this.status = fields.status
@@ -58,8 +80,8 @@ export class PriceStatus implements StructClass {
       typeName: PriceStatus.$typeName,
       fullTypeName: composeSuiType(
         PriceStatus.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::price_status::PriceStatus`,
+        ...[],
+      ) as `${string}::price_status::PriceStatus`,
       typeArgs: [] as [],
       isPhantom: PriceStatus.$isPhantom,
       reifiedTypeArgs: [],
@@ -71,7 +93,7 @@ export class PriceStatus implements StructClass {
       fromJSON: (json: Record<string, any>) => PriceStatus.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PriceStatus.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PriceStatus.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PriceStatus.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PriceStatus.fetch(client, id),
       new: (fields: PriceStatusFields) => {
         return new PriceStatus([], fields)
       },
@@ -79,14 +101,15 @@ export class PriceStatus implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PriceStatusReified {
     return PriceStatus.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PriceStatus>> {
     return phantom(PriceStatus.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PriceStatus>> {
     return PriceStatus.phantom()
   }
 
@@ -106,7 +129,9 @@ export class PriceStatus implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): PriceStatus {
-    return PriceStatus.reified().new({ status: decodeFromFields('u64', fields.status) })
+    return PriceStatus.reified().new({
+      status: decodeFromFields('u64', fields.status),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): PriceStatus {
@@ -123,23 +148,27 @@ export class PriceStatus implements StructClass {
     return PriceStatus.fromFields(PriceStatus.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PriceStatusJSONField {
     return {
       status: this.status.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): PriceStatusJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): PriceStatus {
-    return PriceStatus.reified().new({ status: decodeFromJSONField('u64', field.status) })
+    return PriceStatus.reified().new({
+      status: decodeFromJSONField('u64', field.status),
+    })
   }
 
   static fromJSON(json: Record<string, any>): PriceStatus {
     if (json.$typeName !== PriceStatus.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PriceStatus json object: expected '${PriceStatus.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PriceStatus.fromJSONField(json)
@@ -161,25 +190,22 @@ export class PriceStatus implements StructClass {
         throw new Error(`object at is not a PriceStatus object`)
       }
 
-      return PriceStatus.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PriceStatus.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PriceStatus.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PriceStatus> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PriceStatus object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPriceStatus(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceStatus> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPriceStatus(res.type)) {
       throw new Error(`object at id ${id} is not a PriceStatus object`)
     }
 
-    return PriceStatus.fromSuiObjectData(res.data)
+    return PriceStatus.fromBcs(res.bcsBytes)
   }
 }

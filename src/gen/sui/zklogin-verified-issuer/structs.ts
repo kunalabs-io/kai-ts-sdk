@@ -1,20 +1,27 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
+import { String } from '../../std/string/structs'
 import { UID } from '../object/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 /* ============================== VerifiedIssuer =============================== */
 
@@ -24,33 +31,55 @@ export function isVerifiedIssuer(type: string): boolean {
 }
 
 export interface VerifiedIssuerFields {
+  /** The ID of this VerifiedIssuer */
   id: ToField<UID>
+  /** The address this VerifiedID is associated with */
   owner: ToField<'address'>
+  /** The issuer */
   issuer: ToField<String>
 }
 
 export type VerifiedIssuerReified = Reified<VerifiedIssuer, VerifiedIssuerFields>
 
+export type VerifiedIssuerJSONField = {
+  id: string
+  owner: string
+  issuer: string
+}
+
+export type VerifiedIssuerJSON = {
+  $typeName: typeof VerifiedIssuer.$typeName
+  $typeArgs: []
+} & VerifiedIssuerJSONField
+
+/**
+ * Possession of a VerifiedIssuer proves that the user's address was created using zklogin and with the given issuer
+ * (identity provider).
+ */
 export class VerifiedIssuer implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::zklogin_verified_issuer::VerifiedIssuer`
+  static readonly $typeName: `0x2::zklogin_verified_issuer::VerifiedIssuer` =
+    `0x2::zklogin_verified_issuer::VerifiedIssuer` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = VerifiedIssuer.$typeName
+  readonly $typeName: typeof VerifiedIssuer.$typeName = VerifiedIssuer.$typeName
   readonly $fullTypeName: `0x2::zklogin_verified_issuer::VerifiedIssuer`
   readonly $typeArgs: []
-  readonly $isPhantom = VerifiedIssuer.$isPhantom
+  readonly $isPhantom: typeof VerifiedIssuer.$isPhantom = VerifiedIssuer.$isPhantom
 
+  /** The ID of this VerifiedIssuer */
   readonly id: ToField<UID>
+  /** The address this VerifiedID is associated with */
   readonly owner: ToField<'address'>
+  /** The issuer */
   readonly issuer: ToField<String>
 
   private constructor(typeArgs: [], fields: VerifiedIssuerFields) {
     this.$fullTypeName = composeSuiType(
       VerifiedIssuer.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::zklogin_verified_issuer::VerifiedIssuer`
     this.$typeArgs = typeArgs
 
@@ -65,7 +94,7 @@ export class VerifiedIssuer implements StructClass {
       typeName: VerifiedIssuer.$typeName,
       fullTypeName: composeSuiType(
         VerifiedIssuer.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::zklogin_verified_issuer::VerifiedIssuer`,
       typeArgs: [] as [],
       isPhantom: VerifiedIssuer.$isPhantom,
@@ -78,7 +107,7 @@ export class VerifiedIssuer implements StructClass {
       fromJSON: (json: Record<string, any>) => VerifiedIssuer.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VerifiedIssuer.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VerifiedIssuer.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => VerifiedIssuer.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => VerifiedIssuer.fetch(client, id),
       new: (fields: VerifiedIssuerFields) => {
         return new VerifiedIssuer([], fields)
       },
@@ -86,14 +115,15 @@ export class VerifiedIssuer implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): VerifiedIssuerReified {
     return VerifiedIssuer.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<VerifiedIssuer>> {
     return phantom(VerifiedIssuer.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<VerifiedIssuer>> {
     return VerifiedIssuer.phantom()
   }
 
@@ -101,8 +131,8 @@ export class VerifiedIssuer implements StructClass {
     return bcs.struct('VerifiedIssuer', {
       id: UID.bcs,
       owner: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
       issuer: String.bcs,
     })
@@ -141,7 +171,7 @@ export class VerifiedIssuer implements StructClass {
     return VerifiedIssuer.fromFields(VerifiedIssuer.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): VerifiedIssuerJSONField {
     return {
       id: this.id,
       owner: this.owner,
@@ -149,7 +179,7 @@ export class VerifiedIssuer implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): VerifiedIssuerJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -163,7 +193,9 @@ export class VerifiedIssuer implements StructClass {
 
   static fromJSON(json: Record<string, any>): VerifiedIssuer {
     if (json.$typeName !== VerifiedIssuer.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a VerifiedIssuer json object: expected '${VerifiedIssuer.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return VerifiedIssuer.fromJSONField(json)
@@ -185,25 +217,22 @@ export class VerifiedIssuer implements StructClass {
         throw new Error(`object at is not a VerifiedIssuer object`)
       }
 
-      return VerifiedIssuer.fromBcs(fromB64(data.bcs.bcsBytes))
+      return VerifiedIssuer.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return VerifiedIssuer.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<VerifiedIssuer> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching VerifiedIssuer object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVerifiedIssuer(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<VerifiedIssuer> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isVerifiedIssuer(res.type)) {
       throw new Error(`object at id ${id} is not a VerifiedIssuer object`)
     }
 
-    return VerifiedIssuer.fromSuiObjectData(res.data)
+    return VerifiedIssuer.fromBcs(res.bcsBytes)
   }
 }

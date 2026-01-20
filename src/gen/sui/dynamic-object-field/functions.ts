@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj } from '../../_framework/util'
 
 export interface AddArgs {
   object: TransactionObjectInput
@@ -8,9 +13,13 @@ export interface AddArgs {
   value: GenericArg
 }
 
-export function add(tx: Transaction, typeArgs: [string, string], args: AddArgs) {
+/**
+ * Adds a dynamic object field to the object `object: &mut UID` at field specified by `name: Name`.
+ * Aborts with `EFieldAlreadyExists` if the object already has that field with that name.
+ */
+export function add(tx: Transaction, typeArgs: [string, string], args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::add`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::add`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.object),
@@ -25,11 +34,24 @@ export interface BorrowArgs {
   name: GenericArg
 }
 
-export function borrow(tx: Transaction, typeArgs: [string, string], args: BorrowArgs) {
+/**
+ * Immutably borrows the `object`s dynamic object field with the name specified by `name: Name`.
+ * Aborts with `EFieldDoesNotExist` if the object does not have a field with that name.
+ * Aborts with `EFieldTypeMismatch` if the field exists, but the value object does not have the
+ * specified type.
+ */
+export function borrow(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: BorrowArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::borrow`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::borrow`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -38,11 +60,24 @@ export interface BorrowMutArgs {
   name: GenericArg
 }
 
-export function borrowMut(tx: Transaction, typeArgs: [string, string], args: BorrowMutArgs) {
+/**
+ * Mutably borrows the `object`s dynamic object field with the name specified by `name: Name`.
+ * Aborts with `EFieldDoesNotExist` if the object does not have a field with that name.
+ * Aborts with `EFieldTypeMismatch` if the field exists, but the value object does not have the
+ * specified type.
+ */
+export function borrowMut(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: BorrowMutArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::borrow_mut`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::borrow_mut`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -51,11 +86,25 @@ export interface RemoveArgs {
   name: GenericArg
 }
 
-export function remove(tx: Transaction, typeArgs: [string, string], args: RemoveArgs) {
+/**
+ * Removes the `object`s dynamic object field with the name specified by `name: Name` and returns
+ * the bound object.
+ * Aborts with `EFieldDoesNotExist` if the object does not have a field with that name.
+ * Aborts with `EFieldTypeMismatch` if the field exists, but the value object does not have the
+ * specified type.
+ */
+export function remove(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::remove`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::remove`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -64,11 +113,18 @@ export interface Exists_Args {
   name: GenericArg
 }
 
-export function exists_(tx: Transaction, typeArg: string, args: Exists_Args) {
+/**
+ * Returns true if and only if the `object` has a dynamic object field with the name specified by
+ * `name: Name`.
+ */
+export function exists_(tx: Transaction, typeArg: string, args: Exists_Args): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::exists_`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::exists_`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.object), generic(tx, `${typeArg}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArg}`, args.name),
+    ],
   })
 }
 
@@ -77,15 +133,22 @@ export interface ExistsWithTypeArgs {
   name: GenericArg
 }
 
+/**
+ * Returns true if and only if the `object` has a dynamic field with the name specified by
+ * `name: Name` with an assigned value of type `Value`.
+ */
 export function existsWithType(
   tx: Transaction,
   typeArgs: [string, string],
-  args: ExistsWithTypeArgs
-) {
+  args: ExistsWithTypeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::exists_with_type`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::exists_with_type`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -94,11 +157,18 @@ export interface IdArgs {
   name: GenericArg
 }
 
-export function id(tx: Transaction, typeArg: string, args: IdArgs) {
+/**
+ * Returns the ID of the object associated with the dynamic object field
+ * Returns none otherwise
+ */
+export function id(tx: Transaction, typeArg: string, args: IdArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::id`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::id`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.object), generic(tx, `${typeArg}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArg}`, args.name),
+    ],
   })
 }
 
@@ -108,9 +178,13 @@ export interface InternalAddArgs {
   value: GenericArg
 }
 
-export function internalAdd(tx: Transaction, typeArgs: [string, string], args: InternalAddArgs) {
+export function internalAdd(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: InternalAddArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_add`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::internal_add`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.object),
@@ -128,12 +202,15 @@ export interface InternalBorrowArgs {
 export function internalBorrow(
   tx: Transaction,
   typeArgs: [string, string],
-  args: InternalBorrowArgs
-) {
+  args: InternalBorrowArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_borrow`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::internal_borrow`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -145,12 +222,15 @@ export interface InternalBorrowMutArgs {
 export function internalBorrowMut(
   tx: Transaction,
   typeArgs: [string, string],
-  args: InternalBorrowMutArgs
-) {
+  args: InternalBorrowMutArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_borrow_mut`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::internal_borrow_mut`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -162,12 +242,15 @@ export interface InternalRemoveArgs {
 export function internalRemove(
   tx: Transaction,
   typeArgs: [string, string],
-  args: InternalRemoveArgs
-) {
+  args: InternalRemoveArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_remove`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::internal_remove`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }
 
@@ -179,11 +262,14 @@ export interface InternalExistsWithTypeArgs {
 export function internalExistsWithType(
   tx: Transaction,
   typeArgs: [string, string],
-  args: InternalExistsWithTypeArgs
-) {
+  args: InternalExistsWithTypeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::dynamic_object_field::internal_exists_with_type`,
+    target: `${getPublishedAt('sui')}::dynamic_object_field::internal_exists_with_type`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.object), generic(tx, `${typeArgs[0]}`, args.name)],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
   })
 }

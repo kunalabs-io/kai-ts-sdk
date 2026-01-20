@@ -1,83 +1,108 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, option, pure } from '../../_framework/util'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, option, pure } from '../../_framework/util'
 import { Url } from '../../sui/url/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function valueX64(tx: Transaction, typeArg: string, share: TransactionObjectInput) {
+/** Get the share value in Q64.64 format. */
+export function valueX64(
+  tx: Transaction,
+  typeArg: string,
+  share: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::value_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::value_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, share)],
   })
 }
 
-export function supplyX64(tx: Transaction, typeArg: string, registry: TransactionObjectInput) {
+/** Get the total share supply in Q64.64 format. */
+export function supplyX64(
+  tx: Transaction,
+  typeArg: string,
+  registry: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::supply_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::supply_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })
 }
 
+/** Get the total underlying value in Q64.64 format. */
 export function underlyingValueX64(
   tx: Transaction,
   typeArg: string,
-  registry: TransactionObjectInput
-) {
+  registry: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::underlying_value_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::underlying_value_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })
 }
 
-export function borrowRegistry(tx: Transaction, typeArg: string, treasury: TransactionObjectInput) {
+/** Borrow immutable reference to the equity registry. */
+export function borrowRegistry(
+  tx: Transaction,
+  typeArg: string,
+  treasury: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::borrow_registry`,
+    target: `${getPublishedAt('kai-leverage')}::equity::borrow_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
 }
 
+/** Borrow mutable reference to the equity registry. */
 export function borrowMutRegistry(
   tx: Transaction,
   typeArg: string,
-  treasury: TransactionObjectInput
-) {
+  treasury: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::borrow_mut_registry`,
+    target: `${getPublishedAt('kai-leverage')}::equity::borrow_mut_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
 }
 
+/** Borrow the treasury capability for minting equity tokens. */
 export function borrowTreasuryCap(
   tx: Transaction,
   typeArg: string,
-  treasury: TransactionObjectInput
-) {
+  treasury: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::borrow_treasury_cap`,
+    target: `${getPublishedAt('kai-leverage')}::equity::borrow_treasury_cap`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
 }
 
-export function createRegistry(tx: Transaction, typeArg: string, t: GenericArg) {
+/** Create a new empty equity registry. */
+export function createRegistry(tx: Transaction, typeArg: string, t: GenericArg): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::create_registry`,
+    target: `${getPublishedAt('kai-leverage')}::equity::create_registry`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, t)],
   })
 }
 
+/** Create a new equity registry using an existing treasury cap. */
 export function createRegistryWithCap(
   tx: Transaction,
   typeArg: string,
-  treasuryCap: TransactionObjectInput
-) {
+  treasuryCap: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::create_registry_with_cap`,
+    target: `${getPublishedAt('kai-leverage')}::equity::create_registry_with_cap`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasuryCap)],
   })
@@ -89,12 +114,17 @@ export interface CreateTreasuryArgs {
   symbol: Array<number | TransactionArgument> | TransactionArgument
   name: Array<number | TransactionArgument> | TransactionArgument
   description: Array<number | TransactionArgument> | TransactionArgument
-  iconUrl: TransactionObjectInput | TransactionArgument | null
+  iconUrl: TransactionObjectInput | null
 }
 
-export function createTreasury(tx: Transaction, typeArg: string, args: CreateTreasuryArgs) {
+/** Create a new equity treasury. The treasury has the ability to mint equity as fungible coins. */
+export function createTreasury(
+  tx: Transaction,
+  typeArg: string,
+  args: CreateTreasuryArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::create_treasury`,
+    target: `${getPublishedAt('kai-leverage')}::equity::create_treasury`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -107,9 +137,10 @@ export function createTreasury(tx: Transaction, typeArg: string, args: CreateTre
   })
 }
 
-export function zero(tx: Transaction, typeArg: string) {
+/** Create a zero equity share balance. */
+export function zero(tx: Transaction, typeArg: string): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::zero`,
+    target: `${getPublishedAt('kai-leverage')}::equity::zero`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -120,15 +151,19 @@ export interface IncreaseValueAndIssueX64Args {
   valueX64: bigint | TransactionArgument
 }
 
+/** Increase the underlying value and issue corresponding shares. Input value is in Q64.64 format. */
 export function increaseValueAndIssueX64(
   tx: Transaction,
   typeArg: string,
-  args: IncreaseValueAndIssueX64Args
-) {
+  args: IncreaseValueAndIssueX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::increase_value_and_issue_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::increase_value_and_issue_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.valueX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.valueX64, `u128`),
+    ],
   })
 }
 
@@ -137,15 +172,19 @@ export interface IncreaseValueAndIssueArgs {
   value: bigint | TransactionArgument
 }
 
+/** Increase the underlying value and issue corresponding shares. */
 export function increaseValueAndIssue(
   tx: Transaction,
   typeArg: string,
-  args: IncreaseValueAndIssueArgs
-) {
+  args: IncreaseValueAndIssueArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::increase_value_and_issue`,
+    target: `${getPublishedAt('kai-leverage')}::equity::increase_value_and_issue`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.value, `u64`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.value, `u64`),
+    ],
   })
 }
 
@@ -154,11 +193,19 @@ export interface IncreaseValueX64Args {
   valueX64: bigint | TransactionArgument
 }
 
-export function increaseValueX64(tx: Transaction, typeArg: string, args: IncreaseValueX64Args) {
+/** Increase the underlying value without issuing new shares. Input value is in Q64.64 format. */
+export function increaseValueX64(
+  tx: Transaction,
+  typeArg: string,
+  args: IncreaseValueX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::increase_value_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::increase_value_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.valueX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.valueX64, `u128`),
+    ],
   })
 }
 
@@ -167,11 +214,19 @@ export interface IncreaseValueArgs {
   value: bigint | TransactionArgument
 }
 
-export function increaseValue(tx: Transaction, typeArg: string, args: IncreaseValueArgs) {
+/** Increase the underlying value without issuing new shares. */
+export function increaseValue(
+  tx: Transaction,
+  typeArg: string,
+  args: IncreaseValueArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::increase_value`,
+    target: `${getPublishedAt('kai-leverage')}::equity::increase_value`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.value, `u64`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.value, `u64`),
+    ],
   })
 }
 
@@ -180,11 +235,19 @@ export interface DecreaseValueX64Args {
   valueX64: bigint | TransactionArgument
 }
 
-export function decreaseValueX64(tx: Transaction, typeArg: string, args: DecreaseValueX64Args) {
+/** Decrease the underlying value without redeeming shares. Input value is in Q64.64 format. */
+export function decreaseValueX64(
+  tx: Transaction,
+  typeArg: string,
+  args: DecreaseValueX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::decrease_value_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::decrease_value_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.valueX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.valueX64, `u128`),
+    ],
   })
 }
 
@@ -193,11 +256,19 @@ export interface DecreaseValueArgs {
   value: bigint | TransactionArgument
 }
 
-export function decreaseValue(tx: Transaction, typeArg: string, args: DecreaseValueArgs) {
+/** Decrease the underlying value without redeeming shares. */
+export function decreaseValue(
+  tx: Transaction,
+  typeArg: string,
+  args: DecreaseValueArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::decrease_value`,
+    target: `${getPublishedAt('kai-leverage')}::equity::decrease_value`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.value, `u64`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.value, `u64`),
+    ],
   })
 }
 
@@ -206,11 +277,23 @@ export interface CalcRedeemX64Args {
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRedeemX64(tx: Transaction, typeArg: string, args: CalcRedeemX64Args) {
+/**
+ * Calculate the amount of underlying value that would be redeemed for the given share value when calling the
+ * `redeem_x64` function.
+ * The input and return values are in Q64.64 format.
+ */
+export function calcRedeemX64(
+  tx: Transaction,
+  typeArg: string,
+  args: CalcRedeemX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::calc_redeem_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::calc_redeem_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.shareValueX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.shareValueX64, `u128`),
+    ],
   })
 }
 
@@ -219,11 +302,23 @@ export interface RedeemX64Args {
   share: TransactionObjectInput
 }
 
-export function redeemX64(tx: Transaction, typeArg: string, args: RedeemX64Args) {
+/**
+ * Redeem the shares for the underlying value. Reduces the underlying value and supply.
+ * Returns the value redeemed (the amount the underlying value was reduced by).
+ * The returned value is in Q64.64 format.
+ */
+export function redeemX64(
+  tx: Transaction,
+  typeArg: string,
+  args: RedeemX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::redeem_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::redeem_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), obj(tx, args.share)],
+    arguments: [
+      obj(tx, args.registry),
+      obj(tx, args.share),
+    ],
   })
 }
 
@@ -232,11 +327,23 @@ export interface CalcRedeemLossyArgs {
   shareValueX64: bigint | TransactionArgument
 }
 
-export function calcRedeemLossy(tx: Transaction, typeArg: string, args: CalcRedeemLossyArgs) {
+/**
+ * Calculate the amount of underlying value that would be redeemed for the given share value when calling the
+ * `redeem_lossy` function.
+ * The input and return values are in Q64.64 format.
+ */
+export function calcRedeemLossy(
+  tx: Transaction,
+  typeArg: string,
+  args: CalcRedeemLossyArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::calc_redeem_lossy`,
+    target: `${getPublishedAt('kai-leverage')}::equity::calc_redeem_lossy`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.shareValueX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.shareValueX64, `u128`),
+    ],
   })
 }
 
@@ -245,11 +352,25 @@ export interface RedeemLossyArgs {
   share: TransactionObjectInput
 }
 
-export function redeemLossy(tx: Transaction, typeArg: string, args: RedeemLossyArgs) {
+/**
+ * Lossy. Redeem the shares for the underlying value. Reduces the underlying value and supply.
+ * Returns the value redeemed (i.e., the amount by which the underlying value was reduced).
+ *
+ * The redeemed amount is rounded down, and any fractional difference is added back to the total
+ * underlying value. This effectively increases the value of other shares by that fraction.
+ */
+export function redeemLossy(
+  tx: Transaction,
+  typeArg: string,
+  args: RedeemLossyArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::redeem_lossy`,
+    target: `${getPublishedAt('kai-leverage')}::equity::redeem_lossy`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), obj(tx, args.share)],
+    arguments: [
+      obj(tx, args.registry),
+      obj(tx, args.share),
+    ],
   })
 }
 
@@ -258,15 +379,27 @@ export interface CalcRedeemForAmountX64Args {
   amountX64: bigint | TransactionArgument
 }
 
+/**
+ * Calculate the amount of shares required to redeem the given amount of underlying value when calling the
+ * `redeem_for_amount_x64` function.
+ * Since the resulting redeemed value can sometimes be different from the required due to integer
+ * arithmetic, the function also returns the calculated redeemed value (the amount the underlying value
+ * would be reduced by). This value is always greater than or equal to the required amount.
+ * Returns `(share_amount_x64, redeemed_value_x64)` tuple. The input and return values are in
+ * Q64.64 format.
+ */
 export function calcRedeemForAmountX64(
   tx: Transaction,
   typeArg: string,
-  args: CalcRedeemForAmountX64Args
-) {
+  args: CalcRedeemForAmountX64Args,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::calc_redeem_for_amount_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::calc_redeem_for_amount_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.amountX64, `u128`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.amountX64, `u128`),
+    ],
   })
 }
 
@@ -275,15 +408,24 @@ export interface CalcRedeemForAmountArgs {
   amount: bigint | TransactionArgument
 }
 
+/**
+ * Calculate the amount of `EquityShareBalance` required to redeem the given amount of underlying
+ * value when calling the `redeem_lossy` function.
+ * The resulting redeemed amount will always be exactly equal to the specified amount.
+ * Returns the share amount. The input and return values are in Q64.64 format.
+ */
 export function calcRedeemForAmount(
   tx: Transaction,
   typeArg: string,
-  args: CalcRedeemForAmountArgs
-) {
+  args: CalcRedeemForAmountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::calc_redeem_for_amount`,
+    target: `${getPublishedAt('kai-leverage')}::equity::calc_redeem_for_amount`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.amount, `u64`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
@@ -292,15 +434,26 @@ export interface CalcBalanceRedeemForAmountArgs {
   amount: bigint | TransactionArgument
 }
 
+/**
+ * Calculate the amount of share `Balance` required to redeem the given amount of underlying value
+ * when calling the `redeem_lossy` function.
+ * Since the resulting redeemed value can sometimes be different from the required due to
+ * integer arithmetic, the function also returns the calculated redeemed value (the amount
+ * the underlying value would be reduced by). This value is always greater than or equal to the
+ * required amount.
+ */
 export function calcBalanceRedeemForAmount(
   tx: Transaction,
   typeArg: string,
-  args: CalcBalanceRedeemForAmountArgs
-) {
+  args: CalcBalanceRedeemForAmountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::calc_balance_redeem_for_amount`,
+    target: `${getPublishedAt('kai-leverage')}::equity::calc_balance_redeem_for_amount`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.registry), pure(tx, args.amount, `u64`)],
+    arguments: [
+      obj(tx, args.registry),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
@@ -309,11 +462,23 @@ export interface IntoBalanceLossyArgs {
   treasury: TransactionObjectInput
 }
 
-export function intoBalanceLossy(tx: Transaction, typeArg: string, args: IntoBalanceLossyArgs) {
+/**
+ * Lossy. Converts the `EquityShareBalance` to a corresponding `Balance`.
+ * The fractional difference from rounding down is subtracted from the total supply of shares,
+ * which effectively increases the value of other shares against the underlying.
+ */
+export function intoBalanceLossy(
+  tx: Transaction,
+  typeArg: string,
+  args: IntoBalanceLossyArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::into_balance_lossy`,
+    target: `${getPublishedAt('kai-leverage')}::equity::into_balance_lossy`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.share), obj(tx, args.treasury)],
+    arguments: [
+      obj(tx, args.share),
+      obj(tx, args.treasury),
+    ],
   })
 }
 
@@ -322,11 +487,22 @@ export interface IntoBalanceArgs {
   treasury: TransactionObjectInput
 }
 
-export function intoBalance(tx: Transaction, typeArg: string, args: IntoBalanceArgs) {
+/**
+ * Convert a `EquityShareBalance` to a `Balance` while preserving the fractional part.
+ * Not lossy but doesn't consume all the shares.
+ */
+export function intoBalance(
+  tx: Transaction,
+  typeArg: string,
+  args: IntoBalanceArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::into_balance`,
+    target: `${getPublishedAt('kai-leverage')}::equity::into_balance`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.share), obj(tx, args.treasury)],
+    arguments: [
+      obj(tx, args.share),
+      obj(tx, args.treasury),
+    ],
   })
 }
 
@@ -335,11 +511,19 @@ export interface FromBalanceArgs {
   balance: TransactionObjectInput
 }
 
-export function fromBalance(tx: Transaction, typeArg: string, args: FromBalanceArgs) {
+/** Converts the `Balance` to a corresponding `EquityShareBalance`. */
+export function fromBalance(
+  tx: Transaction,
+  typeArg: string,
+  args: FromBalanceArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::from_balance`,
+    target: `${getPublishedAt('kai-leverage')}::equity::from_balance`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.treasury), obj(tx, args.balance)],
+    arguments: [
+      obj(tx, args.treasury),
+      obj(tx, args.balance),
+    ],
   })
 }
 
@@ -348,17 +532,26 @@ export interface SplitX64Args {
   amountX64: bigint | TransactionArgument
 }
 
-export function splitX64(tx: Transaction, typeArg: string, args: SplitX64Args) {
+/** Split a `EquityShareBalance` and take a sub balance from it. Input amount is in Q64.64 format. */
+export function splitX64(tx: Transaction, typeArg: string, args: SplitX64Args): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::split_x64`,
+    target: `${getPublishedAt('kai-leverage')}::equity::split_x64`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.shares), pure(tx, args.amountX64, `u128`)],
+    arguments: [
+      obj(tx, args.shares),
+      pure(tx, args.amountX64, `u128`),
+    ],
   })
 }
 
-export function withdrawAll(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
+/** Withdraw all shares from a `EquityShareBalance`. */
+export function withdrawAll(
+  tx: Transaction,
+  typeArg: string,
+  shares: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::withdraw_all`,
+    target: `${getPublishedAt('kai-leverage')}::equity::withdraw_all`,
     typeArguments: [typeArg],
     arguments: [obj(tx, shares)],
   })
@@ -369,11 +562,15 @@ export interface SplitArgs {
   amount: bigint | TransactionArgument
 }
 
-export function split(tx: Transaction, typeArg: string, args: SplitArgs) {
+/** Split a `EquityShareBalance` and take a sub balance from it. */
+export function split(tx: Transaction, typeArg: string, args: SplitArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::split`,
+    target: `${getPublishedAt('kai-leverage')}::equity::split`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.share), pure(tx, args.amount, `u64`)],
+    arguments: [
+      obj(tx, args.share),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
@@ -382,29 +579,39 @@ export interface JoinArgs {
   other: TransactionObjectInput
 }
 
-export function join(tx: Transaction, typeArg: string, args: JoinArgs) {
+/** Join two `EquityShareBalance`s. The second balance is consumed. */
+export function join(tx: Transaction, typeArg: string, args: JoinArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::join`,
+    target: `${getPublishedAt('kai-leverage')}::equity::join`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), obj(tx, args.other)],
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.other),
+    ],
   })
 }
 
-export function destroyZero(tx: Transaction, typeArg: string, shares: TransactionObjectInput) {
+/** Destroy a `EquityShareBalance` with zero value. */
+export function destroyZero(
+  tx: Transaction,
+  typeArg: string,
+  shares: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::destroy_zero`,
+    target: `${getPublishedAt('kai-leverage')}::equity::destroy_zero`,
     typeArguments: [typeArg],
     arguments: [obj(tx, shares)],
   })
 }
 
+/** Destroy an empty `EquityRegistry`. */
 export function destroyEmptyRegistry(
   tx: Transaction,
   typeArg: string,
-  registry: TransactionObjectInput
-) {
+  registry: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::equity::destroy_empty_registry`,
+    target: `${getPublishedAt('kai-leverage')}::equity::destroy_empty_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })

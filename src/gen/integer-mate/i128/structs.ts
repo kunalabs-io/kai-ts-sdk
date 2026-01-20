@@ -1,25 +1,32 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== I128 =============================== */
 
 export function isI128(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::i128::I128`
+  return type === `${getTypeOrigin('integer-mate', 'i128::I128')}::i128::I128`
 }
 
 export interface I128Fields {
@@ -28,25 +35,36 @@ export interface I128Fields {
 
 export type I128Reified = Reified<I128, I128Fields>
 
+export type I128JSONField = {
+  bits: string
+}
+
+export type I128JSON = {
+  $typeName: typeof I128.$typeName
+  $typeArgs: []
+} & I128JSONField
+
 export class I128 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::i128::I128`
+  static readonly $typeName: `${string}::i128::I128` = `${
+    getTypeOrigin('integer-mate', 'i128::I128')
+  }::i128::I128` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = I128.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::i128::I128`
+  readonly $typeName: typeof I128.$typeName = I128.$typeName
+  readonly $fullTypeName: `${string}::i128::I128`
   readonly $typeArgs: []
-  readonly $isPhantom = I128.$isPhantom
+  readonly $isPhantom: typeof I128.$isPhantom = I128.$isPhantom
 
   readonly bits: ToField<'u128'>
 
   private constructor(typeArgs: [], fields: I128Fields) {
     this.$fullTypeName = composeSuiType(
       I128.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::i128::I128`
+      ...typeArgs,
+    ) as `${string}::i128::I128`
     this.$typeArgs = typeArgs
 
     this.bits = fields.bits
@@ -56,7 +74,10 @@ export class I128 implements StructClass {
     const reifiedBcs = I128.bcs
     return {
       typeName: I128.$typeName,
-      fullTypeName: composeSuiType(I128.$typeName, ...[]) as `${typeof PKG_V1}::i128::I128`,
+      fullTypeName: composeSuiType(
+        I128.$typeName,
+        ...[],
+      ) as `${string}::i128::I128`,
       typeArgs: [] as [],
       isPhantom: I128.$isPhantom,
       reifiedTypeArgs: [],
@@ -68,7 +89,7 @@ export class I128 implements StructClass {
       fromJSON: (json: Record<string, any>) => I128.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => I128.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => I128.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => I128.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => I128.fetch(client, id),
       new: (fields: I128Fields) => {
         return new I128([], fields)
       },
@@ -76,14 +97,15 @@ export class I128 implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): I128Reified {
     return I128.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<I128>> {
     return phantom(I128.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<I128>> {
     return I128.phantom()
   }
 
@@ -103,7 +125,9 @@ export class I128 implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): I128 {
-    return I128.reified().new({ bits: decodeFromFields('u128', fields.bits) })
+    return I128.reified().new({
+      bits: decodeFromFields('u128', fields.bits),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): I128 {
@@ -111,30 +135,36 @@ export class I128 implements StructClass {
       throw new Error('not a I128 type')
     }
 
-    return I128.reified().new({ bits: decodeFromFieldsWithTypes('u128', item.fields.bits) })
+    return I128.reified().new({
+      bits: decodeFromFieldsWithTypes('u128', item.fields.bits),
+    })
   }
 
   static fromBcs(data: Uint8Array): I128 {
     return I128.fromFields(I128.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): I128JSONField {
     return {
       bits: this.bits.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): I128JSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): I128 {
-    return I128.reified().new({ bits: decodeFromJSONField('u128', field.bits) })
+    return I128.reified().new({
+      bits: decodeFromJSONField('u128', field.bits),
+    })
   }
 
   static fromJSON(json: Record<string, any>): I128 {
     if (json.$typeName !== I128.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a I128 json object: expected '${I128.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return I128.fromJSONField(json)
@@ -156,25 +186,22 @@ export class I128 implements StructClass {
         throw new Error(`object at is not a I128 object`)
       }
 
-      return I128.fromBcs(fromB64(data.bcs.bcsBytes))
+      return I128.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return I128.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<I128> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching I128 object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isI128(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<I128> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isI128(res.type)) {
       throw new Error(`object at id ${id} is not a I128 object`)
     }
 
-    return I128.fromSuiObjectData(res.data)
+    return I128.fromBcs(res.bcsBytes)
   }
 }

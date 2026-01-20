@@ -1,22 +1,29 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { Option } from '../../move-stdlib/option/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import { Option } from '../../std/option/structs'
 
 /* ============================== PCREntry =============================== */
 
@@ -32,17 +39,29 @@ export interface PCREntryFields {
 
 export type PCREntryReified = Reified<PCREntry, PCREntryFields>
 
+export type PCREntryJSONField = {
+  index: number
+  value: number[]
+}
+
+export type PCREntryJSON = {
+  $typeName: typeof PCREntry.$typeName
+  $typeArgs: []
+} & PCREntryJSONField
+
+/** Represents a PCR entry with an index and value. */
 export class PCREntry implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::nitro_attestation::PCREntry`
+  static readonly $typeName: `0x2::nitro_attestation::PCREntry` =
+    `0x2::nitro_attestation::PCREntry` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PCREntry.$typeName
+  readonly $typeName: typeof PCREntry.$typeName = PCREntry.$typeName
   readonly $fullTypeName: `0x2::nitro_attestation::PCREntry`
   readonly $typeArgs: []
-  readonly $isPhantom = PCREntry.$isPhantom
+  readonly $isPhantom: typeof PCREntry.$isPhantom = PCREntry.$isPhantom
 
   readonly index: ToField<'u8'>
   readonly value: ToField<Vector<'u8'>>
@@ -50,7 +69,7 @@ export class PCREntry implements StructClass {
   private constructor(typeArgs: [], fields: PCREntryFields) {
     this.$fullTypeName = composeSuiType(
       PCREntry.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::nitro_attestation::PCREntry`
     this.$typeArgs = typeArgs
 
@@ -62,7 +81,10 @@ export class PCREntry implements StructClass {
     const reifiedBcs = PCREntry.bcs
     return {
       typeName: PCREntry.$typeName,
-      fullTypeName: composeSuiType(PCREntry.$typeName, ...[]) as `0x2::nitro_attestation::PCREntry`,
+      fullTypeName: composeSuiType(
+        PCREntry.$typeName,
+        ...[],
+      ) as `0x2::nitro_attestation::PCREntry`,
       typeArgs: [] as [],
       isPhantom: PCREntry.$isPhantom,
       reifiedTypeArgs: [],
@@ -74,7 +96,7 @@ export class PCREntry implements StructClass {
       fromJSON: (json: Record<string, any>) => PCREntry.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PCREntry.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PCREntry.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PCREntry.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PCREntry.fetch(client, id),
       new: (fields: PCREntryFields) => {
         return new PCREntry([], fields)
       },
@@ -82,14 +104,15 @@ export class PCREntry implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PCREntryReified {
     return PCREntry.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PCREntry>> {
     return phantom(PCREntry.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PCREntry>> {
     return PCREntry.phantom()
   }
 
@@ -112,7 +135,7 @@ export class PCREntry implements StructClass {
   static fromFields(fields: Record<string, any>): PCREntry {
     return PCREntry.reified().new({
       index: decodeFromFields('u8', fields.index),
-      value: decodeFromFields(reified.vector('u8'), fields.value),
+      value: decodeFromFields(vector('u8'), fields.value),
     })
   }
 
@@ -123,7 +146,7 @@ export class PCREntry implements StructClass {
 
     return PCREntry.reified().new({
       index: decodeFromFieldsWithTypes('u8', item.fields.index),
-      value: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.value),
+      value: decodeFromFieldsWithTypes(vector('u8'), item.fields.value),
     })
   }
 
@@ -131,27 +154,29 @@ export class PCREntry implements StructClass {
     return PCREntry.fromFields(PCREntry.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PCREntryJSONField {
     return {
       index: this.index,
       value: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.value),
     }
   }
 
-  toJSON() {
+  toJSON(): PCREntryJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): PCREntry {
     return PCREntry.reified().new({
       index: decodeFromJSONField('u8', field.index),
-      value: decodeFromJSONField(reified.vector('u8'), field.value),
+      value: decodeFromJSONField(vector('u8'), field.value),
     })
   }
 
   static fromJSON(json: Record<string, any>): PCREntry {
     if (json.$typeName !== PCREntry.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PCREntry json object: expected '${PCREntry.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PCREntry.fromJSONField(json)
@@ -173,26 +198,23 @@ export class PCREntry implements StructClass {
         throw new Error(`object at is not a PCREntry object`)
       }
 
-      return PCREntry.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PCREntry.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PCREntry.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PCREntry> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PCREntry object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPCREntry(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PCREntry> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPCREntry(res.type)) {
       throw new Error(`object at id ${id} is not a PCREntry object`)
     }
 
-    return PCREntry.fromSuiObjectData(res.data)
+    return PCREntry.fromBcs(res.bcsBytes)
   }
 }
 
@@ -204,12 +226,25 @@ export function isNitroAttestationDocument(type: string): boolean {
 }
 
 export interface NitroAttestationDocumentFields {
+  /** Issuing Nitro hypervisor module ID. */
   moduleId: ToField<Vector<'u8'>>
+  /** UTC time when document was created, in milliseconds since UNIX epoch. */
   timestamp: ToField<'u64'>
+  /** The digest function used for calculating the register values. */
   digest: ToField<Vector<'u8'>>
+  /**
+   * A list of PCREntry containing the index and the PCR bytes.
+   * <https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html#where>.
+   */
   pcrs: ToField<Vector<PCREntry>>
+  /** An optional DER-encoded key the attestation, consumer can use to encrypt data with. */
   publicKey: ToField<Option<Vector<'u8'>>>
+  /** Additional signed user data, defined by protocol. */
   userData: ToField<Option<Vector<'u8'>>>
+  /**
+   * An optional cryptographic nonce provided by the attestation consumer as a proof of
+   * authenticity.
+   */
   nonce: ToField<Option<Vector<'u8'>>>
 }
 
@@ -218,30 +253,61 @@ export type NitroAttestationDocumentReified = Reified<
   NitroAttestationDocumentFields
 >
 
+export type NitroAttestationDocumentJSONField = {
+  moduleId: number[]
+  timestamp: string
+  digest: number[]
+  pcrs: ToJSON<PCREntry>[]
+  publicKey: number[] | null
+  userData: number[] | null
+  nonce: number[] | null
+}
+
+export type NitroAttestationDocumentJSON = {
+  $typeName: typeof NitroAttestationDocument.$typeName
+  $typeArgs: []
+} & NitroAttestationDocumentJSONField
+
+/** Nitro Attestation Document defined for AWS. */
 export class NitroAttestationDocument implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::nitro_attestation::NitroAttestationDocument`
+  static readonly $typeName: `0x2::nitro_attestation::NitroAttestationDocument` =
+    `0x2::nitro_attestation::NitroAttestationDocument` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = NitroAttestationDocument.$typeName
+  readonly $typeName: typeof NitroAttestationDocument.$typeName = NitroAttestationDocument.$typeName
   readonly $fullTypeName: `0x2::nitro_attestation::NitroAttestationDocument`
   readonly $typeArgs: []
-  readonly $isPhantom = NitroAttestationDocument.$isPhantom
+  readonly $isPhantom: typeof NitroAttestationDocument.$isPhantom =
+    NitroAttestationDocument.$isPhantom
 
+  /** Issuing Nitro hypervisor module ID. */
   readonly moduleId: ToField<Vector<'u8'>>
+  /** UTC time when document was created, in milliseconds since UNIX epoch. */
   readonly timestamp: ToField<'u64'>
+  /** The digest function used for calculating the register values. */
   readonly digest: ToField<Vector<'u8'>>
+  /**
+   * A list of PCREntry containing the index and the PCR bytes.
+   * <https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html#where>.
+   */
   readonly pcrs: ToField<Vector<PCREntry>>
+  /** An optional DER-encoded key the attestation, consumer can use to encrypt data with. */
   readonly publicKey: ToField<Option<Vector<'u8'>>>
+  /** Additional signed user data, defined by protocol. */
   readonly userData: ToField<Option<Vector<'u8'>>>
+  /**
+   * An optional cryptographic nonce provided by the attestation consumer as a proof of
+   * authenticity.
+   */
   readonly nonce: ToField<Option<Vector<'u8'>>>
 
   private constructor(typeArgs: [], fields: NitroAttestationDocumentFields) {
     this.$fullTypeName = composeSuiType(
       NitroAttestationDocument.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::nitro_attestation::NitroAttestationDocument`
     this.$typeArgs = typeArgs
 
@@ -260,7 +326,7 @@ export class NitroAttestationDocument implements StructClass {
       typeName: NitroAttestationDocument.$typeName,
       fullTypeName: composeSuiType(
         NitroAttestationDocument.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::nitro_attestation::NitroAttestationDocument`,
       typeArgs: [] as [],
       isPhantom: NitroAttestationDocument.$isPhantom,
@@ -276,7 +342,8 @@ export class NitroAttestationDocument implements StructClass {
         NitroAttestationDocument.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         NitroAttestationDocument.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => NitroAttestationDocument.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        NitroAttestationDocument.fetch(client, id),
       new: (fields: NitroAttestationDocumentFields) => {
         return new NitroAttestationDocument([], fields)
       },
@@ -284,14 +351,15 @@ export class NitroAttestationDocument implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): NitroAttestationDocumentReified {
     return NitroAttestationDocument.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<NitroAttestationDocument>> {
     return phantom(NitroAttestationDocument.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<NitroAttestationDocument>> {
     return NitroAttestationDocument.phantom()
   }
 
@@ -318,13 +386,13 @@ export class NitroAttestationDocument implements StructClass {
 
   static fromFields(fields: Record<string, any>): NitroAttestationDocument {
     return NitroAttestationDocument.reified().new({
-      moduleId: decodeFromFields(reified.vector('u8'), fields.module_id),
+      moduleId: decodeFromFields(vector('u8'), fields.module_id),
       timestamp: decodeFromFields('u64', fields.timestamp),
-      digest: decodeFromFields(reified.vector('u8'), fields.digest),
-      pcrs: decodeFromFields(reified.vector(PCREntry.reified()), fields.pcrs),
-      publicKey: decodeFromFields(Option.reified(reified.vector('u8')), fields.public_key),
-      userData: decodeFromFields(Option.reified(reified.vector('u8')), fields.user_data),
-      nonce: decodeFromFields(Option.reified(reified.vector('u8')), fields.nonce),
+      digest: decodeFromFields(vector('u8'), fields.digest),
+      pcrs: decodeFromFields(vector(PCREntry.reified()), fields.pcrs),
+      publicKey: decodeFromFields(Option.reified(vector('u8')), fields.public_key),
+      userData: decodeFromFields(Option.reified(vector('u8')), fields.user_data),
+      nonce: decodeFromFields(Option.reified(vector('u8')), fields.nonce),
     })
   }
 
@@ -334,19 +402,13 @@ export class NitroAttestationDocument implements StructClass {
     }
 
     return NitroAttestationDocument.reified().new({
-      moduleId: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.module_id),
+      moduleId: decodeFromFieldsWithTypes(vector('u8'), item.fields.module_id),
       timestamp: decodeFromFieldsWithTypes('u64', item.fields.timestamp),
-      digest: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.digest),
-      pcrs: decodeFromFieldsWithTypes(reified.vector(PCREntry.reified()), item.fields.pcrs),
-      publicKey: decodeFromFieldsWithTypes(
-        Option.reified(reified.vector('u8')),
-        item.fields.public_key
-      ),
-      userData: decodeFromFieldsWithTypes(
-        Option.reified(reified.vector('u8')),
-        item.fields.user_data
-      ),
-      nonce: decodeFromFieldsWithTypes(Option.reified(reified.vector('u8')), item.fields.nonce),
+      digest: decodeFromFieldsWithTypes(vector('u8'), item.fields.digest),
+      pcrs: decodeFromFieldsWithTypes(vector(PCREntry.reified()), item.fields.pcrs),
+      publicKey: decodeFromFieldsWithTypes(Option.reified(vector('u8')), item.fields.public_key),
+      userData: decodeFromFieldsWithTypes(Option.reified(vector('u8')), item.fields.user_data),
+      nonce: decodeFromFieldsWithTypes(Option.reified(vector('u8')), item.fields.nonce),
     })
   }
 
@@ -354,7 +416,7 @@ export class NitroAttestationDocument implements StructClass {
     return NitroAttestationDocument.fromFields(NitroAttestationDocument.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): NitroAttestationDocumentJSONField {
     return {
       moduleId: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.moduleId),
       timestamp: this.timestamp.toString(),
@@ -362,32 +424,34 @@ export class NitroAttestationDocument implements StructClass {
       pcrs: fieldToJSON<Vector<PCREntry>>(`vector<${PCREntry.$typeName}>`, this.pcrs),
       publicKey: fieldToJSON<Option<Vector<'u8'>>>(
         `${Option.$typeName}<vector<u8>>`,
-        this.publicKey
+        this.publicKey,
       ),
       userData: fieldToJSON<Option<Vector<'u8'>>>(`${Option.$typeName}<vector<u8>>`, this.userData),
       nonce: fieldToJSON<Option<Vector<'u8'>>>(`${Option.$typeName}<vector<u8>>`, this.nonce),
     }
   }
 
-  toJSON() {
+  toJSON(): NitroAttestationDocumentJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): NitroAttestationDocument {
     return NitroAttestationDocument.reified().new({
-      moduleId: decodeFromJSONField(reified.vector('u8'), field.moduleId),
+      moduleId: decodeFromJSONField(vector('u8'), field.moduleId),
       timestamp: decodeFromJSONField('u64', field.timestamp),
-      digest: decodeFromJSONField(reified.vector('u8'), field.digest),
-      pcrs: decodeFromJSONField(reified.vector(PCREntry.reified()), field.pcrs),
-      publicKey: decodeFromJSONField(Option.reified(reified.vector('u8')), field.publicKey),
-      userData: decodeFromJSONField(Option.reified(reified.vector('u8')), field.userData),
-      nonce: decodeFromJSONField(Option.reified(reified.vector('u8')), field.nonce),
+      digest: decodeFromJSONField(vector('u8'), field.digest),
+      pcrs: decodeFromJSONField(vector(PCREntry.reified()), field.pcrs),
+      publicKey: decodeFromJSONField(Option.reified(vector('u8')), field.publicKey),
+      userData: decodeFromJSONField(Option.reified(vector('u8')), field.userData),
+      nonce: decodeFromJSONField(Option.reified(vector('u8')), field.nonce),
     })
   }
 
   static fromJSON(json: Record<string, any>): NitroAttestationDocument {
     if (json.$typeName !== NitroAttestationDocument.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a NitroAttestationDocument json object: expected '${NitroAttestationDocument.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return NitroAttestationDocument.fromJSONField(json)
@@ -399,7 +463,7 @@ export class NitroAttestationDocument implements StructClass {
     }
     if (!isNitroAttestationDocument(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a NitroAttestationDocument object`
+        `object at ${(content.fields as any).id} is not a NitroAttestationDocument object`,
       )
     }
     return NitroAttestationDocument.fromFieldsWithTypes(content)
@@ -411,30 +475,22 @@ export class NitroAttestationDocument implements StructClass {
         throw new Error(`object at is not a NitroAttestationDocument object`)
       }
 
-      return NitroAttestationDocument.fromBcs(fromB64(data.bcs.bcsBytes))
+      return NitroAttestationDocument.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return NitroAttestationDocument.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<NitroAttestationDocument> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching NitroAttestationDocument object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isNitroAttestationDocument(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<NitroAttestationDocument> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isNitroAttestationDocument(res.type)) {
       throw new Error(`object at id ${id} is not a NitroAttestationDocument object`)
     }
 
-    return NitroAttestationDocument.fromSuiObjectData(res.data)
+    return NitroAttestationDocument.fromBcs(res.bcsBytes)
   }
 }

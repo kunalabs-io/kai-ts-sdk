@@ -141,14 +141,6 @@ export function filterByLiquidationAndDeleverageNeeded(
     }
 
     if (includeDeleveragePositions && marginLevel.lt(config.deleverageMargin)) {
-      if (assetValue?.lt(minAssetValue)) {
-        logger.info(
-          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping deleverage`
-        )
-        deleverageSkippedCount++
-        continue
-      }
-
       const hasNothingToDeleverage =
         position.lpLiquidity === 0n &&
         ((position.colX.int === 0n && position.colY.int === 0n) ||
@@ -159,6 +151,14 @@ export function filterByLiquidationAndDeleverageNeeded(
         logger.info(
           `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()} and above liquidation margin ${config.liqMargin.toDP(6).toString()}, but there's nothing to deleverage`
         )
+        continue
+      }
+
+      if (assetValue?.lt(minAssetValue)) {
+        logger.info(
+          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping deleverage`
+        )
+        deleverageSkippedCount++
         continue
       }
 

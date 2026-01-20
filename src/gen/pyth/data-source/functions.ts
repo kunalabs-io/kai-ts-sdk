@@ -1,10 +1,18 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function newDataSourceRegistry(tx: Transaction, parentId: TransactionObjectInput) {
+export function newDataSourceRegistry(
+  tx: Transaction,
+  parentId: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::new_data_source_registry`,
+    target: `${getPublishedAt('pyth')}::data_source::new_data_source_registry`,
     arguments: [obj(tx, parentId)],
   })
 }
@@ -14,16 +22,19 @@ export interface AddArgs {
   dataSource: TransactionObjectInput
 }
 
-export function add(tx: Transaction, args: AddArgs) {
+export function add(tx: Transaction, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::add`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.dataSource)],
+    target: `${getPublishedAt('pyth')}::data_source::add`,
+    arguments: [
+      obj(tx, args.parentId),
+      obj(tx, args.dataSource),
+    ],
   })
 }
 
-export function empty(tx: Transaction, parentId: TransactionObjectInput) {
+export function empty(tx: Transaction, parentId: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::empty`,
+    target: `${getPublishedAt('pyth')}::data_source::empty`,
     arguments: [obj(tx, parentId)],
   })
 }
@@ -33,10 +44,13 @@ export interface ContainsArgs {
   dataSource: TransactionObjectInput
 }
 
-export function contains(tx: Transaction, args: ContainsArgs) {
+export function contains(tx: Transaction, args: ContainsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::contains`,
-    arguments: [obj(tx, args.parentId), obj(tx, args.dataSource)],
+    target: `${getPublishedAt('pyth')}::data_source::contains`,
+    arguments: [
+      obj(tx, args.parentId),
+      obj(tx, args.dataSource),
+    ],
   })
 }
 
@@ -45,23 +59,32 @@ export interface NewArgs {
   emitterAddress: TransactionObjectInput
 }
 
-export function new_(tx: Transaction, args: NewArgs) {
+export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::new`,
-    arguments: [pure(tx, args.emitterChain, `u64`), obj(tx, args.emitterAddress)],
+    target: `${getPublishedAt('pyth')}::data_source::new`,
+    arguments: [
+      pure(tx, args.emitterChain, `u64`),
+      obj(tx, args.emitterAddress),
+    ],
   })
 }
 
-export function emitterChain(tx: Transaction, dataSource: TransactionObjectInput) {
+export function emitterChain(
+  tx: Transaction,
+  dataSource: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::emitter_chain`,
+    target: `${getPublishedAt('pyth')}::data_source::emitter_chain`,
     arguments: [obj(tx, dataSource)],
   })
 }
 
-export function emitterAddress(tx: Transaction, dataSource: TransactionObjectInput) {
+export function emitterAddress(
+  tx: Transaction,
+  dataSource: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::data_source::emitter_address`,
+    target: `${getPublishedAt('pyth')}::data_source::emitter_address`,
     arguments: [obj(tx, dataSource)],
   })
 }

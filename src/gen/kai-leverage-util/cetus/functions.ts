@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface CalcMaxAddLiquidityAmountsArgs {
   position: TransactionObjectInput
@@ -12,10 +17,10 @@ export interface CalcMaxAddLiquidityAmountsArgs {
 export function calcMaxAddLiquidityAmounts(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalcMaxAddLiquidityAmountsArgs
-) {
+  args: CalcMaxAddLiquidityAmountsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::calc_max_add_liquidity_amounts`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::calc_max_add_liquidity_amounts`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -42,10 +47,10 @@ export interface RebalanceAddLiquidityArgs {
 export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RebalanceAddLiquidityArgs
-) {
+  args: RebalanceAddLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -78,10 +83,10 @@ export interface OwnerAddLiquidityArgs {
 export function ownerAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: OwnerAddLiquidityArgs
-) {
+  args: OwnerAddLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::owner_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::owner_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -101,10 +106,10 @@ export function ownerAddLiquidity(
 export function swapPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
-  receipt: TransactionObjectInput
-) {
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::swap_pay_amount`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::swap_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -120,9 +125,14 @@ export interface FlashSwapArgs {
   clock: TransactionObjectInput
 }
 
-export function flashSwap(tx: Transaction, typeArgs: [string, string], args: FlashSwapArgs) {
+/** Cetus flash swap that doesn't abort when amount is 0 */
+export function flashSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FlashSwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::flash_swap`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -144,13 +154,14 @@ export interface RepayFlashSwapArgs {
   receipt: TransactionObjectInput
 }
 
+/** Flash swap repayment for `WrappedFlashSwapReceipt` */
 export function repayFlashSwap(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RepayFlashSwapArgs
-) {
+  args: RepayFlashSwapArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::repay_flash_swap`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::repay_flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -170,12 +181,15 @@ export interface CreateRebalanceReceiptArgs {
 export function createRebalanceReceipt(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CreateRebalanceReceiptArgs
-) {
+  args: CreateRebalanceReceiptArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::create_rebalance_receipt`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::create_rebalance_receipt`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.position), obj(tx, args.pool)],
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.pool),
+    ],
   })
 }
 
@@ -193,10 +207,12 @@ export interface RebalanceCollectLpFeesForBatchSellingArgs {
 export function rebalanceCollectLpFeesForBatchSelling(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RebalanceCollectLpFeesForBatchSellingArgs
-) {
+  args: RebalanceCollectLpFeesForBatchSellingArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_collect_lp_fees_for_batch_selling`,
+    target: `${
+      getPublishedAt('kai-leverage-util')
+    }::cetus::rebalance_collect_lp_fees_for_batch_selling`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -229,10 +245,12 @@ export interface RebalanceCollectRewardForBatchSellingArgs {
 export function rebalanceCollectRewardForBatchSelling(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: RebalanceCollectRewardForBatchSellingArgs
-) {
+  args: RebalanceCollectRewardForBatchSellingArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_collect_reward_for_batch_selling`,
+    target: `${
+      getPublishedAt('kai-leverage-util')
+    }::cetus::rebalance_collect_reward_for_batch_selling`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -259,12 +277,15 @@ export interface RebalanceClaimBatchSwapToXArgs {
 export function rebalanceClaimBatchSwapToX(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: RebalanceClaimBatchSwapToXArgs
-) {
+  args: RebalanceClaimBatchSwapToXArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_claim_batch_swap_to_x`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_claim_batch_swap_to_x`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
+    arguments: [
+      obj(tx, args.receipt),
+      obj(tx, args.batchSwap),
+    ],
   })
 }
 
@@ -276,12 +297,15 @@ export interface RebalanceClaimBatchSwapToYArgs {
 export function rebalanceClaimBatchSwapToY(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: RebalanceClaimBatchSwapToYArgs
-) {
+  args: RebalanceClaimBatchSwapToYArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_claim_batch_swap_to_y`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_claim_batch_swap_to_y`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.receipt), obj(tx, args.batchSwap)],
+    arguments: [
+      obj(tx, args.receipt),
+      obj(tx, args.batchSwap),
+    ],
   })
 }
 
@@ -300,10 +324,10 @@ export interface RebalanceFinalizeAddLiquidityArgs {
 export function rebalanceFinalizeAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RebalanceFinalizeAddLiquidityArgs
-) {
+  args: RebalanceFinalizeAddLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cetus::rebalance_finalize_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_finalize_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

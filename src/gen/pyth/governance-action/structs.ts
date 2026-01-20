@@ -1,25 +1,35 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== GovernanceAction =============================== */
 
 export function isGovernanceAction(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::governance_action::GovernanceAction`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'governance_action::GovernanceAction')
+    }::governance_action::GovernanceAction`
 }
 
 export interface GovernanceActionFields {
@@ -28,25 +38,36 @@ export interface GovernanceActionFields {
 
 export type GovernanceActionReified = Reified<GovernanceAction, GovernanceActionFields>
 
+export type GovernanceActionJSONField = {
+  value: number
+}
+
+export type GovernanceActionJSON = {
+  $typeName: typeof GovernanceAction.$typeName
+  $typeArgs: []
+} & GovernanceActionJSONField
+
 export class GovernanceAction implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::governance_action::GovernanceAction`
+  static readonly $typeName: `${string}::governance_action::GovernanceAction` = `${
+    getTypeOrigin('pyth', 'governance_action::GovernanceAction')
+  }::governance_action::GovernanceAction` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GovernanceAction.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::governance_action::GovernanceAction`
+  readonly $typeName: typeof GovernanceAction.$typeName = GovernanceAction.$typeName
+  readonly $fullTypeName: `${string}::governance_action::GovernanceAction`
   readonly $typeArgs: []
-  readonly $isPhantom = GovernanceAction.$isPhantom
+  readonly $isPhantom: typeof GovernanceAction.$isPhantom = GovernanceAction.$isPhantom
 
   readonly value: ToField<'u8'>
 
   private constructor(typeArgs: [], fields: GovernanceActionFields) {
     this.$fullTypeName = composeSuiType(
       GovernanceAction.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::governance_action::GovernanceAction`
+      ...typeArgs,
+    ) as `${string}::governance_action::GovernanceAction`
     this.$typeArgs = typeArgs
 
     this.value = fields.value
@@ -58,8 +79,8 @@ export class GovernanceAction implements StructClass {
       typeName: GovernanceAction.$typeName,
       fullTypeName: composeSuiType(
         GovernanceAction.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::governance_action::GovernanceAction`,
+        ...[],
+      ) as `${string}::governance_action::GovernanceAction`,
       typeArgs: [] as [],
       isPhantom: GovernanceAction.$isPhantom,
       reifiedTypeArgs: [],
@@ -71,7 +92,7 @@ export class GovernanceAction implements StructClass {
       fromJSON: (json: Record<string, any>) => GovernanceAction.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceAction.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceAction.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GovernanceAction.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GovernanceAction.fetch(client, id),
       new: (fields: GovernanceActionFields) => {
         return new GovernanceAction([], fields)
       },
@@ -79,14 +100,15 @@ export class GovernanceAction implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GovernanceActionReified {
     return GovernanceAction.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GovernanceAction>> {
     return phantom(GovernanceAction.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GovernanceAction>> {
     return GovernanceAction.phantom()
   }
 
@@ -106,7 +128,9 @@ export class GovernanceAction implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): GovernanceAction {
-    return GovernanceAction.reified().new({ value: decodeFromFields('u8', fields.value) })
+    return GovernanceAction.reified().new({
+      value: decodeFromFields('u8', fields.value),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): GovernanceAction {
@@ -123,23 +147,27 @@ export class GovernanceAction implements StructClass {
     return GovernanceAction.fromFields(GovernanceAction.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GovernanceActionJSONField {
     return {
       value: this.value,
     }
   }
 
-  toJSON() {
+  toJSON(): GovernanceActionJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): GovernanceAction {
-    return GovernanceAction.reified().new({ value: decodeFromJSONField('u8', field.value) })
+    return GovernanceAction.reified().new({
+      value: decodeFromJSONField('u8', field.value),
+    })
   }
 
   static fromJSON(json: Record<string, any>): GovernanceAction {
     if (json.$typeName !== GovernanceAction.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GovernanceAction json object: expected '${GovernanceAction.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GovernanceAction.fromJSONField(json)
@@ -161,25 +189,22 @@ export class GovernanceAction implements StructClass {
         throw new Error(`object at is not a GovernanceAction object`)
       }
 
-      return GovernanceAction.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GovernanceAction.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GovernanceAction.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GovernanceAction> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GovernanceAction object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGovernanceAction(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceAction> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGovernanceAction(res.type)) {
       throw new Error(`object at id ${id} is not a GovernanceAction object`)
     }
 
-    return GovernanceAction.fromSuiObjectData(res.data)
+    return GovernanceAction.fromBcs(res.bcsBytes)
   }
 }

@@ -1,25 +1,32 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== I32 =============================== */
 
 export function isI32(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::i32::I32`
+  return type === `${getTypeOrigin('integer-mate', 'i32::I32')}::i32::I32`
 }
 
 export interface I32Fields {
@@ -28,22 +35,36 @@ export interface I32Fields {
 
 export type I32Reified = Reified<I32, I32Fields>
 
+export type I32JSONField = {
+  bits: number
+}
+
+export type I32JSON = {
+  $typeName: typeof I32.$typeName
+  $typeArgs: []
+} & I32JSONField
+
 export class I32 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::i32::I32`
+  static readonly $typeName: `${string}::i32::I32` = `${
+    getTypeOrigin('integer-mate', 'i32::I32')
+  }::i32::I32` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = I32.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::i32::I32`
+  readonly $typeName: typeof I32.$typeName = I32.$typeName
+  readonly $fullTypeName: `${string}::i32::I32`
   readonly $typeArgs: []
-  readonly $isPhantom = I32.$isPhantom
+  readonly $isPhantom: typeof I32.$isPhantom = I32.$isPhantom
 
   readonly bits: ToField<'u32'>
 
   private constructor(typeArgs: [], fields: I32Fields) {
-    this.$fullTypeName = composeSuiType(I32.$typeName, ...typeArgs) as `${typeof PKG_V1}::i32::I32`
+    this.$fullTypeName = composeSuiType(
+      I32.$typeName,
+      ...typeArgs,
+    ) as `${string}::i32::I32`
     this.$typeArgs = typeArgs
 
     this.bits = fields.bits
@@ -53,7 +74,10 @@ export class I32 implements StructClass {
     const reifiedBcs = I32.bcs
     return {
       typeName: I32.$typeName,
-      fullTypeName: composeSuiType(I32.$typeName, ...[]) as `${typeof PKG_V1}::i32::I32`,
+      fullTypeName: composeSuiType(
+        I32.$typeName,
+        ...[],
+      ) as `${string}::i32::I32`,
       typeArgs: [] as [],
       isPhantom: I32.$isPhantom,
       reifiedTypeArgs: [],
@@ -65,7 +89,7 @@ export class I32 implements StructClass {
       fromJSON: (json: Record<string, any>) => I32.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => I32.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => I32.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => I32.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => I32.fetch(client, id),
       new: (fields: I32Fields) => {
         return new I32([], fields)
       },
@@ -73,14 +97,15 @@ export class I32 implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): I32Reified {
     return I32.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<I32>> {
     return phantom(I32.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<I32>> {
     return I32.phantom()
   }
 
@@ -100,7 +125,9 @@ export class I32 implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): I32 {
-    return I32.reified().new({ bits: decodeFromFields('u32', fields.bits) })
+    return I32.reified().new({
+      bits: decodeFromFields('u32', fields.bits),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): I32 {
@@ -108,30 +135,36 @@ export class I32 implements StructClass {
       throw new Error('not a I32 type')
     }
 
-    return I32.reified().new({ bits: decodeFromFieldsWithTypes('u32', item.fields.bits) })
+    return I32.reified().new({
+      bits: decodeFromFieldsWithTypes('u32', item.fields.bits),
+    })
   }
 
   static fromBcs(data: Uint8Array): I32 {
     return I32.fromFields(I32.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): I32JSONField {
     return {
       bits: this.bits,
     }
   }
 
-  toJSON() {
+  toJSON(): I32JSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): I32 {
-    return I32.reified().new({ bits: decodeFromJSONField('u32', field.bits) })
+    return I32.reified().new({
+      bits: decodeFromJSONField('u32', field.bits),
+    })
   }
 
   static fromJSON(json: Record<string, any>): I32 {
     if (json.$typeName !== I32.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a I32 json object: expected '${I32.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return I32.fromJSONField(json)
@@ -153,25 +186,22 @@ export class I32 implements StructClass {
         throw new Error(`object at is not a I32 object`)
       }
 
-      return I32.fromBcs(fromB64(data.bcs.bcsBytes))
+      return I32.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return I32.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<I32> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching I32 object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isI32(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<I32> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isI32(res.type)) {
       throw new Error(`object at id ${id} is not a I32 object`)
     }
 
-    return I32.fromSuiObjectData(res.data)
+    return I32.fromBcs(res.bcsBytes)
   }
 }

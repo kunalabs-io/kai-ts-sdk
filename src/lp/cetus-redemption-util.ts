@@ -9,9 +9,9 @@ import { PositionConfigInfo } from './config'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { TypeArgument } from '../gen/_framework/reified'
 
-import { PUBLISHED_AT as CETUS_PUBLISHED_AT } from '../gen/cetus-clmm'
-import { PUBLISHED_AT as KAI_LEVERAGE_PUBLISHED_AT } from '../gen/kai-leverage'
 import { CETUS } from '../coin-info'
+import { isAttackedPosition } from 'gen/cetus-clmm/pool/functions'
+import { destructExploitedPositionAndReturnLp } from 'gen/kai-leverage/cetus/functions'
 
 const AFFECTED_CONFIG_IDS = [
   '0x2d52e5fe8af24f2c750250fca6ce5d595d22287f12d29c6ffbae490f5650478d',
@@ -35,13 +35,9 @@ export async function positionIsCut(
   const tx = new Transaction()
 
   const typeArguments = [position.X.typeName, position.Y.typeName] as [string, string]
-  tx.moveCall({
-    target: `${CETUS_PUBLISHED_AT}::pool::is_attacked_position`,
-    typeArguments,
-    arguments: [
-      tx.object(position.configInfo.poolObjectId),
-      tx.pure.id(position.data.lpPosition.id),
-    ],
+  isAttackedPosition(tx, typeArguments, {
+    pool: position.configInfo.poolObjectId,
+    positionId: position.data.lpPosition.id,
   })
 
   const res = await client.devInspectTransactionBlock({
@@ -104,15 +100,11 @@ export function destructCetusPositionAndTransferLp(
   positionCapId: string,
   sender: string
 ) {
-  const lp = tx.moveCall({
-    target: `${KAI_LEVERAGE_PUBLISHED_AT}::cetus::destruct_exploited_position_and_return_lp`,
-    typeArguments: [position.X.typeName, position.Y.typeName],
-    arguments: [
-      tx.object(position.id),
-      tx.object(position.configInfo.configId),
-      tx.object(positionCapId),
-      tx.object(position.configInfo.poolObjectId),
-    ],
+  const lp = destructExploitedPositionAndReturnLp(tx, [position.X.typeName, position.Y.typeName], {
+    position: position.id,
+    config: position.configInfo.configId,
+    cap: positionCapId,
+    cetusPool: position.configInfo.poolObjectId,
   })
   tx.transferObjects([lp], sender)
 }

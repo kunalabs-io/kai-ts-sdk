@@ -1,28 +1,43 @@
-import * as reified from '../../_framework/reified'
+/**
+ * Piecewise-linear function implementation for modeling interest rate curves.
+ *
+ * This module provides utilities for creating and evaluating piecewise-linear functions,
+ * commonly used in DeFi protocols for modeling interest rates that change based on
+ * utilization levels or other parameters.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Section =============================== */
 
 export function isSection(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::piecewise::Section`
+  return type === `${getTypeOrigin('kai-leverage', 'piecewise::Section')}::piecewise::Section`
 }
 
 export interface SectionFields {
@@ -32,17 +47,30 @@ export interface SectionFields {
 
 export type SectionReified = Reified<Section, SectionFields>
 
+export type SectionJSONField = {
+  end: string
+  endVal: string
+}
+
+export type SectionJSON = {
+  $typeName: typeof Section.$typeName
+  $typeArgs: []
+} & SectionJSONField
+
+/** A single piece of a piecewise-linear function. */
 export class Section implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::piecewise::Section`
+  static readonly $typeName: `${string}::piecewise::Section` = `${
+    getTypeOrigin('kai-leverage', 'piecewise::Section')
+  }::piecewise::Section` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Section.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::piecewise::Section`
+  readonly $typeName: typeof Section.$typeName = Section.$typeName
+  readonly $fullTypeName: `${string}::piecewise::Section`
   readonly $typeArgs: []
-  readonly $isPhantom = Section.$isPhantom
+  readonly $isPhantom: typeof Section.$isPhantom = Section.$isPhantom
 
   readonly end: ToField<'u64'>
   readonly endVal: ToField<'u64'>
@@ -50,8 +78,8 @@ export class Section implements StructClass {
   private constructor(typeArgs: [], fields: SectionFields) {
     this.$fullTypeName = composeSuiType(
       Section.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::piecewise::Section`
+      ...typeArgs,
+    ) as `${string}::piecewise::Section`
     this.$typeArgs = typeArgs
 
     this.end = fields.end
@@ -64,8 +92,8 @@ export class Section implements StructClass {
       typeName: Section.$typeName,
       fullTypeName: composeSuiType(
         Section.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::piecewise::Section`,
+        ...[],
+      ) as `${string}::piecewise::Section`,
       typeArgs: [] as [],
       isPhantom: Section.$isPhantom,
       reifiedTypeArgs: [],
@@ -77,7 +105,7 @@ export class Section implements StructClass {
       fromJSON: (json: Record<string, any>) => Section.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Section.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Section.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Section.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Section.fetch(client, id),
       new: (fields: SectionFields) => {
         return new Section([], fields)
       },
@@ -85,14 +113,15 @@ export class Section implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): SectionReified {
     return Section.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Section>> {
     return phantom(Section.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Section>> {
     return Section.phantom()
   }
 
@@ -134,14 +163,14 @@ export class Section implements StructClass {
     return Section.fromFields(Section.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SectionJSONField {
     return {
       end: this.end.toString(),
       endVal: this.endVal.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): SectionJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -154,7 +183,9 @@ export class Section implements StructClass {
 
   static fromJSON(json: Record<string, any>): Section {
     if (json.$typeName !== Section.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Section json object: expected '${Section.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Section.fromJSONField(json)
@@ -176,26 +207,23 @@ export class Section implements StructClass {
         throw new Error(`object at is not a Section object`)
       }
 
-      return Section.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Section.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Section.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Section> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Section object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSection(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Section> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSection(res.type)) {
       throw new Error(`object at id ${id} is not a Section object`)
     }
 
-    return Section.fromSuiObjectData(res.data)
+    return Section.fromBcs(res.bcsBytes)
   }
 }
 
@@ -203,7 +231,7 @@ export class Section implements StructClass {
 
 export function isPiecewise(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::piecewise::Piecewise`
+  return type === `${getTypeOrigin('kai-leverage', 'piecewise::Piecewise')}::piecewise::Piecewise`
 }
 
 export interface PiecewiseFields {
@@ -214,17 +242,31 @@ export interface PiecewiseFields {
 
 export type PiecewiseReified = Reified<Piecewise, PiecewiseFields>
 
+export type PiecewiseJSONField = {
+  start: string
+  startVal: string
+  sections: ToJSON<Section>[]
+}
+
+export type PiecewiseJSON = {
+  $typeName: typeof Piecewise.$typeName
+  $typeArgs: []
+} & PiecewiseJSONField
+
+/** A piecewise-linear function defined by a start point and sections. */
 export class Piecewise implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::piecewise::Piecewise`
+  static readonly $typeName: `${string}::piecewise::Piecewise` = `${
+    getTypeOrigin('kai-leverage', 'piecewise::Piecewise')
+  }::piecewise::Piecewise` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Piecewise.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::piecewise::Piecewise`
+  readonly $typeName: typeof Piecewise.$typeName = Piecewise.$typeName
+  readonly $fullTypeName: `${string}::piecewise::Piecewise`
   readonly $typeArgs: []
-  readonly $isPhantom = Piecewise.$isPhantom
+  readonly $isPhantom: typeof Piecewise.$isPhantom = Piecewise.$isPhantom
 
   readonly start: ToField<'u64'>
   readonly startVal: ToField<'u64'>
@@ -233,8 +275,8 @@ export class Piecewise implements StructClass {
   private constructor(typeArgs: [], fields: PiecewiseFields) {
     this.$fullTypeName = composeSuiType(
       Piecewise.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::piecewise::Piecewise`
+      ...typeArgs,
+    ) as `${string}::piecewise::Piecewise`
     this.$typeArgs = typeArgs
 
     this.start = fields.start
@@ -248,8 +290,8 @@ export class Piecewise implements StructClass {
       typeName: Piecewise.$typeName,
       fullTypeName: composeSuiType(
         Piecewise.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::piecewise::Piecewise`,
+        ...[],
+      ) as `${string}::piecewise::Piecewise`,
       typeArgs: [] as [],
       isPhantom: Piecewise.$isPhantom,
       reifiedTypeArgs: [],
@@ -261,7 +303,7 @@ export class Piecewise implements StructClass {
       fromJSON: (json: Record<string, any>) => Piecewise.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Piecewise.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Piecewise.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Piecewise.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Piecewise.fetch(client, id),
       new: (fields: PiecewiseFields) => {
         return new Piecewise([], fields)
       },
@@ -269,14 +311,15 @@ export class Piecewise implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PiecewiseReified {
     return Piecewise.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Piecewise>> {
     return phantom(Piecewise.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Piecewise>> {
     return Piecewise.phantom()
   }
 
@@ -301,7 +344,7 @@ export class Piecewise implements StructClass {
     return Piecewise.reified().new({
       start: decodeFromFields('u64', fields.start),
       startVal: decodeFromFields('u64', fields.start_val),
-      sections: decodeFromFields(reified.vector(Section.reified()), fields.sections),
+      sections: decodeFromFields(vector(Section.reified()), fields.sections),
     })
   }
 
@@ -313,7 +356,7 @@ export class Piecewise implements StructClass {
     return Piecewise.reified().new({
       start: decodeFromFieldsWithTypes('u64', item.fields.start),
       startVal: decodeFromFieldsWithTypes('u64', item.fields.start_val),
-      sections: decodeFromFieldsWithTypes(reified.vector(Section.reified()), item.fields.sections),
+      sections: decodeFromFieldsWithTypes(vector(Section.reified()), item.fields.sections),
     })
   }
 
@@ -321,7 +364,7 @@ export class Piecewise implements StructClass {
     return Piecewise.fromFields(Piecewise.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PiecewiseJSONField {
     return {
       start: this.start.toString(),
       startVal: this.startVal.toString(),
@@ -329,7 +372,7 @@ export class Piecewise implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PiecewiseJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -337,13 +380,15 @@ export class Piecewise implements StructClass {
     return Piecewise.reified().new({
       start: decodeFromJSONField('u64', field.start),
       startVal: decodeFromJSONField('u64', field.startVal),
-      sections: decodeFromJSONField(reified.vector(Section.reified()), field.sections),
+      sections: decodeFromJSONField(vector(Section.reified()), field.sections),
     })
   }
 
   static fromJSON(json: Record<string, any>): Piecewise {
     if (json.$typeName !== Piecewise.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Piecewise json object: expected '${Piecewise.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Piecewise.fromJSONField(json)
@@ -365,25 +410,22 @@ export class Piecewise implements StructClass {
         throw new Error(`object at is not a Piecewise object`)
       }
 
-      return Piecewise.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Piecewise.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Piecewise.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Piecewise> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Piecewise object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPiecewise(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Piecewise> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPiecewise(res.type)) {
       throw new Error(`object at id ${id} is not a Piecewise object`)
     }
 
-    return Piecewise.fromSuiObjectData(res.data)
+    return Piecewise.fromBcs(res.bcsBytes)
   }
 }

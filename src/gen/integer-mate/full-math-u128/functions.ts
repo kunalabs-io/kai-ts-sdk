@@ -1,6 +1,6 @@
-import { PUBLISHED_AT } from '..'
+import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { pure } from '../../_framework/util'
-import { Transaction, TransactionArgument } from '@mysten/sui/transactions'
 
 export interface MulDivFloorArgs {
   num1: bigint | TransactionArgument
@@ -8,9 +8,9 @@ export interface MulDivFloorArgs {
   denom: bigint | TransactionArgument
 }
 
-export function mulDivFloor(tx: Transaction, args: MulDivFloorArgs) {
+export function mulDivFloor(tx: Transaction, args: MulDivFloorArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_div_floor`,
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::mul_div_floor`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -25,9 +25,9 @@ export interface MulDivRoundArgs {
   denom: bigint | TransactionArgument
 }
 
-export function mulDivRound(tx: Transaction, args: MulDivRoundArgs) {
+export function mulDivRound(tx: Transaction, args: MulDivRoundArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_div_round`,
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::mul_div_round`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -42,9 +42,9 @@ export interface MulDivCeilArgs {
   denom: bigint | TransactionArgument
 }
 
-export function mulDivCeil(tx: Transaction, args: MulDivCeilArgs) {
+export function mulDivCeil(tx: Transaction, args: MulDivCeilArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_div_ceil`,
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::mul_div_ceil`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -59,9 +59,9 @@ export interface MulShrArgs {
   shift: number | TransactionArgument
 }
 
-export function mulShr(tx: Transaction, args: MulShrArgs) {
+export function mulShr(tx: Transaction, args: MulShrArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_shr`,
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::mul_shr`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -76,9 +76,10 @@ export interface MulShlArgs {
   shift: number | TransactionArgument
 }
 
-export function mulShl(tx: Transaction, args: MulShlArgs) {
+/** @deprecated This function converts num1 and num2 to u256, multiplies them, then left-shifts the result by the specified number of bits, and finally coerces the result into u128. The left shift does not perform overflow checks, so it is recommended not to use this function to avoid unexpected results. */
+export function mulShl(tx: Transaction, args: MulShlArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::mul_shl`,
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::mul_shl`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -92,9 +93,12 @@ export interface FullMulArgs {
   num2: bigint | TransactionArgument
 }
 
-export function fullMul(tx: Transaction, args: FullMulArgs) {
+export function fullMul(tx: Transaction, args: FullMulArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::full_math_u128::full_mul`,
-    arguments: [pure(tx, args.num1, `u128`), pure(tx, args.num2, `u128`)],
+    target: `${getPublishedAt('integer-mate')}::full_math_u128::full_mul`,
+    arguments: [
+      pure(tx, args.num1, `u128`),
+      pure(tx, args.num2, `u128`),
+    ],
   })
 }

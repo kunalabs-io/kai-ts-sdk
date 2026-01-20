@@ -1,27 +1,41 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/ascii/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String as String1 } from '../../std/ascii/structs'
 
-export function newUnsafe(tx: Transaction, url: string | TransactionArgument) {
+/** Create a `Url`, with no validation */
+export function newUnsafe(tx: Transaction, url: string | TransactionArgument): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::url::new_unsafe`,
-    arguments: [pure(tx, url, `${String.$typeName}`)],
+    target: `${getPublishedAt('sui')}::url::new_unsafe`,
+    arguments: [pure(tx, url, `${String1.$typeName}`)],
   })
 }
 
+/**
+ * Create a `Url` with no validation from bytes
+ * Note: this will abort if `bytes` is not valid ASCII
+ */
 export function newUnsafeFromBytes(
   tx: Transaction,
-  bytes: Array<number | TransactionArgument> | TransactionArgument
-) {
+  bytes: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::url::new_unsafe_from_bytes`,
+    target: `${getPublishedAt('sui')}::url::new_unsafe_from_bytes`,
     arguments: [pure(tx, bytes, `vector<u8>`)],
   })
 }
 
-export function innerUrl(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::url::inner_url`, arguments: [obj(tx, self)] })
+/** Get inner URL */
+export function innerUrl(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::url::inner_url`,
+    arguments: [obj(tx, self)],
+  })
 }
 
 export interface UpdateArgs {
@@ -29,9 +43,13 @@ export interface UpdateArgs {
   url: string | TransactionArgument
 }
 
-export function update(tx: Transaction, args: UpdateArgs) {
+/** Update the inner URL */
+export function update(tx: Transaction, args: UpdateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::url::update`,
-    arguments: [obj(tx, args.self), pure(tx, args.url, `${String.$typeName}`)],
+    target: `${getPublishedAt('sui')}::url::update`,
+    arguments: [
+      obj(tx, args.self),
+      pure(tx, args.url, `${String1.$typeName}`),
+    ],
   })
 }

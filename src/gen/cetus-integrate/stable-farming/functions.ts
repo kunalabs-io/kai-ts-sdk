@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface CollectFeeArgs {
   a0: TransactionObjectInput
@@ -11,9 +16,13 @@ export interface CollectFeeArgs {
   a5: TransactionObjectInput
 }
 
-export function collectFee(tx: Transaction, typeArgs: [string, string], args: CollectFeeArgs) {
+export function collectFee(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CollectFeeArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::stable_farming::collect_fee`,
+    target: `${getPublishedAt('cetus-integrate')}::stable_farming::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -39,10 +48,10 @@ export interface CollectClmmRewardArgs {
 export function collectClmmReward(
   tx: Transaction,
   typeArgs: [string, string, string],
-  args: CollectClmmRewardArgs
-) {
+  args: CollectClmmRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::stable_farming::collect_clmm_reward`,
+    target: `${getPublishedAt('cetus-integrate')}::stable_farming::collect_clmm_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

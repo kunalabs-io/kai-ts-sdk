@@ -1,31 +1,54 @@
-import * as reified from '../../_framework/reified'
+/**
+ * `Rewarder` is the liquidity incentive module of `clmmpool`, which is commonly known as `farming`. In `clmmpool`,
+ * liquidity is stored in a price range, so `clmmpool` uses a reward allocation method based on effective liquidity.
+ * The allocation rules are roughly as follows:
+ *
+ * 1. Each pool can configure multiple `Rewarders`, and each `Rewarder` releases rewards at a uniform speed according
+ * to its configured release rate.
+ * 2. During the time period when the liquidity price range contains the current price of the pool, the liquidity
+ * position can participate in the reward distribution for this time period (if the pool itself is configured with
+ * rewards), and the proportion of the distribution depends on the size of the liquidity value of the position.
+ * Conversely, if the price range of a position does not include the current price of the pool during a certain period
+ * of time, then this position will not receive any rewards during this period of time. This is similar to the
+ * calculation of transaction fees.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
 import { ID, UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== RewarderManager =============================== */
 
 export function isRewarderManager(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::RewarderManager`
+  return type
+    === `${getTypeOrigin('cetus-clmm', 'rewarder::RewarderManager')}::rewarder::RewarderManager`
 }
 
 export interface RewarderManagerFields {
@@ -37,17 +60,38 @@ export interface RewarderManagerFields {
 
 export type RewarderManagerReified = Reified<RewarderManager, RewarderManagerFields>
 
+export type RewarderManagerJSONField = {
+  rewarders: ToJSON<Rewarder>[]
+  pointsReleased: string
+  pointsGrowthGlobal: string
+  lastUpdatedTime: string
+}
+
+export type RewarderManagerJSON = {
+  $typeName: typeof RewarderManager.$typeName
+  $typeArgs: []
+} & RewarderManagerJSONField
+
+/**
+ * Manager the Rewards and Points.
+ * * `rewarders` - The rewarders
+ * * `points_released` - The points released
+ * * `points_growth_global` - The points growth global
+ * * `last_updated_time` - The last updated time
+ */
 export class RewarderManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::RewarderManager`
+  static readonly $typeName: `${string}::rewarder::RewarderManager` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::RewarderManager')
+  }::rewarder::RewarderManager` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RewarderManager.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::RewarderManager`
+  readonly $typeName: typeof RewarderManager.$typeName = RewarderManager.$typeName
+  readonly $fullTypeName: `${string}::rewarder::RewarderManager`
   readonly $typeArgs: []
-  readonly $isPhantom = RewarderManager.$isPhantom
+  readonly $isPhantom: typeof RewarderManager.$isPhantom = RewarderManager.$isPhantom
 
   readonly rewarders: ToField<Vector<Rewarder>>
   readonly pointsReleased: ToField<'u128'>
@@ -57,8 +101,8 @@ export class RewarderManager implements StructClass {
   private constructor(typeArgs: [], fields: RewarderManagerFields) {
     this.$fullTypeName = composeSuiType(
       RewarderManager.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::RewarderManager`
+      ...typeArgs,
+    ) as `${string}::rewarder::RewarderManager`
     this.$typeArgs = typeArgs
 
     this.rewarders = fields.rewarders
@@ -73,8 +117,8 @@ export class RewarderManager implements StructClass {
       typeName: RewarderManager.$typeName,
       fullTypeName: composeSuiType(
         RewarderManager.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::RewarderManager`,
+        ...[],
+      ) as `${string}::rewarder::RewarderManager`,
       typeArgs: [] as [],
       isPhantom: RewarderManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -86,7 +130,7 @@ export class RewarderManager implements StructClass {
       fromJSON: (json: Record<string, any>) => RewarderManager.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewarderManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewarderManager.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewarderManager.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RewarderManager.fetch(client, id),
       new: (fields: RewarderManagerFields) => {
         return new RewarderManager([], fields)
       },
@@ -94,14 +138,15 @@ export class RewarderManager implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RewarderManagerReified {
     return RewarderManager.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RewarderManager>> {
     return phantom(RewarderManager.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RewarderManager>> {
     return RewarderManager.phantom()
   }
 
@@ -125,7 +170,7 @@ export class RewarderManager implements StructClass {
 
   static fromFields(fields: Record<string, any>): RewarderManager {
     return RewarderManager.reified().new({
-      rewarders: decodeFromFields(reified.vector(Rewarder.reified()), fields.rewarders),
+      rewarders: decodeFromFields(vector(Rewarder.reified()), fields.rewarders),
       pointsReleased: decodeFromFields('u128', fields.points_released),
       pointsGrowthGlobal: decodeFromFields('u128', fields.points_growth_global),
       lastUpdatedTime: decodeFromFields('u64', fields.last_updated_time),
@@ -138,10 +183,7 @@ export class RewarderManager implements StructClass {
     }
 
     return RewarderManager.reified().new({
-      rewarders: decodeFromFieldsWithTypes(
-        reified.vector(Rewarder.reified()),
-        item.fields.rewarders
-      ),
+      rewarders: decodeFromFieldsWithTypes(vector(Rewarder.reified()), item.fields.rewarders),
       pointsReleased: decodeFromFieldsWithTypes('u128', item.fields.points_released),
       pointsGrowthGlobal: decodeFromFieldsWithTypes('u128', item.fields.points_growth_global),
       lastUpdatedTime: decodeFromFieldsWithTypes('u64', item.fields.last_updated_time),
@@ -152,7 +194,7 @@ export class RewarderManager implements StructClass {
     return RewarderManager.fromFields(RewarderManager.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RewarderManagerJSONField {
     return {
       rewarders: fieldToJSON<Vector<Rewarder>>(`vector<${Rewarder.$typeName}>`, this.rewarders),
       pointsReleased: this.pointsReleased.toString(),
@@ -161,13 +203,13 @@ export class RewarderManager implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): RewarderManagerJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): RewarderManager {
     return RewarderManager.reified().new({
-      rewarders: decodeFromJSONField(reified.vector(Rewarder.reified()), field.rewarders),
+      rewarders: decodeFromJSONField(vector(Rewarder.reified()), field.rewarders),
       pointsReleased: decodeFromJSONField('u128', field.pointsReleased),
       pointsGrowthGlobal: decodeFromJSONField('u128', field.pointsGrowthGlobal),
       lastUpdatedTime: decodeFromJSONField('u64', field.lastUpdatedTime),
@@ -176,7 +218,9 @@ export class RewarderManager implements StructClass {
 
   static fromJSON(json: Record<string, any>): RewarderManager {
     if (json.$typeName !== RewarderManager.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RewarderManager json object: expected '${RewarderManager.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RewarderManager.fromJSONField(json)
@@ -198,26 +242,23 @@ export class RewarderManager implements StructClass {
         throw new Error(`object at is not a RewarderManager object`)
       }
 
-      return RewarderManager.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RewarderManager.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RewarderManager.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RewarderManager> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RewarderManager object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarderManager(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RewarderManager> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRewarderManager(res.type)) {
       throw new Error(`object at id ${id} is not a RewarderManager object`)
     }
 
-    return RewarderManager.fromSuiObjectData(res.data)
+    return RewarderManager.fromBcs(res.bcsBytes)
   }
 }
 
@@ -225,7 +266,7 @@ export class RewarderManager implements StructClass {
 
 export function isRewarder(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::Rewarder`
+  return type === `${getTypeOrigin('cetus-clmm', 'rewarder::Rewarder')}::rewarder::Rewarder`
 }
 
 export interface RewarderFields {
@@ -236,17 +277,36 @@ export interface RewarderFields {
 
 export type RewarderReified = Reified<Rewarder, RewarderFields>
 
+export type RewarderJSONField = {
+  rewardCoin: string
+  emissionsPerSecond: string
+  growthGlobal: string
+}
+
+export type RewarderJSON = {
+  $typeName: typeof Rewarder.$typeName
+  $typeArgs: []
+} & RewarderJSONField
+
+/**
+ * Rewarder store the information of a rewarder.
+ * * `reward_coin` - The type of reward coin
+ * * `emissions_per_second` - The amount of reward coin emit per second
+ * * `growth_global` - Q64.X64, is reward emited per liquidity
+ */
 export class Rewarder implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::Rewarder`
+  static readonly $typeName: `${string}::rewarder::Rewarder` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::Rewarder')
+  }::rewarder::Rewarder` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Rewarder.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::Rewarder`
+  readonly $typeName: typeof Rewarder.$typeName = Rewarder.$typeName
+  readonly $fullTypeName: `${string}::rewarder::Rewarder`
   readonly $typeArgs: []
-  readonly $isPhantom = Rewarder.$isPhantom
+  readonly $isPhantom: typeof Rewarder.$isPhantom = Rewarder.$isPhantom
 
   readonly rewardCoin: ToField<TypeName>
   readonly emissionsPerSecond: ToField<'u128'>
@@ -255,8 +315,8 @@ export class Rewarder implements StructClass {
   private constructor(typeArgs: [], fields: RewarderFields) {
     this.$fullTypeName = composeSuiType(
       Rewarder.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::Rewarder`
+      ...typeArgs,
+    ) as `${string}::rewarder::Rewarder`
     this.$typeArgs = typeArgs
 
     this.rewardCoin = fields.rewardCoin
@@ -270,8 +330,8 @@ export class Rewarder implements StructClass {
       typeName: Rewarder.$typeName,
       fullTypeName: composeSuiType(
         Rewarder.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::Rewarder`,
+        ...[],
+      ) as `${string}::rewarder::Rewarder`,
       typeArgs: [] as [],
       isPhantom: Rewarder.$isPhantom,
       reifiedTypeArgs: [],
@@ -283,7 +343,7 @@ export class Rewarder implements StructClass {
       fromJSON: (json: Record<string, any>) => Rewarder.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Rewarder.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Rewarder.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Rewarder.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Rewarder.fetch(client, id),
       new: (fields: RewarderFields) => {
         return new Rewarder([], fields)
       },
@@ -291,14 +351,15 @@ export class Rewarder implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RewarderReified {
     return Rewarder.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Rewarder>> {
     return phantom(Rewarder.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Rewarder>> {
     return Rewarder.phantom()
   }
 
@@ -343,15 +404,15 @@ export class Rewarder implements StructClass {
     return Rewarder.fromFields(Rewarder.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RewarderJSONField {
     return {
-      rewardCoin: this.rewardCoin.toJSONField(),
+      rewardCoin: this.rewardCoin,
       emissionsPerSecond: this.emissionsPerSecond.toString(),
       growthGlobal: this.growthGlobal.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): RewarderJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -365,7 +426,9 @@ export class Rewarder implements StructClass {
 
   static fromJSON(json: Record<string, any>): Rewarder {
     if (json.$typeName !== Rewarder.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Rewarder json object: expected '${Rewarder.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Rewarder.fromJSONField(json)
@@ -387,26 +450,23 @@ export class Rewarder implements StructClass {
         throw new Error(`object at is not a Rewarder object`)
       }
 
-      return Rewarder.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Rewarder.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Rewarder.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Rewarder> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Rewarder object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarder(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Rewarder> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRewarder(res.type)) {
       throw new Error(`object at id ${id} is not a Rewarder object`)
     }
 
-    return Rewarder.fromSuiObjectData(res.data)
+    return Rewarder.fromBcs(res.bcsBytes)
   }
 }
 
@@ -414,7 +474,10 @@ export class Rewarder implements StructClass {
 
 export function isRewarderGlobalVault(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::RewarderGlobalVault`
+  return type
+    === `${
+      getTypeOrigin('cetus-clmm', 'rewarder::RewarderGlobalVault')
+    }::rewarder::RewarderGlobalVault`
 }
 
 export interface RewarderGlobalVaultFields {
@@ -424,17 +487,34 @@ export interface RewarderGlobalVaultFields {
 
 export type RewarderGlobalVaultReified = Reified<RewarderGlobalVault, RewarderGlobalVaultFields>
 
+export type RewarderGlobalVaultJSONField = {
+  id: string
+  balances: ToJSON<Bag>
+}
+
+export type RewarderGlobalVaultJSON = {
+  $typeName: typeof RewarderGlobalVault.$typeName
+  $typeArgs: []
+} & RewarderGlobalVaultJSONField
+
+/**
+ * RewarderGlobalVault store the rewarder `Balance` in Bag globally.
+ * * `id` - The unique identifier for this RewarderGlobalVault object
+ * * `balances` - A bag storing the balances of the rewarders
+ */
 export class RewarderGlobalVault implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::RewarderGlobalVault`
+  static readonly $typeName: `${string}::rewarder::RewarderGlobalVault` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::RewarderGlobalVault')
+  }::rewarder::RewarderGlobalVault` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RewarderGlobalVault.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::RewarderGlobalVault`
+  readonly $typeName: typeof RewarderGlobalVault.$typeName = RewarderGlobalVault.$typeName
+  readonly $fullTypeName: `${string}::rewarder::RewarderGlobalVault`
   readonly $typeArgs: []
-  readonly $isPhantom = RewarderGlobalVault.$isPhantom
+  readonly $isPhantom: typeof RewarderGlobalVault.$isPhantom = RewarderGlobalVault.$isPhantom
 
   readonly id: ToField<UID>
   readonly balances: ToField<Bag>
@@ -442,8 +522,8 @@ export class RewarderGlobalVault implements StructClass {
   private constructor(typeArgs: [], fields: RewarderGlobalVaultFields) {
     this.$fullTypeName = composeSuiType(
       RewarderGlobalVault.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::RewarderGlobalVault`
+      ...typeArgs,
+    ) as `${string}::rewarder::RewarderGlobalVault`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -456,8 +536,8 @@ export class RewarderGlobalVault implements StructClass {
       typeName: RewarderGlobalVault.$typeName,
       fullTypeName: composeSuiType(
         RewarderGlobalVault.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::RewarderGlobalVault`,
+        ...[],
+      ) as `${string}::rewarder::RewarderGlobalVault`,
       typeArgs: [] as [],
       isPhantom: RewarderGlobalVault.$isPhantom,
       reifiedTypeArgs: [],
@@ -469,7 +549,8 @@ export class RewarderGlobalVault implements StructClass {
       fromJSON: (json: Record<string, any>) => RewarderGlobalVault.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewarderGlobalVault.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewarderGlobalVault.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewarderGlobalVault.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        RewarderGlobalVault.fetch(client, id),
       new: (fields: RewarderGlobalVaultFields) => {
         return new RewarderGlobalVault([], fields)
       },
@@ -477,14 +558,15 @@ export class RewarderGlobalVault implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RewarderGlobalVaultReified {
     return RewarderGlobalVault.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RewarderGlobalVault>> {
     return phantom(RewarderGlobalVault.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RewarderGlobalVault>> {
     return RewarderGlobalVault.phantom()
   }
 
@@ -526,14 +608,14 @@ export class RewarderGlobalVault implements StructClass {
     return RewarderGlobalVault.fromFields(RewarderGlobalVault.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RewarderGlobalVaultJSONField {
     return {
       id: this.id,
       balances: this.balances.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): RewarderGlobalVaultJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -546,7 +628,9 @@ export class RewarderGlobalVault implements StructClass {
 
   static fromJSON(json: Record<string, any>): RewarderGlobalVault {
     if (json.$typeName !== RewarderGlobalVault.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RewarderGlobalVault json object: expected '${RewarderGlobalVault.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RewarderGlobalVault.fromJSONField(json)
@@ -568,26 +652,23 @@ export class RewarderGlobalVault implements StructClass {
         throw new Error(`object at is not a RewarderGlobalVault object`)
       }
 
-      return RewarderGlobalVault.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RewarderGlobalVault.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RewarderGlobalVault.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RewarderGlobalVault> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RewarderGlobalVault object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarderGlobalVault(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RewarderGlobalVault> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRewarderGlobalVault(res.type)) {
       throw new Error(`object at id ${id} is not a RewarderGlobalVault object`)
     }
 
-    return RewarderGlobalVault.fromSuiObjectData(res.data)
+    return RewarderGlobalVault.fromBcs(res.bcsBytes)
   }
 }
 
@@ -595,7 +676,8 @@ export class RewarderGlobalVault implements StructClass {
 
 export function isRewarderInitEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::RewarderInitEvent`
+  return type
+    === `${getTypeOrigin('cetus-clmm', 'rewarder::RewarderInitEvent')}::rewarder::RewarderInitEvent`
 }
 
 export interface RewarderInitEventFields {
@@ -604,25 +686,40 @@ export interface RewarderInitEventFields {
 
 export type RewarderInitEventReified = Reified<RewarderInitEvent, RewarderInitEventFields>
 
+export type RewarderInitEventJSONField = {
+  globalVaultId: string
+}
+
+export type RewarderInitEventJSON = {
+  $typeName: typeof RewarderInitEvent.$typeName
+  $typeArgs: []
+} & RewarderInitEventJSONField
+
+/**
+ * Emit when `RewarderManager` is initialized.
+ * * `global_vault_id` - The unique identifier for this RewarderGlobalVault object
+ */
 export class RewarderInitEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::RewarderInitEvent`
+  static readonly $typeName: `${string}::rewarder::RewarderInitEvent` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::RewarderInitEvent')
+  }::rewarder::RewarderInitEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RewarderInitEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::RewarderInitEvent`
+  readonly $typeName: typeof RewarderInitEvent.$typeName = RewarderInitEvent.$typeName
+  readonly $fullTypeName: `${string}::rewarder::RewarderInitEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = RewarderInitEvent.$isPhantom
+  readonly $isPhantom: typeof RewarderInitEvent.$isPhantom = RewarderInitEvent.$isPhantom
 
   readonly globalVaultId: ToField<ID>
 
   private constructor(typeArgs: [], fields: RewarderInitEventFields) {
     this.$fullTypeName = composeSuiType(
       RewarderInitEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::RewarderInitEvent`
+      ...typeArgs,
+    ) as `${string}::rewarder::RewarderInitEvent`
     this.$typeArgs = typeArgs
 
     this.globalVaultId = fields.globalVaultId
@@ -634,8 +731,8 @@ export class RewarderInitEvent implements StructClass {
       typeName: RewarderInitEvent.$typeName,
       fullTypeName: composeSuiType(
         RewarderInitEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::RewarderInitEvent`,
+        ...[],
+      ) as `${string}::rewarder::RewarderInitEvent`,
       typeArgs: [] as [],
       isPhantom: RewarderInitEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -647,7 +744,7 @@ export class RewarderInitEvent implements StructClass {
       fromJSON: (json: Record<string, any>) => RewarderInitEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RewarderInitEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewarderInitEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RewarderInitEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RewarderInitEvent.fetch(client, id),
       new: (fields: RewarderInitEventFields) => {
         return new RewarderInitEvent([], fields)
       },
@@ -655,14 +752,15 @@ export class RewarderInitEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RewarderInitEventReified {
     return RewarderInitEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RewarderInitEvent>> {
     return phantom(RewarderInitEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RewarderInitEvent>> {
     return RewarderInitEvent.phantom()
   }
 
@@ -701,13 +799,13 @@ export class RewarderInitEvent implements StructClass {
     return RewarderInitEvent.fromFields(RewarderInitEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RewarderInitEventJSONField {
     return {
       globalVaultId: this.globalVaultId,
     }
   }
 
-  toJSON() {
+  toJSON(): RewarderInitEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -719,7 +817,9 @@ export class RewarderInitEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): RewarderInitEvent {
     if (json.$typeName !== RewarderInitEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RewarderInitEvent json object: expected '${RewarderInitEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RewarderInitEvent.fromJSONField(json)
@@ -741,26 +841,23 @@ export class RewarderInitEvent implements StructClass {
         throw new Error(`object at is not a RewarderInitEvent object`)
       }
 
-      return RewarderInitEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RewarderInitEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RewarderInitEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RewarderInitEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RewarderInitEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRewarderInitEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RewarderInitEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRewarderInitEvent(res.type)) {
       throw new Error(`object at id ${id} is not a RewarderInitEvent object`)
     }
 
-    return RewarderInitEvent.fromSuiObjectData(res.data)
+    return RewarderInitEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -768,7 +865,7 @@ export class RewarderInitEvent implements StructClass {
 
 export function isDepositEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::DepositEvent`
+  return type === `${getTypeOrigin('cetus-clmm', 'rewarder::DepositEvent')}::rewarder::DepositEvent`
 }
 
 export interface DepositEventFields {
@@ -779,17 +876,36 @@ export interface DepositEventFields {
 
 export type DepositEventReified = Reified<DepositEvent, DepositEventFields>
 
+export type DepositEventJSONField = {
+  rewardType: string
+  depositAmount: string
+  afterAmount: string
+}
+
+export type DepositEventJSON = {
+  $typeName: typeof DepositEvent.$typeName
+  $typeArgs: []
+} & DepositEventJSONField
+
+/**
+ * Emit when deposit reward.
+ * * `reward_type` - The type of reward coin
+ * * `deposit_amount` - The amount of reward coin deposited
+ * * `after_amount` - The amount of reward coin after deposit
+ */
 export class DepositEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::DepositEvent`
+  static readonly $typeName: `${string}::rewarder::DepositEvent` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::DepositEvent')
+  }::rewarder::DepositEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DepositEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::DepositEvent`
+  readonly $typeName: typeof DepositEvent.$typeName = DepositEvent.$typeName
+  readonly $fullTypeName: `${string}::rewarder::DepositEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = DepositEvent.$isPhantom
+  readonly $isPhantom: typeof DepositEvent.$isPhantom = DepositEvent.$isPhantom
 
   readonly rewardType: ToField<TypeName>
   readonly depositAmount: ToField<'u64'>
@@ -798,8 +914,8 @@ export class DepositEvent implements StructClass {
   private constructor(typeArgs: [], fields: DepositEventFields) {
     this.$fullTypeName = composeSuiType(
       DepositEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::DepositEvent`
+      ...typeArgs,
+    ) as `${string}::rewarder::DepositEvent`
     this.$typeArgs = typeArgs
 
     this.rewardType = fields.rewardType
@@ -813,8 +929,8 @@ export class DepositEvent implements StructClass {
       typeName: DepositEvent.$typeName,
       fullTypeName: composeSuiType(
         DepositEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::DepositEvent`,
+        ...[],
+      ) as `${string}::rewarder::DepositEvent`,
       typeArgs: [] as [],
       isPhantom: DepositEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -826,7 +942,7 @@ export class DepositEvent implements StructClass {
       fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DepositEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DepositEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DepositEvent.fetch(client, id),
       new: (fields: DepositEventFields) => {
         return new DepositEvent([], fields)
       },
@@ -834,14 +950,15 @@ export class DepositEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DepositEventReified {
     return DepositEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DepositEvent>> {
     return phantom(DepositEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DepositEvent>> {
     return DepositEvent.phantom()
   }
 
@@ -886,15 +1003,15 @@ export class DepositEvent implements StructClass {
     return DepositEvent.fromFields(DepositEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DepositEventJSONField {
     return {
-      rewardType: this.rewardType.toJSONField(),
+      rewardType: this.rewardType,
       depositAmount: this.depositAmount.toString(),
       afterAmount: this.afterAmount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): DepositEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -908,7 +1025,9 @@ export class DepositEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): DepositEvent {
     if (json.$typeName !== DepositEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DepositEvent json object: expected '${DepositEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DepositEvent.fromJSONField(json)
@@ -930,26 +1049,23 @@ export class DepositEvent implements StructClass {
         throw new Error(`object at is not a DepositEvent object`)
       }
 
-      return DepositEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DepositEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DepositEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DepositEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DepositEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDepositEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DepositEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDepositEvent(res.type)) {
       throw new Error(`object at id ${id} is not a DepositEvent object`)
     }
 
-    return DepositEvent.fromSuiObjectData(res.data)
+    return DepositEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -957,7 +1073,10 @@ export class DepositEvent implements StructClass {
 
 export function isEmergentWithdrawEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::rewarder::EmergentWithdrawEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-clmm', 'rewarder::EmergentWithdrawEvent')
+    }::rewarder::EmergentWithdrawEvent`
 }
 
 export interface EmergentWithdrawEventFields {
@@ -971,17 +1090,36 @@ export type EmergentWithdrawEventReified = Reified<
   EmergentWithdrawEventFields
 >
 
+export type EmergentWithdrawEventJSONField = {
+  rewardType: string
+  withdrawAmount: string
+  afterAmount: string
+}
+
+export type EmergentWithdrawEventJSON = {
+  $typeName: typeof EmergentWithdrawEvent.$typeName
+  $typeArgs: []
+} & EmergentWithdrawEventJSONField
+
+/**
+ * Emit when withdraw reward.
+ * * `reward_type` - The type of reward coin
+ * * `withdraw_amount` - The amount of reward coin withdrawn
+ * * `after_amount` - The amount of reward coin after withdrawal
+ */
 export class EmergentWithdrawEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::rewarder::EmergentWithdrawEvent`
+  static readonly $typeName: `${string}::rewarder::EmergentWithdrawEvent` = `${
+    getTypeOrigin('cetus-clmm', 'rewarder::EmergentWithdrawEvent')
+  }::rewarder::EmergentWithdrawEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = EmergentWithdrawEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
+  readonly $typeName: typeof EmergentWithdrawEvent.$typeName = EmergentWithdrawEvent.$typeName
+  readonly $fullTypeName: `${string}::rewarder::EmergentWithdrawEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = EmergentWithdrawEvent.$isPhantom
+  readonly $isPhantom: typeof EmergentWithdrawEvent.$isPhantom = EmergentWithdrawEvent.$isPhantom
 
   readonly rewardType: ToField<TypeName>
   readonly withdrawAmount: ToField<'u64'>
@@ -990,8 +1128,8 @@ export class EmergentWithdrawEvent implements StructClass {
   private constructor(typeArgs: [], fields: EmergentWithdrawEventFields) {
     this.$fullTypeName = composeSuiType(
       EmergentWithdrawEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`
+      ...typeArgs,
+    ) as `${string}::rewarder::EmergentWithdrawEvent`
     this.$typeArgs = typeArgs
 
     this.rewardType = fields.rewardType
@@ -1005,8 +1143,8 @@ export class EmergentWithdrawEvent implements StructClass {
       typeName: EmergentWithdrawEvent.$typeName,
       fullTypeName: composeSuiType(
         EmergentWithdrawEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::rewarder::EmergentWithdrawEvent`,
+        ...[],
+      ) as `${string}::rewarder::EmergentWithdrawEvent`,
       typeArgs: [] as [],
       isPhantom: EmergentWithdrawEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1021,7 +1159,8 @@ export class EmergentWithdrawEvent implements StructClass {
         EmergentWithdrawEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         EmergentWithdrawEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => EmergentWithdrawEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        EmergentWithdrawEvent.fetch(client, id),
       new: (fields: EmergentWithdrawEventFields) => {
         return new EmergentWithdrawEvent([], fields)
       },
@@ -1029,14 +1168,15 @@ export class EmergentWithdrawEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): EmergentWithdrawEventReified {
     return EmergentWithdrawEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<EmergentWithdrawEvent>> {
     return phantom(EmergentWithdrawEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<EmergentWithdrawEvent>> {
     return EmergentWithdrawEvent.phantom()
   }
 
@@ -1081,15 +1221,15 @@ export class EmergentWithdrawEvent implements StructClass {
     return EmergentWithdrawEvent.fromFields(EmergentWithdrawEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): EmergentWithdrawEventJSONField {
     return {
-      rewardType: this.rewardType.toJSONField(),
+      rewardType: this.rewardType,
       withdrawAmount: this.withdrawAmount.toString(),
       afterAmount: this.afterAmount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): EmergentWithdrawEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1103,7 +1243,9 @@ export class EmergentWithdrawEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): EmergentWithdrawEvent {
     if (json.$typeName !== EmergentWithdrawEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a EmergentWithdrawEvent json object: expected '${EmergentWithdrawEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return EmergentWithdrawEvent.fromJSONField(json)
@@ -1115,7 +1257,7 @@ export class EmergentWithdrawEvent implements StructClass {
     }
     if (!isEmergentWithdrawEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a EmergentWithdrawEvent object`
+        `object at ${(content.fields as any).id} is not a EmergentWithdrawEvent object`,
       )
     }
     return EmergentWithdrawEvent.fromFieldsWithTypes(content)
@@ -1127,25 +1269,22 @@ export class EmergentWithdrawEvent implements StructClass {
         throw new Error(`object at is not a EmergentWithdrawEvent object`)
       }
 
-      return EmergentWithdrawEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return EmergentWithdrawEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return EmergentWithdrawEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<EmergentWithdrawEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching EmergentWithdrawEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isEmergentWithdrawEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<EmergentWithdrawEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isEmergentWithdrawEvent(res.type)) {
       throw new Error(`object at id ${id} is not a EmergentWithdrawEvent object`)
     }
 
-    return EmergentWithdrawEvent.fromSuiObjectData(res.data)
+    return EmergentWithdrawEvent.fromBcs(res.bcsBytes)
   }
 }

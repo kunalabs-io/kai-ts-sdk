@@ -1,151 +1,285 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
-export function toBytes(tx: Transaction, typeArg: string, value: GenericArg) {
+/**
+ * Get BCS serialized bytes for any value.
+ * Re-exports stdlib `bcs::to_bytes`.
+ */
+export function toBytes(tx: Transaction, typeArg: string, value: GenericArg): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::to_bytes`,
+    target: `${getPublishedAt('sui')}::bcs::to_bytes`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, value)],
   })
 }
 
+/**
+ * Creates a new instance of BCS wrapper that holds inversed
+ * bytes for better performance.
+ */
 export function new_(
   tx: Transaction,
-  bytes: Array<number | TransactionArgument> | TransactionArgument
-) {
+  bytes: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::new`,
+    target: `${getPublishedAt('sui')}::bcs::new`,
     arguments: [pure(tx, bytes, `vector<u8>`)],
   })
 }
 
-export function intoRemainderBytes(tx: Transaction, bcs: TransactionObjectInput) {
+/**
+ * Unpack the `BCS` struct returning the leftover bytes.
+ * Useful for passing the data further after partial deserialization.
+ */
+export function intoRemainderBytes(
+  tx: Transaction,
+  bcs: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::into_remainder_bytes`,
+    target: `${getPublishedAt('sui')}::bcs::into_remainder_bytes`,
     arguments: [obj(tx, bcs)],
   })
 }
 
-export function peelAddress(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_address`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelBool(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_bool`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU8(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u8`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU16(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u16`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU32(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u32`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU64(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u64`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU128(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u128`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelU256(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_u256`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecLength(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_length`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecAddress(tx: Transaction, bcs: TransactionObjectInput) {
+/** Read address from the bcs-serialized bytes. */
+export function peelAddress(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::peel_vec_address`,
+    target: `${getPublishedAt('sui')}::bcs::peel_address`,
     arguments: [obj(tx, bcs)],
   })
 }
 
-export function peelVecBool(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_bool`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU8(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u8`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecVecU8(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_vec_u8`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU16(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u16`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU32(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u32`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU64(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u64`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU128(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u128`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelVecU256(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_vec_u256`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelEnumTag(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_enum_tag`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelOptionAddress(tx: Transaction, bcs: TransactionObjectInput) {
+/** Read a `bool` value from bcs-serialized bytes. */
+export function peelBool(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::peel_option_address`,
+    target: `${getPublishedAt('sui')}::bcs::peel_bool`,
     arguments: [obj(tx, bcs)],
   })
 }
 
-export function peelOptionBool(tx: Transaction, bcs: TransactionObjectInput) {
+/** Read `u8` value from bcs-serialized bytes. */
+export function peelU8(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::peel_option_bool`,
+    target: `${getPublishedAt('sui')}::bcs::peel_u8`,
     arguments: [obj(tx, bcs)],
   })
 }
 
-export function peelOptionU8(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_option_u8`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelOptionU16(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_option_u16`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelOptionU32(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_option_u32`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelOptionU64(tx: Transaction, bcs: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::bcs::peel_option_u64`, arguments: [obj(tx, bcs)] })
-}
-
-export function peelOptionU128(tx: Transaction, bcs: TransactionObjectInput) {
+/** Read `u16` value from bcs-serialized bytes. */
+export function peelU16(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::peel_option_u128`,
+    target: `${getPublishedAt('sui')}::bcs::peel_u16`,
     arguments: [obj(tx, bcs)],
   })
 }
 
-export function peelOptionU256(tx: Transaction, bcs: TransactionObjectInput) {
+/** Read `u32` value from bcs-serialized bytes. */
+export function peelU32(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::bcs::peel_option_u256`,
+    target: `${getPublishedAt('sui')}::bcs::peel_u32`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Read `u64` value from bcs-serialized bytes. */
+export function peelU64(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_u64`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Read `u128` value from bcs-serialized bytes. */
+export function peelU128(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_u128`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Read `u256` value from bcs-serialized bytes. */
+export function peelU256(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_u256`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/**
+ * Read ULEB bytes expecting a vector length. Result should
+ * then be used to perform `peel_*` operation LEN times.
+ *
+ * In BCS `vector` length is implemented with ULEB128;
+ * See more here: https://en.wikipedia.org/wiki/LEB128
+ */
+export function peelVecLength(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_length`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `address` from serialized bytes. */
+export function peelVecAddress(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_address`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `address` from serialized bytes. */
+export function peelVecBool(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_bool`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u8` (eg string) from serialized bytes. */
+export function peelVecU8(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u8`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a `vector<vector<u8>>` (eg vec of string) from serialized bytes. */
+export function peelVecVecU8(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_vec_u8`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u16` from serialized bytes. */
+export function peelVecU16(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u16`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u32` from serialized bytes. */
+export function peelVecU32(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u32`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u64` from serialized bytes. */
+export function peelVecU64(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u64`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u128` from serialized bytes. */
+export function peelVecU128(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u128`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel a vector of `u256` from serialized bytes. */
+export function peelVecU256(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_vec_u256`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/**
+ * Peel enum from serialized bytes, where `$f` takes a `tag` value and returns
+ * the corresponding enum variant. Move enums are limited to 127 variants,
+ * however the tag can be any `u32` value.
+ *
+ * Example:
+ * ```rust
+ * let my_enum = match (bcs.peel_enum_tag()) {
+ * 0 => Enum::Empty,
+ * 1 => Enum::U8(bcs.peel_u8()),
+ * 2 => Enum::U16(bcs.peel_u16()),
+ * 3 => Enum::Struct { a: bcs.peel_address(), b: bcs.peel_u8() },
+ * _ => abort,
+ * };
+ * ```
+ */
+export function peelEnumTag(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_enum_tag`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<address>` from serialized bytes. */
+export function peelOptionAddress(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_address`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<bool>` from serialized bytes. */
+export function peelOptionBool(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_bool`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u8>` from serialized bytes. */
+export function peelOptionU8(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u8`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u16>` from serialized bytes. */
+export function peelOptionU16(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u16`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u32>` from serialized bytes. */
+export function peelOptionU32(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u32`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u64>` from serialized bytes. */
+export function peelOptionU64(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u64`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u128>` from serialized bytes. */
+export function peelOptionU128(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u128`,
+    arguments: [obj(tx, bcs)],
+  })
+}
+
+/** Peel `Option<u256>` from serialized bytes. */
+export function peelOptionU256(tx: Transaction, bcs: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui')}::bcs::peel_option_u256`,
     arguments: [obj(tx, bcs)],
   })
 }

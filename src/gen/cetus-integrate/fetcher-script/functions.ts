@@ -1,7 +1,12 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface FetchTicksArgs {
   a0: TransactionObjectInput
@@ -9,11 +14,19 @@ export interface FetchTicksArgs {
   a2: bigint | TransactionArgument
 }
 
-export function fetchTicks(tx: Transaction, typeArgs: [string, string], args: FetchTicksArgs) {
+export function fetchTicks(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: FetchTicksArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_ticks`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_ticks`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `vector<u32>`), pure(tx, args.a2, `u64`)],
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `vector<u32>`),
+      pure(tx, args.a2, `u64`),
+    ],
   })
 }
 
@@ -26,10 +39,10 @@ export interface FetchPositionsArgs {
 export function fetchPositions(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FetchPositionsArgs
-) {
+  args: FetchPositionsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_positions`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_positions`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -45,9 +58,9 @@ export interface FetchPoolsArgs {
   a2: bigint | TransactionArgument
 }
 
-export function fetchPools(tx: Transaction, args: FetchPoolsArgs) {
+export function fetchPools(tx: Transaction, args: FetchPoolsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_pools`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_pools`,
     arguments: [
       obj(tx, args.a0),
       pure(tx, args.a1, `vector<${ID.$typeName}>`),
@@ -66,10 +79,10 @@ export interface CalculateSwapResultArgs {
 export function calculateSwapResult(
   tx: Transaction,
   typeArgs: [string, string],
-  args: CalculateSwapResultArgs
-) {
+  args: CalculateSwapResultArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::calculate_swap_result`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::calculate_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -90,10 +103,10 @@ export interface FetchPositionRewardsArgs {
 export function fetchPositionRewards(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FetchPositionRewardsArgs
-) {
+  args: FetchPositionRewardsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_position_rewards`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -113,12 +126,16 @@ export interface FetchPositionFeesArgs {
 export function fetchPositionFees(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FetchPositionFeesArgs
-) {
+  args: FetchPositionFeesArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_position_fees`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_fees`,
     typeArguments: typeArgs,
-    arguments: [obj(tx, args.a0), obj(tx, args.a1), pure(tx, args.a2, `${ID.$typeName}`)],
+    arguments: [
+      obj(tx, args.a0),
+      obj(tx, args.a1),
+      pure(tx, args.a2, `${ID.$typeName}`),
+    ],
   })
 }
 
@@ -132,10 +149,10 @@ export interface FetchPositionPointsArgs {
 export function fetchPositionPoints(
   tx: Transaction,
   typeArgs: [string, string],
-  args: FetchPositionPointsArgs
-) {
+  args: FetchPositionPointsArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::fetcher_script::fetch_position_points`,
+    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_points`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

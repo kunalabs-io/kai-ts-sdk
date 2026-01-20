@@ -1,0 +1,656 @@
+import { bcs, BcsType } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../../_envs'
+import {
+  assertFieldsWithTypesArgsMatch,
+  assertReifiedTypeArgsMatch,
+  decodeFromFields,
+  decodeFromFieldsWithTypes,
+  decodeFromJSONField,
+  extractType,
+  fieldToJSON,
+  phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  toBcs,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeArgument,
+  ToTypeStr,
+  TypeArgument,
+} from '../../../_framework/reified'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  parseTypeName,
+  SupportedSuiClient,
+} from '../../../_framework/util'
+import { Option } from '../../../std/option/structs'
+import { UID } from '../../../sui/object/structs'
+
+/* ============================== LinkedTable =============================== */
+
+export function isLinkedTable(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(
+    `${getTypeOrigin('move-stl', 'linked_table::LinkedTable')}::linked_table::LinkedTable` + '<',
+  )
+}
+
+export interface LinkedTableFields<K extends TypeArgument, V extends PhantomTypeArgument> {
+  id: ToField<UID>
+  head: ToField<Option<K>>
+  tail: ToField<Option<K>>
+  size: ToField<'u64'>
+}
+
+export type LinkedTableReified<K extends TypeArgument, V extends PhantomTypeArgument> = Reified<
+  LinkedTable<K, V>,
+  LinkedTableFields<K, V>
+>
+
+export type LinkedTableJSONField<K extends TypeArgument, V extends PhantomTypeArgument> = {
+  id: string
+  head: ToJSON<K> | null
+  tail: ToJSON<K> | null
+  size: string
+}
+
+export type LinkedTableJSON<K extends TypeArgument, V extends PhantomTypeArgument> = {
+  $typeName: typeof LinkedTable.$typeName
+  $typeArgs: [ToTypeStr<K>, PhantomToTypeStr<V>]
+} & LinkedTableJSONField<K, V>
+
+export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
+  implements StructClass
+{
+  __StructClass = true as const
+
+  static readonly $typeName: `${string}::linked_table::LinkedTable` = `${
+    getTypeOrigin('move-stl', 'linked_table::LinkedTable')
+  }::linked_table::LinkedTable` as const
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [false, true] as const
+
+  readonly $typeName: typeof LinkedTable.$typeName = LinkedTable.$typeName
+  readonly $fullTypeName: `${string}::linked_table::LinkedTable<${ToTypeStr<K>}, ${PhantomToTypeStr<
+    V
+  >}>`
+  readonly $typeArgs: [ToTypeStr<K>, PhantomToTypeStr<V>]
+  readonly $isPhantom: typeof LinkedTable.$isPhantom = LinkedTable.$isPhantom
+
+  readonly id: ToField<UID>
+  readonly head: ToField<Option<K>>
+  readonly tail: ToField<Option<K>>
+  readonly size: ToField<'u64'>
+
+  private constructor(
+    typeArgs: [ToTypeStr<K>, PhantomToTypeStr<V>],
+    fields: LinkedTableFields<K, V>,
+  ) {
+    this.$fullTypeName = composeSuiType(
+      LinkedTable.$typeName,
+      ...typeArgs,
+    ) as `${string}::linked_table::LinkedTable<${ToTypeStr<K>}, ${PhantomToTypeStr<V>}>`
+    this.$typeArgs = typeArgs
+
+    this.id = fields.id
+    this.head = fields.head
+    this.tail = fields.tail
+    this.size = fields.size
+  }
+
+  static reified<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    K: K,
+    V: V,
+  ): LinkedTableReified<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    const reifiedBcs = LinkedTable.bcs(toBcs(K))
+    return {
+      typeName: LinkedTable.$typeName,
+      fullTypeName: composeSuiType(
+        LinkedTable.$typeName,
+        ...[extractType(K), extractType(V)],
+      ) as `${string}::linked_table::LinkedTable<${ToTypeStr<
+        ToTypeArgument<K>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<V>>}>`,
+      typeArgs: [extractType(K), extractType(V)] as [
+        ToTypeStr<ToTypeArgument<K>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<V>>,
+      ],
+      isPhantom: LinkedTable.$isPhantom,
+      reifiedTypeArgs: [K, V],
+      fromFields: (fields: Record<string, any>) => LinkedTable.fromFields([K, V], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => LinkedTable.fromFieldsWithTypes([K, V], item),
+      fromBcs: (data: Uint8Array) => LinkedTable.fromFields([K, V], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => LinkedTable.fromJSONField([K, V], field),
+      fromJSON: (json: Record<string, any>) => LinkedTable.fromJSON([K, V], json),
+      fromSuiParsedData: (content: SuiParsedData) => LinkedTable.fromSuiParsedData([K, V], content),
+      fromSuiObjectData: (content: SuiObjectData) => LinkedTable.fromSuiObjectData([K, V], content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        LinkedTable.fetch(client, [K, V], id),
+      new: (fields: LinkedTableFields<ToTypeArgument<K>, ToPhantomTypeArgument<V>>) => {
+        return new LinkedTable([extractType(K), extractType(V)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): typeof LinkedTable.reified {
+    return LinkedTable.reified
+  }
+
+  static phantom<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    K: K,
+    V: V,
+  ): PhantomReified<ToTypeStr<LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>>>> {
+    return phantom(LinkedTable.reified(K, V))
+  }
+
+  static get p(): typeof LinkedTable.phantom {
+    return LinkedTable.phantom
+  }
+
+  private static instantiateBcs() {
+    return <K extends BcsType<any>>(K: K) =>
+      bcs.struct(`LinkedTable<${K.name}>`, {
+        id: UID.bcs,
+        head: Option.bcs(K),
+        tail: Option.bcs(K),
+        size: bcs.u64(),
+      })
+  }
+
+  private static cachedBcs: ReturnType<typeof LinkedTable.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof LinkedTable.instantiateBcs> {
+    if (!LinkedTable.cachedBcs) {
+      LinkedTable.cachedBcs = LinkedTable.instantiateBcs()
+    }
+    return LinkedTable.cachedBcs
+  }
+
+  static fromFields<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    fields: Record<string, any>,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    return LinkedTable.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromFields(UID.reified(), fields.id),
+      head: decodeFromFields(Option.reified(typeArgs[0]), fields.head),
+      tail: decodeFromFields(Option.reified(typeArgs[0]), fields.tail),
+      size: decodeFromFields('u64', fields.size),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    item: FieldsWithTypes,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (!isLinkedTable(item.type)) {
+      throw new Error('not a LinkedTable type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return LinkedTable.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
+      head: decodeFromFieldsWithTypes(Option.reified(typeArgs[0]), item.fields.head),
+      tail: decodeFromFieldsWithTypes(Option.reified(typeArgs[0]), item.fields.tail),
+      size: decodeFromFieldsWithTypes('u64', item.fields.size),
+    })
+  }
+
+  static fromBcs<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    data: Uint8Array,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    return LinkedTable.fromFields(typeArgs, LinkedTable.bcs(toBcs(typeArgs[0])).parse(data))
+  }
+
+  toJSONField(): LinkedTableJSONField<K, V> {
+    return {
+      id: this.id,
+      head: fieldToJSON<Option<K>>(`${Option.$typeName}<${this.$typeArgs[0]}>`, this.head),
+      tail: fieldToJSON<Option<K>>(`${Option.$typeName}<${this.$typeArgs[0]}>`, this.tail),
+      size: this.size.toString(),
+    }
+  }
+
+  toJSON(): LinkedTableJSON<K, V> {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    field: any,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    return LinkedTable.reified(typeArgs[0], typeArgs[1]).new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+      head: decodeFromJSONField(Option.reified(typeArgs[0]), field.head),
+      tail: decodeFromJSONField(Option.reified(typeArgs[0]), field.tail),
+      size: decodeFromJSONField('u64', field.size),
+    })
+  }
+
+  static fromJSON<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    json: Record<string, any>,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (json.$typeName !== LinkedTable.$typeName) {
+      throw new Error(
+        `not a LinkedTable json object: expected '${LinkedTable.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(LinkedTable.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs,
+    )
+
+    return LinkedTable.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    content: SuiParsedData,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isLinkedTable(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a LinkedTable object`)
+    }
+    return LinkedTable.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    data: SuiObjectData,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isLinkedTable(data.bcs.type)) {
+        throw new Error(`object at is not a LinkedTable object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
+      }
+
+      return LinkedTable.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return LinkedTable.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    client: SupportedSuiClient,
+    typeArgs: [K, V],
+    id: string,
+  ): Promise<LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>>> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLinkedTable(res.type)) {
+      throw new Error(`object at id ${id} is not a LinkedTable object`)
+    }
+
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return LinkedTable.fromBcs(typeArgs, res.bcsBytes)
+  }
+}
+
+/* ============================== Node =============================== */
+
+export function isNode(type: string): boolean {
+  type = compressSuiType(type)
+  return type.startsWith(
+    `${getTypeOrigin('move-stl', 'linked_table::Node')}::linked_table::Node` + '<',
+  )
+}
+
+export interface NodeFields<K extends TypeArgument, V extends TypeArgument> {
+  prev: ToField<Option<K>>
+  next: ToField<Option<K>>
+  value: ToField<V>
+}
+
+export type NodeReified<K extends TypeArgument, V extends TypeArgument> = Reified<
+  Node<K, V>,
+  NodeFields<K, V>
+>
+
+export type NodeJSONField<K extends TypeArgument, V extends TypeArgument> = {
+  prev: ToJSON<K> | null
+  next: ToJSON<K> | null
+  value: ToJSON<V>
+}
+
+export type NodeJSON<K extends TypeArgument, V extends TypeArgument> = {
+  $typeName: typeof Node.$typeName
+  $typeArgs: [ToTypeStr<K>, ToTypeStr<V>]
+} & NodeJSONField<K, V>
+
+export class Node<K extends TypeArgument, V extends TypeArgument> implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName: `${string}::linked_table::Node` = `${
+    getTypeOrigin('move-stl', 'linked_table::Node')
+  }::linked_table::Node` as const
+  static readonly $numTypeParams = 2
+  static readonly $isPhantom = [false, false] as const
+
+  readonly $typeName: typeof Node.$typeName = Node.$typeName
+  readonly $fullTypeName: `${string}::linked_table::Node<${ToTypeStr<K>}, ${ToTypeStr<V>}>`
+  readonly $typeArgs: [ToTypeStr<K>, ToTypeStr<V>]
+  readonly $isPhantom: typeof Node.$isPhantom = Node.$isPhantom
+
+  readonly prev: ToField<Option<K>>
+  readonly next: ToField<Option<K>>
+  readonly value: ToField<V>
+
+  private constructor(typeArgs: [ToTypeStr<K>, ToTypeStr<V>], fields: NodeFields<K, V>) {
+    this.$fullTypeName = composeSuiType(
+      Node.$typeName,
+      ...typeArgs,
+    ) as `${string}::linked_table::Node<${ToTypeStr<K>}, ${ToTypeStr<V>}>`
+    this.$typeArgs = typeArgs
+
+    this.prev = fields.prev
+    this.next = fields.next
+    this.value = fields.value
+  }
+
+  static reified<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    K: K,
+    V: V,
+  ): NodeReified<ToTypeArgument<K>, ToTypeArgument<V>> {
+    const reifiedBcs = Node.bcs(toBcs(K), toBcs(V))
+    return {
+      typeName: Node.$typeName,
+      fullTypeName: composeSuiType(
+        Node.$typeName,
+        ...[extractType(K), extractType(V)],
+      ) as `${string}::linked_table::Node<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<
+        ToTypeArgument<V>
+      >}>`,
+      typeArgs: [extractType(K), extractType(V)] as [
+        ToTypeStr<ToTypeArgument<K>>,
+        ToTypeStr<ToTypeArgument<V>>,
+      ],
+      isPhantom: Node.$isPhantom,
+      reifiedTypeArgs: [K, V],
+      fromFields: (fields: Record<string, any>) => Node.fromFields([K, V], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Node.fromFieldsWithTypes([K, V], item),
+      fromBcs: (data: Uint8Array) => Node.fromFields([K, V], reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => Node.fromJSONField([K, V], field),
+      fromJSON: (json: Record<string, any>) => Node.fromJSON([K, V], json),
+      fromSuiParsedData: (content: SuiParsedData) => Node.fromSuiParsedData([K, V], content),
+      fromSuiObjectData: (content: SuiObjectData) => Node.fromSuiObjectData([K, V], content),
+      fetch: async (client: SupportedSuiClient, id: string) => Node.fetch(client, [K, V], id),
+      new: (fields: NodeFields<ToTypeArgument<K>, ToTypeArgument<V>>) => {
+        return new Node([extractType(K), extractType(V)], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): typeof Node.reified {
+    return Node.reified
+  }
+
+  static phantom<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    K: K,
+    V: V,
+  ): PhantomReified<ToTypeStr<Node<ToTypeArgument<K>, ToTypeArgument<V>>>> {
+    return phantom(Node.reified(K, V))
+  }
+
+  static get p(): typeof Node.phantom {
+    return Node.phantom
+  }
+
+  private static instantiateBcs() {
+    return <K extends BcsType<any>, V extends BcsType<any>>(K: K, V: V) =>
+      bcs.struct(`Node<${K.name}, ${V.name}>`, {
+        prev: Option.bcs(K),
+        next: Option.bcs(K),
+        value: V,
+      })
+  }
+
+  private static cachedBcs: ReturnType<typeof Node.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof Node.instantiateBcs> {
+    if (!Node.cachedBcs) {
+      Node.cachedBcs = Node.instantiateBcs()
+    }
+    return Node.cachedBcs
+  }
+
+  static fromFields<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    fields: Record<string, any>,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    return Node.reified(typeArgs[0], typeArgs[1]).new({
+      prev: decodeFromFields(Option.reified(typeArgs[0]), fields.prev),
+      next: decodeFromFields(Option.reified(typeArgs[0]), fields.next),
+      value: decodeFromFields(typeArgs[1], fields.value),
+    })
+  }
+
+  static fromFieldsWithTypes<
+    K extends Reified<TypeArgument, any>,
+    V extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [K, V],
+    item: FieldsWithTypes,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (!isNode(item.type)) {
+      throw new Error('not a Node type')
+    }
+    assertFieldsWithTypesArgsMatch(item, typeArgs)
+
+    return Node.reified(typeArgs[0], typeArgs[1]).new({
+      prev: decodeFromFieldsWithTypes(Option.reified(typeArgs[0]), item.fields.prev),
+      next: decodeFromFieldsWithTypes(Option.reified(typeArgs[0]), item.fields.next),
+      value: decodeFromFieldsWithTypes(typeArgs[1], item.fields.value),
+    })
+  }
+
+  static fromBcs<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    data: Uint8Array,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    return Node.fromFields(typeArgs, Node.bcs(toBcs(typeArgs[0]), toBcs(typeArgs[1])).parse(data))
+  }
+
+  toJSONField(): NodeJSONField<K, V> {
+    return {
+      prev: fieldToJSON<Option<K>>(`${Option.$typeName}<${this.$typeArgs[0]}>`, this.prev),
+      next: fieldToJSON<Option<K>>(`${Option.$typeName}<${this.$typeArgs[0]}>`, this.next),
+      value: fieldToJSON<V>(`${this.$typeArgs[1]}`, this.value),
+    }
+  }
+
+  toJSON(): NodeJSON<K, V> {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    field: any,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    return Node.reified(typeArgs[0], typeArgs[1]).new({
+      prev: decodeFromJSONField(Option.reified(typeArgs[0]), field.prev),
+      next: decodeFromJSONField(Option.reified(typeArgs[0]), field.next),
+      value: decodeFromJSONField(typeArgs[1], field.value),
+    })
+  }
+
+  static fromJSON<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    json: Record<string, any>,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (json.$typeName !== Node.$typeName) {
+      throw new Error(
+        `not a Node json object: expected '${Node.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+    assertReifiedTypeArgsMatch(
+      composeSuiType(Node.$typeName, ...typeArgs.map(extractType)),
+      json.$typeArgs,
+      typeArgs,
+    )
+
+    return Node.fromJSONField(typeArgs, json)
+  }
+
+  static fromSuiParsedData<
+    K extends Reified<TypeArgument, any>,
+    V extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [K, V],
+    content: SuiParsedData,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isNode(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a Node object`)
+    }
+    return Node.fromFieldsWithTypes(typeArgs, content)
+  }
+
+  static fromSuiObjectData<
+    K extends Reified<TypeArgument, any>,
+    V extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [K, V],
+    data: SuiObjectData,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isNode(data.bcs.type)) {
+        throw new Error(`object at is not a Node object`)
+      }
+
+      const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
+      if (gotTypeArgs.length !== 2) {
+        throw new Error(
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+        )
+      }
+      for (let i = 0; i < 2; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
+      }
+
+      return Node.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return Node.fromSuiParsedData(typeArgs, data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    client: SupportedSuiClient,
+    typeArgs: [K, V],
+    id: string,
+  ): Promise<Node<ToTypeArgument<K>, ToTypeArgument<V>>> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isNode(res.type)) {
+      throw new Error(`object at id ${id} is not a Node object`)
+    }
+
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Node.fromBcs(typeArgs, res.bcsBytes)
+  }
+}

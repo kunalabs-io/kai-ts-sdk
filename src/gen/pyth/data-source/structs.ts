@@ -1,26 +1,33 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { ExternalAddress } from '../../wormhole/external-address/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== DataSource =============================== */
 
 export function isDataSource(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::data_source::DataSource`
+  return type === `${getTypeOrigin('pyth', 'data_source::DataSource')}::data_source::DataSource`
 }
 
 export interface DataSourceFields {
@@ -30,17 +37,29 @@ export interface DataSourceFields {
 
 export type DataSourceReified = Reified<DataSource, DataSourceFields>
 
+export type DataSourceJSONField = {
+  emitterChain: string
+  emitterAddress: ToJSON<ExternalAddress>
+}
+
+export type DataSourceJSON = {
+  $typeName: typeof DataSource.$typeName
+  $typeArgs: []
+} & DataSourceJSONField
+
 export class DataSource implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::data_source::DataSource`
+  static readonly $typeName: `${string}::data_source::DataSource` = `${
+    getTypeOrigin('pyth', 'data_source::DataSource')
+  }::data_source::DataSource` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DataSource.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::data_source::DataSource`
+  readonly $typeName: typeof DataSource.$typeName = DataSource.$typeName
+  readonly $fullTypeName: `${string}::data_source::DataSource`
   readonly $typeArgs: []
-  readonly $isPhantom = DataSource.$isPhantom
+  readonly $isPhantom: typeof DataSource.$isPhantom = DataSource.$isPhantom
 
   readonly emitterChain: ToField<'u64'>
   readonly emitterAddress: ToField<ExternalAddress>
@@ -48,8 +67,8 @@ export class DataSource implements StructClass {
   private constructor(typeArgs: [], fields: DataSourceFields) {
     this.$fullTypeName = composeSuiType(
       DataSource.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::data_source::DataSource`
+      ...typeArgs,
+    ) as `${string}::data_source::DataSource`
     this.$typeArgs = typeArgs
 
     this.emitterChain = fields.emitterChain
@@ -62,8 +81,8 @@ export class DataSource implements StructClass {
       typeName: DataSource.$typeName,
       fullTypeName: composeSuiType(
         DataSource.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::data_source::DataSource`,
+        ...[],
+      ) as `${string}::data_source::DataSource`,
       typeArgs: [] as [],
       isPhantom: DataSource.$isPhantom,
       reifiedTypeArgs: [],
@@ -75,7 +94,7 @@ export class DataSource implements StructClass {
       fromJSON: (json: Record<string, any>) => DataSource.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DataSource.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DataSource.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DataSource.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DataSource.fetch(client, id),
       new: (fields: DataSourceFields) => {
         return new DataSource([], fields)
       },
@@ -83,14 +102,15 @@ export class DataSource implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DataSourceReified {
     return DataSource.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DataSource>> {
     return phantom(DataSource.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DataSource>> {
     return DataSource.phantom()
   }
 
@@ -126,7 +146,7 @@ export class DataSource implements StructClass {
       emitterChain: decodeFromFieldsWithTypes('u64', item.fields.emitter_chain),
       emitterAddress: decodeFromFieldsWithTypes(
         ExternalAddress.reified(),
-        item.fields.emitter_address
+        item.fields.emitter_address,
       ),
     })
   }
@@ -135,14 +155,14 @@ export class DataSource implements StructClass {
     return DataSource.fromFields(DataSource.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DataSourceJSONField {
     return {
       emitterChain: this.emitterChain.toString(),
       emitterAddress: this.emitterAddress.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): DataSourceJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -155,7 +175,9 @@ export class DataSource implements StructClass {
 
   static fromJSON(json: Record<string, any>): DataSource {
     if (json.$typeName !== DataSource.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DataSource json object: expected '${DataSource.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DataSource.fromJSONField(json)
@@ -177,25 +199,22 @@ export class DataSource implements StructClass {
         throw new Error(`object at is not a DataSource object`)
       }
 
-      return DataSource.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DataSource.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DataSource.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DataSource> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DataSource object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDataSource(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DataSource> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDataSource(res.type)) {
       throw new Error(`object at id ${id} is not a DataSource object`)
     }
 
-    return DataSource.fromSuiObjectData(res.data)
+    return DataSource.fromBcs(res.bcsBytes)
   }
 }

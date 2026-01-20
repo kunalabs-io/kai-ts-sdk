@@ -1,27 +1,47 @@
+/**
+ * This module implements handling a governance VAA to enact upgrading the
+ * Wormhole contract to a new build. The procedure to upgrade this contract
+ * requires a Programmable Transaction, which includes the following procedure:
+ * 1.  Load new build.
+ * 2.  Authorize upgrade.
+ * 3.  Upgrade.
+ * 4.  Commit upgrade.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Bytes32 } from '../bytes32/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== GovernanceWitness =============================== */
 
 export function isGovernanceWitness(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::upgrade_contract::GovernanceWitness`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'upgrade_contract::GovernanceWitness')
+    }::upgrade_contract::GovernanceWitness`
 }
 
 export interface GovernanceWitnessFields {
@@ -30,25 +50,36 @@ export interface GovernanceWitnessFields {
 
 export type GovernanceWitnessReified = Reified<GovernanceWitness, GovernanceWitnessFields>
 
+export type GovernanceWitnessJSONField = {
+  dummyField: boolean
+}
+
+export type GovernanceWitnessJSON = {
+  $typeName: typeof GovernanceWitness.$typeName
+  $typeArgs: []
+} & GovernanceWitnessJSONField
+
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::upgrade_contract::GovernanceWitness`
+  static readonly $typeName: `${string}::upgrade_contract::GovernanceWitness` = `${
+    getTypeOrigin('wormhole', 'upgrade_contract::GovernanceWitness')
+  }::upgrade_contract::GovernanceWitness` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GovernanceWitness.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::upgrade_contract::GovernanceWitness`
+  readonly $typeName: typeof GovernanceWitness.$typeName = GovernanceWitness.$typeName
+  readonly $fullTypeName: `${string}::upgrade_contract::GovernanceWitness`
   readonly $typeArgs: []
-  readonly $isPhantom = GovernanceWitness.$isPhantom
+  readonly $isPhantom: typeof GovernanceWitness.$isPhantom = GovernanceWitness.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: GovernanceWitnessFields) {
     this.$fullTypeName = composeSuiType(
       GovernanceWitness.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::upgrade_contract::GovernanceWitness`
+      ...typeArgs,
+    ) as `${string}::upgrade_contract::GovernanceWitness`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -60,8 +91,8 @@ export class GovernanceWitness implements StructClass {
       typeName: GovernanceWitness.$typeName,
       fullTypeName: composeSuiType(
         GovernanceWitness.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::upgrade_contract::GovernanceWitness`,
+        ...[],
+      ) as `${string}::upgrade_contract::GovernanceWitness`,
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -73,7 +104,7 @@ export class GovernanceWitness implements StructClass {
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -81,14 +112,15 @@ export class GovernanceWitness implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GovernanceWitnessReified {
     return GovernanceWitness.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GovernanceWitness>> {
     return phantom(GovernanceWitness.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GovernanceWitness>> {
     return GovernanceWitness.phantom()
   }
 
@@ -127,13 +159,13 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFields(GovernanceWitness.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GovernanceWitnessJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): GovernanceWitnessJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -145,7 +177,9 @@ export class GovernanceWitness implements StructClass {
 
   static fromJSON(json: Record<string, any>): GovernanceWitness {
     if (json.$typeName !== GovernanceWitness.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GovernanceWitness json object: expected '${GovernanceWitness.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GovernanceWitness.fromJSONField(json)
@@ -167,26 +201,23 @@ export class GovernanceWitness implements StructClass {
         throw new Error(`object at is not a GovernanceWitness object`)
       }
 
-      return GovernanceWitness.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GovernanceWitness.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GovernanceWitness.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GovernanceWitness object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGovernanceWitness(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGovernanceWitness(res.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
 
-    return GovernanceWitness.fromSuiObjectData(res.data)
+    return GovernanceWitness.fromBcs(res.bcsBytes)
   }
 }
 
@@ -194,7 +225,10 @@ export class GovernanceWitness implements StructClass {
 
 export function isContractUpgraded(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::upgrade_contract::ContractUpgraded`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'upgrade_contract::ContractUpgraded')
+    }::upgrade_contract::ContractUpgraded`
 }
 
 export interface ContractUpgradedFields {
@@ -204,17 +238,29 @@ export interface ContractUpgradedFields {
 
 export type ContractUpgradedReified = Reified<ContractUpgraded, ContractUpgradedFields>
 
+export type ContractUpgradedJSONField = {
+  oldContract: string
+  newContract: string
+}
+
+export type ContractUpgradedJSON = {
+  $typeName: typeof ContractUpgraded.$typeName
+  $typeArgs: []
+} & ContractUpgradedJSONField
+
 export class ContractUpgraded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::upgrade_contract::ContractUpgraded`
+  static readonly $typeName: `${string}::upgrade_contract::ContractUpgraded` = `${
+    getTypeOrigin('wormhole', 'upgrade_contract::ContractUpgraded')
+  }::upgrade_contract::ContractUpgraded` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ContractUpgraded.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::upgrade_contract::ContractUpgraded`
+  readonly $typeName: typeof ContractUpgraded.$typeName = ContractUpgraded.$typeName
+  readonly $fullTypeName: `${string}::upgrade_contract::ContractUpgraded`
   readonly $typeArgs: []
-  readonly $isPhantom = ContractUpgraded.$isPhantom
+  readonly $isPhantom: typeof ContractUpgraded.$isPhantom = ContractUpgraded.$isPhantom
 
   readonly oldContract: ToField<ID>
   readonly newContract: ToField<ID>
@@ -222,8 +268,8 @@ export class ContractUpgraded implements StructClass {
   private constructor(typeArgs: [], fields: ContractUpgradedFields) {
     this.$fullTypeName = composeSuiType(
       ContractUpgraded.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::upgrade_contract::ContractUpgraded`
+      ...typeArgs,
+    ) as `${string}::upgrade_contract::ContractUpgraded`
     this.$typeArgs = typeArgs
 
     this.oldContract = fields.oldContract
@@ -236,8 +282,8 @@ export class ContractUpgraded implements StructClass {
       typeName: ContractUpgraded.$typeName,
       fullTypeName: composeSuiType(
         ContractUpgraded.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::upgrade_contract::ContractUpgraded`,
+        ...[],
+      ) as `${string}::upgrade_contract::ContractUpgraded`,
       typeArgs: [] as [],
       isPhantom: ContractUpgraded.$isPhantom,
       reifiedTypeArgs: [],
@@ -249,7 +295,7 @@ export class ContractUpgraded implements StructClass {
       fromJSON: (json: Record<string, any>) => ContractUpgraded.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ContractUpgraded.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ContractUpgraded.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ContractUpgraded.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ContractUpgraded.fetch(client, id),
       new: (fields: ContractUpgradedFields) => {
         return new ContractUpgraded([], fields)
       },
@@ -257,14 +303,15 @@ export class ContractUpgraded implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ContractUpgradedReified {
     return ContractUpgraded.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ContractUpgraded>> {
     return phantom(ContractUpgraded.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ContractUpgraded>> {
     return ContractUpgraded.phantom()
   }
 
@@ -306,14 +353,14 @@ export class ContractUpgraded implements StructClass {
     return ContractUpgraded.fromFields(ContractUpgraded.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ContractUpgradedJSONField {
     return {
       oldContract: this.oldContract,
       newContract: this.newContract,
     }
   }
 
-  toJSON() {
+  toJSON(): ContractUpgradedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -326,7 +373,9 @@ export class ContractUpgraded implements StructClass {
 
   static fromJSON(json: Record<string, any>): ContractUpgraded {
     if (json.$typeName !== ContractUpgraded.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ContractUpgraded json object: expected '${ContractUpgraded.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ContractUpgraded.fromJSONField(json)
@@ -348,26 +397,23 @@ export class ContractUpgraded implements StructClass {
         throw new Error(`object at is not a ContractUpgraded object`)
       }
 
-      return ContractUpgraded.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ContractUpgraded.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ContractUpgraded.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ContractUpgraded> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ContractUpgraded object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isContractUpgraded(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ContractUpgraded> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isContractUpgraded(res.type)) {
       throw new Error(`object at id ${id} is not a ContractUpgraded object`)
     }
 
-    return ContractUpgraded.fromSuiObjectData(res.data)
+    return ContractUpgraded.fromBcs(res.bcsBytes)
   }
 }
 
@@ -375,7 +421,10 @@ export class ContractUpgraded implements StructClass {
 
 export function isUpgradeContract(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::upgrade_contract::UpgradeContract`
+  return type
+    === `${
+      getTypeOrigin('wormhole', 'upgrade_contract::UpgradeContract')
+    }::upgrade_contract::UpgradeContract`
 }
 
 export interface UpgradeContractFields {
@@ -384,25 +433,36 @@ export interface UpgradeContractFields {
 
 export type UpgradeContractReified = Reified<UpgradeContract, UpgradeContractFields>
 
+export type UpgradeContractJSONField = {
+  digest: ToJSON<Bytes32>
+}
+
+export type UpgradeContractJSON = {
+  $typeName: typeof UpgradeContract.$typeName
+  $typeArgs: []
+} & UpgradeContractJSONField
+
 export class UpgradeContract implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::upgrade_contract::UpgradeContract`
+  static readonly $typeName: `${string}::upgrade_contract::UpgradeContract` = `${
+    getTypeOrigin('wormhole', 'upgrade_contract::UpgradeContract')
+  }::upgrade_contract::UpgradeContract` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = UpgradeContract.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::upgrade_contract::UpgradeContract`
+  readonly $typeName: typeof UpgradeContract.$typeName = UpgradeContract.$typeName
+  readonly $fullTypeName: `${string}::upgrade_contract::UpgradeContract`
   readonly $typeArgs: []
-  readonly $isPhantom = UpgradeContract.$isPhantom
+  readonly $isPhantom: typeof UpgradeContract.$isPhantom = UpgradeContract.$isPhantom
 
   readonly digest: ToField<Bytes32>
 
   private constructor(typeArgs: [], fields: UpgradeContractFields) {
     this.$fullTypeName = composeSuiType(
       UpgradeContract.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::upgrade_contract::UpgradeContract`
+      ...typeArgs,
+    ) as `${string}::upgrade_contract::UpgradeContract`
     this.$typeArgs = typeArgs
 
     this.digest = fields.digest
@@ -414,8 +474,8 @@ export class UpgradeContract implements StructClass {
       typeName: UpgradeContract.$typeName,
       fullTypeName: composeSuiType(
         UpgradeContract.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::upgrade_contract::UpgradeContract`,
+        ...[],
+      ) as `${string}::upgrade_contract::UpgradeContract`,
       typeArgs: [] as [],
       isPhantom: UpgradeContract.$isPhantom,
       reifiedTypeArgs: [],
@@ -427,7 +487,7 @@ export class UpgradeContract implements StructClass {
       fromJSON: (json: Record<string, any>) => UpgradeContract.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => UpgradeContract.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpgradeContract.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => UpgradeContract.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => UpgradeContract.fetch(client, id),
       new: (fields: UpgradeContractFields) => {
         return new UpgradeContract([], fields)
       },
@@ -435,14 +495,15 @@ export class UpgradeContract implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): UpgradeContractReified {
     return UpgradeContract.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<UpgradeContract>> {
     return phantom(UpgradeContract.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<UpgradeContract>> {
     return UpgradeContract.phantom()
   }
 
@@ -481,13 +542,13 @@ export class UpgradeContract implements StructClass {
     return UpgradeContract.fromFields(UpgradeContract.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): UpgradeContractJSONField {
     return {
       digest: this.digest.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): UpgradeContractJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -499,7 +560,9 @@ export class UpgradeContract implements StructClass {
 
   static fromJSON(json: Record<string, any>): UpgradeContract {
     if (json.$typeName !== UpgradeContract.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a UpgradeContract json object: expected '${UpgradeContract.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return UpgradeContract.fromJSONField(json)
@@ -521,25 +584,22 @@ export class UpgradeContract implements StructClass {
         throw new Error(`object at is not a UpgradeContract object`)
       }
 
-      return UpgradeContract.fromBcs(fromB64(data.bcs.bcsBytes))
+      return UpgradeContract.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return UpgradeContract.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<UpgradeContract> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching UpgradeContract object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isUpgradeContract(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<UpgradeContract> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isUpgradeContract(res.type)) {
       throw new Error(`object at id ${id} is not a UpgradeContract object`)
     }
 
-    return UpgradeContract.fromSuiObjectData(res.data)
+    return UpgradeContract.fromBcs(res.bcsBytes)
   }
 }

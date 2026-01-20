@@ -1,11 +1,15 @@
+/**
+ * A simple library that enables hot-potato-locked borrow mechanics.
+ *
+ * With Programmable transactions, it is possible to borrow a value within
+ * a transaction, use it and put back in the end. Hot-potato `Borrow` makes
+ * sure the object is returned and was not swapped for another one.
+ */
+
+import { bcs, BcsType } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeArgument,
-  ToTypeStr,
-  TypeArgument,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -14,19 +18,26 @@ import {
   extractType,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
   toBcs,
+  ToField,
+  ToJSON,
+  ToTypeArgument,
+  ToTypeStr,
+  TypeArgument,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
-import { Option } from '../../move-stdlib/option/structs'
+import { Option } from '../../std/option/structs'
 import { ID } from '../object/structs'
-import { BcsType, bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 /* ============================== Referent =============================== */
 
@@ -42,17 +53,28 @@ export interface ReferentFields<T extends TypeArgument> {
 
 export type ReferentReified<T extends TypeArgument> = Reified<Referent<T>, ReferentFields<T>>
 
+export type ReferentJSONField<T extends TypeArgument> = {
+  id: string
+  value: ToJSON<T> | null
+}
+
+export type ReferentJSON<T extends TypeArgument> = {
+  $typeName: typeof Referent.$typeName
+  $typeArgs: [ToTypeStr<T>]
+} & ReferentJSONField<T>
+
+/** An object wrapping a `T` and providing the borrow API. */
 export class Referent<T extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::borrow::Referent`
+  static readonly $typeName: `0x2::borrow::Referent` = `0x2::borrow::Referent` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
-  readonly $typeName = Referent.$typeName
+  readonly $typeName: typeof Referent.$typeName = Referent.$typeName
   readonly $fullTypeName: `0x2::borrow::Referent<${ToTypeStr<T>}>`
   readonly $typeArgs: [ToTypeStr<T>]
-  readonly $isPhantom = Referent.$isPhantom
+  readonly $isPhantom: typeof Referent.$isPhantom = Referent.$isPhantom
 
   readonly id: ToField<'address'>
   readonly value: ToField<Option<T>>
@@ -60,7 +82,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
   private constructor(typeArgs: [ToTypeStr<T>], fields: ReferentFields<T>) {
     this.$fullTypeName = composeSuiType(
       Referent.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::borrow::Referent<${ToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
@@ -68,13 +90,15 @@ export class Referent<T extends TypeArgument> implements StructClass {
     this.value = fields.value
   }
 
-  static reified<T extends Reified<TypeArgument, any>>(T: T): ReferentReified<ToTypeArgument<T>> {
+  static reified<T extends Reified<TypeArgument, any>>(
+    T: T,
+  ): ReferentReified<ToTypeArgument<T>> {
     const reifiedBcs = Referent.bcs(toBcs(T))
     return {
       typeName: Referent.$typeName,
       fullTypeName: composeSuiType(
         Referent.$typeName,
-        ...[extractType(T)]
+        ...[extractType(T)],
       ) as `0x2::borrow::Referent<${ToTypeStr<ToTypeArgument<T>>}>`,
       typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
       isPhantom: Referent.$isPhantom,
@@ -87,7 +111,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
       fromJSON: (json: Record<string, any>) => Referent.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) => Referent.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => Referent.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => Referent.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Referent.fetch(client, T, id),
       new: (fields: ReferentFields<ToTypeArgument<T>>) => {
         return new Referent([extractType(T)], fields)
       },
@@ -95,16 +119,17 @@ export class Referent<T extends TypeArgument> implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): typeof Referent.reified {
     return Referent.reified
   }
 
   static phantom<T extends Reified<TypeArgument, any>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<Referent<ToTypeArgument<T>>>> {
     return phantom(Referent.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof Referent.phantom {
     return Referent.phantom
   }
 
@@ -112,8 +137,8 @@ export class Referent<T extends TypeArgument> implements StructClass {
     return <T extends BcsType<any>>(T: T) =>
       bcs.struct(`Referent<${T.name}>`, {
         id: bcs.bytes(32).transform({
-          input: (val: string) => fromHEX(val),
-          output: (val: Uint8Array) => toHEX(val),
+          input: (val: string) => fromHex(val),
+          output: (val: Uint8Array) => toHex(val),
         }),
         value: Option.bcs(T),
       })
@@ -130,7 +155,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromFields<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): Referent<ToTypeArgument<T>> {
     return Referent.reified(typeArg).new({
       id: decodeFromFields('address', fields.id),
@@ -140,7 +165,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromFieldsWithTypes<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): Referent<ToTypeArgument<T>> {
     if (!isReferent(item.type)) {
       throw new Error('not a Referent type')
@@ -155,27 +180,26 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromBcs<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): Referent<ToTypeArgument<T>> {
     const typeArgs = [typeArg]
-
-    return Referent.fromFields(typeArg, Referent.bcs(toBcs(typeArgs[0])).parse(data))
+    return Referent.fromFields(typeArg, Referent.bcs(toBcs(typeArg)).parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ReferentJSONField<T> {
     return {
       id: this.id,
       value: fieldToJSON<Option<T>>(`${Option.$typeName}<${this.$typeArgs[0]}>`, this.value),
     }
   }
 
-  toJSON() {
+  toJSON(): ReferentJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    field: any
+    field: any,
   ): Referent<ToTypeArgument<T>> {
     return Referent.reified(typeArg).new({
       id: decodeFromJSONField('address', field.id),
@@ -185,15 +209,17 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromJSON<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): Referent<ToTypeArgument<T>> {
     if (json.$typeName !== Referent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Referent json object: expected '${Referent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(Referent.$typeName, extractType(typeArg)),
+      composeSuiType(Referent.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return Referent.fromJSONField(typeArg, json)
@@ -201,7 +227,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): Referent<ToTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -214,7 +240,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
 
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): Referent<ToTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isReferent(data.bcs.type)) {
@@ -224,41 +250,56 @@ export class Referent<T extends TypeArgument> implements StructClass {
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return Referent.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return Referent.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Referent.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<Referent<ToTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Referent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isReferent(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isReferent(res.type)) {
       throw new Error(`object at id ${id} is not a Referent object`)
     }
 
-    return Referent.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Referent.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -276,23 +317,37 @@ export interface BorrowFields {
 
 export type BorrowReified = Reified<Borrow, BorrowFields>
 
+export type BorrowJSONField = {
+  ref: string
+  obj: string
+}
+
+export type BorrowJSON = {
+  $typeName: typeof Borrow.$typeName
+  $typeArgs: []
+} & BorrowJSONField
+
+/** A hot potato making sure the object is put back once borrowed. */
 export class Borrow implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::borrow::Borrow`
+  static readonly $typeName: `0x2::borrow::Borrow` = `0x2::borrow::Borrow` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Borrow.$typeName
+  readonly $typeName: typeof Borrow.$typeName = Borrow.$typeName
   readonly $fullTypeName: `0x2::borrow::Borrow`
   readonly $typeArgs: []
-  readonly $isPhantom = Borrow.$isPhantom
+  readonly $isPhantom: typeof Borrow.$isPhantom = Borrow.$isPhantom
 
   readonly ref: ToField<'address'>
   readonly obj: ToField<ID>
 
   private constructor(typeArgs: [], fields: BorrowFields) {
-    this.$fullTypeName = composeSuiType(Borrow.$typeName, ...typeArgs) as `0x2::borrow::Borrow`
+    this.$fullTypeName = composeSuiType(
+      Borrow.$typeName,
+      ...typeArgs,
+    ) as `0x2::borrow::Borrow`
     this.$typeArgs = typeArgs
 
     this.ref = fields.ref
@@ -303,7 +358,10 @@ export class Borrow implements StructClass {
     const reifiedBcs = Borrow.bcs
     return {
       typeName: Borrow.$typeName,
-      fullTypeName: composeSuiType(Borrow.$typeName, ...[]) as `0x2::borrow::Borrow`,
+      fullTypeName: composeSuiType(
+        Borrow.$typeName,
+        ...[],
+      ) as `0x2::borrow::Borrow`,
       typeArgs: [] as [],
       isPhantom: Borrow.$isPhantom,
       reifiedTypeArgs: [],
@@ -315,7 +373,7 @@ export class Borrow implements StructClass {
       fromJSON: (json: Record<string, any>) => Borrow.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Borrow.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Borrow.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Borrow.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Borrow.fetch(client, id),
       new: (fields: BorrowFields) => {
         return new Borrow([], fields)
       },
@@ -323,22 +381,23 @@ export class Borrow implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): BorrowReified {
     return Borrow.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Borrow>> {
     return phantom(Borrow.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Borrow>> {
     return Borrow.phantom()
   }
 
   private static instantiateBcs() {
     return bcs.struct('Borrow', {
       ref: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
       obj: ID.bcs,
     })
@@ -375,14 +434,14 @@ export class Borrow implements StructClass {
     return Borrow.fromFields(Borrow.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BorrowJSONField {
     return {
       ref: this.ref,
       obj: this.obj,
     }
   }
 
-  toJSON() {
+  toJSON(): BorrowJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -395,7 +454,9 @@ export class Borrow implements StructClass {
 
   static fromJSON(json: Record<string, any>): Borrow {
     if (json.$typeName !== Borrow.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Borrow json object: expected '${Borrow.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Borrow.fromJSONField(json)
@@ -417,25 +478,22 @@ export class Borrow implements StructClass {
         throw new Error(`object at is not a Borrow object`)
       }
 
-      return Borrow.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Borrow.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Borrow.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Borrow> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Borrow object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBorrow(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Borrow> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBorrow(res.type)) {
       throw new Error(`object at id ${id} is not a Borrow object`)
     }
 
-    return Borrow.fromSuiObjectData(res.data)
+    return Borrow.fromBcs(res.bcsBytes)
   }
 }

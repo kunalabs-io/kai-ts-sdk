@@ -1,9 +1,18 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function feeRateDenominator(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::clmm_math::fee_rate_denominator`, arguments: [] })
+/** Returns the denominator used for fee rate calculations, where fee rate is expressed as parts per million (1000000 = 100%) */
+export function feeRateDenominator(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::fee_rate_denominator`,
+    arguments: [],
+  })
 }
 
 export interface GetLiquidityFromAArgs {
@@ -13,9 +22,9 @@ export interface GetLiquidityFromAArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getLiquidityFromA(tx: Transaction, args: GetLiquidityFromAArgs) {
+export function getLiquidityFromA(tx: Transaction, args: GetLiquidityFromAArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_liquidity_from_a`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_liquidity_from_a`,
     arguments: [
       pure(tx, args.sqrtPrice0, `u128`),
       pure(tx, args.sqrtPrice1, `u128`),
@@ -32,9 +41,9 @@ export interface GetLiquidityFromBArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getLiquidityFromB(tx: Transaction, args: GetLiquidityFromBArgs) {
+export function getLiquidityFromB(tx: Transaction, args: GetLiquidityFromBArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_liquidity_from_b`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_liquidity_from_b`,
     arguments: [
       pure(tx, args.sqrtPrice0, `u128`),
       pure(tx, args.sqrtPrice1, `u128`),
@@ -51,9 +60,9 @@ export interface GetDeltaAArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getDeltaA(tx: Transaction, args: GetDeltaAArgs) {
+export function getDeltaA(tx: Transaction, args: GetDeltaAArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_delta_a`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_delta_a`,
     arguments: [
       pure(tx, args.sqrtPrice0, `u128`),
       pure(tx, args.sqrtPrice1, `u128`),
@@ -70,9 +79,9 @@ export interface GetDeltaBArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getDeltaB(tx: Transaction, args: GetDeltaBArgs) {
+export function getDeltaB(tx: Transaction, args: GetDeltaBArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_delta_b`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_delta_b`,
     arguments: [
       pure(tx, args.sqrtPrice0, `u128`),
       pure(tx, args.sqrtPrice1, `u128`),
@@ -89,9 +98,12 @@ export interface GetNextSqrtPriceAUpArgs {
   byAmountInput: boolean | TransactionArgument
 }
 
-export function getNextSqrtPriceAUp(tx: Transaction, args: GetNextSqrtPriceAUpArgs) {
+export function getNextSqrtPriceAUp(
+  tx: Transaction,
+  args: GetNextSqrtPriceAUpArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_a_up`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_next_sqrt_price_a_up`,
     arguments: [
       pure(tx, args.sqrtPrice, `u128`),
       pure(tx, args.liquidity, `u128`),
@@ -108,9 +120,12 @@ export interface GetNextSqrtPriceBDownArgs {
   byAmountInput: boolean | TransactionArgument
 }
 
-export function getNextSqrtPriceBDown(tx: Transaction, args: GetNextSqrtPriceBDownArgs) {
+export function getNextSqrtPriceBDown(
+  tx: Transaction,
+  args: GetNextSqrtPriceBDownArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_b_down`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_next_sqrt_price_b_down`,
     arguments: [
       pure(tx, args.sqrtPrice, `u128`),
       pure(tx, args.liquidity, `u128`),
@@ -127,9 +142,12 @@ export interface GetNextSqrtPriceFromInputArgs {
   aToB: boolean | TransactionArgument
 }
 
-export function getNextSqrtPriceFromInput(tx: Transaction, args: GetNextSqrtPriceFromInputArgs) {
+export function getNextSqrtPriceFromInput(
+  tx: Transaction,
+  args: GetNextSqrtPriceFromInputArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_input`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_next_sqrt_price_from_input`,
     arguments: [
       pure(tx, args.sqrtPrice, `u128`),
       pure(tx, args.liquidity, `u128`),
@@ -146,9 +164,12 @@ export interface GetNextSqrtPriceFromOutputArgs {
   aToB: boolean | TransactionArgument
 }
 
-export function getNextSqrtPriceFromOutput(tx: Transaction, args: GetNextSqrtPriceFromOutputArgs) {
+export function getNextSqrtPriceFromOutput(
+  tx: Transaction,
+  args: GetNextSqrtPriceFromOutputArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_next_sqrt_price_from_output`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_next_sqrt_price_from_output`,
     arguments: [
       pure(tx, args.sqrtPrice, `u128`),
       pure(tx, args.liquidity, `u128`),
@@ -165,9 +186,12 @@ export interface GetDeltaUpFromInputArgs {
   aToB: boolean | TransactionArgument
 }
 
-export function getDeltaUpFromInput(tx: Transaction, args: GetDeltaUpFromInputArgs) {
+export function getDeltaUpFromInput(
+  tx: Transaction,
+  args: GetDeltaUpFromInputArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_delta_up_from_input`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_delta_up_from_input`,
     arguments: [
       pure(tx, args.currentSqrtPrice, `u128`),
       pure(tx, args.targetSqrtPrice, `u128`),
@@ -184,9 +208,12 @@ export interface GetDeltaDownFromOutputArgs {
   aToB: boolean | TransactionArgument
 }
 
-export function getDeltaDownFromOutput(tx: Transaction, args: GetDeltaDownFromOutputArgs) {
+export function getDeltaDownFromOutput(
+  tx: Transaction,
+  args: GetDeltaDownFromOutputArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_delta_down_from_output`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_delta_down_from_output`,
     arguments: [
       pure(tx, args.currentSqrtPrice, `u128`),
       pure(tx, args.targetSqrtPrice, `u128`),
@@ -206,9 +233,9 @@ export interface ComputeSwapStepArgs {
   byAmountIn: boolean | TransactionArgument
 }
 
-export function computeSwapStep(tx: Transaction, args: ComputeSwapStepArgs) {
+export function computeSwapStep(tx: Transaction, args: ComputeSwapStepArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::compute_swap_step`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::compute_swap_step`,
     arguments: [
       pure(tx, args.currentSqrtPrice, `u128`),
       pure(tx, args.targetSqrtPrice, `u128`),
@@ -230,9 +257,12 @@ export interface GetAmountByLiquidityArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function getAmountByLiquidity(tx: Transaction, args: GetAmountByLiquidityArgs) {
+export function getAmountByLiquidity(
+  tx: Transaction,
+  args: GetAmountByLiquidityArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_amount_by_liquidity`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_amount_by_liquidity`,
     arguments: [
       obj(tx, args.tickLower),
       obj(tx, args.tickUpper),
@@ -253,9 +283,12 @@ export interface GetLiquidityByAmountArgs {
   isFixedA: boolean | TransactionArgument
 }
 
-export function getLiquidityByAmount(tx: Transaction, args: GetLiquidityByAmountArgs) {
+export function getLiquidityByAmount(
+  tx: Transaction,
+  args: GetLiquidityByAmountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::clmm_math::get_liquidity_by_amount`,
+    target: `${getPublishedAt('cetus-clmm')}::clmm_math::get_liquidity_by_amount`,
     arguments: [
       obj(tx, args.lowerIndex),
       obj(tx, args.upperIndex),

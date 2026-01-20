@@ -1,59 +1,96 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { I64 } from '../i64/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Price =============================== */
 
 export function isPrice(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::price::Price`
+  return type === `${getTypeOrigin('pyth', 'price::Price')}::price::Price`
 }
 
 export interface PriceFields {
   price: ToField<I64>
+  /** Confidence interval around the price */
   conf: ToField<'u64'>
+  /** The exponent */
   expo: ToField<I64>
+  /** Unix timestamp of when this price was computed */
   timestamp: ToField<'u64'>
 }
 
 export type PriceReified = Reified<Price, PriceFields>
 
+export type PriceJSONField = {
+  price: ToJSON<I64>
+  conf: string
+  expo: ToJSON<I64>
+  timestamp: string
+}
+
+export type PriceJSON = {
+  $typeName: typeof Price.$typeName
+  $typeArgs: []
+} & PriceJSONField
+
+/**
+ * A price with a degree of uncertainty, represented as a price +- a confidence interval.
+ *
+ * The confidence interval roughly corresponds to the standard error of a normal distribution.
+ * Both the price and confidence are stored in a fixed-point numeric representation,
+ * `x * (10^expo)`, where `expo` is the exponent.
+ *
+ * Please refer to the documentation at https://docs.pyth.network/documentation/pythnet-price-feeds/best-practices for how
+ * to how this price safely.
+ */
 export class Price implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::price::Price`
+  static readonly $typeName: `${string}::price::Price` = `${
+    getTypeOrigin('pyth', 'price::Price')
+  }::price::Price` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Price.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::price::Price`
+  readonly $typeName: typeof Price.$typeName = Price.$typeName
+  readonly $fullTypeName: `${string}::price::Price`
   readonly $typeArgs: []
-  readonly $isPhantom = Price.$isPhantom
+  readonly $isPhantom: typeof Price.$isPhantom = Price.$isPhantom
 
   readonly price: ToField<I64>
+  /** Confidence interval around the price */
   readonly conf: ToField<'u64'>
+  /** The exponent */
   readonly expo: ToField<I64>
+  /** Unix timestamp of when this price was computed */
   readonly timestamp: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: PriceFields) {
     this.$fullTypeName = composeSuiType(
       Price.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::price::Price`
+      ...typeArgs,
+    ) as `${string}::price::Price`
     this.$typeArgs = typeArgs
 
     this.price = fields.price
@@ -66,7 +103,10 @@ export class Price implements StructClass {
     const reifiedBcs = Price.bcs
     return {
       typeName: Price.$typeName,
-      fullTypeName: composeSuiType(Price.$typeName, ...[]) as `${typeof PKG_V1}::price::Price`,
+      fullTypeName: composeSuiType(
+        Price.$typeName,
+        ...[],
+      ) as `${string}::price::Price`,
       typeArgs: [] as [],
       isPhantom: Price.$isPhantom,
       reifiedTypeArgs: [],
@@ -78,7 +118,7 @@ export class Price implements StructClass {
       fromJSON: (json: Record<string, any>) => Price.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Price.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Price.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Price.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Price.fetch(client, id),
       new: (fields: PriceFields) => {
         return new Price([], fields)
       },
@@ -86,14 +126,15 @@ export class Price implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PriceReified {
     return Price.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Price>> {
     return phantom(Price.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Price>> {
     return Price.phantom()
   }
 
@@ -141,7 +182,7 @@ export class Price implements StructClass {
     return Price.fromFields(Price.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PriceJSONField {
     return {
       price: this.price.toJSONField(),
       conf: this.conf.toString(),
@@ -150,7 +191,7 @@ export class Price implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PriceJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -165,7 +206,9 @@ export class Price implements StructClass {
 
   static fromJSON(json: Record<string, any>): Price {
     if (json.$typeName !== Price.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Price json object: expected '${Price.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Price.fromJSONField(json)
@@ -187,25 +230,22 @@ export class Price implements StructClass {
         throw new Error(`object at is not a Price object`)
       }
 
-      return Price.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Price.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Price.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Price> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Price object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPrice(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Price> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPrice(res.type)) {
       throw new Error(`object at id ${id} is not a Price object`)
     }
 
-    return Price.fromSuiObjectData(res.data)
+    return Price.fromBcs(res.bcsBytes)
   }
 }

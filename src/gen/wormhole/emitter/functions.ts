@@ -1,21 +1,38 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function new_(tx: Transaction, wormholeState: TransactionObjectInput) {
+/** Generate a new `EmitterCap`. */
+export function new_(tx: Transaction, wormholeState: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::emitter::new`,
+    target: `${getPublishedAt('wormhole')}::emitter::new`,
     arguments: [obj(tx, wormholeState)],
   })
 }
 
-export function sequence(tx: Transaction, self: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::emitter::sequence`, arguments: [obj(tx, self)] })
+/**
+ * Returns current sequence (which will be used in the next Wormhole
+ * message emitted).
+ */
+export function sequence(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('wormhole')}::emitter::sequence`,
+    arguments: [obj(tx, self)],
+  })
 }
 
-export function useSequence(tx: Transaction, self: TransactionObjectInput) {
+/**
+ * Once a Wormhole message is emitted, an `EmitterCap` upticks its
+ * internal `sequence` for the next message.
+ */
+export function useSequence(tx: Transaction, self: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::emitter::use_sequence`,
+    target: `${getPublishedAt('wormhole')}::emitter::use_sequence`,
     arguments: [obj(tx, self)],
   })
 }
@@ -25,9 +42,18 @@ export interface DestroyArgs {
   cap: TransactionObjectInput
 }
 
-export function destroy(tx: Transaction, args: DestroyArgs) {
+/**
+ * Destroys an `EmitterCap`.
+ *
+ * Note that this operation removes the ability to send messages using the
+ * emitter id, and is irreversible.
+ */
+export function destroy(tx: Transaction, args: DestroyArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::emitter::destroy`,
-    arguments: [obj(tx, args.wormholeState), obj(tx, args.cap)],
+    target: `${getPublishedAt('wormhole')}::emitter::destroy`,
+    arguments: [
+      obj(tx, args.wormholeState),
+      obj(tx, args.cap),
+    ],
   })
 }

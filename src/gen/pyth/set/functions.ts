@@ -1,10 +1,16 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj } from '../../_framework/util'
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj } from '../../_framework/util'
 
-export function new_(tx: Transaction, typeArg: string) {
+/** Create a new Set. */
+export function new_(tx: Transaction, typeArg: string): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::new`,
+    target: `${getPublishedAt('pyth')}::set::new`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -15,11 +21,18 @@ export interface AddArgs {
   key: GenericArg
 }
 
-export function add(tx: Transaction, typeArg: string, args: AddArgs) {
+/**
+ * Add a new element to the set.
+ * Aborts if the element already exists
+ */
+export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::add`,
+    target: `${getPublishedAt('pyth')}::set::add`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.set), generic(tx, `${typeArg}`, args.key)],
+    arguments: [
+      obj(tx, args.set),
+      generic(tx, `${typeArg}`, args.key),
+    ],
   })
 }
 
@@ -28,17 +41,26 @@ export interface ContainsArgs {
   key: GenericArg
 }
 
-export function contains(tx: Transaction, typeArg: string, args: ContainsArgs) {
+/** Returns true iff `set` contains an entry for `key`. */
+export function contains(tx: Transaction, typeArg: string, args: ContainsArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::contains`,
+    target: `${getPublishedAt('pyth')}::set::contains`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.set), generic(tx, `${typeArg}`, args.key)],
+    arguments: [
+      obj(tx, args.set),
+      generic(tx, `${typeArg}`, args.key),
+    ],
   })
 }
 
-export function empty(tx: Transaction, typeArg: string, set: TransactionObjectInput) {
+/** Removes all elements from the set */
+export function empty(
+  tx: Transaction,
+  typeArg: string,
+  set: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set::empty`,
+    target: `${getPublishedAt('pyth')}::set::empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, set)],
   })

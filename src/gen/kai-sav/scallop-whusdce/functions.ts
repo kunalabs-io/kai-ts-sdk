@@ -1,0 +1,269 @@
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { obj, pure } from '../../_framework/util'
+import { Option } from '../../std/option/structs'
+
+export function assertScallopPool(
+  tx: Transaction,
+  pool: TransactionObjectInput,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::assert_scallop_pool`,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface NewArgs {
+  scallopPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::new`,
+    arguments: [
+      obj(tx, args.scallopPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export function assertVersion(
+  tx: Transaction,
+  strategy: TransactionObjectInput,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::assert_version`,
+    arguments: [obj(tx, strategy)],
+  })
+}
+
+export interface AssertAdminArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+}
+
+export function assertAdmin(tx: Transaction, args: AssertAdminArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::assert_admin`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+    ],
+  })
+}
+
+export interface JoinVaultArgs {
+  vaultCap: TransactionObjectInput
+  vault: TransactionObjectInput
+  strategyCap: TransactionObjectInput
+  strategy: TransactionObjectInput
+}
+
+export function joinVault(tx: Transaction, args: JoinVaultArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::join_vault`,
+    arguments: [
+      obj(tx, args.vaultCap),
+      obj(tx, args.vault),
+      obj(tx, args.strategyCap),
+      obj(tx, args.strategy),
+    ],
+  })
+}
+
+export function assertScallopMarket(
+  tx: Transaction,
+  market: TransactionObjectInput,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::assert_scallop_market`,
+    arguments: [obj(tx, market)],
+  })
+}
+
+export function assertScallopRewardsPool(
+  tx: Transaction,
+  pool: TransactionObjectInput,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::assert_scallop_rewards_pool`,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+export interface RemoveFromVaultArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+  scallopVersion: TransactionObjectInput
+  scallopMarket: TransactionObjectInput
+  scallopPool: TransactionObjectInput
+  scallopRewardsPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function removeFromVault(tx: Transaction, args: RemoveFromVaultArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::remove_from_vault`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+      obj(tx, args.scallopVersion),
+      obj(tx, args.scallopMarket),
+      obj(tx, args.scallopPool),
+      obj(tx, args.scallopRewardsPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface MigrateArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+}
+
+export function migrate(tx: Transaction, args: MigrateArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::migrate`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+    ],
+  })
+}
+
+export interface RebalanceArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+  vault: TransactionObjectInput
+  amounts: TransactionObjectInput
+  scallopVersion: TransactionObjectInput
+  scallopMarket: TransactionObjectInput
+  scallopPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function rebalance(tx: Transaction, args: RebalanceArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::rebalance`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+      obj(tx, args.vault),
+      obj(tx, args.amounts),
+      obj(tx, args.scallopVersion),
+      obj(tx, args.scallopMarket),
+      obj(tx, args.scallopPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface TakeProfitsForSellingArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+  amount: bigint | TransactionArgument | null
+  scallopPool: TransactionObjectInput
+  scallopRewardsPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Since there are many avenues for selling the profits, the conversion from SUI to USDC
+ * is done by the admin on the client side. The taken profits are to be sold and resulting
+ * USDC deposited back with `deposit_sold_profits` function in the same transaction.
+ * In the future iterations of the protocol, this may be implemented on the smart contract level.
+ */
+export function takeProfitsForSelling(
+  tx: Transaction,
+  args: TakeProfitsForSellingArgs,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::take_profits_for_selling`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+      pure(tx, args.amount, `${Option.$typeName}<u64>`),
+      obj(tx, args.scallopPool),
+      obj(tx, args.scallopRewardsPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface SkimBaseProfitsArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+  scallopVersion: TransactionObjectInput
+  scallopMarket: TransactionObjectInput
+  scallopPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Skim the profits earned on base APY. */
+export function skimBaseProfits(tx: Transaction, args: SkimBaseProfitsArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::skim_base_profits`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+      obj(tx, args.scallopVersion),
+      obj(tx, args.scallopMarket),
+      obj(tx, args.scallopPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface DepositSoldProfitsArgs {
+  cap: TransactionObjectInput
+  strategy: TransactionObjectInput
+  vault: TransactionObjectInput
+  profit: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Return the converted profits. See `take_profits_for_selling`. */
+export function depositSoldProfits(
+  tx: Transaction,
+  args: DepositSoldProfitsArgs,
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::deposit_sold_profits`,
+    arguments: [
+      obj(tx, args.cap),
+      obj(tx, args.strategy),
+      obj(tx, args.vault),
+      obj(tx, args.profit),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface WithdrawArgs {
+  strategy: TransactionObjectInput
+  ticket: TransactionObjectInput
+  scallopVersion: TransactionObjectInput
+  scallopMarket: TransactionObjectInput
+  scallopPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+export function withdraw(tx: Transaction, args: WithdrawArgs): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-sav')}::scallop_whusdce::withdraw`,
+    arguments: [
+      obj(tx, args.strategy),
+      obj(tx, args.ticket),
+      obj(tx, args.scallopVersion),
+      obj(tx, args.scallopMarket),
+      obj(tx, args.scallopPool),
+      obj(tx, args.clock),
+    ],
+  })
+}

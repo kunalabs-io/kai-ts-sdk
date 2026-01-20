@@ -1,34 +1,51 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
-export function empty(tx: Transaction, typeArg: string) {
+/** Create an empty TableVec. */
+export function empty(tx: Transaction, typeArg: string): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::empty`,
+    target: `${getPublishedAt('sui')}::table_vec::empty`,
     typeArguments: [typeArg],
     arguments: [],
   })
 }
 
-export function singleton(tx: Transaction, typeArg: string, e: GenericArg) {
+/** Return a TableVec of size one containing element `e`. */
+export function singleton(tx: Transaction, typeArg: string, e: GenericArg): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::singleton`,
+    target: `${getPublishedAt('sui')}::table_vec::singleton`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, e)],
   })
 }
 
-export function length(tx: Transaction, typeArg: string, t: TransactionObjectInput) {
+/** Return the length of the TableVec. */
+export function length(
+  tx: Transaction,
+  typeArg: string,
+  t: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::length`,
+    target: `${getPublishedAt('sui')}::table_vec::length`,
     typeArguments: [typeArg],
     arguments: [obj(tx, t)],
   })
 }
 
-export function isEmpty(tx: Transaction, typeArg: string, t: TransactionObjectInput) {
+/** Return if the TableVec is empty or not. */
+export function isEmpty(
+  tx: Transaction,
+  typeArg: string,
+  t: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::is_empty`,
+    target: `${getPublishedAt('sui')}::table_vec::is_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, t)],
   })
@@ -39,11 +56,18 @@ export interface BorrowArgs {
   i: bigint | TransactionArgument
 }
 
-export function borrow(tx: Transaction, typeArg: string, args: BorrowArgs) {
+/**
+ * Acquire an immutable reference to the `i`th element of the TableVec `t`.
+ * Aborts if `i` is out of bounds.
+ */
+export function borrow(tx: Transaction, typeArg: string, args: BorrowArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::borrow`,
+    target: `${getPublishedAt('sui')}::table_vec::borrow`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.t), pure(tx, args.i, `u64`)],
+    arguments: [
+      obj(tx, args.t),
+      pure(tx, args.i, `u64`),
+    ],
   })
 }
 
@@ -52,11 +76,15 @@ export interface PushBackArgs {
   e: GenericArg
 }
 
-export function pushBack(tx: Transaction, typeArg: string, args: PushBackArgs) {
+/** Add element `e` to the end of the TableVec `t`. */
+export function pushBack(tx: Transaction, typeArg: string, args: PushBackArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::push_back`,
+    target: `${getPublishedAt('sui')}::table_vec::push_back`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.t), generic(tx, `${typeArg}`, args.e)],
+    arguments: [
+      obj(tx, args.t),
+      generic(tx, `${typeArg}`, args.e),
+    ],
   })
 }
 
@@ -65,33 +93,68 @@ export interface BorrowMutArgs {
   i: bigint | TransactionArgument
 }
 
-export function borrowMut(tx: Transaction, typeArg: string, args: BorrowMutArgs) {
+/**
+ * Return a mutable reference to the `i`th element in the TableVec `t`.
+ * Aborts if `i` is out of bounds.
+ */
+export function borrowMut(
+  tx: Transaction,
+  typeArg: string,
+  args: BorrowMutArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::borrow_mut`,
+    target: `${getPublishedAt('sui')}::table_vec::borrow_mut`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.t), pure(tx, args.i, `u64`)],
+    arguments: [
+      obj(tx, args.t),
+      pure(tx, args.i, `u64`),
+    ],
   })
 }
 
-export function popBack(tx: Transaction, typeArg: string, t: TransactionObjectInput) {
+/**
+ * Pop an element from the end of TableVec `t`.
+ * Aborts if `t` is empty.
+ */
+export function popBack(
+  tx: Transaction,
+  typeArg: string,
+  t: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::pop_back`,
+    target: `${getPublishedAt('sui')}::table_vec::pop_back`,
     typeArguments: [typeArg],
     arguments: [obj(tx, t)],
   })
 }
 
-export function destroyEmpty(tx: Transaction, typeArg: string, t: TransactionObjectInput) {
+/**
+ * Destroy the TableVec `t`.
+ * Aborts if `t` is not empty.
+ */
+export function destroyEmpty(
+  tx: Transaction,
+  typeArg: string,
+  t: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::destroy_empty`,
+    target: `${getPublishedAt('sui')}::table_vec::destroy_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, t)],
   })
 }
 
-export function drop(tx: Transaction, typeArg: string, t: TransactionObjectInput) {
+/**
+ * Drop a possibly non-empty TableVec `t`.
+ * Usable only if the value type `Element` has the `drop` ability
+ */
+export function drop(
+  tx: Transaction,
+  typeArg: string,
+  t: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::drop`,
+    target: `${getPublishedAt('sui')}::table_vec::drop`,
     typeArguments: [typeArg],
     arguments: [obj(tx, t)],
   })
@@ -103,11 +166,19 @@ export interface SwapArgs {
   j: bigint | TransactionArgument
 }
 
-export function swap(tx: Transaction, typeArg: string, args: SwapArgs) {
+/**
+ * Swaps the elements at the `i`th and `j`th indices in the TableVec `t`.
+ * Aborts if `i` or `j` is out of bounds.
+ */
+export function swap(tx: Transaction, typeArg: string, args: SwapArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::swap`,
+    target: `${getPublishedAt('sui')}::table_vec::swap`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.t), pure(tx, args.i, `u64`), pure(tx, args.j, `u64`)],
+    arguments: [
+      obj(tx, args.t),
+      pure(tx, args.i, `u64`),
+      pure(tx, args.j, `u64`),
+    ],
   })
 }
 
@@ -116,10 +187,22 @@ export interface SwapRemoveArgs {
   i: bigint | TransactionArgument
 }
 
-export function swapRemove(tx: Transaction, typeArg: string, args: SwapRemoveArgs) {
+/**
+ * Swap the `i`th element of the TableVec `t` with the last element and then pop the TableVec.
+ * This is O(1), but does not preserve ordering of elements in the TableVec.
+ * Aborts if `i` is out of bounds.
+ */
+export function swapRemove(
+  tx: Transaction,
+  typeArg: string,
+  args: SwapRemoveArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::table_vec::swap_remove`,
+    target: `${getPublishedAt('sui')}::table_vec::swap_remove`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.t), pure(tx, args.i, `u64`)],
+    arguments: [
+      obj(tx, args.t),
+      pure(tx, args.i, `u64`),
+    ],
   })
 }

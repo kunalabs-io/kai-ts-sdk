@@ -1,22 +1,33 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface EmitPriceFeedUpdateArgs {
   priceFeed: TransactionObjectInput
   timestamp: bigint | TransactionArgument
 }
 
-export function emitPriceFeedUpdate(tx: Transaction, args: EmitPriceFeedUpdateArgs) {
+export function emitPriceFeedUpdate(
+  tx: Transaction,
+  args: EmitPriceFeedUpdateArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::event::emit_price_feed_update`,
-    arguments: [obj(tx, args.priceFeed), pure(tx, args.timestamp, `u64`)],
+    target: `${getPublishedAt('pyth')}::event::emit_price_feed_update`,
+    arguments: [
+      obj(tx, args.priceFeed),
+      pure(tx, args.timestamp, `u64`),
+    ],
   })
 }
 
-export function emitPythInitializationEvent(tx: Transaction) {
+export function emitPythInitializationEvent(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::event::emit_pyth_initialization_event`,
+    target: `${getPublishedAt('pyth')}::event::emit_pyth_initialization_event`,
     arguments: [],
   })
 }

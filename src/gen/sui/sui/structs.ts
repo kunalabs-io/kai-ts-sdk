@@ -1,18 +1,30 @@
+/**
+ * Coin<SUI> is the token used to pay for gas in Sui.
+ * It has 9 decimals, and the smallest unit (10^-9) is called "mist".
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== SUI =============================== */
 
@@ -27,22 +39,35 @@ export interface SUIFields {
 
 export type SUIReified = Reified<SUI, SUIFields>
 
+export type SUIJSONField = {
+  dummyField: boolean
+}
+
+export type SUIJSON = {
+  $typeName: typeof SUI.$typeName
+  $typeArgs: []
+} & SUIJSONField
+
+/** Name of the coin */
 export class SUI implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::sui::SUI`
+  static readonly $typeName: `0x2::sui::SUI` = `0x2::sui::SUI` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = SUI.$typeName
+  readonly $typeName: typeof SUI.$typeName = SUI.$typeName
   readonly $fullTypeName: `0x2::sui::SUI`
   readonly $typeArgs: []
-  readonly $isPhantom = SUI.$isPhantom
+  readonly $isPhantom: typeof SUI.$isPhantom = SUI.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: SUIFields) {
-    this.$fullTypeName = composeSuiType(SUI.$typeName, ...typeArgs) as `0x2::sui::SUI`
+    this.$fullTypeName = composeSuiType(
+      SUI.$typeName,
+      ...typeArgs,
+    ) as `0x2::sui::SUI`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -52,7 +77,10 @@ export class SUI implements StructClass {
     const reifiedBcs = SUI.bcs
     return {
       typeName: SUI.$typeName,
-      fullTypeName: composeSuiType(SUI.$typeName, ...[]) as `0x2::sui::SUI`,
+      fullTypeName: composeSuiType(
+        SUI.$typeName,
+        ...[],
+      ) as `0x2::sui::SUI`,
       typeArgs: [] as [],
       isPhantom: SUI.$isPhantom,
       reifiedTypeArgs: [],
@@ -64,7 +92,7 @@ export class SUI implements StructClass {
       fromJSON: (json: Record<string, any>) => SUI.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SUI.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SUI.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SUI.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => SUI.fetch(client, id),
       new: (fields: SUIFields) => {
         return new SUI([], fields)
       },
@@ -72,14 +100,15 @@ export class SUI implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): SUIReified {
     return SUI.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<SUI>> {
     return phantom(SUI.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<SUI>> {
     return SUI.phantom()
   }
 
@@ -99,7 +128,9 @@ export class SUI implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): SUI {
-    return SUI.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return SUI.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): SUI {
@@ -116,23 +147,27 @@ export class SUI implements StructClass {
     return SUI.fromFields(SUI.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SUIJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): SUIJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): SUI {
-    return SUI.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return SUI.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): SUI {
     if (json.$typeName !== SUI.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a SUI json object: expected '${SUI.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return SUI.fromJSONField(json)
@@ -154,25 +189,22 @@ export class SUI implements StructClass {
         throw new Error(`object at is not a SUI object`)
       }
 
-      return SUI.fromBcs(fromB64(data.bcs.bcsBytes))
+      return SUI.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return SUI.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<SUI> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SUI object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSUI(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<SUI> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSUI(res.type)) {
       throw new Error(`object at id ${id} is not a SUI object`)
     }
 
-    return SUI.fromSuiObjectData(res.data)
+    return SUI.fromBcs(res.bcsBytes)
   }
 }

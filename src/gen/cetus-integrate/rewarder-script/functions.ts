@@ -1,7 +1,12 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Coin } from '../../sui/coin/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface DepositRewardArgs {
   a0: TransactionObjectInput
@@ -10,9 +15,13 @@ export interface DepositRewardArgs {
   a3: bigint | TransactionArgument
 }
 
-export function depositReward(tx: Transaction, typeArg: string, args: DepositRewardArgs) {
+export function depositReward(
+  tx: Transaction,
+  typeArg: string,
+  args: DepositRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder_script::deposit_reward`,
+    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::deposit_reward`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),
@@ -31,9 +40,13 @@ export interface EmergentWithdrawArgs {
   a4: string | TransactionArgument
 }
 
-export function emergentWithdraw(tx: Transaction, typeArg: string, args: EmergentWithdrawArgs) {
+export function emergentWithdraw(
+  tx: Transaction,
+  typeArg: string,
+  args: EmergentWithdrawArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder_script::emergent_withdraw`,
+    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::emergent_withdraw`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),
@@ -55,11 +68,16 @@ export interface EmergentWithdrawAllArgs {
 export function emergentWithdrawAll(
   tx: Transaction,
   typeArg: string,
-  args: EmergentWithdrawAllArgs
-) {
+  args: EmergentWithdrawAllArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder_script::emergent_withdraw_all`,
+    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::emergent_withdraw_all`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.a0), obj(tx, args.a1), obj(tx, args.a2), pure(tx, args.a3, `address`)],
+    arguments: [
+      obj(tx, args.a0),
+      obj(tx, args.a1),
+      obj(tx, args.a2),
+      pure(tx, args.a3, `address`),
+    ],
   })
 }

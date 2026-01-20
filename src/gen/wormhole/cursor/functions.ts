@@ -1,54 +1,95 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, obj, vector } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, vector } from '../../_framework/util'
 
+/** Initialises a cursor from a vector. */
 export function new_(
   tx: Transaction,
   typeArg: string,
-  data: Array<GenericArg> | TransactionArgument
-) {
+  data: Array<GenericArg> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::new`,
+    target: `${getPublishedAt('wormhole')}::cursor::new`,
     typeArguments: [typeArg],
     arguments: [vector(tx, `${typeArg}`, data)],
   })
 }
 
-export function data(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/** Retrieve underlying data. */
+export function data(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::data`,
+    target: `${getPublishedAt('wormhole')}::cursor::data`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
 }
 
-export function isEmpty(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/**
+ * Check whether the underlying data is empty. This method is useful for
+ * iterating over a `Cursor` to exhaust its contents.
+ */
+export function isEmpty(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::is_empty`,
+    target: `${getPublishedAt('wormhole')}::cursor::is_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
 }
 
-export function destroyEmpty(tx: Transaction, typeArg: string, cursor: TransactionObjectInput) {
+/** Destroys an empty cursor. This method aborts if the cursor is not empty. */
+export function destroyEmpty(
+  tx: Transaction,
+  typeArg: string,
+  cursor: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::destroy_empty`,
+    target: `${getPublishedAt('wormhole')}::cursor::destroy_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, cursor)],
   })
 }
 
-export function takeRest(tx: Transaction, typeArg: string, cursor: TransactionObjectInput) {
+/**
+ * Consumes the rest of the cursor (thus destroying it) and returns the
+ * remaining bytes.
+ *
+ * NOTE: Only use this function if you intend to consume the rest of the
+ * bytes. Since the result is a vector, which can be dropped, it is not
+ * possible to statically guarantee that the rest will be used.
+ */
+export function takeRest(
+  tx: Transaction,
+  typeArg: string,
+  cursor: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::take_rest`,
+    target: `${getPublishedAt('wormhole')}::cursor::take_rest`,
     typeArguments: [typeArg],
     arguments: [obj(tx, cursor)],
   })
 }
 
-export function poke(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/** Retrieve the first element of the cursor and advances it. */
+export function poke(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::cursor::poke`,
+    target: `${getPublishedAt('wormhole')}::cursor::poke`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })

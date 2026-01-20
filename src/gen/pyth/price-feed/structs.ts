@@ -1,58 +1,85 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { PriceIdentifier } from '../price-identifier/structs'
 import { Price } from '../price/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== PriceFeed =============================== */
 
 export function isPriceFeed(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::price_feed::PriceFeed`
+  return type === `${getTypeOrigin('pyth', 'price_feed::PriceFeed')}::price_feed::PriceFeed`
 }
 
 export interface PriceFeedFields {
+  /** The price identifier */
   priceIdentifier: ToField<PriceIdentifier>
+  /** The current aggregate price */
   price: ToField<Price>
+  /** The current exponentially moving average aggregate price */
   emaPrice: ToField<Price>
 }
 
 export type PriceFeedReified = Reified<PriceFeed, PriceFeedFields>
 
+export type PriceFeedJSONField = {
+  priceIdentifier: ToJSON<PriceIdentifier>
+  price: ToJSON<Price>
+  emaPrice: ToJSON<Price>
+}
+
+export type PriceFeedJSON = {
+  $typeName: typeof PriceFeed.$typeName
+  $typeArgs: []
+} & PriceFeedJSONField
+
+/** PriceFeed represents a current aggregate price for a particular product. */
 export class PriceFeed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::price_feed::PriceFeed`
+  static readonly $typeName: `${string}::price_feed::PriceFeed` = `${
+    getTypeOrigin('pyth', 'price_feed::PriceFeed')
+  }::price_feed::PriceFeed` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PriceFeed.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::price_feed::PriceFeed`
+  readonly $typeName: typeof PriceFeed.$typeName = PriceFeed.$typeName
+  readonly $fullTypeName: `${string}::price_feed::PriceFeed`
   readonly $typeArgs: []
-  readonly $isPhantom = PriceFeed.$isPhantom
+  readonly $isPhantom: typeof PriceFeed.$isPhantom = PriceFeed.$isPhantom
 
+  /** The price identifier */
   readonly priceIdentifier: ToField<PriceIdentifier>
+  /** The current aggregate price */
   readonly price: ToField<Price>
+  /** The current exponentially moving average aggregate price */
   readonly emaPrice: ToField<Price>
 
   private constructor(typeArgs: [], fields: PriceFeedFields) {
     this.$fullTypeName = composeSuiType(
       PriceFeed.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::price_feed::PriceFeed`
+      ...typeArgs,
+    ) as `${string}::price_feed::PriceFeed`
     this.$typeArgs = typeArgs
 
     this.priceIdentifier = fields.priceIdentifier
@@ -66,8 +93,8 @@ export class PriceFeed implements StructClass {
       typeName: PriceFeed.$typeName,
       fullTypeName: composeSuiType(
         PriceFeed.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::price_feed::PriceFeed`,
+        ...[],
+      ) as `${string}::price_feed::PriceFeed`,
       typeArgs: [] as [],
       isPhantom: PriceFeed.$isPhantom,
       reifiedTypeArgs: [],
@@ -79,7 +106,7 @@ export class PriceFeed implements StructClass {
       fromJSON: (json: Record<string, any>) => PriceFeed.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PriceFeed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PriceFeed.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PriceFeed.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PriceFeed.fetch(client, id),
       new: (fields: PriceFeedFields) => {
         return new PriceFeed([], fields)
       },
@@ -87,14 +114,15 @@ export class PriceFeed implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PriceFeedReified {
     return PriceFeed.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PriceFeed>> {
     return phantom(PriceFeed.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PriceFeed>> {
     return PriceFeed.phantom()
   }
 
@@ -131,7 +159,7 @@ export class PriceFeed implements StructClass {
     return PriceFeed.reified().new({
       priceIdentifier: decodeFromFieldsWithTypes(
         PriceIdentifier.reified(),
-        item.fields.price_identifier
+        item.fields.price_identifier,
       ),
       price: decodeFromFieldsWithTypes(Price.reified(), item.fields.price),
       emaPrice: decodeFromFieldsWithTypes(Price.reified(), item.fields.ema_price),
@@ -142,7 +170,7 @@ export class PriceFeed implements StructClass {
     return PriceFeed.fromFields(PriceFeed.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PriceFeedJSONField {
     return {
       priceIdentifier: this.priceIdentifier.toJSONField(),
       price: this.price.toJSONField(),
@@ -150,7 +178,7 @@ export class PriceFeed implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PriceFeedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -164,7 +192,9 @@ export class PriceFeed implements StructClass {
 
   static fromJSON(json: Record<string, any>): PriceFeed {
     if (json.$typeName !== PriceFeed.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PriceFeed json object: expected '${PriceFeed.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PriceFeed.fromJSONField(json)
@@ -186,25 +216,22 @@ export class PriceFeed implements StructClass {
         throw new Error(`object at is not a PriceFeed object`)
       }
 
-      return PriceFeed.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PriceFeed.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PriceFeed.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PriceFeed> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PriceFeed object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPriceFeed(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceFeed> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPriceFeed(res.type)) {
       throw new Error(`object at id ${id} is not a PriceFeed object`)
     }
 
-    return PriceFeed.fromSuiObjectData(res.data)
+    return PriceFeed.fromBcs(res.bcsBytes)
   }
 }

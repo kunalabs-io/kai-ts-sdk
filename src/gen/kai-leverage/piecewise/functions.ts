@@ -1,17 +1,26 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Section } from './structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface SectionArgs {
   end: bigint | TransactionArgument
   endVal: bigint | TransactionArgument
 }
 
-export function section(tx: Transaction, args: SectionArgs) {
+/** Create a section with end point and value. */
+export function section(tx: Transaction, args: SectionArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::piecewise::section`,
-    arguments: [pure(tx, args.end, `u64`), pure(tx, args.endVal, `u64`)],
+    target: `${getPublishedAt('kai-leverage')}::piecewise::section`,
+    arguments: [
+      pure(tx, args.end, `u64`),
+      pure(tx, args.endVal, `u64`),
+    ],
   })
 }
 
@@ -21,9 +30,10 @@ export interface CreateArgs {
   sections: Array<TransactionObjectInput> | TransactionArgument
 }
 
-export function create(tx: Transaction, args: CreateArgs) {
+/** Create a piecewise function from start point and ordered sections. */
+export function create(tx: Transaction, args: CreateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::piecewise::create`,
+    target: `${getPublishedAt('kai-leverage')}::piecewise::create`,
     arguments: [
       pure(tx, args.start, `u64`),
       pure(tx, args.startVal, `u64`),
@@ -37,13 +47,21 @@ export interface ValueAtArgs {
   x: bigint | TransactionArgument
 }
 
-export function valueAt(tx: Transaction, args: ValueAtArgs) {
+/** Evaluate the piecewise function at given input using linear interpolation. */
+export function valueAt(tx: Transaction, args: ValueAtArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::piecewise::value_at`,
-    arguments: [obj(tx, args.pw), pure(tx, args.x, `u64`)],
+    target: `${getPublishedAt('kai-leverage')}::piecewise::value_at`,
+    arguments: [
+      obj(tx, args.pw),
+      pure(tx, args.x, `u64`),
+    ],
   })
 }
 
-export function range(tx: Transaction, pw: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::piecewise::range`, arguments: [obj(tx, pw)] })
+/** Get the valid input range for this piecewise function. */
+export function range(tx: Transaction, pw: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage')}::piecewise::range`,
+    arguments: [obj(tx, pw)],
+  })
 }

@@ -1,19 +1,26 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { ID, UID } from '../object/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Versioned =============================== */
 
@@ -29,17 +36,35 @@ export interface VersionedFields {
 
 export type VersionedReified = Reified<Versioned, VersionedFields>
 
+export type VersionedJSONField = {
+  id: string
+  version: string
+}
+
+export type VersionedJSON = {
+  $typeName: typeof Versioned.$typeName
+  $typeArgs: []
+} & VersionedJSONField
+
+/**
+ * A wrapper type that supports versioning of the inner type.
+ * The inner type is a dynamic field of the Versioned object, and is keyed using version.
+ * User of this type could load the inner object using corresponding type based on the version.
+ * You can also upgrade the inner object to a new type version.
+ * If you want to support lazy upgrade of the inner type, one caveat is that all APIs would have
+ * to use mutable reference even if it's a read-only API.
+ */
 export class Versioned implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::versioned::Versioned`
+  static readonly $typeName: `0x2::versioned::Versioned` = `0x2::versioned::Versioned` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Versioned.$typeName
+  readonly $typeName: typeof Versioned.$typeName = Versioned.$typeName
   readonly $fullTypeName: `0x2::versioned::Versioned`
   readonly $typeArgs: []
-  readonly $isPhantom = Versioned.$isPhantom
+  readonly $isPhantom: typeof Versioned.$isPhantom = Versioned.$isPhantom
 
   readonly id: ToField<UID>
   readonly version: ToField<'u64'>
@@ -47,7 +72,7 @@ export class Versioned implements StructClass {
   private constructor(typeArgs: [], fields: VersionedFields) {
     this.$fullTypeName = composeSuiType(
       Versioned.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::versioned::Versioned`
     this.$typeArgs = typeArgs
 
@@ -59,7 +84,10 @@ export class Versioned implements StructClass {
     const reifiedBcs = Versioned.bcs
     return {
       typeName: Versioned.$typeName,
-      fullTypeName: composeSuiType(Versioned.$typeName, ...[]) as `0x2::versioned::Versioned`,
+      fullTypeName: composeSuiType(
+        Versioned.$typeName,
+        ...[],
+      ) as `0x2::versioned::Versioned`,
       typeArgs: [] as [],
       isPhantom: Versioned.$isPhantom,
       reifiedTypeArgs: [],
@@ -71,7 +99,7 @@ export class Versioned implements StructClass {
       fromJSON: (json: Record<string, any>) => Versioned.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Versioned.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Versioned.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Versioned.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Versioned.fetch(client, id),
       new: (fields: VersionedFields) => {
         return new Versioned([], fields)
       },
@@ -79,14 +107,15 @@ export class Versioned implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): VersionedReified {
     return Versioned.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Versioned>> {
     return phantom(Versioned.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Versioned>> {
     return Versioned.phantom()
   }
 
@@ -128,14 +157,14 @@ export class Versioned implements StructClass {
     return Versioned.fromFields(Versioned.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): VersionedJSONField {
     return {
       id: this.id,
       version: this.version.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): VersionedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -148,7 +177,9 @@ export class Versioned implements StructClass {
 
   static fromJSON(json: Record<string, any>): Versioned {
     if (json.$typeName !== Versioned.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Versioned json object: expected '${Versioned.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Versioned.fromJSONField(json)
@@ -170,26 +201,23 @@ export class Versioned implements StructClass {
         throw new Error(`object at is not a Versioned object`)
       }
 
-      return Versioned.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Versioned.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Versioned.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Versioned> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Versioned object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVersioned(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Versioned> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isVersioned(res.type)) {
       throw new Error(`object at id ${id} is not a Versioned object`)
     }
 
-    return Versioned.fromSuiObjectData(res.data)
+    return Versioned.fromBcs(res.bcsBytes)
   }
 }
 
@@ -207,17 +235,32 @@ export interface VersionChangeCapFields {
 
 export type VersionChangeCapReified = Reified<VersionChangeCap, VersionChangeCapFields>
 
+export type VersionChangeCapJSONField = {
+  versionedId: string
+  oldVersion: string
+}
+
+export type VersionChangeCapJSON = {
+  $typeName: typeof VersionChangeCap.$typeName
+  $typeArgs: []
+} & VersionChangeCapJSONField
+
+/**
+ * Represents a hot potato object generated when we take out the dynamic field.
+ * This is to make sure that we always put a new value back.
+ */
 export class VersionChangeCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::versioned::VersionChangeCap`
+  static readonly $typeName: `0x2::versioned::VersionChangeCap` =
+    `0x2::versioned::VersionChangeCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = VersionChangeCap.$typeName
+  readonly $typeName: typeof VersionChangeCap.$typeName = VersionChangeCap.$typeName
   readonly $fullTypeName: `0x2::versioned::VersionChangeCap`
   readonly $typeArgs: []
-  readonly $isPhantom = VersionChangeCap.$isPhantom
+  readonly $isPhantom: typeof VersionChangeCap.$isPhantom = VersionChangeCap.$isPhantom
 
   readonly versionedId: ToField<ID>
   readonly oldVersion: ToField<'u64'>
@@ -225,7 +268,7 @@ export class VersionChangeCap implements StructClass {
   private constructor(typeArgs: [], fields: VersionChangeCapFields) {
     this.$fullTypeName = composeSuiType(
       VersionChangeCap.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::versioned::VersionChangeCap`
     this.$typeArgs = typeArgs
 
@@ -239,7 +282,7 @@ export class VersionChangeCap implements StructClass {
       typeName: VersionChangeCap.$typeName,
       fullTypeName: composeSuiType(
         VersionChangeCap.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::versioned::VersionChangeCap`,
       typeArgs: [] as [],
       isPhantom: VersionChangeCap.$isPhantom,
@@ -252,7 +295,7 @@ export class VersionChangeCap implements StructClass {
       fromJSON: (json: Record<string, any>) => VersionChangeCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => VersionChangeCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VersionChangeCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => VersionChangeCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => VersionChangeCap.fetch(client, id),
       new: (fields: VersionChangeCapFields) => {
         return new VersionChangeCap([], fields)
       },
@@ -260,14 +303,15 @@ export class VersionChangeCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): VersionChangeCapReified {
     return VersionChangeCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<VersionChangeCap>> {
     return phantom(VersionChangeCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<VersionChangeCap>> {
     return VersionChangeCap.phantom()
   }
 
@@ -309,14 +353,14 @@ export class VersionChangeCap implements StructClass {
     return VersionChangeCap.fromFields(VersionChangeCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): VersionChangeCapJSONField {
     return {
       versionedId: this.versionedId,
       oldVersion: this.oldVersion.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): VersionChangeCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -329,7 +373,9 @@ export class VersionChangeCap implements StructClass {
 
   static fromJSON(json: Record<string, any>): VersionChangeCap {
     if (json.$typeName !== VersionChangeCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a VersionChangeCap json object: expected '${VersionChangeCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return VersionChangeCap.fromJSONField(json)
@@ -351,25 +397,22 @@ export class VersionChangeCap implements StructClass {
         throw new Error(`object at is not a VersionChangeCap object`)
       }
 
-      return VersionChangeCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return VersionChangeCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return VersionChangeCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<VersionChangeCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching VersionChangeCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isVersionChangeCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<VersionChangeCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isVersionChangeCap(res.type)) {
       throw new Error(`object at id ${id} is not a VersionChangeCap object`)
     }
 
-    return VersionChangeCap.fromSuiObjectData(res.data)
+    return VersionChangeCap.fromBcs(res.bcsBytes)
   }
 }

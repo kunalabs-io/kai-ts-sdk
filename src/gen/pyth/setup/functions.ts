@@ -1,10 +1,18 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { DataSource } from '../data-source/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::setup::init`, arguments: [] })
+export function init(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('pyth')}::setup::init`,
+    arguments: [],
+  })
 }
 
 export interface InitAndShareStateArgs {
@@ -16,9 +24,13 @@ export interface InitAndShareStateArgs {
   sources: Array<TransactionObjectInput> | TransactionArgument
 }
 
-export function initAndShareState(tx: Transaction, args: InitAndShareStateArgs) {
+/**
+ * Only the owner of the `DeployerCap` can call this method. This
+ * method destroys the capability and shares the `State` object.
+ */
+export function initAndShareState(tx: Transaction, args: InitAndShareStateArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::setup::init_and_share_state`,
+    target: `${getPublishedAt('pyth')}::setup::init_and_share_state`,
     arguments: [
       obj(tx, args.deployer),
       obj(tx, args.upgradeCap),

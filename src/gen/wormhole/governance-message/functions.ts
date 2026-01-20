@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
 export interface AuthorizeVerifyGlobalArgs {
   witness: GenericArg
@@ -10,13 +15,17 @@ export interface AuthorizeVerifyGlobalArgs {
   action: number | TransactionArgument
 }
 
+/**
+ * This method prepares `DecreeTicket` for global governance action. This
+ * means the VAA encodes target chain ID == 0.
+ */
 export function authorizeVerifyGlobal(
   tx: Transaction,
   typeArg: string,
-  args: AuthorizeVerifyGlobalArgs
-) {
+  args: AuthorizeVerifyGlobalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::authorize_verify_global`,
+    target: `${getPublishedAt('wormhole')}::governance_message::authorize_verify_global`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -36,13 +45,17 @@ export interface AuthorizeVerifyLocalArgs {
   action: number | TransactionArgument
 }
 
+/**
+ * This method prepares `DecreeTicket` for local governance action. This
+ * means the VAA encodes target chain ID == 21 (Sui's).
+ */
 export function authorizeVerifyLocal(
   tx: Transaction,
   typeArg: string,
-  args: AuthorizeVerifyLocalArgs
-) {
+  args: AuthorizeVerifyLocalArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::authorize_verify_local`,
+    target: `${getPublishedAt('wormhole')}::governance_message::authorize_verify_local`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -54,9 +67,13 @@ export function authorizeVerifyLocal(
   })
 }
 
-export function sequence(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
+export function sequence(
+  tx: Transaction,
+  typeArg: string,
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::sequence`,
+    target: `${getPublishedAt('wormhole')}::governance_message::sequence`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
@@ -67,25 +84,46 @@ export interface TakePayloadArgs {
   receipt: TransactionObjectInput
 }
 
-export function takePayload(tx: Transaction, typeArg: string, args: TakePayloadArgs) {
+/**
+ * This method unpacks `DecreeReceipt` and puts the VAA digest into a
+ * `ConsumedVAAs` container. Then it returns the governance payload.
+ */
+export function takePayload(
+  tx: Transaction,
+  typeArg: string,
+  args: TakePayloadArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::take_payload`,
+    target: `${getPublishedAt('wormhole')}::governance_message::take_payload`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.consumed), obj(tx, args.receipt)],
+    arguments: [
+      obj(tx, args.consumed),
+      obj(tx, args.receipt),
+    ],
   })
 }
 
-export function payload(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
+/** Method to peek into the payload in `DecreeReceipt`. */
+export function payload(
+  tx: Transaction,
+  typeArg: string,
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::payload`,
+    target: `${getPublishedAt('wormhole')}::governance_message::payload`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
 }
 
-export function destroy(tx: Transaction, typeArg: string, receipt: TransactionObjectInput) {
+/** Destroy the receipt. */
+export function destroy(
+  tx: Transaction,
+  typeArg: string,
+  receipt: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::destroy`,
+    target: `${getPublishedAt('wormhole')}::governance_message::destroy`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
@@ -97,20 +135,32 @@ export interface VerifyVaaArgs {
   ticket: TransactionObjectInput
 }
 
-export function verifyVaa(tx: Transaction, typeArg: string, args: VerifyVaaArgs) {
+/**
+ * This method unpacks a `DecreeTicket` to validate its members to make
+ * sure that the parameters match what was encoded in the VAA.
+ */
+export function verifyVaa(
+  tx: Transaction,
+  typeArg: string,
+  args: VerifyVaaArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::verify_vaa`,
+    target: `${getPublishedAt('wormhole')}::governance_message::verify_vaa`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.wormholeState), obj(tx, args.verifiedVaa), obj(tx, args.ticket)],
+    arguments: [
+      obj(tx, args.wormholeState),
+      obj(tx, args.verifiedVaa),
+      obj(tx, args.ticket),
+    ],
   })
 }
 
 export function deserialize(
   tx: Transaction,
-  buf: Array<number | TransactionArgument> | TransactionArgument
-) {
+  buf: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::governance_message::deserialize`,
+    target: `${getPublishedAt('wormhole')}::governance_message::deserialize`,
     arguments: [pure(tx, buf, `vector<u8>`)],
   })
 }

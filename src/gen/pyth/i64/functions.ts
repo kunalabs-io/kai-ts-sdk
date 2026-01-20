@@ -1,40 +1,57 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface NewArgs {
   magnitude: bigint | TransactionArgument
   negative: boolean | TransactionArgument
 }
 
-export function new_(tx: Transaction, args: NewArgs) {
+export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i64::new`,
-    arguments: [pure(tx, args.magnitude, `u64`), pure(tx, args.negative, `bool`)],
+    target: `${getPublishedAt('pyth')}::i64::new`,
+    arguments: [
+      pure(tx, args.magnitude, `u64`),
+      pure(tx, args.negative, `bool`),
+    ],
   })
 }
 
-export function getIsNegative(tx: Transaction, i: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::i64::get_is_negative`, arguments: [obj(tx, i)] })
+export function getIsNegative(tx: Transaction, i: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('pyth')}::i64::get_is_negative`,
+    arguments: [obj(tx, i)],
+  })
 }
 
-export function getMagnitudeIfPositive(tx: Transaction, in_: TransactionObjectInput) {
+export function getMagnitudeIfPositive(
+  tx: Transaction,
+  in_: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i64::get_magnitude_if_positive`,
+    target: `${getPublishedAt('pyth')}::i64::get_magnitude_if_positive`,
     arguments: [obj(tx, in_)],
   })
 }
 
-export function getMagnitudeIfNegative(tx: Transaction, in_: TransactionObjectInput) {
+export function getMagnitudeIfNegative(
+  tx: Transaction,
+  in_: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i64::get_magnitude_if_negative`,
+    target: `${getPublishedAt('pyth')}::i64::get_magnitude_if_negative`,
     arguments: [obj(tx, in_)],
   })
 }
 
-export function fromU64(tx: Transaction, from: bigint | TransactionArgument) {
+export function fromU64(tx: Transaction, from: bigint | TransactionArgument): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i64::from_u64`,
+    target: `${getPublishedAt('pyth')}::i64::from_u64`,
     arguments: [pure(tx, from, `u64`)],
   })
 }
@@ -44,9 +61,12 @@ export interface ParseMagnitudeArgs {
   negative: boolean | TransactionArgument
 }
 
-export function parseMagnitude(tx: Transaction, args: ParseMagnitudeArgs) {
+export function parseMagnitude(tx: Transaction, args: ParseMagnitudeArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::i64::parse_magnitude`,
-    arguments: [pure(tx, args.from, `u64`), pure(tx, args.negative, `bool`)],
+    target: `${getPublishedAt('pyth')}::i64::parse_magnitude`,
+    arguments: [
+      pure(tx, args.from, `u64`),
+      pure(tx, args.negative, `bool`),
+    ],
   })
 }

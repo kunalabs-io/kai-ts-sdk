@@ -1,25 +1,35 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== CalculatedRouterSwapResult =============================== */
 
 export function isCalculatedRouterSwapResult(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::router::CalculatedRouterSwapResult`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'router::CalculatedRouterSwapResult')
+    }::router::CalculatedRouterSwapResult`
 }
 
 export interface CalculatedRouterSwapResultFields {
@@ -38,17 +48,37 @@ export type CalculatedRouterSwapResultReified = Reified<
   CalculatedRouterSwapResultFields
 >
 
+export type CalculatedRouterSwapResultJSONField = {
+  amountIn: string
+  amountMedium: string
+  amountOut: string
+  isExceed: boolean
+  currentSqrtPriceAb: string
+  currentSqrtPriceCd: string
+  targetSqrtPriceAb: string
+  targetSqrtPriceCd: string
+}
+
+export type CalculatedRouterSwapResultJSON = {
+  $typeName: typeof CalculatedRouterSwapResult.$typeName
+  $typeArgs: []
+} & CalculatedRouterSwapResultJSONField
+
 export class CalculatedRouterSwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::router::CalculatedRouterSwapResult`
+  static readonly $typeName: `${string}::router::CalculatedRouterSwapResult` = `${
+    getTypeOrigin('cetus-integrate', 'router::CalculatedRouterSwapResult')
+  }::router::CalculatedRouterSwapResult` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = CalculatedRouterSwapResult.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::router::CalculatedRouterSwapResult`
+  readonly $typeName: typeof CalculatedRouterSwapResult.$typeName =
+    CalculatedRouterSwapResult.$typeName
+  readonly $fullTypeName: `${string}::router::CalculatedRouterSwapResult`
   readonly $typeArgs: []
-  readonly $isPhantom = CalculatedRouterSwapResult.$isPhantom
+  readonly $isPhantom: typeof CalculatedRouterSwapResult.$isPhantom =
+    CalculatedRouterSwapResult.$isPhantom
 
   readonly amountIn: ToField<'u64'>
   readonly amountMedium: ToField<'u64'>
@@ -62,8 +92,8 @@ export class CalculatedRouterSwapResult implements StructClass {
   private constructor(typeArgs: [], fields: CalculatedRouterSwapResultFields) {
     this.$fullTypeName = composeSuiType(
       CalculatedRouterSwapResult.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::router::CalculatedRouterSwapResult`
+      ...typeArgs,
+    ) as `${string}::router::CalculatedRouterSwapResult`
     this.$typeArgs = typeArgs
 
     this.amountIn = fields.amountIn
@@ -82,8 +112,8 @@ export class CalculatedRouterSwapResult implements StructClass {
       typeName: CalculatedRouterSwapResult.$typeName,
       fullTypeName: composeSuiType(
         CalculatedRouterSwapResult.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::router::CalculatedRouterSwapResult`,
+        ...[],
+      ) as `${string}::router::CalculatedRouterSwapResult`,
       typeArgs: [] as [],
       isPhantom: CalculatedRouterSwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -98,7 +128,8 @@ export class CalculatedRouterSwapResult implements StructClass {
         CalculatedRouterSwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CalculatedRouterSwapResult.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CalculatedRouterSwapResult.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        CalculatedRouterSwapResult.fetch(client, id),
       new: (fields: CalculatedRouterSwapResultFields) => {
         return new CalculatedRouterSwapResult([], fields)
       },
@@ -106,14 +137,15 @@ export class CalculatedRouterSwapResult implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): CalculatedRouterSwapResultReified {
     return CalculatedRouterSwapResult.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<CalculatedRouterSwapResult>> {
     return phantom(CalculatedRouterSwapResult.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<CalculatedRouterSwapResult>> {
     return CalculatedRouterSwapResult.phantom()
   }
 
@@ -174,7 +206,7 @@ export class CalculatedRouterSwapResult implements StructClass {
     return CalculatedRouterSwapResult.fromFields(CalculatedRouterSwapResult.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): CalculatedRouterSwapResultJSONField {
     return {
       amountIn: this.amountIn.toString(),
       amountMedium: this.amountMedium.toString(),
@@ -187,7 +219,7 @@ export class CalculatedRouterSwapResult implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): CalculatedRouterSwapResultJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -206,7 +238,9 @@ export class CalculatedRouterSwapResult implements StructClass {
 
   static fromJSON(json: Record<string, any>): CalculatedRouterSwapResult {
     if (json.$typeName !== CalculatedRouterSwapResult.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CalculatedRouterSwapResult json object: expected '${CalculatedRouterSwapResult.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return CalculatedRouterSwapResult.fromJSONField(json)
@@ -218,7 +252,7 @@ export class CalculatedRouterSwapResult implements StructClass {
     }
     if (!isCalculatedRouterSwapResult(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a CalculatedRouterSwapResult object`
+        `object at ${(content.fields as any).id} is not a CalculatedRouterSwapResult object`,
       )
     }
     return CalculatedRouterSwapResult.fromFieldsWithTypes(content)
@@ -230,31 +264,23 @@ export class CalculatedRouterSwapResult implements StructClass {
         throw new Error(`object at is not a CalculatedRouterSwapResult object`)
       }
 
-      return CalculatedRouterSwapResult.fromBcs(fromB64(data.bcs.bcsBytes))
+      return CalculatedRouterSwapResult.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CalculatedRouterSwapResult.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<CalculatedRouterSwapResult> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching CalculatedRouterSwapResult object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isCalculatedRouterSwapResult(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<CalculatedRouterSwapResult> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCalculatedRouterSwapResult(res.type)) {
       throw new Error(`object at id ${id} is not a CalculatedRouterSwapResult object`)
     }
 
-    return CalculatedRouterSwapResult.fromSuiObjectData(res.data)
+    return CalculatedRouterSwapResult.fromBcs(res.bcsBytes)
   }
 }
 
@@ -262,7 +288,10 @@ export class CalculatedRouterSwapResult implements StructClass {
 
 export function isCalculatedRouterSwapResultEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::router::CalculatedRouterSwapResultEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'router::CalculatedRouterSwapResultEvent')
+    }::router::CalculatedRouterSwapResultEvent`
 }
 
 export interface CalculatedRouterSwapResultEventFields {
@@ -274,25 +303,38 @@ export type CalculatedRouterSwapResultEventReified = Reified<
   CalculatedRouterSwapResultEventFields
 >
 
+export type CalculatedRouterSwapResultEventJSONField = {
+  data: ToJSON<CalculatedRouterSwapResult>
+}
+
+export type CalculatedRouterSwapResultEventJSON = {
+  $typeName: typeof CalculatedRouterSwapResultEvent.$typeName
+  $typeArgs: []
+} & CalculatedRouterSwapResultEventJSONField
+
 export class CalculatedRouterSwapResultEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::router::CalculatedRouterSwapResultEvent`
+  static readonly $typeName: `${string}::router::CalculatedRouterSwapResultEvent` = `${
+    getTypeOrigin('cetus-integrate', 'router::CalculatedRouterSwapResultEvent')
+  }::router::CalculatedRouterSwapResultEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = CalculatedRouterSwapResultEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::router::CalculatedRouterSwapResultEvent`
+  readonly $typeName: typeof CalculatedRouterSwapResultEvent.$typeName =
+    CalculatedRouterSwapResultEvent.$typeName
+  readonly $fullTypeName: `${string}::router::CalculatedRouterSwapResultEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = CalculatedRouterSwapResultEvent.$isPhantom
+  readonly $isPhantom: typeof CalculatedRouterSwapResultEvent.$isPhantom =
+    CalculatedRouterSwapResultEvent.$isPhantom
 
   readonly data: ToField<CalculatedRouterSwapResult>
 
   private constructor(typeArgs: [], fields: CalculatedRouterSwapResultEventFields) {
     this.$fullTypeName = composeSuiType(
       CalculatedRouterSwapResultEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::router::CalculatedRouterSwapResultEvent`
+      ...typeArgs,
+    ) as `${string}::router::CalculatedRouterSwapResultEvent`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
@@ -304,8 +346,8 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
       typeName: CalculatedRouterSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
         CalculatedRouterSwapResultEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::router::CalculatedRouterSwapResultEvent`,
+        ...[],
+      ) as `${string}::router::CalculatedRouterSwapResultEvent`,
       typeArgs: [] as [],
       isPhantom: CalculatedRouterSwapResultEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -322,7 +364,7 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
         CalculatedRouterSwapResultEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CalculatedRouterSwapResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         CalculatedRouterSwapResultEvent.fetch(client, id),
       new: (fields: CalculatedRouterSwapResultEventFields) => {
         return new CalculatedRouterSwapResultEvent([], fields)
@@ -331,14 +373,15 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): CalculatedRouterSwapResultEventReified {
     return CalculatedRouterSwapResultEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<CalculatedRouterSwapResultEvent>> {
     return phantom(CalculatedRouterSwapResultEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<CalculatedRouterSwapResultEvent>> {
     return CalculatedRouterSwapResultEvent.phantom()
   }
 
@@ -348,9 +391,9 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
     })
   }
 
-  private static cachedBcs: ReturnType<
-    typeof CalculatedRouterSwapResultEvent.instantiateBcs
-  > | null = null
+  private static cachedBcs:
+    | ReturnType<typeof CalculatedRouterSwapResultEvent.instantiateBcs>
+    | null = null
 
   static get bcs(): ReturnType<typeof CalculatedRouterSwapResultEvent.instantiateBcs> {
     if (!CalculatedRouterSwapResultEvent.cachedBcs) {
@@ -377,17 +420,17 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
 
   static fromBcs(data: Uint8Array): CalculatedRouterSwapResultEvent {
     return CalculatedRouterSwapResultEvent.fromFields(
-      CalculatedRouterSwapResultEvent.bcs.parse(data)
+      CalculatedRouterSwapResultEvent.bcs.parse(data),
     )
   }
 
-  toJSONField() {
+  toJSONField(): CalculatedRouterSwapResultEventJSONField {
     return {
       data: this.data.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): CalculatedRouterSwapResultEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -399,7 +442,9 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): CalculatedRouterSwapResultEvent {
     if (json.$typeName !== CalculatedRouterSwapResultEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CalculatedRouterSwapResultEvent json object: expected '${CalculatedRouterSwapResultEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return CalculatedRouterSwapResultEvent.fromJSONField(json)
@@ -411,7 +456,7 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
     }
     if (!isCalculatedRouterSwapResultEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a CalculatedRouterSwapResultEvent object`
+        `object at ${(content.fields as any).id} is not a CalculatedRouterSwapResultEvent object`,
       )
     }
     return CalculatedRouterSwapResultEvent.fromFieldsWithTypes(content)
@@ -423,30 +468,25 @@ export class CalculatedRouterSwapResultEvent implements StructClass {
         throw new Error(`object at is not a CalculatedRouterSwapResultEvent object`)
       }
 
-      return CalculatedRouterSwapResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return CalculatedRouterSwapResultEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CalculatedRouterSwapResultEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<CalculatedRouterSwapResultEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching CalculatedRouterSwapResultEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isCalculatedRouterSwapResultEvent(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<CalculatedRouterSwapResultEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCalculatedRouterSwapResultEvent(res.type)) {
       throw new Error(`object at id ${id} is not a CalculatedRouterSwapResultEvent object`)
     }
 
-    return CalculatedRouterSwapResultEvent.fromSuiObjectData(res.data)
+    return CalculatedRouterSwapResultEvent.fromBcs(res.bcsBytes)
   }
 }

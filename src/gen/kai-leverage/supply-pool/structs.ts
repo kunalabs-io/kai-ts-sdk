@@ -1,12 +1,24 @@
+/**
+ * Core supply pool module for Kai Leverage lending facilities.
+ *
+ * The supply pool is the heart of the lending and borrowing system. It manages
+ * the available liquidity, tracks total liabilities, and coordinates the interaction
+ * between liquidity suppliers and leveraged positions. The supply pool enforces
+ * risk and utilization limits, accrues interest, and collects protocol fees.
+ *
+ * Key responsibilities:
+ * - Maintains the available balance and total liabilities for each lending facility.
+ * - Issues and redeems equity shares representing claims on pool assets.
+ * - Issues and tracks debt shares for borrowers, ensuring precise debt accounting.
+ * - Enforces risk parameters such as maximum utilization and outstanding debt.
+ * - Accrues interest and protocol fees over time.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeStr,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -14,12 +26,23 @@ import {
   decodeFromJSONField,
   extractType,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeStr,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
@@ -27,17 +50,14 @@ import { VecMap } from '../../sui/vec-map/structs'
 import { DebtBag } from '../debt-bag/structs'
 import { DebtRegistry, DebtShareBalance } from '../debt/structs'
 import { EquityShareBalance, EquityTreasury } from '../equity/structs'
-import { PKG_V1 } from '../index'
 import { Piecewise } from '../piecewise/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== ACreatePool =============================== */
 
 export function isACreatePool(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::ACreatePool`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::ACreatePool')}::supply_pool::ACreatePool`
 }
 
 export interface ACreatePoolFields {
@@ -46,25 +66,37 @@ export interface ACreatePoolFields {
 
 export type ACreatePoolReified = Reified<ACreatePool, ACreatePoolFields>
 
+export type ACreatePoolJSONField = {
+  dummyField: boolean
+}
+
+export type ACreatePoolJSON = {
+  $typeName: typeof ACreatePool.$typeName
+  $typeArgs: []
+} & ACreatePoolJSONField
+
+/** Access control witness for pool creation. */
 export class ACreatePool implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::ACreatePool`
+  static readonly $typeName: `${string}::supply_pool::ACreatePool` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::ACreatePool')
+  }::supply_pool::ACreatePool` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ACreatePool.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ACreatePool`
+  readonly $typeName: typeof ACreatePool.$typeName = ACreatePool.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::ACreatePool`
   readonly $typeArgs: []
-  readonly $isPhantom = ACreatePool.$isPhantom
+  readonly $isPhantom: typeof ACreatePool.$isPhantom = ACreatePool.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ACreatePoolFields) {
     this.$fullTypeName = composeSuiType(
       ACreatePool.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::ACreatePool`
+      ...typeArgs,
+    ) as `${string}::supply_pool::ACreatePool`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -76,8 +108,8 @@ export class ACreatePool implements StructClass {
       typeName: ACreatePool.$typeName,
       fullTypeName: composeSuiType(
         ACreatePool.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::ACreatePool`,
+        ...[],
+      ) as `${string}::supply_pool::ACreatePool`,
       typeArgs: [] as [],
       isPhantom: ACreatePool.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,7 +121,7 @@ export class ACreatePool implements StructClass {
       fromJSON: (json: Record<string, any>) => ACreatePool.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACreatePool.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACreatePool.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ACreatePool.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ACreatePool.fetch(client, id),
       new: (fields: ACreatePoolFields) => {
         return new ACreatePool([], fields)
       },
@@ -97,14 +129,15 @@ export class ACreatePool implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ACreatePoolReified {
     return ACreatePool.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ACreatePool>> {
     return phantom(ACreatePool.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ACreatePool>> {
     return ACreatePool.phantom()
   }
 
@@ -124,7 +157,9 @@ export class ACreatePool implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ACreatePool {
-    return ACreatePool.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ACreatePool.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ACreatePool {
@@ -141,23 +176,27 @@ export class ACreatePool implements StructClass {
     return ACreatePool.fromFields(ACreatePool.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ACreatePoolJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ACreatePoolJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ACreatePool {
-    return ACreatePool.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return ACreatePool.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): ACreatePool {
     if (json.$typeName !== ACreatePool.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ACreatePool json object: expected '${ACreatePool.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ACreatePool.fromJSONField(json)
@@ -179,26 +218,23 @@ export class ACreatePool implements StructClass {
         throw new Error(`object at is not a ACreatePool object`)
       }
 
-      return ACreatePool.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ACreatePool.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ACreatePool.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ACreatePool> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ACreatePool object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isACreatePool(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ACreatePool> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isACreatePool(res.type)) {
       throw new Error(`object at id ${id} is not a ACreatePool object`)
     }
 
-    return ACreatePool.fromSuiObjectData(res.data)
+    return ACreatePool.fromBcs(res.bcsBytes)
   }
 }
 
@@ -206,7 +242,10 @@ export class ACreatePool implements StructClass {
 
 export function isAConfigLendFacil(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::AConfigLendFacil`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'supply_pool::AConfigLendFacil')
+    }::supply_pool::AConfigLendFacil`
 }
 
 export interface AConfigLendFacilFields {
@@ -215,25 +254,37 @@ export interface AConfigLendFacilFields {
 
 export type AConfigLendFacilReified = Reified<AConfigLendFacil, AConfigLendFacilFields>
 
+export type AConfigLendFacilJSONField = {
+  dummyField: boolean
+}
+
+export type AConfigLendFacilJSON = {
+  $typeName: typeof AConfigLendFacil.$typeName
+  $typeArgs: []
+} & AConfigLendFacilJSONField
+
+/** Access control witness for lending facility configuration. */
 export class AConfigLendFacil implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::AConfigLendFacil`
+  static readonly $typeName: `${string}::supply_pool::AConfigLendFacil` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::AConfigLendFacil')
+  }::supply_pool::AConfigLendFacil` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AConfigLendFacil.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::AConfigLendFacil`
+  readonly $typeName: typeof AConfigLendFacil.$typeName = AConfigLendFacil.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::AConfigLendFacil`
   readonly $typeArgs: []
-  readonly $isPhantom = AConfigLendFacil.$isPhantom
+  readonly $isPhantom: typeof AConfigLendFacil.$isPhantom = AConfigLendFacil.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AConfigLendFacilFields) {
     this.$fullTypeName = composeSuiType(
       AConfigLendFacil.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::AConfigLendFacil`
+      ...typeArgs,
+    ) as `${string}::supply_pool::AConfigLendFacil`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -245,8 +296,8 @@ export class AConfigLendFacil implements StructClass {
       typeName: AConfigLendFacil.$typeName,
       fullTypeName: composeSuiType(
         AConfigLendFacil.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::AConfigLendFacil`,
+        ...[],
+      ) as `${string}::supply_pool::AConfigLendFacil`,
       typeArgs: [] as [],
       isPhantom: AConfigLendFacil.$isPhantom,
       reifiedTypeArgs: [],
@@ -258,7 +309,7 @@ export class AConfigLendFacil implements StructClass {
       fromJSON: (json: Record<string, any>) => AConfigLendFacil.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AConfigLendFacil.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AConfigLendFacil.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AConfigLendFacil.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AConfigLendFacil.fetch(client, id),
       new: (fields: AConfigLendFacilFields) => {
         return new AConfigLendFacil([], fields)
       },
@@ -266,14 +317,15 @@ export class AConfigLendFacil implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AConfigLendFacilReified {
     return AConfigLendFacil.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AConfigLendFacil>> {
     return phantom(AConfigLendFacil.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AConfigLendFacil>> {
     return AConfigLendFacil.phantom()
   }
 
@@ -312,13 +364,13 @@ export class AConfigLendFacil implements StructClass {
     return AConfigLendFacil.fromFields(AConfigLendFacil.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AConfigLendFacilJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AConfigLendFacilJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -330,7 +382,9 @@ export class AConfigLendFacil implements StructClass {
 
   static fromJSON(json: Record<string, any>): AConfigLendFacil {
     if (json.$typeName !== AConfigLendFacil.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AConfigLendFacil json object: expected '${AConfigLendFacil.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AConfigLendFacil.fromJSONField(json)
@@ -352,26 +406,23 @@ export class AConfigLendFacil implements StructClass {
         throw new Error(`object at is not a AConfigLendFacil object`)
       }
 
-      return AConfigLendFacil.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AConfigLendFacil.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AConfigLendFacil.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AConfigLendFacil> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AConfigLendFacil object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAConfigLendFacil(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AConfigLendFacil> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAConfigLendFacil(res.type)) {
       throw new Error(`object at id ${id} is not a AConfigLendFacil object`)
     }
 
-    return AConfigLendFacil.fromSuiObjectData(res.data)
+    return AConfigLendFacil.fromBcs(res.bcsBytes)
   }
 }
 
@@ -379,7 +430,8 @@ export class AConfigLendFacil implements StructClass {
 
 export function isAConfigFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::AConfigFees`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::AConfigFees')}::supply_pool::AConfigFees`
 }
 
 export interface AConfigFeesFields {
@@ -388,25 +440,37 @@ export interface AConfigFeesFields {
 
 export type AConfigFeesReified = Reified<AConfigFees, AConfigFeesFields>
 
+export type AConfigFeesJSONField = {
+  dummyField: boolean
+}
+
+export type AConfigFeesJSON = {
+  $typeName: typeof AConfigFees.$typeName
+  $typeArgs: []
+} & AConfigFeesJSONField
+
+/** Access control witness for fee configuration. */
 export class AConfigFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::AConfigFees`
+  static readonly $typeName: `${string}::supply_pool::AConfigFees` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::AConfigFees')
+  }::supply_pool::AConfigFees` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AConfigFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::AConfigFees`
+  readonly $typeName: typeof AConfigFees.$typeName = AConfigFees.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::AConfigFees`
   readonly $typeArgs: []
-  readonly $isPhantom = AConfigFees.$isPhantom
+  readonly $isPhantom: typeof AConfigFees.$isPhantom = AConfigFees.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AConfigFeesFields) {
     this.$fullTypeName = composeSuiType(
       AConfigFees.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::AConfigFees`
+      ...typeArgs,
+    ) as `${string}::supply_pool::AConfigFees`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -418,8 +482,8 @@ export class AConfigFees implements StructClass {
       typeName: AConfigFees.$typeName,
       fullTypeName: composeSuiType(
         AConfigFees.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::AConfigFees`,
+        ...[],
+      ) as `${string}::supply_pool::AConfigFees`,
       typeArgs: [] as [],
       isPhantom: AConfigFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -431,7 +495,7 @@ export class AConfigFees implements StructClass {
       fromJSON: (json: Record<string, any>) => AConfigFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AConfigFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AConfigFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AConfigFees.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AConfigFees.fetch(client, id),
       new: (fields: AConfigFeesFields) => {
         return new AConfigFees([], fields)
       },
@@ -439,14 +503,15 @@ export class AConfigFees implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AConfigFeesReified {
     return AConfigFees.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AConfigFees>> {
     return phantom(AConfigFees.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AConfigFees>> {
     return AConfigFees.phantom()
   }
 
@@ -466,7 +531,9 @@ export class AConfigFees implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): AConfigFees {
-    return AConfigFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return AConfigFees.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): AConfigFees {
@@ -483,23 +550,27 @@ export class AConfigFees implements StructClass {
     return AConfigFees.fromFields(AConfigFees.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AConfigFeesJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AConfigFeesJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): AConfigFees {
-    return AConfigFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return AConfigFees.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): AConfigFees {
     if (json.$typeName !== AConfigFees.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AConfigFees json object: expected '${AConfigFees.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AConfigFees.fromJSONField(json)
@@ -521,26 +592,23 @@ export class AConfigFees implements StructClass {
         throw new Error(`object at is not a AConfigFees object`)
       }
 
-      return AConfigFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AConfigFees.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AConfigFees.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AConfigFees> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AConfigFees object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAConfigFees(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AConfigFees> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAConfigFees(res.type)) {
       throw new Error(`object at id ${id} is not a AConfigFees object`)
     }
 
-    return AConfigFees.fromSuiObjectData(res.data)
+    return AConfigFees.fromBcs(res.bcsBytes)
   }
 }
 
@@ -548,7 +616,8 @@ export class AConfigFees implements StructClass {
 
 export function isATakeFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::ATakeFees`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::ATakeFees')}::supply_pool::ATakeFees`
 }
 
 export interface ATakeFeesFields {
@@ -557,25 +626,37 @@ export interface ATakeFeesFields {
 
 export type ATakeFeesReified = Reified<ATakeFees, ATakeFeesFields>
 
+export type ATakeFeesJSONField = {
+  dummyField: boolean
+}
+
+export type ATakeFeesJSON = {
+  $typeName: typeof ATakeFees.$typeName
+  $typeArgs: []
+} & ATakeFeesJSONField
+
+/** Access control witness for taking collected fees. */
 export class ATakeFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::ATakeFees`
+  static readonly $typeName: `${string}::supply_pool::ATakeFees` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::ATakeFees')
+  }::supply_pool::ATakeFees` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ATakeFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ATakeFees`
+  readonly $typeName: typeof ATakeFees.$typeName = ATakeFees.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::ATakeFees`
   readonly $typeArgs: []
-  readonly $isPhantom = ATakeFees.$isPhantom
+  readonly $isPhantom: typeof ATakeFees.$isPhantom = ATakeFees.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ATakeFeesFields) {
     this.$fullTypeName = composeSuiType(
       ATakeFees.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::ATakeFees`
+      ...typeArgs,
+    ) as `${string}::supply_pool::ATakeFees`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -587,8 +668,8 @@ export class ATakeFees implements StructClass {
       typeName: ATakeFees.$typeName,
       fullTypeName: composeSuiType(
         ATakeFees.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::ATakeFees`,
+        ...[],
+      ) as `${string}::supply_pool::ATakeFees`,
       typeArgs: [] as [],
       isPhantom: ATakeFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -600,7 +681,7 @@ export class ATakeFees implements StructClass {
       fromJSON: (json: Record<string, any>) => ATakeFees.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ATakeFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ATakeFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ATakeFees.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ATakeFees.fetch(client, id),
       new: (fields: ATakeFeesFields) => {
         return new ATakeFees([], fields)
       },
@@ -608,14 +689,15 @@ export class ATakeFees implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ATakeFeesReified {
     return ATakeFees.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ATakeFees>> {
     return phantom(ATakeFees.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ATakeFees>> {
     return ATakeFees.phantom()
   }
 
@@ -635,7 +717,9 @@ export class ATakeFees implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ATakeFees {
-    return ATakeFees.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ATakeFees.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ATakeFees {
@@ -652,23 +736,27 @@ export class ATakeFees implements StructClass {
     return ATakeFees.fromFields(ATakeFees.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ATakeFeesJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ATakeFeesJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ATakeFees {
-    return ATakeFees.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return ATakeFees.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): ATakeFees {
     if (json.$typeName !== ATakeFees.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ATakeFees json object: expected '${ATakeFees.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ATakeFees.fromJSONField(json)
@@ -690,26 +778,23 @@ export class ATakeFees implements StructClass {
         throw new Error(`object at is not a ATakeFees object`)
       }
 
-      return ATakeFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ATakeFees.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ATakeFees.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ATakeFees> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ATakeFees object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isATakeFees(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ATakeFees> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isATakeFees(res.type)) {
       throw new Error(`object at id ${id} is not a ATakeFees object`)
     }
 
-    return ATakeFees.fromSuiObjectData(res.data)
+    return ATakeFees.fromBcs(res.bcsBytes)
   }
 }
 
@@ -717,7 +802,7 @@ export class ATakeFees implements StructClass {
 
 export function isADeposit(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::ADeposit`
+  return type === `${getTypeOrigin('kai-leverage', 'supply_pool::ADeposit')}::supply_pool::ADeposit`
 }
 
 export interface ADepositFields {
@@ -726,25 +811,37 @@ export interface ADepositFields {
 
 export type ADepositReified = Reified<ADeposit, ADepositFields>
 
+export type ADepositJSONField = {
+  dummyField: boolean
+}
+
+export type ADepositJSON = {
+  $typeName: typeof ADeposit.$typeName
+  $typeArgs: []
+} & ADepositJSONField
+
+/** Access control witness for deposits. */
 export class ADeposit implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::ADeposit`
+  static readonly $typeName: `${string}::supply_pool::ADeposit` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::ADeposit')
+  }::supply_pool::ADeposit` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ADeposit.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::ADeposit`
+  readonly $typeName: typeof ADeposit.$typeName = ADeposit.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::ADeposit`
   readonly $typeArgs: []
-  readonly $isPhantom = ADeposit.$isPhantom
+  readonly $isPhantom: typeof ADeposit.$isPhantom = ADeposit.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ADepositFields) {
     this.$fullTypeName = composeSuiType(
       ADeposit.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::ADeposit`
+      ...typeArgs,
+    ) as `${string}::supply_pool::ADeposit`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -756,8 +853,8 @@ export class ADeposit implements StructClass {
       typeName: ADeposit.$typeName,
       fullTypeName: composeSuiType(
         ADeposit.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::ADeposit`,
+        ...[],
+      ) as `${string}::supply_pool::ADeposit`,
       typeArgs: [] as [],
       isPhantom: ADeposit.$isPhantom,
       reifiedTypeArgs: [],
@@ -769,7 +866,7 @@ export class ADeposit implements StructClass {
       fromJSON: (json: Record<string, any>) => ADeposit.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ADeposit.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ADeposit.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ADeposit.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ADeposit.fetch(client, id),
       new: (fields: ADepositFields) => {
         return new ADeposit([], fields)
       },
@@ -777,14 +874,15 @@ export class ADeposit implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ADepositReified {
     return ADeposit.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ADeposit>> {
     return phantom(ADeposit.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ADeposit>> {
     return ADeposit.phantom()
   }
 
@@ -804,7 +902,9 @@ export class ADeposit implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ADeposit {
-    return ADeposit.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ADeposit.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ADeposit {
@@ -821,23 +921,27 @@ export class ADeposit implements StructClass {
     return ADeposit.fromFields(ADeposit.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ADepositJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ADepositJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ADeposit {
-    return ADeposit.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return ADeposit.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): ADeposit {
     if (json.$typeName !== ADeposit.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ADeposit json object: expected '${ADeposit.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ADeposit.fromJSONField(json)
@@ -859,26 +963,23 @@ export class ADeposit implements StructClass {
         throw new Error(`object at is not a ADeposit object`)
       }
 
-      return ADeposit.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ADeposit.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ADeposit.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ADeposit> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ADeposit object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isADeposit(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ADeposit> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isADeposit(res.type)) {
       throw new Error(`object at id ${id} is not a ADeposit object`)
     }
 
-    return ADeposit.fromSuiObjectData(res.data)
+    return ADeposit.fromBcs(res.bcsBytes)
   }
 }
 
@@ -886,7 +987,7 @@ export class ADeposit implements StructClass {
 
 export function isAMigrate(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::AMigrate`
+  return type === `${getTypeOrigin('kai-leverage', 'supply_pool::AMigrate')}::supply_pool::AMigrate`
 }
 
 export interface AMigrateFields {
@@ -895,25 +996,37 @@ export interface AMigrateFields {
 
 export type AMigrateReified = Reified<AMigrate, AMigrateFields>
 
+export type AMigrateJSONField = {
+  dummyField: boolean
+}
+
+export type AMigrateJSON = {
+  $typeName: typeof AMigrate.$typeName
+  $typeArgs: []
+} & AMigrateJSONField
+
+/** Access control witness for migrations. */
 export class AMigrate implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::AMigrate`
+  static readonly $typeName: `${string}::supply_pool::AMigrate` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::AMigrate')
+  }::supply_pool::AMigrate` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AMigrate.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::AMigrate`
+  readonly $typeName: typeof AMigrate.$typeName = AMigrate.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::AMigrate`
   readonly $typeArgs: []
-  readonly $isPhantom = AMigrate.$isPhantom
+  readonly $isPhantom: typeof AMigrate.$isPhantom = AMigrate.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AMigrateFields) {
     this.$fullTypeName = composeSuiType(
       AMigrate.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::AMigrate`
+      ...typeArgs,
+    ) as `${string}::supply_pool::AMigrate`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -925,8 +1038,8 @@ export class AMigrate implements StructClass {
       typeName: AMigrate.$typeName,
       fullTypeName: composeSuiType(
         AMigrate.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::AMigrate`,
+        ...[],
+      ) as `${string}::supply_pool::AMigrate`,
       typeArgs: [] as [],
       isPhantom: AMigrate.$isPhantom,
       reifiedTypeArgs: [],
@@ -938,7 +1051,7 @@ export class AMigrate implements StructClass {
       fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AMigrate.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AMigrate.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AMigrate.fetch(client, id),
       new: (fields: AMigrateFields) => {
         return new AMigrate([], fields)
       },
@@ -946,14 +1059,15 @@ export class AMigrate implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AMigrateReified {
     return AMigrate.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AMigrate>> {
     return phantom(AMigrate.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AMigrate>> {
     return AMigrate.phantom()
   }
 
@@ -973,7 +1087,9 @@ export class AMigrate implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return AMigrate.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): AMigrate {
@@ -990,23 +1106,27 @@ export class AMigrate implements StructClass {
     return AMigrate.fromFields(AMigrate.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AMigrateJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AMigrateJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return AMigrate.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): AMigrate {
     if (json.$typeName !== AMigrate.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AMigrate json object: expected '${AMigrate.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AMigrate.fromJSONField(json)
@@ -1028,26 +1148,23 @@ export class AMigrate implements StructClass {
         throw new Error(`object at is not a AMigrate object`)
       }
 
-      return AMigrate.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AMigrate.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AMigrate.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AMigrate> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AMigrate object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAMigrate(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AMigrate> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAMigrate(res.type)) {
       throw new Error(`object at id ${id} is not a AMigrate object`)
     }
 
-    return AMigrate.fromSuiObjectData(res.data)
+    return AMigrate.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1055,7 +1172,8 @@ export class AMigrate implements StructClass {
 
 export function isSupplyInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::SupplyInfo`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::SupplyInfo')}::supply_pool::SupplyInfo`
 }
 
 export interface SupplyInfoFields {
@@ -1066,17 +1184,31 @@ export interface SupplyInfoFields {
 
 export type SupplyInfoReified = Reified<SupplyInfo, SupplyInfoFields>
 
+export type SupplyInfoJSONField = {
+  supplyPoolId: string
+  deposited: string
+  shareBalance: string
+}
+
+export type SupplyInfoJSON = {
+  $typeName: typeof SupplyInfo.$typeName
+  $typeArgs: []
+} & SupplyInfoJSONField
+
+/** Event emitted for a supply operation. */
 export class SupplyInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::SupplyInfo`
+  static readonly $typeName: `${string}::supply_pool::SupplyInfo` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::SupplyInfo')
+  }::supply_pool::SupplyInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = SupplyInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::SupplyInfo`
+  readonly $typeName: typeof SupplyInfo.$typeName = SupplyInfo.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::SupplyInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = SupplyInfo.$isPhantom
+  readonly $isPhantom: typeof SupplyInfo.$isPhantom = SupplyInfo.$isPhantom
 
   readonly supplyPoolId: ToField<ID>
   readonly deposited: ToField<'u64'>
@@ -1085,8 +1217,8 @@ export class SupplyInfo implements StructClass {
   private constructor(typeArgs: [], fields: SupplyInfoFields) {
     this.$fullTypeName = composeSuiType(
       SupplyInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`
+      ...typeArgs,
+    ) as `${string}::supply_pool::SupplyInfo`
     this.$typeArgs = typeArgs
 
     this.supplyPoolId = fields.supplyPoolId
@@ -1100,8 +1232,8 @@ export class SupplyInfo implements StructClass {
       typeName: SupplyInfo.$typeName,
       fullTypeName: composeSuiType(
         SupplyInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::SupplyInfo`,
+        ...[],
+      ) as `${string}::supply_pool::SupplyInfo`,
       typeArgs: [] as [],
       isPhantom: SupplyInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -1113,7 +1245,7 @@ export class SupplyInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => SupplyInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SupplyInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => SupplyInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => SupplyInfo.fetch(client, id),
       new: (fields: SupplyInfoFields) => {
         return new SupplyInfo([], fields)
       },
@@ -1121,14 +1253,15 @@ export class SupplyInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): SupplyInfoReified {
     return SupplyInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<SupplyInfo>> {
     return phantom(SupplyInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<SupplyInfo>> {
     return SupplyInfo.phantom()
   }
 
@@ -1173,7 +1306,7 @@ export class SupplyInfo implements StructClass {
     return SupplyInfo.fromFields(SupplyInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SupplyInfoJSONField {
     return {
       supplyPoolId: this.supplyPoolId,
       deposited: this.deposited.toString(),
@@ -1181,7 +1314,7 @@ export class SupplyInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): SupplyInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1195,7 +1328,9 @@ export class SupplyInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): SupplyInfo {
     if (json.$typeName !== SupplyInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a SupplyInfo json object: expected '${SupplyInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return SupplyInfo.fromJSONField(json)
@@ -1217,26 +1352,23 @@ export class SupplyInfo implements StructClass {
         throw new Error(`object at is not a SupplyInfo object`)
       }
 
-      return SupplyInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return SupplyInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return SupplyInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<SupplyInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SupplyInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSupplyInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<SupplyInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSupplyInfo(res.type)) {
       throw new Error(`object at id ${id} is not a SupplyInfo object`)
     }
 
-    return SupplyInfo.fromSuiObjectData(res.data)
+    return SupplyInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1244,7 +1376,8 @@ export class SupplyInfo implements StructClass {
 
 export function isWithdrawInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::WithdrawInfo`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::WithdrawInfo')}::supply_pool::WithdrawInfo`
 }
 
 export interface WithdrawInfoFields {
@@ -1255,17 +1388,31 @@ export interface WithdrawInfoFields {
 
 export type WithdrawInfoReified = Reified<WithdrawInfo, WithdrawInfoFields>
 
+export type WithdrawInfoJSONField = {
+  supplyPoolId: string
+  shareBalance: string
+  withdrawn: string
+}
+
+export type WithdrawInfoJSON = {
+  $typeName: typeof WithdrawInfo.$typeName
+  $typeArgs: []
+} & WithdrawInfoJSONField
+
+/** Event emitted for a withdraw operation. */
 export class WithdrawInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::WithdrawInfo`
+  static readonly $typeName: `${string}::supply_pool::WithdrawInfo` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::WithdrawInfo')
+  }::supply_pool::WithdrawInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = WithdrawInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::WithdrawInfo`
+  readonly $typeName: typeof WithdrawInfo.$typeName = WithdrawInfo.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::WithdrawInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = WithdrawInfo.$isPhantom
+  readonly $isPhantom: typeof WithdrawInfo.$isPhantom = WithdrawInfo.$isPhantom
 
   readonly supplyPoolId: ToField<ID>
   readonly shareBalance: ToField<'u64'>
@@ -1274,8 +1421,8 @@ export class WithdrawInfo implements StructClass {
   private constructor(typeArgs: [], fields: WithdrawInfoFields) {
     this.$fullTypeName = composeSuiType(
       WithdrawInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`
+      ...typeArgs,
+    ) as `${string}::supply_pool::WithdrawInfo`
     this.$typeArgs = typeArgs
 
     this.supplyPoolId = fields.supplyPoolId
@@ -1289,8 +1436,8 @@ export class WithdrawInfo implements StructClass {
       typeName: WithdrawInfo.$typeName,
       fullTypeName: composeSuiType(
         WithdrawInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::WithdrawInfo`,
+        ...[],
+      ) as `${string}::supply_pool::WithdrawInfo`,
       typeArgs: [] as [],
       isPhantom: WithdrawInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -1302,7 +1449,7 @@ export class WithdrawInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => WithdrawInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => WithdrawInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => WithdrawInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => WithdrawInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => WithdrawInfo.fetch(client, id),
       new: (fields: WithdrawInfoFields) => {
         return new WithdrawInfo([], fields)
       },
@@ -1310,14 +1457,15 @@ export class WithdrawInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): WithdrawInfoReified {
     return WithdrawInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<WithdrawInfo>> {
     return phantom(WithdrawInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<WithdrawInfo>> {
     return WithdrawInfo.phantom()
   }
 
@@ -1362,7 +1510,7 @@ export class WithdrawInfo implements StructClass {
     return WithdrawInfo.fromFields(WithdrawInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): WithdrawInfoJSONField {
     return {
       supplyPoolId: this.supplyPoolId,
       shareBalance: this.shareBalance.toString(),
@@ -1370,7 +1518,7 @@ export class WithdrawInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): WithdrawInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1384,7 +1532,9 @@ export class WithdrawInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): WithdrawInfo {
     if (json.$typeName !== WithdrawInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a WithdrawInfo json object: expected '${WithdrawInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return WithdrawInfo.fromJSONField(json)
@@ -1406,26 +1556,23 @@ export class WithdrawInfo implements StructClass {
         throw new Error(`object at is not a WithdrawInfo object`)
       }
 
-      return WithdrawInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return WithdrawInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return WithdrawInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<WithdrawInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching WithdrawInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isWithdrawInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<WithdrawInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isWithdrawInfo(res.type)) {
       throw new Error(`object at id ${id} is not a WithdrawInfo object`)
     }
 
-    return WithdrawInfo.fromSuiObjectData(res.data)
+    return WithdrawInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1433,7 +1580,8 @@ export class WithdrawInfo implements StructClass {
 
 export function isLendFacilCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::LendFacilCap`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::LendFacilCap')}::supply_pool::LendFacilCap`
 }
 
 export interface LendFacilCapFields {
@@ -1442,25 +1590,37 @@ export interface LendFacilCapFields {
 
 export type LendFacilCapReified = Reified<LendFacilCap, LendFacilCapFields>
 
+export type LendFacilCapJSONField = {
+  id: string
+}
+
+export type LendFacilCapJSON = {
+  $typeName: typeof LendFacilCap.$typeName
+  $typeArgs: []
+} & LendFacilCapJSONField
+
+/** Capability for managing a lending facility. Enables the owner to borrow from the pool. */
 export class LendFacilCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::LendFacilCap`
+  static readonly $typeName: `${string}::supply_pool::LendFacilCap` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::LendFacilCap')
+  }::supply_pool::LendFacilCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = LendFacilCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::LendFacilCap`
+  readonly $typeName: typeof LendFacilCap.$typeName = LendFacilCap.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::LendFacilCap`
   readonly $typeArgs: []
-  readonly $isPhantom = LendFacilCap.$isPhantom
+  readonly $isPhantom: typeof LendFacilCap.$isPhantom = LendFacilCap.$isPhantom
 
   readonly id: ToField<UID>
 
   private constructor(typeArgs: [], fields: LendFacilCapFields) {
     this.$fullTypeName = composeSuiType(
       LendFacilCap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::LendFacilCap`
+      ...typeArgs,
+    ) as `${string}::supply_pool::LendFacilCap`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -1472,8 +1632,8 @@ export class LendFacilCap implements StructClass {
       typeName: LendFacilCap.$typeName,
       fullTypeName: composeSuiType(
         LendFacilCap.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::LendFacilCap`,
+        ...[],
+      ) as `${string}::supply_pool::LendFacilCap`,
       typeArgs: [] as [],
       isPhantom: LendFacilCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -1485,7 +1645,7 @@ export class LendFacilCap implements StructClass {
       fromJSON: (json: Record<string, any>) => LendFacilCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LendFacilCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LendFacilCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => LendFacilCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => LendFacilCap.fetch(client, id),
       new: (fields: LendFacilCapFields) => {
         return new LendFacilCap([], fields)
       },
@@ -1493,14 +1653,15 @@ export class LendFacilCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): LendFacilCapReified {
     return LendFacilCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<LendFacilCap>> {
     return phantom(LendFacilCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<LendFacilCap>> {
     return LendFacilCap.phantom()
   }
 
@@ -1520,7 +1681,9 @@ export class LendFacilCap implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): LendFacilCap {
-    return LendFacilCap.reified().new({ id: decodeFromFields(UID.reified(), fields.id) })
+    return LendFacilCap.reified().new({
+      id: decodeFromFields(UID.reified(), fields.id),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): LendFacilCap {
@@ -1537,23 +1700,27 @@ export class LendFacilCap implements StructClass {
     return LendFacilCap.fromFields(LendFacilCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LendFacilCapJSONField {
     return {
       id: this.id,
     }
   }
 
-  toJSON() {
+  toJSON(): LendFacilCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): LendFacilCap {
-    return LendFacilCap.reified().new({ id: decodeFromJSONField(UID.reified(), field.id) })
+    return LendFacilCap.reified().new({
+      id: decodeFromJSONField(UID.reified(), field.id),
+    })
   }
 
   static fromJSON(json: Record<string, any>): LendFacilCap {
     if (json.$typeName !== LendFacilCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LendFacilCap json object: expected '${LendFacilCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return LendFacilCap.fromJSONField(json)
@@ -1575,26 +1742,23 @@ export class LendFacilCap implements StructClass {
         throw new Error(`object at is not a LendFacilCap object`)
       }
 
-      return LendFacilCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return LendFacilCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LendFacilCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<LendFacilCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LendFacilCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLendFacilCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<LendFacilCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLendFacilCap(res.type)) {
       throw new Error(`object at id ${id} is not a LendFacilCap object`)
     }
 
-    return LendFacilCap.fromSuiObjectData(res.data)
+    return LendFacilCap.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1602,13 +1766,18 @@ export class LendFacilCap implements StructClass {
 
 export function isLendFacilInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::supply_pool::LendFacilInfo` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'supply_pool::LendFacilInfo')}::supply_pool::LendFacilInfo`
+      + '<',
+  )
 }
 
 export interface LendFacilInfoFields<ST extends PhantomTypeArgument> {
   interestModel: ToField<Piecewise>
   debtRegistry: ToField<DebtRegistry<ST>>
+  /** The maximum amount of debt after which the borrowing will be capped. */
   maxLiabilityOutstanding: ToField<'u64'>
+  /** The maximum utilization after which the borrowing will be capped. */
   maxUtilizationBps: ToField<'u64'>
 }
 
@@ -1617,28 +1786,45 @@ export type LendFacilInfoReified<ST extends PhantomTypeArgument> = Reified<
   LendFacilInfoFields<ST>
 >
 
+export type LendFacilInfoJSONField<ST extends PhantomTypeArgument> = {
+  interestModel: ToJSON<Piecewise>
+  debtRegistry: ToJSON<DebtRegistry<ST>>
+  maxLiabilityOutstanding: string
+  maxUtilizationBps: string
+}
+
+export type LendFacilInfoJSON<ST extends PhantomTypeArgument> = {
+  $typeName: typeof LendFacilInfo.$typeName
+  $typeArgs: [PhantomToTypeStr<ST>]
+} & LendFacilInfoJSONField<ST>
+
+/** Configuration and state for a lending facility. */
 export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::LendFacilInfo`
+  static readonly $typeName: `${string}::supply_pool::LendFacilInfo` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::LendFacilInfo')
+  }::supply_pool::LendFacilInfo` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = LendFacilInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ST>}>`
+  readonly $typeName: typeof LendFacilInfo.$typeName = LendFacilInfo.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ST>}>`
   readonly $typeArgs: [PhantomToTypeStr<ST>]
-  readonly $isPhantom = LendFacilInfo.$isPhantom
+  readonly $isPhantom: typeof LendFacilInfo.$isPhantom = LendFacilInfo.$isPhantom
 
   readonly interestModel: ToField<Piecewise>
   readonly debtRegistry: ToField<DebtRegistry<ST>>
+  /** The maximum amount of debt after which the borrowing will be capped. */
   readonly maxLiabilityOutstanding: ToField<'u64'>
+  /** The maximum utilization after which the borrowing will be capped. */
   readonly maxUtilizationBps: ToField<'u64'>
 
   private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: LendFacilInfoFields<ST>) {
     this.$fullTypeName = composeSuiType(
       LendFacilInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ST>}>`
+      ...typeArgs,
+    ) as `${string}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ST>}>`
     this.$typeArgs = typeArgs
 
     this.interestModel = fields.interestModel
@@ -1648,15 +1834,15 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
   }
 
   static reified<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): LendFacilInfoReified<ToPhantomTypeArgument<ST>> {
     const reifiedBcs = LendFacilInfo.bcs
     return {
       typeName: LendFacilInfo.$typeName,
       fullTypeName: composeSuiType(
         LendFacilInfo.$typeName,
-        ...[extractType(ST)]
-      ) as `${typeof PKG_V1}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+        ...[extractType(ST)],
+      ) as `${string}::supply_pool::LendFacilInfo<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
       typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
       isPhantom: LendFacilInfo.$isPhantom,
       reifiedTypeArgs: [ST],
@@ -1668,7 +1854,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
       fromJSON: (json: Record<string, any>) => LendFacilInfo.fromJSON(ST, json),
       fromSuiParsedData: (content: SuiParsedData) => LendFacilInfo.fromSuiParsedData(ST, content),
       fromSuiObjectData: (content: SuiObjectData) => LendFacilInfo.fromSuiObjectData(ST, content),
-      fetch: async (client: SuiClient, id: string) => LendFacilInfo.fetch(client, ST, id),
+      fetch: async (client: SupportedSuiClient, id: string) => LendFacilInfo.fetch(client, ST, id),
       new: (fields: LendFacilInfoFields<ToPhantomTypeArgument<ST>>) => {
         return new LendFacilInfo([extractType(ST)], fields)
       },
@@ -1676,16 +1862,17 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  static get r() {
+  static get r(): typeof LendFacilInfo.reified {
     return LendFacilInfo.reified
   }
 
   static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): PhantomReified<ToTypeStr<LendFacilInfo<ToPhantomTypeArgument<ST>>>> {
     return phantom(LendFacilInfo.reified(ST))
   }
-  static get p() {
+
+  static get p(): typeof LendFacilInfo.phantom {
     return LendFacilInfo.phantom
   }
 
@@ -1709,7 +1896,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     return LendFacilInfo.reified(typeArg).new({
       interestModel: decodeFromFields(Piecewise.reified(), fields.interest_model),
@@ -1721,7 +1908,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     if (!isLendFacilInfo(item.type)) {
       throw new Error('not a LendFacilInfo type')
@@ -1732,11 +1919,11 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
       interestModel: decodeFromFieldsWithTypes(Piecewise.reified(), item.fields.interest_model),
       debtRegistry: decodeFromFieldsWithTypes(
         DebtRegistry.reified(typeArg),
-        item.fields.debt_registry
+        item.fields.debt_registry,
       ),
       maxLiabilityOutstanding: decodeFromFieldsWithTypes(
         'u64',
-        item.fields.max_liability_outstanding
+        item.fields.max_liability_outstanding,
       ),
       maxUtilizationBps: decodeFromFieldsWithTypes('u64', item.fields.max_utilization_bps),
     })
@@ -1744,12 +1931,12 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: Uint8Array
+    data: Uint8Array,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     return LendFacilInfo.fromFields(typeArg, LendFacilInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LendFacilInfoJSONField<ST> {
     return {
       interestModel: this.interestModel.toJSONField(),
       debtRegistry: this.debtRegistry.toJSONField(),
@@ -1758,13 +1945,13 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  toJSON() {
+  toJSON(): LendFacilInfoJSON<ST> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    field: any
+    field: any,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     return LendFacilInfo.reified(typeArg).new({
       interestModel: decodeFromJSONField(Piecewise.reified(), field.interestModel),
@@ -1776,15 +1963,17 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     if (json.$typeName !== LendFacilInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LendFacilInfo json object: expected '${LendFacilInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(LendFacilInfo.$typeName, extractType(typeArg)),
+      composeSuiType(LendFacilInfo.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return LendFacilInfo.fromJSONField(typeArg, json)
@@ -1792,7 +1981,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1805,7 +1994,7 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
   static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): LendFacilInfo<ToPhantomTypeArgument<ST>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLendFacilInfo(data.bcs.type)) {
@@ -1815,41 +2004,56 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return LendFacilInfo.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return LendFacilInfo.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LendFacilInfo.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: ST,
-    id: string
+    id: string,
   ): Promise<LendFacilInfo<ToPhantomTypeArgument<ST>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LendFacilInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLendFacilInfo(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLendFacilInfo(res.type)) {
       throw new Error(`object at id ${id} is not a LendFacilInfo object`)
     }
 
-    return LendFacilInfo.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return LendFacilInfo.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -1857,7 +2061,10 @@ export class LendFacilInfo<ST extends PhantomTypeArgument> implements StructClas
 
 export function isFacilDebtShare(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::supply_pool::FacilDebtShare` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'supply_pool::FacilDebtShare')}::supply_pool::FacilDebtShare`
+      + '<',
+  )
 }
 
 export interface FacilDebtShareFields<ST extends PhantomTypeArgument> {
@@ -1870,17 +2077,30 @@ export type FacilDebtShareReified<ST extends PhantomTypeArgument> = Reified<
   FacilDebtShareFields<ST>
 >
 
+export type FacilDebtShareJSONField<ST extends PhantomTypeArgument> = {
+  facilId: string
+  inner: ToJSON<DebtShareBalance<ST>>
+}
+
+export type FacilDebtShareJSON<ST extends PhantomTypeArgument> = {
+  $typeName: typeof FacilDebtShare.$typeName
+  $typeArgs: [PhantomToTypeStr<ST>]
+} & FacilDebtShareJSONField<ST>
+
+/** Debt shares for a specific lending facility. */
 export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtShare`
+  static readonly $typeName: `${string}::supply_pool::FacilDebtShare` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::FacilDebtShare')
+  }::supply_pool::FacilDebtShare` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = FacilDebtShare.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
+  readonly $typeName: typeof FacilDebtShare.$typeName = FacilDebtShare.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
   readonly $typeArgs: [PhantomToTypeStr<ST>]
-  readonly $isPhantom = FacilDebtShare.$isPhantom
+  readonly $isPhantom: typeof FacilDebtShare.$isPhantom = FacilDebtShare.$isPhantom
 
   readonly facilId: ToField<ID>
   readonly inner: ToField<DebtShareBalance<ST>>
@@ -1888,8 +2108,8 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
   private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: FacilDebtShareFields<ST>) {
     this.$fullTypeName = composeSuiType(
       FacilDebtShare.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
+      ...typeArgs,
+    ) as `${string}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ST>}>`
     this.$typeArgs = typeArgs
 
     this.facilId = fields.facilId
@@ -1897,15 +2117,15 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
   }
 
   static reified<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): FacilDebtShareReified<ToPhantomTypeArgument<ST>> {
     const reifiedBcs = FacilDebtShare.bcs
     return {
       typeName: FacilDebtShare.$typeName,
       fullTypeName: composeSuiType(
         FacilDebtShare.$typeName,
-        ...[extractType(ST)]
-      ) as `${typeof PKG_V1}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+        ...[extractType(ST)],
+      ) as `${string}::supply_pool::FacilDebtShare<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
       typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
       isPhantom: FacilDebtShare.$isPhantom,
       reifiedTypeArgs: [ST],
@@ -1917,7 +2137,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
       fromJSON: (json: Record<string, any>) => FacilDebtShare.fromJSON(ST, json),
       fromSuiParsedData: (content: SuiParsedData) => FacilDebtShare.fromSuiParsedData(ST, content),
       fromSuiObjectData: (content: SuiObjectData) => FacilDebtShare.fromSuiObjectData(ST, content),
-      fetch: async (client: SuiClient, id: string) => FacilDebtShare.fetch(client, ST, id),
+      fetch: async (client: SupportedSuiClient, id: string) => FacilDebtShare.fetch(client, ST, id),
       new: (fields: FacilDebtShareFields<ToPhantomTypeArgument<ST>>) => {
         return new FacilDebtShare([extractType(ST)], fields)
       },
@@ -1925,16 +2145,17 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
     }
   }
 
-  static get r() {
+  static get r(): typeof FacilDebtShare.reified {
     return FacilDebtShare.reified
   }
 
   static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): PhantomReified<ToTypeStr<FacilDebtShare<ToPhantomTypeArgument<ST>>>> {
     return phantom(FacilDebtShare.reified(ST))
   }
-  static get p() {
+
+  static get p(): typeof FacilDebtShare.phantom {
     return FacilDebtShare.phantom
   }
 
@@ -1956,7 +2177,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     return FacilDebtShare.reified(typeArg).new({
       facilId: decodeFromFields(ID.reified(), fields.facil_id),
@@ -1966,7 +2187,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (!isFacilDebtShare(item.type)) {
       throw new Error('not a FacilDebtShare type')
@@ -1981,25 +2202,25 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: Uint8Array
+    data: Uint8Array,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     return FacilDebtShare.fromFields(typeArg, FacilDebtShare.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FacilDebtShareJSONField<ST> {
     return {
       facilId: this.facilId,
       inner: this.inner.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): FacilDebtShareJSON<ST> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    field: any
+    field: any,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     return FacilDebtShare.reified(typeArg).new({
       facilId: decodeFromJSONField(ID.reified(), field.facilId),
@@ -2009,15 +2230,17 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (json.$typeName !== FacilDebtShare.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FacilDebtShare json object: expected '${FacilDebtShare.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(FacilDebtShare.$typeName, extractType(typeArg)),
+      composeSuiType(FacilDebtShare.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return FacilDebtShare.fromJSONField(typeArg, json)
@@ -2025,7 +2248,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2038,7 +2261,7 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
   static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): FacilDebtShare<ToPhantomTypeArgument<ST>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isFacilDebtShare(data.bcs.type)) {
@@ -2048,41 +2271,56 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return FacilDebtShare.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return FacilDebtShare.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FacilDebtShare.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: ST,
-    id: string
+    id: string,
   ): Promise<FacilDebtShare<ToPhantomTypeArgument<ST>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FacilDebtShare object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtShare(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFacilDebtShare(res.type)) {
       throw new Error(`object at id ${id} is not a FacilDebtShare object`)
     }
 
-    return FacilDebtShare.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return FacilDebtShare.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -2090,7 +2328,8 @@ export class FacilDebtShare<ST extends PhantomTypeArgument> implements StructCla
 
 export function isFacilDebtBag(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::supply_pool::FacilDebtBag`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'supply_pool::FacilDebtBag')}::supply_pool::FacilDebtBag`
 }
 
 export interface FacilDebtBagFields {
@@ -2101,17 +2340,31 @@ export interface FacilDebtBagFields {
 
 export type FacilDebtBagReified = Reified<FacilDebtBag, FacilDebtBagFields>
 
+export type FacilDebtBagJSONField = {
+  id: string
+  facilId: string
+  inner: ToJSON<DebtBag>
+}
+
+export type FacilDebtBagJSON = {
+  $typeName: typeof FacilDebtBag.$typeName
+  $typeArgs: []
+} & FacilDebtBagJSONField
+
+/** Collection of debt shares for a lending facility. */
 export class FacilDebtBag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::FacilDebtBag`
+  static readonly $typeName: `${string}::supply_pool::FacilDebtBag` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::FacilDebtBag')
+  }::supply_pool::FacilDebtBag` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FacilDebtBag.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+  readonly $typeName: typeof FacilDebtBag.$typeName = FacilDebtBag.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::FacilDebtBag`
   readonly $typeArgs: []
-  readonly $isPhantom = FacilDebtBag.$isPhantom
+  readonly $isPhantom: typeof FacilDebtBag.$isPhantom = FacilDebtBag.$isPhantom
 
   readonly id: ToField<UID>
   readonly facilId: ToField<ID>
@@ -2120,8 +2373,8 @@ export class FacilDebtBag implements StructClass {
   private constructor(typeArgs: [], fields: FacilDebtBagFields) {
     this.$fullTypeName = composeSuiType(
       FacilDebtBag.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`
+      ...typeArgs,
+    ) as `${string}::supply_pool::FacilDebtBag`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -2135,8 +2388,8 @@ export class FacilDebtBag implements StructClass {
       typeName: FacilDebtBag.$typeName,
       fullTypeName: composeSuiType(
         FacilDebtBag.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::supply_pool::FacilDebtBag`,
+        ...[],
+      ) as `${string}::supply_pool::FacilDebtBag`,
       typeArgs: [] as [],
       isPhantom: FacilDebtBag.$isPhantom,
       reifiedTypeArgs: [],
@@ -2148,7 +2401,7 @@ export class FacilDebtBag implements StructClass {
       fromJSON: (json: Record<string, any>) => FacilDebtBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FacilDebtBag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FacilDebtBag.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FacilDebtBag.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => FacilDebtBag.fetch(client, id),
       new: (fields: FacilDebtBagFields) => {
         return new FacilDebtBag([], fields)
       },
@@ -2156,14 +2409,15 @@ export class FacilDebtBag implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FacilDebtBagReified {
     return FacilDebtBag.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FacilDebtBag>> {
     return phantom(FacilDebtBag.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FacilDebtBag>> {
     return FacilDebtBag.phantom()
   }
 
@@ -2208,7 +2462,7 @@ export class FacilDebtBag implements StructClass {
     return FacilDebtBag.fromFields(FacilDebtBag.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FacilDebtBagJSONField {
     return {
       id: this.id,
       facilId: this.facilId,
@@ -2216,7 +2470,7 @@ export class FacilDebtBag implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): FacilDebtBagJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2230,7 +2484,9 @@ export class FacilDebtBag implements StructClass {
 
   static fromJSON(json: Record<string, any>): FacilDebtBag {
     if (json.$typeName !== FacilDebtBag.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FacilDebtBag json object: expected '${FacilDebtBag.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FacilDebtBag.fromJSONField(json)
@@ -2252,26 +2508,23 @@ export class FacilDebtBag implements StructClass {
         throw new Error(`object at is not a FacilDebtBag object`)
       }
 
-      return FacilDebtBag.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FacilDebtBag.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FacilDebtBag.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FacilDebtBag> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FacilDebtBag object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFacilDebtBag(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FacilDebtBag> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFacilDebtBag(res.type)) {
       throw new Error(`object at id ${id} is not a FacilDebtBag object`)
     }
 
-    return FacilDebtBag.fromSuiObjectData(res.data)
+    return FacilDebtBag.fromBcs(res.bcsBytes)
   }
 }
 
@@ -2279,7 +2532,9 @@ export class FacilDebtBag implements StructClass {
 
 export function isSupplyPool(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::supply_pool::SupplyPool` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'supply_pool::SupplyPool')}::supply_pool::SupplyPool` + '<',
+  )
 }
 
 export interface SupplyPoolFields<T extends PhantomTypeArgument, ST extends PhantomTypeArgument> {
@@ -2294,24 +2549,47 @@ export interface SupplyPoolFields<T extends PhantomTypeArgument, ST extends Phan
   version: ToField<'u16'>
 }
 
-export type SupplyPoolReified<
-  T extends PhantomTypeArgument,
-  ST extends PhantomTypeArgument,
-> = Reified<SupplyPool<T, ST>, SupplyPoolFields<T, ST>>
+export type SupplyPoolReified<T extends PhantomTypeArgument, ST extends PhantomTypeArgument> =
+  Reified<SupplyPool<T, ST>, SupplyPoolFields<T, ST>>
 
+export type SupplyPoolJSONField<T extends PhantomTypeArgument, ST extends PhantomTypeArgument> = {
+  id: string
+  availableBalance: ToJSON<Balance<T>>
+  interestFeeBps: number
+  debtInfo: ToJSON<VecMap<ID, LendFacilInfo<ST>>>
+  totalLiabilitiesX64: string
+  lastUpdateTsSec: string
+  supplyEquity: ToJSON<EquityTreasury<ST>>
+  collectedFees: ToJSON<EquityShareBalance<ST>>
+  version: number
+}
+
+export type SupplyPoolJSON<T extends PhantomTypeArgument, ST extends PhantomTypeArgument> = {
+  $typeName: typeof SupplyPool.$typeName
+  $typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<ST>]
+} & SupplyPoolJSONField<T, ST>
+
+/**
+ * The central structure for managing lending and borrowing operations within the supply pool.
+ * Tracks available balances, liabilities, interest, and equity shares for robust pool management.
+ */
 export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArgument>
   implements StructClass
 {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::supply_pool::SupplyPool`
+  static readonly $typeName: `${string}::supply_pool::SupplyPool` = `${
+    getTypeOrigin('kai-leverage', 'supply_pool::SupplyPool')
+  }::supply_pool::SupplyPool` as const
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
-  readonly $typeName = SupplyPool.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::supply_pool::SupplyPool<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<ST>}>`
+  readonly $typeName: typeof SupplyPool.$typeName = SupplyPool.$typeName
+  readonly $fullTypeName: `${string}::supply_pool::SupplyPool<${PhantomToTypeStr<
+    T
+  >}, ${PhantomToTypeStr<ST>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<ST>]
-  readonly $isPhantom = SupplyPool.$isPhantom
+  readonly $isPhantom: typeof SupplyPool.$isPhantom = SupplyPool.$isPhantom
 
   readonly id: ToField<UID>
   readonly availableBalance: ToField<Balance<T>>
@@ -2325,12 +2603,12 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
 
   private constructor(
     typeArgs: [PhantomToTypeStr<T>, PhantomToTypeStr<ST>],
-    fields: SupplyPoolFields<T, ST>
+    fields: SupplyPoolFields<T, ST>,
   ) {
     this.$fullTypeName = composeSuiType(
       SupplyPool.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::supply_pool::SupplyPool<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<ST>}>`
+      ...typeArgs,
+    ) as `${string}::supply_pool::SupplyPool<${PhantomToTypeStr<T>}, ${PhantomToTypeStr<ST>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -2347,14 +2625,19 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
   static reified<
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
-  >(T: T, ST: ST): SupplyPoolReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
+  >(
+    T: T,
+    ST: ST,
+  ): SupplyPoolReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     const reifiedBcs = SupplyPool.bcs
     return {
       typeName: SupplyPool.$typeName,
       fullTypeName: composeSuiType(
         SupplyPool.$typeName,
-        ...[extractType(T), extractType(ST)]
-      ) as `${typeof PKG_V1}::supply_pool::SupplyPool<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+        ...[extractType(T), extractType(ST)],
+      ) as `${string}::supply_pool::SupplyPool<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
       typeArgs: [extractType(T), extractType(ST)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<T>>,
         PhantomToTypeStr<ToPhantomTypeArgument<ST>>,
@@ -2369,7 +2652,8 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       fromJSON: (json: Record<string, any>) => SupplyPool.fromJSON([T, ST], json),
       fromSuiParsedData: (content: SuiParsedData) => SupplyPool.fromSuiParsedData([T, ST], content),
       fromSuiObjectData: (content: SuiObjectData) => SupplyPool.fromSuiObjectData([T, ST], content),
-      fetch: async (client: SuiClient, id: string) => SupplyPool.fetch(client, [T, ST], id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        SupplyPool.fetch(client, [T, ST], id),
       new: (fields: SupplyPoolFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>>) => {
         return new SupplyPool([extractType(T), extractType(ST)], fields)
       },
@@ -2377,7 +2661,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     }
   }
 
-  static get r() {
+  static get r(): typeof SupplyPool.reified {
     return SupplyPool.reified
   }
 
@@ -2386,11 +2670,12 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     T: T,
-    ST: ST
+    ST: ST,
   ): PhantomReified<ToTypeStr<SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>>>> {
     return phantom(SupplyPool.reified(T, ST))
   }
-  static get p() {
+
+  static get p(): typeof SupplyPool.phantom {
     return SupplyPool.phantom
   }
 
@@ -2422,7 +2707,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     return SupplyPool.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromFields(UID.reified(), fields.id),
@@ -2430,14 +2715,14 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       interestFeeBps: decodeFromFields('u16', fields.interest_fee_bps),
       debtInfo: decodeFromFields(
         VecMap.reified(ID.reified(), LendFacilInfo.reified(typeArgs[1])),
-        fields.debt_info
+        fields.debt_info,
       ),
       totalLiabilitiesX64: decodeFromFields('u128', fields.total_liabilities_x64),
       lastUpdateTsSec: decodeFromFields('u64', fields.last_update_ts_sec),
       supplyEquity: decodeFromFields(EquityTreasury.reified(typeArgs[1]), fields.supply_equity),
       collectedFees: decodeFromFields(
         EquityShareBalance.reified(typeArgs[1]),
-        fields.collected_fees
+        fields.collected_fees,
       ),
       version: decodeFromFields('u16', fields.version),
     })
@@ -2448,7 +2733,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     if (!isSupplyPool(item.type)) {
       throw new Error('not a SupplyPool type')
@@ -2459,22 +2744,22 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       availableBalance: decodeFromFieldsWithTypes(
         Balance.reified(typeArgs[0]),
-        item.fields.available_balance
+        item.fields.available_balance,
       ),
       interestFeeBps: decodeFromFieldsWithTypes('u16', item.fields.interest_fee_bps),
       debtInfo: decodeFromFieldsWithTypes(
         VecMap.reified(ID.reified(), LendFacilInfo.reified(typeArgs[1])),
-        item.fields.debt_info
+        item.fields.debt_info,
       ),
       totalLiabilitiesX64: decodeFromFieldsWithTypes('u128', item.fields.total_liabilities_x64),
       lastUpdateTsSec: decodeFromFieldsWithTypes('u64', item.fields.last_update_ts_sec),
       supplyEquity: decodeFromFieldsWithTypes(
         EquityTreasury.reified(typeArgs[1]),
-        item.fields.supply_equity
+        item.fields.supply_equity,
       ),
       collectedFees: decodeFromFieldsWithTypes(
         EquityShareBalance.reified(typeArgs[1]),
-        item.fields.collected_fees
+        item.fields.collected_fees,
       ),
       version: decodeFromFieldsWithTypes('u16', item.fields.version),
     })
@@ -2485,12 +2770,12 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    data: Uint8Array
+    data: Uint8Array,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     return SupplyPool.fromFields(typeArgs, SupplyPool.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): SupplyPoolJSONField<T, ST> {
     return {
       id: this.id,
       availableBalance: this.availableBalance.toJSONField(),
@@ -2504,7 +2789,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     }
   }
 
-  toJSON() {
+  toJSON(): SupplyPoolJSON<T, ST> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2513,7 +2798,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    field: any
+    field: any,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     return SupplyPool.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromJSONField(UID.reified(), field.id),
@@ -2521,14 +2806,14 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       interestFeeBps: decodeFromJSONField('u16', field.interestFeeBps),
       debtInfo: decodeFromJSONField(
         VecMap.reified(ID.reified(), LendFacilInfo.reified(typeArgs[1])),
-        field.debtInfo
+        field.debtInfo,
       ),
       totalLiabilitiesX64: decodeFromJSONField('u128', field.totalLiabilitiesX64),
       lastUpdateTsSec: decodeFromJSONField('u64', field.lastUpdateTsSec),
       supplyEquity: decodeFromJSONField(EquityTreasury.reified(typeArgs[1]), field.supplyEquity),
       collectedFees: decodeFromJSONField(
         EquityShareBalance.reified(typeArgs[1]),
-        field.collectedFees
+        field.collectedFees,
       ),
       version: decodeFromJSONField('u16', field.version),
     })
@@ -2539,15 +2824,17 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     if (json.$typeName !== SupplyPool.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a SupplyPool json object: expected '${SupplyPool.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(SupplyPool.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return SupplyPool.fromJSONField(typeArgs, json)
@@ -2558,7 +2845,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2574,7 +2861,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [T, ST],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSupplyPool(data.bcs.type)) {
@@ -2584,7 +2871,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 2) {
         throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 2; i++) {
@@ -2592,18 +2879,18 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return SupplyPool.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return SupplyPool.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return SupplyPool.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -2611,18 +2898,31 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [T, ST],
-    id: string
+    id: string,
   ): Promise<SupplyPool<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching SupplyPool object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isSupplyPool(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isSupplyPool(res.type)) {
       throw new Error(`object at id ${id} is not a SupplyPool object`)
     }
 
-    return SupplyPool.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return SupplyPool.fromBcs(typeArgs, res.bcsBytes)
   }
 }

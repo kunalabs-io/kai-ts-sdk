@@ -1,17 +1,28 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { String } from '../../move-stdlib/string/structs'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import { String } from '../../std/string/structs'
 
 export interface UpdateProtocolFeeRateArgs {
   a0: TransactionObjectInput
   a1: bigint | TransactionArgument
 }
 
-export function updateProtocolFeeRate(tx: Transaction, args: UpdateProtocolFeeRateArgs) {
+export function updateProtocolFeeRate(
+  tx: Transaction,
+  args: UpdateProtocolFeeRateArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::update_protocol_fee_rate`,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u64`)],
+    target: `${getPublishedAt('cetus-integrate')}::config_script::update_protocol_fee_rate`,
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u64`),
+    ],
   })
 }
 
@@ -21,10 +32,14 @@ export interface AddFeeTierArgs {
   a2: bigint | TransactionArgument
 }
 
-export function addFeeTier(tx: Transaction, args: AddFeeTierArgs) {
+export function addFeeTier(tx: Transaction, args: AddFeeTierArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::add_fee_tier`,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u32`), pure(tx, args.a2, `u64`)],
+    target: `${getPublishedAt('cetus-integrate')}::config_script::add_fee_tier`,
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u32`),
+      pure(tx, args.a2, `u64`),
+    ],
   })
 }
 
@@ -34,10 +49,14 @@ export interface UpdateFeeTierArgs {
   a2: bigint | TransactionArgument
 }
 
-export function updateFeeTier(tx: Transaction, args: UpdateFeeTierArgs) {
+export function updateFeeTier(tx: Transaction, args: UpdateFeeTierArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::update_fee_tier`,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u32`), pure(tx, args.a2, `u64`)],
+    target: `${getPublishedAt('cetus-integrate')}::config_script::update_fee_tier`,
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u32`),
+      pure(tx, args.a2, `u64`),
+    ],
   })
 }
 
@@ -46,10 +65,13 @@ export interface DeleteFeeTierArgs {
   a1: number | TransactionArgument
 }
 
-export function deleteFeeTier(tx: Transaction, args: DeleteFeeTierArgs) {
+export function deleteFeeTier(tx: Transaction, args: DeleteFeeTierArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::delete_fee_tier`,
-    arguments: [obj(tx, args.a0), pure(tx, args.a1, `u32`)],
+    target: `${getPublishedAt('cetus-integrate')}::config_script::delete_fee_tier`,
+    arguments: [
+      obj(tx, args.a0),
+      pure(tx, args.a1, `u32`),
+    ],
   })
 }
 
@@ -60,9 +82,9 @@ export interface SetRolesArgs {
   a3: bigint | TransactionArgument
 }
 
-export function setRoles(tx: Transaction, args: SetRolesArgs) {
+export function setRoles(tx: Transaction, args: SetRolesArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::set_roles`,
+    target: `${getPublishedAt('cetus-integrate')}::config_script::set_roles`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -79,9 +101,9 @@ export interface AddRoleArgs {
   a3: number | TransactionArgument
 }
 
-export function addRole(tx: Transaction, args: AddRoleArgs) {
+export function addRole(tx: Transaction, args: AddRoleArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::add_role`,
+    target: `${getPublishedAt('cetus-integrate')}::config_script::add_role`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -98,9 +120,9 @@ export interface RemoveRoleArgs {
   a3: number | TransactionArgument
 }
 
-export function removeRole(tx: Transaction, args: RemoveRoleArgs) {
+export function removeRole(tx: Transaction, args: RemoveRoleArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::remove_role`,
+    target: `${getPublishedAt('cetus-integrate')}::config_script::remove_role`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -116,10 +138,14 @@ export interface RemoveMemberArgs {
   a2: string | TransactionArgument
 }
 
-export function removeMember(tx: Transaction, args: RemoveMemberArgs) {
+export function removeMember(tx: Transaction, args: RemoveMemberArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::remove_member`,
-    arguments: [obj(tx, args.a0), obj(tx, args.a1), pure(tx, args.a2, `address`)],
+    target: `${getPublishedAt('cetus-integrate')}::config_script::remove_member`,
+    arguments: [
+      obj(tx, args.a0),
+      obj(tx, args.a1),
+      pure(tx, args.a2, `address`),
+    ],
   })
 }
 
@@ -132,9 +158,12 @@ export interface SetPositionDisplayArgs {
   a5: string | TransactionArgument
 }
 
-export function setPositionDisplay(tx: Transaction, args: SetPositionDisplayArgs) {
+export function setPositionDisplay(
+  tx: Transaction,
+  args: SetPositionDisplayArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::config_script::set_position_display`,
+    target: `${getPublishedAt('cetus-integrate')}::config_script::set_position_display`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),

@@ -1,29 +1,42 @@
-import * as reified from '../../_framework/reified'
+/**
+ * This module implements a container that collects fees in SUI denomination.
+ * The `FeeCollector` requires that the fee deposited is exactly equal to the
+ * `fee_amount` configured.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 import { SUI } from '../../sui/sui/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== FeeCollector =============================== */
 
 export function isFeeCollector(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fee_collector::FeeCollector`
+  return type
+    === `${getTypeOrigin('wormhole', 'fee_collector::FeeCollector')}::fee_collector::FeeCollector`
 }
 
 export interface FeeCollectorFields {
@@ -33,17 +46,30 @@ export interface FeeCollectorFields {
 
 export type FeeCollectorReified = Reified<FeeCollector, FeeCollectorFields>
 
+export type FeeCollectorJSONField = {
+  feeAmount: string
+  balance: ToJSON<Balance<ToPhantom<SUI>>>
+}
+
+export type FeeCollectorJSON = {
+  $typeName: typeof FeeCollector.$typeName
+  $typeArgs: []
+} & FeeCollectorJSONField
+
+/** Container for configured `fee_amount` and `balance` of SUI collected. */
 export class FeeCollector implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fee_collector::FeeCollector`
+  static readonly $typeName: `${string}::fee_collector::FeeCollector` = `${
+    getTypeOrigin('wormhole', 'fee_collector::FeeCollector')
+  }::fee_collector::FeeCollector` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FeeCollector.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fee_collector::FeeCollector`
+  readonly $typeName: typeof FeeCollector.$typeName = FeeCollector.$typeName
+  readonly $fullTypeName: `${string}::fee_collector::FeeCollector`
   readonly $typeArgs: []
-  readonly $isPhantom = FeeCollector.$isPhantom
+  readonly $isPhantom: typeof FeeCollector.$isPhantom = FeeCollector.$isPhantom
 
   readonly feeAmount: ToField<'u64'>
   readonly balance: ToField<Balance<ToPhantom<SUI>>>
@@ -51,8 +77,8 @@ export class FeeCollector implements StructClass {
   private constructor(typeArgs: [], fields: FeeCollectorFields) {
     this.$fullTypeName = composeSuiType(
       FeeCollector.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fee_collector::FeeCollector`
+      ...typeArgs,
+    ) as `${string}::fee_collector::FeeCollector`
     this.$typeArgs = typeArgs
 
     this.feeAmount = fields.feeAmount
@@ -65,8 +91,8 @@ export class FeeCollector implements StructClass {
       typeName: FeeCollector.$typeName,
       fullTypeName: composeSuiType(
         FeeCollector.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fee_collector::FeeCollector`,
+        ...[],
+      ) as `${string}::fee_collector::FeeCollector`,
       typeArgs: [] as [],
       isPhantom: FeeCollector.$isPhantom,
       reifiedTypeArgs: [],
@@ -78,7 +104,7 @@ export class FeeCollector implements StructClass {
       fromJSON: (json: Record<string, any>) => FeeCollector.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FeeCollector.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FeeCollector.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FeeCollector.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => FeeCollector.fetch(client, id),
       new: (fields: FeeCollectorFields) => {
         return new FeeCollector([], fields)
       },
@@ -86,14 +112,15 @@ export class FeeCollector implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FeeCollectorReified {
     return FeeCollector.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FeeCollector>> {
     return phantom(FeeCollector.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FeeCollector>> {
     return FeeCollector.phantom()
   }
 
@@ -116,7 +143,7 @@ export class FeeCollector implements StructClass {
   static fromFields(fields: Record<string, any>): FeeCollector {
     return FeeCollector.reified().new({
       feeAmount: decodeFromFields('u64', fields.fee_amount),
-      balance: decodeFromFields(Balance.reified(reified.phantom(SUI.reified())), fields.balance),
+      balance: decodeFromFields(Balance.reified(phantom(SUI.reified())), fields.balance),
     })
   }
 
@@ -128,8 +155,8 @@ export class FeeCollector implements StructClass {
     return FeeCollector.reified().new({
       feeAmount: decodeFromFieldsWithTypes('u64', item.fields.fee_amount),
       balance: decodeFromFieldsWithTypes(
-        Balance.reified(reified.phantom(SUI.reified())),
-        item.fields.balance
+        Balance.reified(phantom(SUI.reified())),
+        item.fields.balance,
       ),
     })
   }
@@ -138,27 +165,29 @@ export class FeeCollector implements StructClass {
     return FeeCollector.fromFields(FeeCollector.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FeeCollectorJSONField {
     return {
       feeAmount: this.feeAmount.toString(),
       balance: this.balance.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): FeeCollectorJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): FeeCollector {
     return FeeCollector.reified().new({
       feeAmount: decodeFromJSONField('u64', field.feeAmount),
-      balance: decodeFromJSONField(Balance.reified(reified.phantom(SUI.reified())), field.balance),
+      balance: decodeFromJSONField(Balance.reified(phantom(SUI.reified())), field.balance),
     })
   }
 
   static fromJSON(json: Record<string, any>): FeeCollector {
     if (json.$typeName !== FeeCollector.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FeeCollector json object: expected '${FeeCollector.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FeeCollector.fromJSONField(json)
@@ -180,25 +209,22 @@ export class FeeCollector implements StructClass {
         throw new Error(`object at is not a FeeCollector object`)
       }
 
-      return FeeCollector.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FeeCollector.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FeeCollector.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FeeCollector> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FeeCollector object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFeeCollector(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FeeCollector> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFeeCollector(res.type)) {
       throw new Error(`object at id ${id} is not a FeeCollector object`)
     }
 
-    return FeeCollector.fromSuiObjectData(res.data)
+    return FeeCollector.fromBcs(res.bcsBytes)
   }
 }

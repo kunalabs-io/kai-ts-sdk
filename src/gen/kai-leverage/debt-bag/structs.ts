@@ -1,31 +1,54 @@
-import * as reified from '../../_framework/reified'
+/**
+ * Collection for managing heterogeneous debt share balances.
+ *
+ * This module provides a type-safe collection that can store debt shares for multiple
+ * asset types and share types simultaneously. It enforces a one-to-one mapping between
+ * asset types and their corresponding share types: for any asset type `T`, there can be
+ * only a single associated debt share type `ST`, and vice versa. This ensures type-level
+ * consistency and prevents ambiguous or conflicting associations between assets and shares.
+ *
+ * Key properties:
+ * - Enforces a unique mapping between each asset type and its share type (bijective mapping)
+ * - Validates type consistency to prevent mismatched operations
+ * - Supports partial and full withdrawals by share type
+ * - Tracks total amounts for efficient queries
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
 import { UID } from '../../sui/object/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== Info =============================== */
 
 export function isInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_bag::Info`
+  return type === `${getTypeOrigin('kai-leverage', 'debt_bag::Info')}::debt_bag::Info`
 }
 
 export interface InfoFields {
@@ -36,17 +59,31 @@ export interface InfoFields {
 
 export type InfoReified = Reified<Info, InfoFields>
 
+export type InfoJSONField = {
+  assetType: string
+  shareType: string
+  amount: string
+}
+
+export type InfoJSON = {
+  $typeName: typeof Info.$typeName
+  $typeArgs: []
+} & InfoJSONField
+
+/** Internal info about shares stored per asset/share type. */
 export class Info implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_bag::Info`
+  static readonly $typeName: `${string}::debt_bag::Info` = `${
+    getTypeOrigin('kai-leverage', 'debt_bag::Info')
+  }::debt_bag::Info` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Info.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_bag::Info`
+  readonly $typeName: typeof Info.$typeName = Info.$typeName
+  readonly $fullTypeName: `${string}::debt_bag::Info`
   readonly $typeArgs: []
-  readonly $isPhantom = Info.$isPhantom
+  readonly $isPhantom: typeof Info.$isPhantom = Info.$isPhantom
 
   readonly assetType: ToField<TypeName>
   readonly shareType: ToField<TypeName>
@@ -55,8 +92,8 @@ export class Info implements StructClass {
   private constructor(typeArgs: [], fields: InfoFields) {
     this.$fullTypeName = composeSuiType(
       Info.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_bag::Info`
+      ...typeArgs,
+    ) as `${string}::debt_bag::Info`
     this.$typeArgs = typeArgs
 
     this.assetType = fields.assetType
@@ -68,7 +105,10 @@ export class Info implements StructClass {
     const reifiedBcs = Info.bcs
     return {
       typeName: Info.$typeName,
-      fullTypeName: composeSuiType(Info.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Info`,
+      fullTypeName: composeSuiType(
+        Info.$typeName,
+        ...[],
+      ) as `${string}::debt_bag::Info`,
       typeArgs: [] as [],
       isPhantom: Info.$isPhantom,
       reifiedTypeArgs: [],
@@ -80,7 +120,7 @@ export class Info implements StructClass {
       fromJSON: (json: Record<string, any>) => Info.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Info.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Info.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Info.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Info.fetch(client, id),
       new: (fields: InfoFields) => {
         return new Info([], fields)
       },
@@ -88,14 +128,15 @@ export class Info implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): InfoReified {
     return Info.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Info>> {
     return phantom(Info.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Info>> {
     return Info.phantom()
   }
 
@@ -140,15 +181,15 @@ export class Info implements StructClass {
     return Info.fromFields(Info.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): InfoJSONField {
     return {
-      assetType: this.assetType.toJSONField(),
-      shareType: this.shareType.toJSONField(),
+      assetType: this.assetType,
+      shareType: this.shareType,
       amount: this.amount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): InfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -162,7 +203,9 @@ export class Info implements StructClass {
 
   static fromJSON(json: Record<string, any>): Info {
     if (json.$typeName !== Info.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Info json object: expected '${Info.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Info.fromJSONField(json)
@@ -184,26 +227,23 @@ export class Info implements StructClass {
         throw new Error(`object at is not a Info object`)
       }
 
-      return Info.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Info.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Info.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Info> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Info object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Info> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isInfo(res.type)) {
       throw new Error(`object at id ${id} is not a Info object`)
     }
 
-    return Info.fromSuiObjectData(res.data)
+    return Info.fromBcs(res.bcsBytes)
   }
 }
 
@@ -211,7 +251,7 @@ export class Info implements StructClass {
 
 export function isDebtBag(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_bag::DebtBag`
+  return type === `${getTypeOrigin('kai-leverage', 'debt_bag::DebtBag')}::debt_bag::DebtBag`
 }
 
 export interface DebtBagFields {
@@ -222,17 +262,31 @@ export interface DebtBagFields {
 
 export type DebtBagReified = Reified<DebtBag, DebtBagFields>
 
+export type DebtBagJSONField = {
+  id: string
+  infos: ToJSON<Info>[]
+  bag: ToJSON<Bag>
+}
+
+export type DebtBagJSON = {
+  $typeName: typeof DebtBag.$typeName
+  $typeArgs: []
+} & DebtBagJSONField
+
+/** Collection of debt shares for multiple facilities and share types. */
 export class DebtBag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_bag::DebtBag`
+  static readonly $typeName: `${string}::debt_bag::DebtBag` = `${
+    getTypeOrigin('kai-leverage', 'debt_bag::DebtBag')
+  }::debt_bag::DebtBag` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DebtBag.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_bag::DebtBag`
+  readonly $typeName: typeof DebtBag.$typeName = DebtBag.$typeName
+  readonly $fullTypeName: `${string}::debt_bag::DebtBag`
   readonly $typeArgs: []
-  readonly $isPhantom = DebtBag.$isPhantom
+  readonly $isPhantom: typeof DebtBag.$isPhantom = DebtBag.$isPhantom
 
   readonly id: ToField<UID>
   readonly infos: ToField<Vector<Info>>
@@ -241,8 +295,8 @@ export class DebtBag implements StructClass {
   private constructor(typeArgs: [], fields: DebtBagFields) {
     this.$fullTypeName = composeSuiType(
       DebtBag.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_bag::DebtBag`
+      ...typeArgs,
+    ) as `${string}::debt_bag::DebtBag`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -256,8 +310,8 @@ export class DebtBag implements StructClass {
       typeName: DebtBag.$typeName,
       fullTypeName: composeSuiType(
         DebtBag.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::debt_bag::DebtBag`,
+        ...[],
+      ) as `${string}::debt_bag::DebtBag`,
       typeArgs: [] as [],
       isPhantom: DebtBag.$isPhantom,
       reifiedTypeArgs: [],
@@ -269,7 +323,7 @@ export class DebtBag implements StructClass {
       fromJSON: (json: Record<string, any>) => DebtBag.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DebtBag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DebtBag.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DebtBag.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DebtBag.fetch(client, id),
       new: (fields: DebtBagFields) => {
         return new DebtBag([], fields)
       },
@@ -277,14 +331,15 @@ export class DebtBag implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DebtBagReified {
     return DebtBag.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DebtBag>> {
     return phantom(DebtBag.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DebtBag>> {
     return DebtBag.phantom()
   }
 
@@ -308,7 +363,7 @@ export class DebtBag implements StructClass {
   static fromFields(fields: Record<string, any>): DebtBag {
     return DebtBag.reified().new({
       id: decodeFromFields(UID.reified(), fields.id),
-      infos: decodeFromFields(reified.vector(Info.reified()), fields.infos),
+      infos: decodeFromFields(vector(Info.reified()), fields.infos),
       bag: decodeFromFields(Bag.reified(), fields.bag),
     })
   }
@@ -320,7 +375,7 @@ export class DebtBag implements StructClass {
 
     return DebtBag.reified().new({
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
-      infos: decodeFromFieldsWithTypes(reified.vector(Info.reified()), item.fields.infos),
+      infos: decodeFromFieldsWithTypes(vector(Info.reified()), item.fields.infos),
       bag: decodeFromFieldsWithTypes(Bag.reified(), item.fields.bag),
     })
   }
@@ -329,7 +384,7 @@ export class DebtBag implements StructClass {
     return DebtBag.fromFields(DebtBag.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DebtBagJSONField {
     return {
       id: this.id,
       infos: fieldToJSON<Vector<Info>>(`vector<${Info.$typeName}>`, this.infos),
@@ -337,21 +392,23 @@ export class DebtBag implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): DebtBagJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): DebtBag {
     return DebtBag.reified().new({
       id: decodeFromJSONField(UID.reified(), field.id),
-      infos: decodeFromJSONField(reified.vector(Info.reified()), field.infos),
+      infos: decodeFromJSONField(vector(Info.reified()), field.infos),
       bag: decodeFromJSONField(Bag.reified(), field.bag),
     })
   }
 
   static fromJSON(json: Record<string, any>): DebtBag {
     if (json.$typeName !== DebtBag.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DebtBag json object: expected '${DebtBag.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DebtBag.fromJSONField(json)
@@ -373,26 +430,23 @@ export class DebtBag implements StructClass {
         throw new Error(`object at is not a DebtBag object`)
       }
 
-      return DebtBag.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DebtBag.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DebtBag.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DebtBag> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DebtBag object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtBag(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DebtBag> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDebtBag(res.type)) {
       throw new Error(`object at id ${id} is not a DebtBag object`)
     }
 
-    return DebtBag.fromSuiObjectData(res.data)
+    return DebtBag.fromBcs(res.bcsBytes)
   }
 }
 
@@ -400,7 +454,7 @@ export class DebtBag implements StructClass {
 
 export function isKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_bag::Key`
+  return type === `${getTypeOrigin('kai-leverage', 'debt_bag::Key')}::debt_bag::Key`
 }
 
 export interface KeyFields {
@@ -410,17 +464,29 @@ export interface KeyFields {
 
 export type KeyReified = Reified<Key, KeyFields>
 
+export type KeyJSONField = {
+  t: string
+  st: string
+}
+
+export type KeyJSON = {
+  $typeName: typeof Key.$typeName
+  $typeArgs: []
+} & KeyJSONField
+
 export class Key implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_bag::Key`
+  static readonly $typeName: `${string}::debt_bag::Key` = `${
+    getTypeOrigin('kai-leverage', 'debt_bag::Key')
+  }::debt_bag::Key` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = Key.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_bag::Key`
+  readonly $typeName: typeof Key.$typeName = Key.$typeName
+  readonly $fullTypeName: `${string}::debt_bag::Key`
   readonly $typeArgs: []
-  readonly $isPhantom = Key.$isPhantom
+  readonly $isPhantom: typeof Key.$isPhantom = Key.$isPhantom
 
   readonly t: ToField<TypeName>
   readonly st: ToField<TypeName>
@@ -428,8 +494,8 @@ export class Key implements StructClass {
   private constructor(typeArgs: [], fields: KeyFields) {
     this.$fullTypeName = composeSuiType(
       Key.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_bag::Key`
+      ...typeArgs,
+    ) as `${string}::debt_bag::Key`
     this.$typeArgs = typeArgs
 
     this.t = fields.t
@@ -440,7 +506,10 @@ export class Key implements StructClass {
     const reifiedBcs = Key.bcs
     return {
       typeName: Key.$typeName,
-      fullTypeName: composeSuiType(Key.$typeName, ...[]) as `${typeof PKG_V1}::debt_bag::Key`,
+      fullTypeName: composeSuiType(
+        Key.$typeName,
+        ...[],
+      ) as `${string}::debt_bag::Key`,
       typeArgs: [] as [],
       isPhantom: Key.$isPhantom,
       reifiedTypeArgs: [],
@@ -452,7 +521,7 @@ export class Key implements StructClass {
       fromJSON: (json: Record<string, any>) => Key.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Key.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => Key.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => Key.fetch(client, id),
       new: (fields: KeyFields) => {
         return new Key([], fields)
       },
@@ -460,14 +529,15 @@ export class Key implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): KeyReified {
     return Key.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<Key>> {
     return phantom(Key.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<Key>> {
     return Key.phantom()
   }
 
@@ -509,14 +579,14 @@ export class Key implements StructClass {
     return Key.fromFields(Key.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): KeyJSONField {
     return {
-      t: this.t.toJSONField(),
-      st: this.st.toJSONField(),
+      t: this.t,
+      st: this.st,
     }
   }
 
-  toJSON() {
+  toJSON(): KeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -529,7 +599,9 @@ export class Key implements StructClass {
 
   static fromJSON(json: Record<string, any>): Key {
     if (json.$typeName !== Key.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Key json object: expected '${Key.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return Key.fromJSONField(json)
@@ -551,25 +623,22 @@ export class Key implements StructClass {
         throw new Error(`object at is not a Key object`)
       }
 
-      return Key.fromBcs(fromB64(data.bcs.bcsBytes))
+      return Key.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Key.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<Key> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Key object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<Key> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isKey(res.type)) {
       throw new Error(`object at id ${id} is not a Key object`)
     }
 
-    return Key.fromSuiObjectData(res.data)
+    return Key.fromBcs(res.bcsBytes)
   }
 }

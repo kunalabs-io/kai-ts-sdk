@@ -1,26 +1,39 @@
-import * as reified from '../../_framework/reified'
+/**
+ * Defines the `DenyList` type. The `DenyList` shared object is used to restrict access to
+ * instances of certain core types from being used as inputs by specified addresses in the deny
+ * list.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
   ToTypeStr as ToPhantom,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Bag } from '../bag/structs'
 import { ID, UID } from '../object/structs'
 import { Table } from '../table/structs'
 import { VecSet } from '../vec-set/structs'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
 
 /* ============================== DenyList =============================== */
 
@@ -31,30 +44,43 @@ export function isDenyList(type: string): boolean {
 
 export interface DenyListFields {
   id: ToField<UID>
+  /** The individual deny lists. */
   lists: ToField<Bag>
 }
 
 export type DenyListReified = Reified<DenyList, DenyListFields>
 
+export type DenyListJSONField = {
+  id: string
+  lists: ToJSON<Bag>
+}
+
+export type DenyListJSON = {
+  $typeName: typeof DenyList.$typeName
+  $typeArgs: []
+} & DenyListJSONField
+
+/** A shared object that stores the addresses that are blocked for a given core type. */
 export class DenyList implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::DenyList`
+  static readonly $typeName: `0x2::deny_list::DenyList` = `0x2::deny_list::DenyList` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DenyList.$typeName
+  readonly $typeName: typeof DenyList.$typeName = DenyList.$typeName
   readonly $fullTypeName: `0x2::deny_list::DenyList`
   readonly $typeArgs: []
-  readonly $isPhantom = DenyList.$isPhantom
+  readonly $isPhantom: typeof DenyList.$isPhantom = DenyList.$isPhantom
 
   readonly id: ToField<UID>
+  /** The individual deny lists. */
   readonly lists: ToField<Bag>
 
   private constructor(typeArgs: [], fields: DenyListFields) {
     this.$fullTypeName = composeSuiType(
       DenyList.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::DenyList`
     this.$typeArgs = typeArgs
 
@@ -66,7 +92,10 @@ export class DenyList implements StructClass {
     const reifiedBcs = DenyList.bcs
     return {
       typeName: DenyList.$typeName,
-      fullTypeName: composeSuiType(DenyList.$typeName, ...[]) as `0x2::deny_list::DenyList`,
+      fullTypeName: composeSuiType(
+        DenyList.$typeName,
+        ...[],
+      ) as `0x2::deny_list::DenyList`,
       typeArgs: [] as [],
       isPhantom: DenyList.$isPhantom,
       reifiedTypeArgs: [],
@@ -78,7 +107,7 @@ export class DenyList implements StructClass {
       fromJSON: (json: Record<string, any>) => DenyList.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DenyList.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DenyList.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DenyList.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DenyList.fetch(client, id),
       new: (fields: DenyListFields) => {
         return new DenyList([], fields)
       },
@@ -86,14 +115,15 @@ export class DenyList implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DenyListReified {
     return DenyList.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DenyList>> {
     return phantom(DenyList.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DenyList>> {
     return DenyList.phantom()
   }
 
@@ -135,14 +165,14 @@ export class DenyList implements StructClass {
     return DenyList.fromFields(DenyList.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DenyListJSONField {
     return {
       id: this.id,
       lists: this.lists.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): DenyListJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -155,7 +185,9 @@ export class DenyList implements StructClass {
 
   static fromJSON(json: Record<string, any>): DenyList {
     if (json.$typeName !== DenyList.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DenyList json object: expected '${DenyList.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DenyList.fromJSONField(json)
@@ -177,26 +209,23 @@ export class DenyList implements StructClass {
         throw new Error(`object at is not a DenyList object`)
       }
 
-      return DenyList.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DenyList.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DenyList.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DenyList> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DenyList object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDenyList(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DenyList> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDenyList(res.type)) {
       throw new Error(`object at id ${id} is not a DenyList object`)
     }
 
-    return DenyList.fromSuiObjectData(res.data)
+    return DenyList.fromBcs(res.bcsBytes)
   }
 }
 
@@ -213,24 +242,38 @@ export interface ConfigWriteCapFields {
 
 export type ConfigWriteCapReified = Reified<ConfigWriteCap, ConfigWriteCapFields>
 
+export type ConfigWriteCapJSONField = {
+  dummyField: boolean
+}
+
+export type ConfigWriteCapJSON = {
+  $typeName: typeof ConfigWriteCap.$typeName
+  $typeArgs: []
+} & ConfigWriteCapJSONField
+
+/**
+ * The capability used to write to the deny list config. Ensures that the Configs for the
+ * DenyList are modified only by this module.
+ */
 export class ConfigWriteCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::ConfigWriteCap`
+  static readonly $typeName: `0x2::deny_list::ConfigWriteCap` =
+    `0x2::deny_list::ConfigWriteCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ConfigWriteCap.$typeName
+  readonly $typeName: typeof ConfigWriteCap.$typeName = ConfigWriteCap.$typeName
   readonly $fullTypeName: `0x2::deny_list::ConfigWriteCap`
   readonly $typeArgs: []
-  readonly $isPhantom = ConfigWriteCap.$isPhantom
+  readonly $isPhantom: typeof ConfigWriteCap.$isPhantom = ConfigWriteCap.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ConfigWriteCapFields) {
     this.$fullTypeName = composeSuiType(
       ConfigWriteCap.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::ConfigWriteCap`
     this.$typeArgs = typeArgs
 
@@ -243,7 +286,7 @@ export class ConfigWriteCap implements StructClass {
       typeName: ConfigWriteCap.$typeName,
       fullTypeName: composeSuiType(
         ConfigWriteCap.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::deny_list::ConfigWriteCap`,
       typeArgs: [] as [],
       isPhantom: ConfigWriteCap.$isPhantom,
@@ -256,7 +299,7 @@ export class ConfigWriteCap implements StructClass {
       fromJSON: (json: Record<string, any>) => ConfigWriteCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ConfigWriteCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ConfigWriteCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ConfigWriteCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ConfigWriteCap.fetch(client, id),
       new: (fields: ConfigWriteCapFields) => {
         return new ConfigWriteCap([], fields)
       },
@@ -264,14 +307,15 @@ export class ConfigWriteCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ConfigWriteCapReified {
     return ConfigWriteCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ConfigWriteCap>> {
     return phantom(ConfigWriteCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ConfigWriteCap>> {
     return ConfigWriteCap.phantom()
   }
 
@@ -310,13 +354,13 @@ export class ConfigWriteCap implements StructClass {
     return ConfigWriteCap.fromFields(ConfigWriteCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ConfigWriteCapJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ConfigWriteCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -328,7 +372,9 @@ export class ConfigWriteCap implements StructClass {
 
   static fromJSON(json: Record<string, any>): ConfigWriteCap {
     if (json.$typeName !== ConfigWriteCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ConfigWriteCap json object: expected '${ConfigWriteCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ConfigWriteCap.fromJSONField(json)
@@ -350,26 +396,23 @@ export class ConfigWriteCap implements StructClass {
         throw new Error(`object at is not a ConfigWriteCap object`)
       }
 
-      return ConfigWriteCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ConfigWriteCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ConfigWriteCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ConfigWriteCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ConfigWriteCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isConfigWriteCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ConfigWriteCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isConfigWriteCap(res.type)) {
       throw new Error(`object at id ${id} is not a ConfigWriteCap object`)
     }
 
-    return ConfigWriteCap.fromSuiObjectData(res.data)
+    return ConfigWriteCap.fromBcs(res.bcsBytes)
   }
 }
 
@@ -387,17 +430,31 @@ export interface ConfigKeyFields {
 
 export type ConfigKeyReified = Reified<ConfigKey, ConfigKeyFields>
 
+export type ConfigKeyJSONField = {
+  perTypeIndex: string
+  perTypeKey: number[]
+}
+
+export type ConfigKeyJSON = {
+  $typeName: typeof ConfigKey.$typeName
+  $typeArgs: []
+} & ConfigKeyJSONField
+
+/**
+ * The dynamic object field key used to store the `Config` for a given type, essentially a
+ * `(per_type_index, per_type_key)` pair.
+ */
 export class ConfigKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::ConfigKey`
+  static readonly $typeName: `0x2::deny_list::ConfigKey` = `0x2::deny_list::ConfigKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ConfigKey.$typeName
+  readonly $typeName: typeof ConfigKey.$typeName = ConfigKey.$typeName
   readonly $fullTypeName: `0x2::deny_list::ConfigKey`
   readonly $typeArgs: []
-  readonly $isPhantom = ConfigKey.$isPhantom
+  readonly $isPhantom: typeof ConfigKey.$isPhantom = ConfigKey.$isPhantom
 
   readonly perTypeIndex: ToField<'u64'>
   readonly perTypeKey: ToField<Vector<'u8'>>
@@ -405,7 +462,7 @@ export class ConfigKey implements StructClass {
   private constructor(typeArgs: [], fields: ConfigKeyFields) {
     this.$fullTypeName = composeSuiType(
       ConfigKey.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::ConfigKey`
     this.$typeArgs = typeArgs
 
@@ -417,7 +474,10 @@ export class ConfigKey implements StructClass {
     const reifiedBcs = ConfigKey.bcs
     return {
       typeName: ConfigKey.$typeName,
-      fullTypeName: composeSuiType(ConfigKey.$typeName, ...[]) as `0x2::deny_list::ConfigKey`,
+      fullTypeName: composeSuiType(
+        ConfigKey.$typeName,
+        ...[],
+      ) as `0x2::deny_list::ConfigKey`,
       typeArgs: [] as [],
       isPhantom: ConfigKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -429,7 +489,7 @@ export class ConfigKey implements StructClass {
       fromJSON: (json: Record<string, any>) => ConfigKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ConfigKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ConfigKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ConfigKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ConfigKey.fetch(client, id),
       new: (fields: ConfigKeyFields) => {
         return new ConfigKey([], fields)
       },
@@ -437,14 +497,15 @@ export class ConfigKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ConfigKeyReified {
     return ConfigKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ConfigKey>> {
     return phantom(ConfigKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ConfigKey>> {
     return ConfigKey.phantom()
   }
 
@@ -467,7 +528,7 @@ export class ConfigKey implements StructClass {
   static fromFields(fields: Record<string, any>): ConfigKey {
     return ConfigKey.reified().new({
       perTypeIndex: decodeFromFields('u64', fields.per_type_index),
-      perTypeKey: decodeFromFields(reified.vector('u8'), fields.per_type_key),
+      perTypeKey: decodeFromFields(vector('u8'), fields.per_type_key),
     })
   }
 
@@ -478,7 +539,7 @@ export class ConfigKey implements StructClass {
 
     return ConfigKey.reified().new({
       perTypeIndex: decodeFromFieldsWithTypes('u64', item.fields.per_type_index),
-      perTypeKey: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.per_type_key),
+      perTypeKey: decodeFromFieldsWithTypes(vector('u8'), item.fields.per_type_key),
     })
   }
 
@@ -486,27 +547,29 @@ export class ConfigKey implements StructClass {
     return ConfigKey.fromFields(ConfigKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ConfigKeyJSONField {
     return {
       perTypeIndex: this.perTypeIndex.toString(),
       perTypeKey: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.perTypeKey),
     }
   }
 
-  toJSON() {
+  toJSON(): ConfigKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ConfigKey {
     return ConfigKey.reified().new({
       perTypeIndex: decodeFromJSONField('u64', field.perTypeIndex),
-      perTypeKey: decodeFromJSONField(reified.vector('u8'), field.perTypeKey),
+      perTypeKey: decodeFromJSONField(vector('u8'), field.perTypeKey),
     })
   }
 
   static fromJSON(json: Record<string, any>): ConfigKey {
     if (json.$typeName !== ConfigKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ConfigKey json object: expected '${ConfigKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ConfigKey.fromJSONField(json)
@@ -528,26 +591,23 @@ export class ConfigKey implements StructClass {
         throw new Error(`object at is not a ConfigKey object`)
       }
 
-      return ConfigKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ConfigKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ConfigKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ConfigKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ConfigKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isConfigKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ConfigKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isConfigKey(res.type)) {
       throw new Error(`object at id ${id} is not a ConfigKey object`)
     }
 
-    return ConfigKey.fromSuiObjectData(res.data)
+    return ConfigKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -564,24 +624,34 @@ export interface AddressKeyFields {
 
 export type AddressKeyReified = Reified<AddressKey, AddressKeyFields>
 
+export type AddressKeyJSONField = {
+  pos0: string
+}
+
+export type AddressKeyJSON = {
+  $typeName: typeof AddressKey.$typeName
+  $typeArgs: []
+} & AddressKeyJSONField
+
+/** The setting key used to store the deny list for a given address in the `Config`. */
 export class AddressKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::AddressKey`
+  static readonly $typeName: `0x2::deny_list::AddressKey` = `0x2::deny_list::AddressKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AddressKey.$typeName
+  readonly $typeName: typeof AddressKey.$typeName = AddressKey.$typeName
   readonly $fullTypeName: `0x2::deny_list::AddressKey`
   readonly $typeArgs: []
-  readonly $isPhantom = AddressKey.$isPhantom
+  readonly $isPhantom: typeof AddressKey.$isPhantom = AddressKey.$isPhantom
 
   readonly pos0: ToField<'address'>
 
   private constructor(typeArgs: [], fields: AddressKeyFields) {
     this.$fullTypeName = composeSuiType(
       AddressKey.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::AddressKey`
     this.$typeArgs = typeArgs
 
@@ -592,7 +662,10 @@ export class AddressKey implements StructClass {
     const reifiedBcs = AddressKey.bcs
     return {
       typeName: AddressKey.$typeName,
-      fullTypeName: composeSuiType(AddressKey.$typeName, ...[]) as `0x2::deny_list::AddressKey`,
+      fullTypeName: composeSuiType(
+        AddressKey.$typeName,
+        ...[],
+      ) as `0x2::deny_list::AddressKey`,
       typeArgs: [] as [],
       isPhantom: AddressKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -604,7 +677,7 @@ export class AddressKey implements StructClass {
       fromJSON: (json: Record<string, any>) => AddressKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddressKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddressKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddressKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AddressKey.fetch(client, id),
       new: (fields: AddressKeyFields) => {
         return new AddressKey([], fields)
       },
@@ -612,22 +685,23 @@ export class AddressKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AddressKeyReified {
     return AddressKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AddressKey>> {
     return phantom(AddressKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AddressKey>> {
     return AddressKey.phantom()
   }
 
   private static instantiateBcs() {
     return bcs.struct('AddressKey', {
       pos0: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
     })
   }
@@ -642,7 +716,9 @@ export class AddressKey implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): AddressKey {
-    return AddressKey.reified().new({ pos0: decodeFromFields('address', fields.pos0) })
+    return AddressKey.reified().new({
+      pos0: decodeFromFields('address', fields.pos0),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): AddressKey {
@@ -659,23 +735,27 @@ export class AddressKey implements StructClass {
     return AddressKey.fromFields(AddressKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AddressKeyJSONField {
     return {
       pos0: this.pos0,
     }
   }
 
-  toJSON() {
+  toJSON(): AddressKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): AddressKey {
-    return AddressKey.reified().new({ pos0: decodeFromJSONField('address', field.pos0) })
+    return AddressKey.reified().new({
+      pos0: decodeFromJSONField('address', field.pos0),
+    })
   }
 
   static fromJSON(json: Record<string, any>): AddressKey {
     if (json.$typeName !== AddressKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AddressKey json object: expected '${AddressKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AddressKey.fromJSONField(json)
@@ -697,26 +777,23 @@ export class AddressKey implements StructClass {
         throw new Error(`object at is not a AddressKey object`)
       }
 
-      return AddressKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AddressKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AddressKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AddressKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AddressKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddressKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AddressKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAddressKey(res.type)) {
       throw new Error(`object at id ${id} is not a AddressKey object`)
     }
 
-    return AddressKey.fromSuiObjectData(res.data)
+    return AddressKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -733,24 +810,35 @@ export interface GlobalPauseKeyFields {
 
 export type GlobalPauseKeyReified = Reified<GlobalPauseKey, GlobalPauseKeyFields>
 
+export type GlobalPauseKeyJSONField = {
+  dummyField: boolean
+}
+
+export type GlobalPauseKeyJSON = {
+  $typeName: typeof GlobalPauseKey.$typeName
+  $typeArgs: []
+} & GlobalPauseKeyJSONField
+
+/** The setting key used to store the global pause setting in the `Config`. */
 export class GlobalPauseKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::GlobalPauseKey`
+  static readonly $typeName: `0x2::deny_list::GlobalPauseKey` =
+    `0x2::deny_list::GlobalPauseKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = GlobalPauseKey.$typeName
+  readonly $typeName: typeof GlobalPauseKey.$typeName = GlobalPauseKey.$typeName
   readonly $fullTypeName: `0x2::deny_list::GlobalPauseKey`
   readonly $typeArgs: []
-  readonly $isPhantom = GlobalPauseKey.$isPhantom
+  readonly $isPhantom: typeof GlobalPauseKey.$isPhantom = GlobalPauseKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: GlobalPauseKeyFields) {
     this.$fullTypeName = composeSuiType(
       GlobalPauseKey.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::GlobalPauseKey`
     this.$typeArgs = typeArgs
 
@@ -763,7 +851,7 @@ export class GlobalPauseKey implements StructClass {
       typeName: GlobalPauseKey.$typeName,
       fullTypeName: composeSuiType(
         GlobalPauseKey.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::deny_list::GlobalPauseKey`,
       typeArgs: [] as [],
       isPhantom: GlobalPauseKey.$isPhantom,
@@ -776,7 +864,7 @@ export class GlobalPauseKey implements StructClass {
       fromJSON: (json: Record<string, any>) => GlobalPauseKey.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => GlobalPauseKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GlobalPauseKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => GlobalPauseKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => GlobalPauseKey.fetch(client, id),
       new: (fields: GlobalPauseKeyFields) => {
         return new GlobalPauseKey([], fields)
       },
@@ -784,14 +872,15 @@ export class GlobalPauseKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): GlobalPauseKeyReified {
     return GlobalPauseKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<GlobalPauseKey>> {
     return phantom(GlobalPauseKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<GlobalPauseKey>> {
     return GlobalPauseKey.phantom()
   }
 
@@ -830,13 +919,13 @@ export class GlobalPauseKey implements StructClass {
     return GlobalPauseKey.fromFields(GlobalPauseKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): GlobalPauseKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): GlobalPauseKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -848,7 +937,9 @@ export class GlobalPauseKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): GlobalPauseKey {
     if (json.$typeName !== GlobalPauseKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a GlobalPauseKey json object: expected '${GlobalPauseKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return GlobalPauseKey.fromJSONField(json)
@@ -870,26 +961,23 @@ export class GlobalPauseKey implements StructClass {
         throw new Error(`object at is not a GlobalPauseKey object`)
       }
 
-      return GlobalPauseKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return GlobalPauseKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return GlobalPauseKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<GlobalPauseKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching GlobalPauseKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isGlobalPauseKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<GlobalPauseKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isGlobalPauseKey(res.type)) {
       throw new Error(`object at id ${id} is not a GlobalPauseKey object`)
     }
 
-    return GlobalPauseKey.fromSuiObjectData(res.data)
+    return GlobalPauseKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -907,17 +995,32 @@ export interface PerTypeConfigCreatedFields {
 
 export type PerTypeConfigCreatedReified = Reified<PerTypeConfigCreated, PerTypeConfigCreatedFields>
 
+export type PerTypeConfigCreatedJSONField = {
+  key: ToJSON<ConfigKey>
+  configId: string
+}
+
+export type PerTypeConfigCreatedJSON = {
+  $typeName: typeof PerTypeConfigCreated.$typeName
+  $typeArgs: []
+} & PerTypeConfigCreatedJSONField
+
+/**
+ * The event emitted when a new `Config` is created for a given type. This can be useful for
+ * tracking the `ID` of a type's `Config` object.
+ */
 export class PerTypeConfigCreated implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::PerTypeConfigCreated`
+  static readonly $typeName: `0x2::deny_list::PerTypeConfigCreated` =
+    `0x2::deny_list::PerTypeConfigCreated` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PerTypeConfigCreated.$typeName
+  readonly $typeName: typeof PerTypeConfigCreated.$typeName = PerTypeConfigCreated.$typeName
   readonly $fullTypeName: `0x2::deny_list::PerTypeConfigCreated`
   readonly $typeArgs: []
-  readonly $isPhantom = PerTypeConfigCreated.$isPhantom
+  readonly $isPhantom: typeof PerTypeConfigCreated.$isPhantom = PerTypeConfigCreated.$isPhantom
 
   readonly key: ToField<ConfigKey>
   readonly configId: ToField<ID>
@@ -925,7 +1028,7 @@ export class PerTypeConfigCreated implements StructClass {
   private constructor(typeArgs: [], fields: PerTypeConfigCreatedFields) {
     this.$fullTypeName = composeSuiType(
       PerTypeConfigCreated.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::PerTypeConfigCreated`
     this.$typeArgs = typeArgs
 
@@ -939,7 +1042,7 @@ export class PerTypeConfigCreated implements StructClass {
       typeName: PerTypeConfigCreated.$typeName,
       fullTypeName: composeSuiType(
         PerTypeConfigCreated.$typeName,
-        ...[]
+        ...[],
       ) as `0x2::deny_list::PerTypeConfigCreated`,
       typeArgs: [] as [],
       isPhantom: PerTypeConfigCreated.$isPhantom,
@@ -955,7 +1058,8 @@ export class PerTypeConfigCreated implements StructClass {
         PerTypeConfigCreated.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PerTypeConfigCreated.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PerTypeConfigCreated.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        PerTypeConfigCreated.fetch(client, id),
       new: (fields: PerTypeConfigCreatedFields) => {
         return new PerTypeConfigCreated([], fields)
       },
@@ -963,14 +1067,15 @@ export class PerTypeConfigCreated implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PerTypeConfigCreatedReified {
     return PerTypeConfigCreated.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PerTypeConfigCreated>> {
     return phantom(PerTypeConfigCreated.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PerTypeConfigCreated>> {
     return PerTypeConfigCreated.phantom()
   }
 
@@ -1012,14 +1117,14 @@ export class PerTypeConfigCreated implements StructClass {
     return PerTypeConfigCreated.fromFields(PerTypeConfigCreated.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PerTypeConfigCreatedJSONField {
     return {
       key: this.key.toJSONField(),
       configId: this.configId,
     }
   }
 
-  toJSON() {
+  toJSON(): PerTypeConfigCreatedJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1032,7 +1137,9 @@ export class PerTypeConfigCreated implements StructClass {
 
   static fromJSON(json: Record<string, any>): PerTypeConfigCreated {
     if (json.$typeName !== PerTypeConfigCreated.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PerTypeConfigCreated json object: expected '${PerTypeConfigCreated.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PerTypeConfigCreated.fromJSONField(json)
@@ -1044,7 +1151,7 @@ export class PerTypeConfigCreated implements StructClass {
     }
     if (!isPerTypeConfigCreated(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PerTypeConfigCreated object`
+        `object at ${(content.fields as any).id} is not a PerTypeConfigCreated object`,
       )
     }
     return PerTypeConfigCreated.fromFieldsWithTypes(content)
@@ -1056,26 +1163,23 @@ export class PerTypeConfigCreated implements StructClass {
         throw new Error(`object at is not a PerTypeConfigCreated object`)
       }
 
-      return PerTypeConfigCreated.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PerTypeConfigCreated.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PerTypeConfigCreated.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PerTypeConfigCreated> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PerTypeConfigCreated object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPerTypeConfigCreated(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PerTypeConfigCreated> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPerTypeConfigCreated(res.type)) {
       throw new Error(`object at id ${id} is not a PerTypeConfigCreated object`)
     }
 
-    return PerTypeConfigCreated.fromSuiObjectData(res.data)
+    return PerTypeConfigCreated.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1088,32 +1192,62 @@ export function isPerTypeList(type: string): boolean {
 
 export interface PerTypeListFields {
   id: ToField<UID>
+  /**
+   * Number of object types that have been banned for a given address.
+   * Used to quickly skip checks for most addresses.
+   */
   deniedCount: ToField<Table<'address', 'u64'>>
+  /**
+   * Set of addresses that are banned for a given type.
+   * For example with `sui::coin::Coin`: If addresses A and B are banned from using
+   * "0...0123::my_coin::MY_COIN", this will be "0...0123::my_coin::MY_COIN" -> {A, B}.
+   */
   deniedAddresses: ToField<Table<ToPhantom<Vector<'u8'>>, ToPhantom<VecSet<'address'>>>>
 }
 
 export type PerTypeListReified = Reified<PerTypeList, PerTypeListFields>
 
+export type PerTypeListJSONField = {
+  id: string
+  deniedCount: ToJSON<Table<'address', 'u64'>>
+  deniedAddresses: ToJSON<Table<ToPhantom<Vector<'u8'>>, ToPhantom<VecSet<'address'>>>>
+}
+
+export type PerTypeListJSON = {
+  $typeName: typeof PerTypeList.$typeName
+  $typeArgs: []
+} & PerTypeListJSONField
+
+/** Stores the addresses that are denied for a given core type. */
 export class PerTypeList implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `0x2::deny_list::PerTypeList`
+  static readonly $typeName: `0x2::deny_list::PerTypeList` = `0x2::deny_list::PerTypeList` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PerTypeList.$typeName
+  readonly $typeName: typeof PerTypeList.$typeName = PerTypeList.$typeName
   readonly $fullTypeName: `0x2::deny_list::PerTypeList`
   readonly $typeArgs: []
-  readonly $isPhantom = PerTypeList.$isPhantom
+  readonly $isPhantom: typeof PerTypeList.$isPhantom = PerTypeList.$isPhantom
 
   readonly id: ToField<UID>
+  /**
+   * Number of object types that have been banned for a given address.
+   * Used to quickly skip checks for most addresses.
+   */
   readonly deniedCount: ToField<Table<'address', 'u64'>>
+  /**
+   * Set of addresses that are banned for a given type.
+   * For example with `sui::coin::Coin`: If addresses A and B are banned from using
+   * "0...0123::my_coin::MY_COIN", this will be "0...0123::my_coin::MY_COIN" -> {A, B}.
+   */
   readonly deniedAddresses: ToField<Table<ToPhantom<Vector<'u8'>>, ToPhantom<VecSet<'address'>>>>
 
   private constructor(typeArgs: [], fields: PerTypeListFields) {
     this.$fullTypeName = composeSuiType(
       PerTypeList.$typeName,
-      ...typeArgs
+      ...typeArgs,
     ) as `0x2::deny_list::PerTypeList`
     this.$typeArgs = typeArgs
 
@@ -1126,7 +1260,10 @@ export class PerTypeList implements StructClass {
     const reifiedBcs = PerTypeList.bcs
     return {
       typeName: PerTypeList.$typeName,
-      fullTypeName: composeSuiType(PerTypeList.$typeName, ...[]) as `0x2::deny_list::PerTypeList`,
+      fullTypeName: composeSuiType(
+        PerTypeList.$typeName,
+        ...[],
+      ) as `0x2::deny_list::PerTypeList`,
       typeArgs: [] as [],
       isPhantom: PerTypeList.$isPhantom,
       reifiedTypeArgs: [],
@@ -1138,7 +1275,7 @@ export class PerTypeList implements StructClass {
       fromJSON: (json: Record<string, any>) => PerTypeList.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PerTypeList.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PerTypeList.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PerTypeList.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PerTypeList.fetch(client, id),
       new: (fields: PerTypeListFields) => {
         return new PerTypeList([], fields)
       },
@@ -1146,14 +1283,15 @@ export class PerTypeList implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PerTypeListReified {
     return PerTypeList.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PerTypeList>> {
     return phantom(PerTypeList.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PerTypeList>> {
     return PerTypeList.phantom()
   }
 
@@ -1178,15 +1316,12 @@ export class PerTypeList implements StructClass {
     return PerTypeList.reified().new({
       id: decodeFromFields(UID.reified(), fields.id),
       deniedCount: decodeFromFields(
-        Table.reified(reified.phantom('address'), reified.phantom('u64')),
-        fields.denied_count
+        Table.reified(phantom('address'), phantom('u64')),
+        fields.denied_count,
       ),
       deniedAddresses: decodeFromFields(
-        Table.reified(
-          reified.phantom(reified.vector('u8')),
-          reified.phantom(VecSet.reified('address'))
-        ),
-        fields.denied_addresses
+        Table.reified(phantom(vector('u8')), phantom(VecSet.reified('address'))),
+        fields.denied_addresses,
       ),
     })
   }
@@ -1199,15 +1334,12 @@ export class PerTypeList implements StructClass {
     return PerTypeList.reified().new({
       id: decodeFromFieldsWithTypes(UID.reified(), item.fields.id),
       deniedCount: decodeFromFieldsWithTypes(
-        Table.reified(reified.phantom('address'), reified.phantom('u64')),
-        item.fields.denied_count
+        Table.reified(phantom('address'), phantom('u64')),
+        item.fields.denied_count,
       ),
       deniedAddresses: decodeFromFieldsWithTypes(
-        Table.reified(
-          reified.phantom(reified.vector('u8')),
-          reified.phantom(VecSet.reified('address'))
-        ),
-        item.fields.denied_addresses
+        Table.reified(phantom(vector('u8')), phantom(VecSet.reified('address'))),
+        item.fields.denied_addresses,
       ),
     })
   }
@@ -1216,7 +1348,7 @@ export class PerTypeList implements StructClass {
     return PerTypeList.fromFields(PerTypeList.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PerTypeListJSONField {
     return {
       id: this.id,
       deniedCount: this.deniedCount.toJSONField(),
@@ -1224,7 +1356,7 @@ export class PerTypeList implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PerTypeListJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1232,22 +1364,21 @@ export class PerTypeList implements StructClass {
     return PerTypeList.reified().new({
       id: decodeFromJSONField(UID.reified(), field.id),
       deniedCount: decodeFromJSONField(
-        Table.reified(reified.phantom('address'), reified.phantom('u64')),
-        field.deniedCount
+        Table.reified(phantom('address'), phantom('u64')),
+        field.deniedCount,
       ),
       deniedAddresses: decodeFromJSONField(
-        Table.reified(
-          reified.phantom(reified.vector('u8')),
-          reified.phantom(VecSet.reified('address'))
-        ),
-        field.deniedAddresses
+        Table.reified(phantom(vector('u8')), phantom(VecSet.reified('address'))),
+        field.deniedAddresses,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): PerTypeList {
     if (json.$typeName !== PerTypeList.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PerTypeList json object: expected '${PerTypeList.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PerTypeList.fromJSONField(json)
@@ -1269,25 +1400,22 @@ export class PerTypeList implements StructClass {
         throw new Error(`object at is not a PerTypeList object`)
       }
 
-      return PerTypeList.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PerTypeList.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PerTypeList.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PerTypeList> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PerTypeList object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPerTypeList(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PerTypeList> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPerTypeList(res.type)) {
       throw new Error(`object at id ${id} is not a PerTypeList object`)
     }
 
-    return PerTypeList.fromSuiObjectData(res.data)
+    return PerTypeList.fromBcs(res.bcsBytes)
   }
 }

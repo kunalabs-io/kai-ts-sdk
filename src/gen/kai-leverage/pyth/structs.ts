@@ -1,29 +1,38 @@
+/** Pyth price feed integration for Kai Leverage. */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { PriceInfo } from '../../pyth/price-info/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { ID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== PythPriceInfo =============================== */
 
 export function isPythPriceInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::pyth::PythPriceInfo`
+  return type === `${getTypeOrigin('kai-leverage', 'pyth::PythPriceInfo')}::pyth::PythPriceInfo`
 }
 
 export interface PythPriceInfoFields {
@@ -34,17 +43,31 @@ export interface PythPriceInfoFields {
 
 export type PythPriceInfoReified = Reified<PythPriceInfo, PythPriceInfoFields>
 
+export type PythPriceInfoJSONField = {
+  pioMap: ToJSON<VecMap<ID, PriceInfo>>
+  currentTsSec: string
+  maxAgeSecs: string
+}
+
+export type PythPriceInfoJSON = {
+  $typeName: typeof PythPriceInfo.$typeName
+  $typeArgs: []
+} & PythPriceInfoJSONField
+
+/** Collection of Pyth price information objects. */
 export class PythPriceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::pyth::PythPriceInfo`
+  static readonly $typeName: `${string}::pyth::PythPriceInfo` = `${
+    getTypeOrigin('kai-leverage', 'pyth::PythPriceInfo')
+  }::pyth::PythPriceInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PythPriceInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pyth::PythPriceInfo`
+  readonly $typeName: typeof PythPriceInfo.$typeName = PythPriceInfo.$typeName
+  readonly $fullTypeName: `${string}::pyth::PythPriceInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = PythPriceInfo.$isPhantom
+  readonly $isPhantom: typeof PythPriceInfo.$isPhantom = PythPriceInfo.$isPhantom
 
   readonly pioMap: ToField<VecMap<ID, PriceInfo>>
   readonly currentTsSec: ToField<'u64'>
@@ -53,8 +76,8 @@ export class PythPriceInfo implements StructClass {
   private constructor(typeArgs: [], fields: PythPriceInfoFields) {
     this.$fullTypeName = composeSuiType(
       PythPriceInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pyth::PythPriceInfo`
+      ...typeArgs,
+    ) as `${string}::pyth::PythPriceInfo`
     this.$typeArgs = typeArgs
 
     this.pioMap = fields.pioMap
@@ -68,8 +91,8 @@ export class PythPriceInfo implements StructClass {
       typeName: PythPriceInfo.$typeName,
       fullTypeName: composeSuiType(
         PythPriceInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pyth::PythPriceInfo`,
+        ...[],
+      ) as `${string}::pyth::PythPriceInfo`,
       typeArgs: [] as [],
       isPhantom: PythPriceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -81,7 +104,7 @@ export class PythPriceInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => PythPriceInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythPriceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythPriceInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PythPriceInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PythPriceInfo.fetch(client, id),
       new: (fields: PythPriceInfoFields) => {
         return new PythPriceInfo([], fields)
       },
@@ -89,14 +112,15 @@ export class PythPriceInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PythPriceInfoReified {
     return PythPriceInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PythPriceInfo>> {
     return phantom(PythPriceInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PythPriceInfo>> {
     return PythPriceInfo.phantom()
   }
 
@@ -133,7 +157,7 @@ export class PythPriceInfo implements StructClass {
     return PythPriceInfo.reified().new({
       pioMap: decodeFromFieldsWithTypes(
         VecMap.reified(ID.reified(), PriceInfo.reified()),
-        item.fields.pio_map
+        item.fields.pio_map,
       ),
       currentTsSec: decodeFromFieldsWithTypes('u64', item.fields.current_ts_sec),
       maxAgeSecs: decodeFromFieldsWithTypes('u64', item.fields.max_age_secs),
@@ -144,7 +168,7 @@ export class PythPriceInfo implements StructClass {
     return PythPriceInfo.fromFields(PythPriceInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PythPriceInfoJSONField {
     return {
       pioMap: this.pioMap.toJSONField(),
       currentTsSec: this.currentTsSec.toString(),
@@ -152,7 +176,7 @@ export class PythPriceInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PythPriceInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -166,7 +190,9 @@ export class PythPriceInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): PythPriceInfo {
     if (json.$typeName !== PythPriceInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PythPriceInfo json object: expected '${PythPriceInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PythPriceInfo.fromJSONField(json)
@@ -188,26 +214,23 @@ export class PythPriceInfo implements StructClass {
         throw new Error(`object at is not a PythPriceInfo object`)
       }
 
-      return PythPriceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PythPriceInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PythPriceInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PythPriceInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PythPriceInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPythPriceInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PythPriceInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPythPriceInfo(res.type)) {
       throw new Error(`object at id ${id} is not a PythPriceInfo object`)
     }
 
-    return PythPriceInfo.fromSuiObjectData(res.data)
+    return PythPriceInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -215,7 +238,10 @@ export class PythPriceInfo implements StructClass {
 
 export function isValidatedPythPriceInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::pyth::ValidatedPythPriceInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'pyth::ValidatedPythPriceInfo')
+    }::pyth::ValidatedPythPriceInfo`
 }
 
 export interface ValidatedPythPriceInfoFields {
@@ -229,17 +255,31 @@ export type ValidatedPythPriceInfoReified = Reified<
   ValidatedPythPriceInfoFields
 >
 
+export type ValidatedPythPriceInfoJSONField = {
+  map: ToJSON<VecMap<TypeName, PriceInfo>>
+  currentTsSec: string
+  maxAgeSecs: string
+}
+
+export type ValidatedPythPriceInfoJSON = {
+  $typeName: typeof ValidatedPythPriceInfo.$typeName
+  $typeArgs: []
+} & ValidatedPythPriceInfoJSONField
+
+/** Validated Pyth price information ready for calculations. */
 export class ValidatedPythPriceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::pyth::ValidatedPythPriceInfo`
+  static readonly $typeName: `${string}::pyth::ValidatedPythPriceInfo` = `${
+    getTypeOrigin('kai-leverage', 'pyth::ValidatedPythPriceInfo')
+  }::pyth::ValidatedPythPriceInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ValidatedPythPriceInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::pyth::ValidatedPythPriceInfo`
+  readonly $typeName: typeof ValidatedPythPriceInfo.$typeName = ValidatedPythPriceInfo.$typeName
+  readonly $fullTypeName: `${string}::pyth::ValidatedPythPriceInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = ValidatedPythPriceInfo.$isPhantom
+  readonly $isPhantom: typeof ValidatedPythPriceInfo.$isPhantom = ValidatedPythPriceInfo.$isPhantom
 
   readonly map: ToField<VecMap<TypeName, PriceInfo>>
   readonly currentTsSec: ToField<'u64'>
@@ -248,8 +288,8 @@ export class ValidatedPythPriceInfo implements StructClass {
   private constructor(typeArgs: [], fields: ValidatedPythPriceInfoFields) {
     this.$fullTypeName = composeSuiType(
       ValidatedPythPriceInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::pyth::ValidatedPythPriceInfo`
+      ...typeArgs,
+    ) as `${string}::pyth::ValidatedPythPriceInfo`
     this.$typeArgs = typeArgs
 
     this.map = fields.map
@@ -263,8 +303,8 @@ export class ValidatedPythPriceInfo implements StructClass {
       typeName: ValidatedPythPriceInfo.$typeName,
       fullTypeName: composeSuiType(
         ValidatedPythPriceInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::pyth::ValidatedPythPriceInfo`,
+        ...[],
+      ) as `${string}::pyth::ValidatedPythPriceInfo`,
       typeArgs: [] as [],
       isPhantom: ValidatedPythPriceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -279,7 +319,8 @@ export class ValidatedPythPriceInfo implements StructClass {
         ValidatedPythPriceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ValidatedPythPriceInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ValidatedPythPriceInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ValidatedPythPriceInfo.fetch(client, id),
       new: (fields: ValidatedPythPriceInfoFields) => {
         return new ValidatedPythPriceInfo([], fields)
       },
@@ -287,14 +328,15 @@ export class ValidatedPythPriceInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ValidatedPythPriceInfoReified {
     return ValidatedPythPriceInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ValidatedPythPriceInfo>> {
     return phantom(ValidatedPythPriceInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ValidatedPythPriceInfo>> {
     return ValidatedPythPriceInfo.phantom()
   }
 
@@ -331,7 +373,7 @@ export class ValidatedPythPriceInfo implements StructClass {
     return ValidatedPythPriceInfo.reified().new({
       map: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), PriceInfo.reified()),
-        item.fields.map
+        item.fields.map,
       ),
       currentTsSec: decodeFromFieldsWithTypes('u64', item.fields.current_ts_sec),
       maxAgeSecs: decodeFromFieldsWithTypes('u64', item.fields.max_age_secs),
@@ -342,7 +384,7 @@ export class ValidatedPythPriceInfo implements StructClass {
     return ValidatedPythPriceInfo.fromFields(ValidatedPythPriceInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ValidatedPythPriceInfoJSONField {
     return {
       map: this.map.toJSONField(),
       currentTsSec: this.currentTsSec.toString(),
@@ -350,7 +392,7 @@ export class ValidatedPythPriceInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): ValidatedPythPriceInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -364,7 +406,9 @@ export class ValidatedPythPriceInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): ValidatedPythPriceInfo {
     if (json.$typeName !== ValidatedPythPriceInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ValidatedPythPriceInfo json object: expected '${ValidatedPythPriceInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ValidatedPythPriceInfo.fromJSONField(json)
@@ -376,7 +420,7 @@ export class ValidatedPythPriceInfo implements StructClass {
     }
     if (!isValidatedPythPriceInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a ValidatedPythPriceInfo object`
+        `object at ${(content.fields as any).id} is not a ValidatedPythPriceInfo object`,
       )
     }
     return ValidatedPythPriceInfo.fromFieldsWithTypes(content)
@@ -388,25 +432,22 @@ export class ValidatedPythPriceInfo implements StructClass {
         throw new Error(`object at is not a ValidatedPythPriceInfo object`)
       }
 
-      return ValidatedPythPriceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ValidatedPythPriceInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ValidatedPythPriceInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ValidatedPythPriceInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ValidatedPythPriceInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isValidatedPythPriceInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ValidatedPythPriceInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isValidatedPythPriceInfo(res.type)) {
       throw new Error(`object at id ${id} is not a ValidatedPythPriceInfo object`)
     }
 
-    return ValidatedPythPriceInfo.fromSuiObjectData(res.data)
+    return ValidatedPythPriceInfo.fromBcs(res.bcsBytes)
   }
 }

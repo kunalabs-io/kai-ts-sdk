@@ -1,14 +1,31 @@
+/**
+ * Core implementation for leveraged concentrated liquidity market maker (CLMM) positions.
+ *
+ * This module implements the theoretical framework described in "Concentrated Liquidity
+ * with Leverage" ([arXiv:2409.12803](https://arxiv.org/pdf/2409.12803)), providing mathematically
+ * proven safe leveraged liquidity provisioning. It serves as the foundational layer for managing
+ * leveraged positions on concentrated liquidity AMMs with formal guarantees about margin behavior,
+ * liquidation safety, and oracle manipulation resistance.
+ *
+ * The module provides a protocol-agnostic interface that wrapper modules (like `cetus.move`
+ * and `bluefin_spot.move`) use to implement protocol-specific position management while
+ * maintaining consistent risk management and operational logic backed by formal mathematical analysis.
+ *
+ * Wrapper modules implement protocol-specific logic by:
+ * 1. Calling position core macros with protocol-specific lambda functions
+ * 2. Handling protocol-specific LP position types and operations
+ * 3. Translating between generic interfaces and protocol-specific calls
+ *
+ * This design ensures that core business logic, risk management, and mathematical
+ * calculations remain consistent across all supported protocols while enabling
+ * seamless integration with diverse AMM architectures.
+ */
+
+import { bcs, BcsType } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  PhantomToTypeStr,
-  PhantomTypeArgument,
-  Reified,
-  StructClass,
-  ToField,
-  ToPhantomTypeArgument,
-  ToTypeArgument,
-  ToTypeStr,
-  TypeArgument,
   assertFieldsWithTypesArgsMatch,
   assertReifiedTypeArgsMatch,
   decodeFromFields,
@@ -17,32 +34,44 @@ import {
   extractType,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  PhantomToTypeStr,
+  PhantomTypeArgument,
+  Reified,
+  StructClass,
   toBcs,
+  ToField,
+  ToJSON,
+  ToPhantomTypeArgument,
+  ToTypeArgument,
+  ToTypeStr,
+  TypeArgument,
 } from '../../_framework/reified'
 import {
-  FieldsWithTypes,
   composeSuiType,
   compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
   parseTypeName,
+  SupportedSuiClient,
 } from '../../_framework/util'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
 import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
 import { BalanceBag } from '../balance-bag/structs'
-import { PKG_V1, PKG_V11, PKG_V16, PKG_V17, PKG_V3 } from '../index'
 import { PositionModel } from '../position-model-clmm/structs'
 import { FacilDebtBag, FacilDebtShare, LendFacilCap } from '../supply-pool/structs'
-import { BcsType, bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== ACreateConfig =============================== */
 
 export function isACreateConfig(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::ACreateConfig`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ACreateConfig')
+    }::position_core_clmm::ACreateConfig`
 }
 
 export interface ACreateConfigFields {
@@ -51,25 +80,37 @@ export interface ACreateConfigFields {
 
 export type ACreateConfigReified = Reified<ACreateConfig, ACreateConfigFields>
 
+export type ACreateConfigJSONField = {
+  dummyField: boolean
+}
+
+export type ACreateConfigJSON = {
+  $typeName: typeof ACreateConfig.$typeName
+  $typeArgs: []
+} & ACreateConfigJSONField
+
+/** Access control witness for position config creation. */
 export class ACreateConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::ACreateConfig`
+  static readonly $typeName: `${string}::position_core_clmm::ACreateConfig` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ACreateConfig')
+  }::position_core_clmm::ACreateConfig` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ACreateConfig.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::ACreateConfig`
+  readonly $typeName: typeof ACreateConfig.$typeName = ACreateConfig.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ACreateConfig`
   readonly $typeArgs: []
-  readonly $isPhantom = ACreateConfig.$isPhantom
+  readonly $isPhantom: typeof ACreateConfig.$isPhantom = ACreateConfig.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ACreateConfigFields) {
     this.$fullTypeName = composeSuiType(
       ACreateConfig.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::ACreateConfig`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ACreateConfig`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -81,8 +122,8 @@ export class ACreateConfig implements StructClass {
       typeName: ACreateConfig.$typeName,
       fullTypeName: composeSuiType(
         ACreateConfig.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::ACreateConfig`,
+        ...[],
+      ) as `${string}::position_core_clmm::ACreateConfig`,
       typeArgs: [] as [],
       isPhantom: ACreateConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -94,7 +135,7 @@ export class ACreateConfig implements StructClass {
       fromJSON: (json: Record<string, any>) => ACreateConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ACreateConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACreateConfig.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ACreateConfig.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ACreateConfig.fetch(client, id),
       new: (fields: ACreateConfigFields) => {
         return new ACreateConfig([], fields)
       },
@@ -102,14 +143,15 @@ export class ACreateConfig implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ACreateConfigReified {
     return ACreateConfig.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ACreateConfig>> {
     return phantom(ACreateConfig.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ACreateConfig>> {
     return ACreateConfig.phantom()
   }
 
@@ -129,7 +171,9 @@ export class ACreateConfig implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ACreateConfig {
-    return ACreateConfig.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ACreateConfig.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ACreateConfig {
@@ -146,13 +190,13 @@ export class ACreateConfig implements StructClass {
     return ACreateConfig.fromFields(ACreateConfig.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ACreateConfigJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ACreateConfigJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -164,7 +208,9 @@ export class ACreateConfig implements StructClass {
 
   static fromJSON(json: Record<string, any>): ACreateConfig {
     if (json.$typeName !== ACreateConfig.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ACreateConfig json object: expected '${ACreateConfig.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ACreateConfig.fromJSONField(json)
@@ -186,26 +232,23 @@ export class ACreateConfig implements StructClass {
         throw new Error(`object at is not a ACreateConfig object`)
       }
 
-      return ACreateConfig.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ACreateConfig.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ACreateConfig.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ACreateConfig> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ACreateConfig object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isACreateConfig(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ACreateConfig> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isACreateConfig(res.type)) {
       throw new Error(`object at id ${id} is not a ACreateConfig object`)
     }
 
-    return ACreateConfig.fromSuiObjectData(res.data)
+    return ACreateConfig.fromBcs(res.bcsBytes)
   }
 }
 
@@ -213,7 +256,10 @@ export class ACreateConfig implements StructClass {
 
 export function isAModifyConfig(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::AModifyConfig`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AModifyConfig')
+    }::position_core_clmm::AModifyConfig`
 }
 
 export interface AModifyConfigFields {
@@ -222,25 +268,37 @@ export interface AModifyConfigFields {
 
 export type AModifyConfigReified = Reified<AModifyConfig, AModifyConfigFields>
 
+export type AModifyConfigJSONField = {
+  dummyField: boolean
+}
+
+export type AModifyConfigJSON = {
+  $typeName: typeof AModifyConfig.$typeName
+  $typeArgs: []
+} & AModifyConfigJSONField
+
+/** Access control witness for position config modification. */
 export class AModifyConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::AModifyConfig`
+  static readonly $typeName: `${string}::position_core_clmm::AModifyConfig` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::AModifyConfig')
+  }::position_core_clmm::AModifyConfig` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AModifyConfig.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AModifyConfig`
+  readonly $typeName: typeof AModifyConfig.$typeName = AModifyConfig.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::AModifyConfig`
   readonly $typeArgs: []
-  readonly $isPhantom = AModifyConfig.$isPhantom
+  readonly $isPhantom: typeof AModifyConfig.$isPhantom = AModifyConfig.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AModifyConfigFields) {
     this.$fullTypeName = composeSuiType(
       AModifyConfig.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::AModifyConfig`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::AModifyConfig`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -252,8 +310,8 @@ export class AModifyConfig implements StructClass {
       typeName: AModifyConfig.$typeName,
       fullTypeName: composeSuiType(
         AModifyConfig.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::AModifyConfig`,
+        ...[],
+      ) as `${string}::position_core_clmm::AModifyConfig`,
       typeArgs: [] as [],
       isPhantom: AModifyConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -265,7 +323,7 @@ export class AModifyConfig implements StructClass {
       fromJSON: (json: Record<string, any>) => AModifyConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AModifyConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AModifyConfig.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AModifyConfig.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AModifyConfig.fetch(client, id),
       new: (fields: AModifyConfigFields) => {
         return new AModifyConfig([], fields)
       },
@@ -273,14 +331,15 @@ export class AModifyConfig implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AModifyConfigReified {
     return AModifyConfig.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AModifyConfig>> {
     return phantom(AModifyConfig.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AModifyConfig>> {
     return AModifyConfig.phantom()
   }
 
@@ -300,7 +359,9 @@ export class AModifyConfig implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): AModifyConfig {
-    return AModifyConfig.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return AModifyConfig.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): AModifyConfig {
@@ -317,13 +378,13 @@ export class AModifyConfig implements StructClass {
     return AModifyConfig.fromFields(AModifyConfig.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AModifyConfigJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AModifyConfigJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -335,7 +396,9 @@ export class AModifyConfig implements StructClass {
 
   static fromJSON(json: Record<string, any>): AModifyConfig {
     if (json.$typeName !== AModifyConfig.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AModifyConfig json object: expected '${AModifyConfig.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AModifyConfig.fromJSONField(json)
@@ -357,26 +420,23 @@ export class AModifyConfig implements StructClass {
         throw new Error(`object at is not a AModifyConfig object`)
       }
 
-      return AModifyConfig.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AModifyConfig.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AModifyConfig.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AModifyConfig> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AModifyConfig object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAModifyConfig(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AModifyConfig> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAModifyConfig(res.type)) {
       throw new Error(`object at id ${id} is not a AModifyConfig object`)
     }
 
-    return AModifyConfig.fromSuiObjectData(res.data)
+    return AModifyConfig.fromBcs(res.bcsBytes)
   }
 }
 
@@ -384,7 +444,10 @@ export class AModifyConfig implements StructClass {
 
 export function isAMigrate(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::AMigrate`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AMigrate')
+    }::position_core_clmm::AMigrate`
 }
 
 export interface AMigrateFields {
@@ -393,25 +456,37 @@ export interface AMigrateFields {
 
 export type AMigrateReified = Reified<AMigrate, AMigrateFields>
 
+export type AMigrateJSONField = {
+  dummyField: boolean
+}
+
+export type AMigrateJSON = {
+  $typeName: typeof AMigrate.$typeName
+  $typeArgs: []
+} & AMigrateJSONField
+
+/** Access control witness for module migrations. */
 export class AMigrate implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::AMigrate`
+  static readonly $typeName: `${string}::position_core_clmm::AMigrate` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::AMigrate')
+  }::position_core_clmm::AMigrate` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AMigrate.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AMigrate`
+  readonly $typeName: typeof AMigrate.$typeName = AMigrate.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::AMigrate`
   readonly $typeArgs: []
-  readonly $isPhantom = AMigrate.$isPhantom
+  readonly $isPhantom: typeof AMigrate.$isPhantom = AMigrate.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AMigrateFields) {
     this.$fullTypeName = composeSuiType(
       AMigrate.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::AMigrate`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -423,8 +498,8 @@ export class AMigrate implements StructClass {
       typeName: AMigrate.$typeName,
       fullTypeName: composeSuiType(
         AMigrate.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::AMigrate`,
+        ...[],
+      ) as `${string}::position_core_clmm::AMigrate`,
       typeArgs: [] as [],
       isPhantom: AMigrate.$isPhantom,
       reifiedTypeArgs: [],
@@ -436,7 +511,7 @@ export class AMigrate implements StructClass {
       fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AMigrate.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AMigrate.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AMigrate.fetch(client, id),
       new: (fields: AMigrateFields) => {
         return new AMigrate([], fields)
       },
@@ -444,14 +519,15 @@ export class AMigrate implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AMigrateReified {
     return AMigrate.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AMigrate>> {
     return phantom(AMigrate.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AMigrate>> {
     return AMigrate.phantom()
   }
 
@@ -471,7 +547,9 @@ export class AMigrate implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return AMigrate.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): AMigrate {
@@ -488,23 +566,27 @@ export class AMigrate implements StructClass {
     return AMigrate.fromFields(AMigrate.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AMigrateJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AMigrateJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): AMigrate {
-    return AMigrate.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return AMigrate.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): AMigrate {
     if (json.$typeName !== AMigrate.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AMigrate json object: expected '${AMigrate.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AMigrate.fromJSONField(json)
@@ -526,26 +608,23 @@ export class AMigrate implements StructClass {
         throw new Error(`object at is not a AMigrate object`)
       }
 
-      return AMigrate.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AMigrate.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AMigrate.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AMigrate> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AMigrate object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAMigrate(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AMigrate> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAMigrate(res.type)) {
       throw new Error(`object at id ${id} is not a AMigrate object`)
     }
 
-    return AMigrate.fromSuiObjectData(res.data)
+    return AMigrate.fromBcs(res.bcsBytes)
   }
 }
 
@@ -553,7 +632,10 @@ export class AMigrate implements StructClass {
 
 export function isADeleverage(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::ADeleverage`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ADeleverage')
+    }::position_core_clmm::ADeleverage`
 }
 
 export interface ADeleverageFields {
@@ -562,25 +644,37 @@ export interface ADeleverageFields {
 
 export type ADeleverageReified = Reified<ADeleverage, ADeleverageFields>
 
+export type ADeleverageJSONField = {
+  dummyField: boolean
+}
+
+export type ADeleverageJSON = {
+  $typeName: typeof ADeleverage.$typeName
+  $typeArgs: []
+} & ADeleverageJSONField
+
+/** Access control witness for position deleveraging. */
 export class ADeleverage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::ADeleverage`
+  static readonly $typeName: `${string}::position_core_clmm::ADeleverage` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ADeleverage')
+  }::position_core_clmm::ADeleverage` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ADeleverage.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::ADeleverage`
+  readonly $typeName: typeof ADeleverage.$typeName = ADeleverage.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ADeleverage`
   readonly $typeArgs: []
-  readonly $isPhantom = ADeleverage.$isPhantom
+  readonly $isPhantom: typeof ADeleverage.$isPhantom = ADeleverage.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ADeleverageFields) {
     this.$fullTypeName = composeSuiType(
       ADeleverage.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::ADeleverage`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ADeleverage`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -592,8 +686,8 @@ export class ADeleverage implements StructClass {
       typeName: ADeleverage.$typeName,
       fullTypeName: composeSuiType(
         ADeleverage.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::ADeleverage`,
+        ...[],
+      ) as `${string}::position_core_clmm::ADeleverage`,
       typeArgs: [] as [],
       isPhantom: ADeleverage.$isPhantom,
       reifiedTypeArgs: [],
@@ -605,7 +699,7 @@ export class ADeleverage implements StructClass {
       fromJSON: (json: Record<string, any>) => ADeleverage.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ADeleverage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ADeleverage.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ADeleverage.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ADeleverage.fetch(client, id),
       new: (fields: ADeleverageFields) => {
         return new ADeleverage([], fields)
       },
@@ -613,14 +707,15 @@ export class ADeleverage implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ADeleverageReified {
     return ADeleverage.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ADeleverage>> {
     return phantom(ADeleverage.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ADeleverage>> {
     return ADeleverage.phantom()
   }
 
@@ -640,7 +735,9 @@ export class ADeleverage implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ADeleverage {
-    return ADeleverage.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ADeleverage.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ADeleverage {
@@ -657,23 +754,27 @@ export class ADeleverage implements StructClass {
     return ADeleverage.fromFields(ADeleverage.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ADeleverageJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ADeleverageJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ADeleverage {
-    return ADeleverage.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return ADeleverage.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): ADeleverage {
     if (json.$typeName !== ADeleverage.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ADeleverage json object: expected '${ADeleverage.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ADeleverage.fromJSONField(json)
@@ -695,26 +796,23 @@ export class ADeleverage implements StructClass {
         throw new Error(`object at is not a ADeleverage object`)
       }
 
-      return ADeleverage.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ADeleverage.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ADeleverage.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ADeleverage> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ADeleverage object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isADeleverage(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ADeleverage> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isADeleverage(res.type)) {
       throw new Error(`object at id ${id} is not a ADeleverage object`)
     }
 
-    return ADeleverage.fromSuiObjectData(res.data)
+    return ADeleverage.fromBcs(res.bcsBytes)
   }
 }
 
@@ -722,7 +820,10 @@ export class ADeleverage implements StructClass {
 
 export function isARebalance(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::ARebalance`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ARebalance')
+    }::position_core_clmm::ARebalance`
 }
 
 export interface ARebalanceFields {
@@ -731,25 +832,37 @@ export interface ARebalanceFields {
 
 export type ARebalanceReified = Reified<ARebalance, ARebalanceFields>
 
+export type ARebalanceJSONField = {
+  dummyField: boolean
+}
+
+export type ARebalanceJSON = {
+  $typeName: typeof ARebalance.$typeName
+  $typeArgs: []
+} & ARebalanceJSONField
+
+/** Access control witness for position rebalancing. */
 export class ARebalance implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::ARebalance`
+  static readonly $typeName: `${string}::position_core_clmm::ARebalance` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ARebalance')
+  }::position_core_clmm::ARebalance` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ARebalance.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::ARebalance`
+  readonly $typeName: typeof ARebalance.$typeName = ARebalance.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ARebalance`
   readonly $typeArgs: []
-  readonly $isPhantom = ARebalance.$isPhantom
+  readonly $isPhantom: typeof ARebalance.$isPhantom = ARebalance.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ARebalanceFields) {
     this.$fullTypeName = composeSuiType(
       ARebalance.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::ARebalance`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ARebalance`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -761,8 +874,8 @@ export class ARebalance implements StructClass {
       typeName: ARebalance.$typeName,
       fullTypeName: composeSuiType(
         ARebalance.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::ARebalance`,
+        ...[],
+      ) as `${string}::position_core_clmm::ARebalance`,
       typeArgs: [] as [],
       isPhantom: ARebalance.$isPhantom,
       reifiedTypeArgs: [],
@@ -774,7 +887,7 @@ export class ARebalance implements StructClass {
       fromJSON: (json: Record<string, any>) => ARebalance.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ARebalance.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ARebalance.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ARebalance.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ARebalance.fetch(client, id),
       new: (fields: ARebalanceFields) => {
         return new ARebalance([], fields)
       },
@@ -782,14 +895,15 @@ export class ARebalance implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ARebalanceReified {
     return ARebalance.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ARebalance>> {
     return phantom(ARebalance.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ARebalance>> {
     return ARebalance.phantom()
   }
 
@@ -809,7 +923,9 @@ export class ARebalance implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ARebalance {
-    return ARebalance.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ARebalance.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ARebalance {
@@ -826,23 +942,27 @@ export class ARebalance implements StructClass {
     return ARebalance.fromFields(ARebalance.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ARebalanceJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ARebalanceJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): ARebalance {
-    return ARebalance.reified().new({ dummyField: decodeFromJSONField('bool', field.dummyField) })
+    return ARebalance.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
   }
 
   static fromJSON(json: Record<string, any>): ARebalance {
     if (json.$typeName !== ARebalance.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ARebalance json object: expected '${ARebalance.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ARebalance.fromJSONField(json)
@@ -864,26 +984,23 @@ export class ARebalance implements StructClass {
         throw new Error(`object at is not a ARebalance object`)
       }
 
-      return ARebalance.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ARebalance.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ARebalance.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ARebalance> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ARebalance object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isARebalance(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ARebalance> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isARebalance(res.type)) {
       throw new Error(`object at id ${id} is not a ARebalance object`)
     }
 
-    return ARebalance.fromSuiObjectData(res.data)
+    return ARebalance.fromBcs(res.bcsBytes)
   }
 }
 
@@ -891,7 +1008,10 @@ export class ARebalance implements StructClass {
 
 export function isACollectProtocolFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::position_core_clmm::ACollectProtocolFees`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ACollectProtocolFees')
+    }::position_core_clmm::ACollectProtocolFees`
 }
 
 export interface ACollectProtocolFeesFields {
@@ -900,25 +1020,37 @@ export interface ACollectProtocolFeesFields {
 
 export type ACollectProtocolFeesReified = Reified<ACollectProtocolFees, ACollectProtocolFeesFields>
 
+export type ACollectProtocolFeesJSONField = {
+  dummyField: boolean
+}
+
+export type ACollectProtocolFeesJSON = {
+  $typeName: typeof ACollectProtocolFees.$typeName
+  $typeArgs: []
+} & ACollectProtocolFeesJSONField
+
+/** Access control witness for protocol fee collection. */
 export class ACollectProtocolFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::ACollectProtocolFees`
+  static readonly $typeName: `${string}::position_core_clmm::ACollectProtocolFees` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ACollectProtocolFees')
+  }::position_core_clmm::ACollectProtocolFees` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ACollectProtocolFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::ACollectProtocolFees`
+  readonly $typeName: typeof ACollectProtocolFees.$typeName = ACollectProtocolFees.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ACollectProtocolFees`
   readonly $typeArgs: []
-  readonly $isPhantom = ACollectProtocolFees.$isPhantom
+  readonly $isPhantom: typeof ACollectProtocolFees.$isPhantom = ACollectProtocolFees.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ACollectProtocolFeesFields) {
     this.$fullTypeName = composeSuiType(
       ACollectProtocolFees.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::ACollectProtocolFees`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ACollectProtocolFees`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -930,8 +1062,8 @@ export class ACollectProtocolFees implements StructClass {
       typeName: ACollectProtocolFees.$typeName,
       fullTypeName: composeSuiType(
         ACollectProtocolFees.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::position_core_clmm::ACollectProtocolFees`,
+        ...[],
+      ) as `${string}::position_core_clmm::ACollectProtocolFees`,
       typeArgs: [] as [],
       isPhantom: ACollectProtocolFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -946,7 +1078,8 @@ export class ACollectProtocolFees implements StructClass {
         ACollectProtocolFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ACollectProtocolFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ACollectProtocolFees.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ACollectProtocolFees.fetch(client, id),
       new: (fields: ACollectProtocolFeesFields) => {
         return new ACollectProtocolFees([], fields)
       },
@@ -954,14 +1087,15 @@ export class ACollectProtocolFees implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ACollectProtocolFeesReified {
     return ACollectProtocolFees.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ACollectProtocolFees>> {
     return phantom(ACollectProtocolFees.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ACollectProtocolFees>> {
     return ACollectProtocolFees.phantom()
   }
 
@@ -1000,13 +1134,13 @@ export class ACollectProtocolFees implements StructClass {
     return ACollectProtocolFees.fromFields(ACollectProtocolFees.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ACollectProtocolFeesJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ACollectProtocolFeesJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1018,7 +1152,9 @@ export class ACollectProtocolFees implements StructClass {
 
   static fromJSON(json: Record<string, any>): ACollectProtocolFees {
     if (json.$typeName !== ACollectProtocolFees.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ACollectProtocolFees json object: expected '${ACollectProtocolFees.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ACollectProtocolFees.fromJSONField(json)
@@ -1030,7 +1166,7 @@ export class ACollectProtocolFees implements StructClass {
     }
     if (!isACollectProtocolFees(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a ACollectProtocolFees object`
+        `object at ${(content.fields as any).id} is not a ACollectProtocolFees object`,
       )
     }
     return ACollectProtocolFees.fromFieldsWithTypes(content)
@@ -1042,26 +1178,23 @@ export class ACollectProtocolFees implements StructClass {
         throw new Error(`object at is not a ACollectProtocolFees object`)
       }
 
-      return ACollectProtocolFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ACollectProtocolFees.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ACollectProtocolFees.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ACollectProtocolFees> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ACollectProtocolFees object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isACollectProtocolFees(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ACollectProtocolFees> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isACollectProtocolFees(res.type)) {
       throw new Error(`object at id ${id} is not a ACollectProtocolFees object`)
     }
 
-    return ACollectProtocolFees.fromSuiObjectData(res.data)
+    return ACollectProtocolFees.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1069,7 +1202,10 @@ export class ACollectProtocolFees implements StructClass {
 
 export function isARepayBadDebt(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V16}::position_core_clmm::ARepayBadDebt`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ARepayBadDebt')
+    }::position_core_clmm::ARepayBadDebt`
 }
 
 export interface ARepayBadDebtFields {
@@ -1078,25 +1214,37 @@ export interface ARepayBadDebtFields {
 
 export type ARepayBadDebtReified = Reified<ARepayBadDebt, ARepayBadDebtFields>
 
+export type ARepayBadDebtJSONField = {
+  dummyField: boolean
+}
+
+export type ARepayBadDebtJSON = {
+  $typeName: typeof ARepayBadDebt.$typeName
+  $typeArgs: []
+} & ARepayBadDebtJSONField
+
+/** Access control witness for bad debt repayment. */
 export class ARepayBadDebt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V16}::position_core_clmm::ARepayBadDebt`
+  static readonly $typeName: `${string}::position_core_clmm::ARepayBadDebt` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ARepayBadDebt')
+  }::position_core_clmm::ARepayBadDebt` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ARepayBadDebt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`
+  readonly $typeName: typeof ARepayBadDebt.$typeName = ARepayBadDebt.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ARepayBadDebt`
   readonly $typeArgs: []
-  readonly $isPhantom = ARepayBadDebt.$isPhantom
+  readonly $isPhantom: typeof ARepayBadDebt.$isPhantom = ARepayBadDebt.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ARepayBadDebtFields) {
     this.$fullTypeName = composeSuiType(
       ARepayBadDebt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ARepayBadDebt`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -1108,8 +1256,8 @@ export class ARepayBadDebt implements StructClass {
       typeName: ARepayBadDebt.$typeName,
       fullTypeName: composeSuiType(
         ARepayBadDebt.$typeName,
-        ...[]
-      ) as `${typeof PKG_V16}::position_core_clmm::ARepayBadDebt`,
+        ...[],
+      ) as `${string}::position_core_clmm::ARepayBadDebt`,
       typeArgs: [] as [],
       isPhantom: ARepayBadDebt.$isPhantom,
       reifiedTypeArgs: [],
@@ -1121,7 +1269,7 @@ export class ARepayBadDebt implements StructClass {
       fromJSON: (json: Record<string, any>) => ARepayBadDebt.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ARepayBadDebt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ARepayBadDebt.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ARepayBadDebt.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ARepayBadDebt.fetch(client, id),
       new: (fields: ARepayBadDebtFields) => {
         return new ARepayBadDebt([], fields)
       },
@@ -1129,14 +1277,15 @@ export class ARepayBadDebt implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ARepayBadDebtReified {
     return ARepayBadDebt.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ARepayBadDebt>> {
     return phantom(ARepayBadDebt.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ARepayBadDebt>> {
     return ARepayBadDebt.phantom()
   }
 
@@ -1156,7 +1305,9 @@ export class ARepayBadDebt implements StructClass {
   }
 
   static fromFields(fields: Record<string, any>): ARepayBadDebt {
-    return ARepayBadDebt.reified().new({ dummyField: decodeFromFields('bool', fields.dummy_field) })
+    return ARepayBadDebt.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
   }
 
   static fromFieldsWithTypes(item: FieldsWithTypes): ARepayBadDebt {
@@ -1173,13 +1324,13 @@ export class ARepayBadDebt implements StructClass {
     return ARepayBadDebt.fromFields(ARepayBadDebt.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ARepayBadDebtJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ARepayBadDebtJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1191,7 +1342,9 @@ export class ARepayBadDebt implements StructClass {
 
   static fromJSON(json: Record<string, any>): ARepayBadDebt {
     if (json.$typeName !== ARepayBadDebt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ARepayBadDebt json object: expected '${ARepayBadDebt.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ARepayBadDebt.fromJSONField(json)
@@ -1213,26 +1366,23 @@ export class ARepayBadDebt implements StructClass {
         throw new Error(`object at is not a ARepayBadDebt object`)
       }
 
-      return ARepayBadDebt.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ARepayBadDebt.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ARepayBadDebt.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ARepayBadDebt> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ARepayBadDebt object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isARepayBadDebt(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ARepayBadDebt> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isARepayBadDebt(res.type)) {
       throw new Error(`object at id ${id} is not a ARepayBadDebt object`)
     }
 
-    return ARepayBadDebt.fromSuiObjectData(res.data)
+    return ARepayBadDebt.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1240,7 +1390,11 @@ export class ARepayBadDebt implements StructClass {
 
 export function isCreatePositionTicket(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::position_core_clmm::CreatePositionTicket` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::CreatePositionTicket')
+    }::position_core_clmm::CreatePositionTicket` + '<',
+  )
 }
 
 export interface CreatePositionTicketFields<
@@ -1267,22 +1421,53 @@ export type CreatePositionTicketReified<
   I32 extends TypeArgument,
 > = Reified<CreatePositionTicket<X, Y, I32>, CreatePositionTicketFields<X, Y, I32>>
 
+export type CreatePositionTicketJSONField<
+  X extends PhantomTypeArgument,
+  Y extends PhantomTypeArgument,
+  I32 extends TypeArgument,
+> = {
+  configId: string
+  tickA: ToJSON<I32>
+  tickB: ToJSON<I32>
+  dx: string
+  dy: string
+  deltaL: string
+  principalX: ToJSON<Balance<X>>
+  principalY: ToJSON<Balance<Y>>
+  borrowedX: ToJSON<Balance<X>>
+  borrowedY: ToJSON<Balance<Y>>
+  debtBag: ToJSON<FacilDebtBag>
+}
+
+export type CreatePositionTicketJSON<
+  X extends PhantomTypeArgument,
+  Y extends PhantomTypeArgument,
+  I32 extends TypeArgument,
+> = {
+  $typeName: typeof CreatePositionTicket.$typeName
+  $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<I32>]
+} & CreatePositionTicketJSONField<X, Y, I32>
+
+/** Ticket for creating a new leveraged position with borrowed funds. */
 export class CreatePositionTicket<
   X extends PhantomTypeArgument,
   Y extends PhantomTypeArgument,
   I32 extends TypeArgument,
-> implements StructClass
-{
+> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::CreatePositionTicket`
+  static readonly $typeName: `${string}::position_core_clmm::CreatePositionTicket` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::CreatePositionTicket')
+  }::position_core_clmm::CreatePositionTicket` as const
   static readonly $numTypeParams = 3
   static readonly $isPhantom = [true, true, false] as const
 
-  readonly $typeName = CreatePositionTicket.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<I32>}>`
+  readonly $typeName: typeof CreatePositionTicket.$typeName = CreatePositionTicket.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<
+    X
+  >}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<I32>}>`
   readonly $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<I32>]
-  readonly $isPhantom = CreatePositionTicket.$isPhantom
+  readonly $isPhantom: typeof CreatePositionTicket.$isPhantom = CreatePositionTicket.$isPhantom
 
   readonly configId: ToField<ID>
   readonly tickA: ToField<I32>
@@ -1298,12 +1483,14 @@ export class CreatePositionTicket<
 
   private constructor(
     typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<I32>],
-    fields: CreatePositionTicketFields<X, Y, I32>
+    fields: CreatePositionTicketFields<X, Y, I32>,
   ) {
     this.$fullTypeName = composeSuiType(
       CreatePositionTicket.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<I32>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<
+      X
+    >}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<I32>}>`
     this.$typeArgs = typeArgs
 
     this.configId = fields.configId
@@ -1326,7 +1513,7 @@ export class CreatePositionTicket<
   >(
     X: X,
     Y: Y,
-    I32: I32
+    I32: I32,
   ): CreatePositionTicketReified<
     ToPhantomTypeArgument<X>,
     ToPhantomTypeArgument<Y>,
@@ -1337,8 +1524,10 @@ export class CreatePositionTicket<
       typeName: CreatePositionTicket.$typeName,
       fullTypeName: composeSuiType(
         CreatePositionTicket.$typeName,
-        ...[extractType(X), extractType(Y), extractType(I32)]
-      ) as `${typeof PKG_V1}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<ToPhantomTypeArgument<X>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<I32>>}>`,
+        ...[extractType(X), extractType(Y), extractType(I32)],
+      ) as `${string}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<
+        ToPhantomTypeArgument<X>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<I32>>}>`,
       typeArgs: [extractType(X), extractType(Y), extractType(I32)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<X>>,
         PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
@@ -1359,14 +1548,14 @@ export class CreatePositionTicket<
         CreatePositionTicket.fromSuiParsedData([X, Y, I32], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CreatePositionTicket.fromSuiObjectData([X, Y, I32], content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         CreatePositionTicket.fetch(client, [X, Y, I32], id),
       new: (
         fields: CreatePositionTicketFields<
           ToPhantomTypeArgument<X>,
           ToPhantomTypeArgument<Y>,
           ToTypeArgument<I32>
-        >
+        >,
       ) => {
         return new CreatePositionTicket([extractType(X), extractType(Y), extractType(I32)], fields)
       },
@@ -1374,7 +1563,7 @@ export class CreatePositionTicket<
     }
   }
 
-  static get r() {
+  static get r(): typeof CreatePositionTicket.reified {
     return CreatePositionTicket.reified
   }
 
@@ -1385,7 +1574,7 @@ export class CreatePositionTicket<
   >(
     X: X,
     Y: Y,
-    I32: I32
+    I32: I32,
   ): PhantomReified<
     ToTypeStr<
       CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>>
@@ -1393,7 +1582,8 @@ export class CreatePositionTicket<
   > {
     return phantom(CreatePositionTicket.reified(X, Y, I32))
   }
-  static get p() {
+
+  static get p(): typeof CreatePositionTicket.phantom {
     return CreatePositionTicket.phantom
   }
 
@@ -1429,7 +1619,7 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     return CreatePositionTicket.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       configId: decodeFromFields(ID.reified(), fields.config_id),
@@ -1452,7 +1642,7 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     if (!isCreatePositionTicket(item.type)) {
       throw new Error('not a CreatePositionTicket type')
@@ -1480,19 +1670,19 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    data: Uint8Array
+    data: Uint8Array,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     return CreatePositionTicket.fromFields(
       typeArgs,
-      CreatePositionTicket.bcs(toBcs(typeArgs[2])).parse(data)
+      CreatePositionTicket.bcs(toBcs(typeArgs[2])).parse(data),
     )
   }
 
-  toJSONField() {
+  toJSONField(): CreatePositionTicketJSONField<X, Y, I32> {
     return {
       configId: this.configId,
-      tickA: fieldToJSON<I32>(this.$typeArgs[2], this.tickA),
-      tickB: fieldToJSON<I32>(this.$typeArgs[2], this.tickB),
+      tickA: fieldToJSON<I32>(`${this.$typeArgs[2]}`, this.tickA),
+      tickB: fieldToJSON<I32>(`${this.$typeArgs[2]}`, this.tickB),
       dx: this.dx.toString(),
       dy: this.dy.toString(),
       deltaL: this.deltaL.toString(),
@@ -1504,7 +1694,7 @@ export class CreatePositionTicket<
     }
   }
 
-  toJSON() {
+  toJSON(): CreatePositionTicketJSON<X, Y, I32> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1514,7 +1704,7 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    field: any
+    field: any,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     return CreatePositionTicket.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       configId: decodeFromJSONField(ID.reified(), field.configId),
@@ -1537,15 +1727,17 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     if (json.$typeName !== CreatePositionTicket.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CreatePositionTicket json object: expected '${CreatePositionTicket.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(CreatePositionTicket.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return CreatePositionTicket.fromJSONField(typeArgs, json)
@@ -1557,14 +1749,14 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isCreatePositionTicket(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a CreatePositionTicket object`
+        `object at ${(content.fields as any).id} is not a CreatePositionTicket object`,
       )
     }
     return CreatePositionTicket.fromFieldsWithTypes(typeArgs, content)
@@ -1576,7 +1768,7 @@ export class CreatePositionTicket<
     I32 extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, I32],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCreatePositionTicket(data.bcs.type)) {
@@ -1586,7 +1778,7 @@ export class CreatePositionTicket<
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 3) {
         throw new Error(
-          `type argument mismatch: expected 3 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 3; i++) {
@@ -1594,18 +1786,18 @@ export class CreatePositionTicket<
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return CreatePositionTicket.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return CreatePositionTicket.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CreatePositionTicket.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -1614,21 +1806,34 @@ export class CreatePositionTicket<
     Y extends PhantomReified<PhantomTypeArgument>,
     I32 extends Reified<TypeArgument, any>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [X, Y, I32],
-    id: string
+    id: string,
   ): Promise<
     CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>>
   > {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching CreatePositionTicket object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCreatePositionTicket(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCreatePositionTicket(res.type)) {
       throw new Error(`object at id ${id} is not a CreatePositionTicket object`)
     }
 
-    return CreatePositionTicket.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 3) {
+      throw new Error(
+        `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return CreatePositionTicket.fromBcs(typeArgs, res.bcsBytes)
   }
 }
 
@@ -1636,7 +1841,10 @@ export class CreatePositionTicket<
 
 export function isPosition(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::position_core_clmm::Position` + '<')
+  return type.startsWith(
+    `${getTypeOrigin('kai-leverage', 'position_core_clmm::Position')}::position_core_clmm::Position`
+      + '<',
+  )
 }
 
 export interface PositionFields<
@@ -1662,22 +1870,52 @@ export type PositionReified<
   LP extends TypeArgument,
 > = Reified<Position<X, Y, LP>, PositionFields<X, Y, LP>>
 
+export type PositionJSONField<
+  X extends PhantomTypeArgument,
+  Y extends PhantomTypeArgument,
+  LP extends TypeArgument,
+> = {
+  id: string
+  configId: string
+  lpPosition: ToJSON<LP>
+  colX: ToJSON<Balance<X>>
+  colY: ToJSON<Balance<Y>>
+  debtBag: ToJSON<FacilDebtBag>
+  collectedFees: ToJSON<BalanceBag>
+  ownerRewardStash: ToJSON<BalanceBag>
+  ticketActive: boolean
+  version: number
+}
+
+export type PositionJSON<
+  X extends PhantomTypeArgument,
+  Y extends PhantomTypeArgument,
+  LP extends TypeArgument,
+> = {
+  $typeName: typeof Position.$typeName
+  $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<LP>]
+} & PositionJSONField<X, Y, LP>
+
+/** Leveraged position containing LP position, collateral, and debt. */
 export class Position<
   X extends PhantomTypeArgument,
   Y extends PhantomTypeArgument,
   LP extends TypeArgument,
-> implements StructClass
-{
+> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::Position`
+  static readonly $typeName: `${string}::position_core_clmm::Position` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::Position')
+  }::position_core_clmm::Position` as const
   static readonly $numTypeParams = 3
   static readonly $isPhantom = [true, true, false] as const
 
-  readonly $typeName = Position.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::Position<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<LP>}>`
+  readonly $typeName: typeof Position.$typeName = Position.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::Position<${PhantomToTypeStr<
+    X
+  >}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<LP>}>`
   readonly $typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<LP>]
-  readonly $isPhantom = Position.$isPhantom
+  readonly $isPhantom: typeof Position.$isPhantom = Position.$isPhantom
 
   readonly id: ToField<UID>
   readonly configId: ToField<ID>
@@ -1692,12 +1930,14 @@ export class Position<
 
   private constructor(
     typeArgs: [PhantomToTypeStr<X>, PhantomToTypeStr<Y>, ToTypeStr<LP>],
-    fields: PositionFields<X, Y, LP>
+    fields: PositionFields<X, Y, LP>,
   ) {
     this.$fullTypeName = composeSuiType(
       Position.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::Position<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<Y>}, ${ToTypeStr<LP>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::Position<${PhantomToTypeStr<X>}, ${PhantomToTypeStr<
+      Y
+    >}, ${ToTypeStr<LP>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -1719,15 +1959,17 @@ export class Position<
   >(
     X: X,
     Y: Y,
-    LP: LP
+    LP: LP,
   ): PositionReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     const reifiedBcs = Position.bcs(toBcs(LP))
     return {
       typeName: Position.$typeName,
       fullTypeName: composeSuiType(
         Position.$typeName,
-        ...[extractType(X), extractType(Y), extractType(LP)]
-      ) as `${typeof PKG_V1}::position_core_clmm::Position<${PhantomToTypeStr<ToPhantomTypeArgument<X>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<LP>>}>`,
+        ...[extractType(X), extractType(Y), extractType(LP)],
+      ) as `${string}::position_core_clmm::Position<${PhantomToTypeStr<
+        ToPhantomTypeArgument<X>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<LP>>}>`,
       typeArgs: [extractType(X), extractType(Y), extractType(LP)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<X>>,
         PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
@@ -1746,13 +1988,14 @@ export class Position<
         Position.fromSuiParsedData([X, Y, LP], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         Position.fromSuiObjectData([X, Y, LP], content),
-      fetch: async (client: SuiClient, id: string) => Position.fetch(client, [X, Y, LP], id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        Position.fetch(client, [X, Y, LP], id),
       new: (
         fields: PositionFields<
           ToPhantomTypeArgument<X>,
           ToPhantomTypeArgument<Y>,
           ToTypeArgument<LP>
-        >
+        >,
       ) => {
         return new Position([extractType(X), extractType(Y), extractType(LP)], fields)
       },
@@ -1760,7 +2003,7 @@ export class Position<
     }
   }
 
-  static get r() {
+  static get r(): typeof Position.reified {
     return Position.reified
   }
 
@@ -1771,13 +2014,14 @@ export class Position<
   >(
     X: X,
     Y: Y,
-    LP: LP
+    LP: LP,
   ): PhantomReified<
     ToTypeStr<Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>>>
   > {
     return phantom(Position.reified(X, Y, LP))
   }
-  static get p() {
+
+  static get p(): typeof Position.phantom {
     return Position.phantom
   }
 
@@ -1812,7 +2056,7 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     return Position.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromFields(UID.reified(), fields.id),
@@ -1834,7 +2078,7 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     if (!isPosition(item.type)) {
       throw new Error('not a Position type')
@@ -1851,7 +2095,7 @@ export class Position<
       collectedFees: decodeFromFieldsWithTypes(BalanceBag.reified(), item.fields.collected_fees),
       ownerRewardStash: decodeFromFieldsWithTypes(
         BalanceBag.reified(),
-        item.fields.owner_reward_stash
+        item.fields.owner_reward_stash,
       ),
       ticketActive: decodeFromFieldsWithTypes('bool', item.fields.ticket_active),
       version: decodeFromFieldsWithTypes('u16', item.fields.version),
@@ -1864,16 +2108,16 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    data: Uint8Array
+    data: Uint8Array,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     return Position.fromFields(typeArgs, Position.bcs(toBcs(typeArgs[2])).parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionJSONField<X, Y, LP> {
     return {
       id: this.id,
       configId: this.configId,
-      lpPosition: fieldToJSON<LP>(this.$typeArgs[2], this.lpPosition),
+      lpPosition: fieldToJSON<LP>(`${this.$typeArgs[2]}`, this.lpPosition),
       colX: this.colX.toJSONField(),
       colY: this.colY.toJSONField(),
       debtBag: this.debtBag.toJSONField(),
@@ -1884,7 +2128,7 @@ export class Position<
     }
   }
 
-  toJSON() {
+  toJSON(): PositionJSON<X, Y, LP> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1894,7 +2138,7 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    field: any
+    field: any,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     return Position.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromJSONField(UID.reified(), field.id),
@@ -1916,15 +2160,17 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     if (json.$typeName !== Position.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a Position json object: expected '${Position.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(Position.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return Position.fromJSONField(typeArgs, json)
@@ -1936,7 +2182,7 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1953,7 +2199,7 @@ export class Position<
     LP extends Reified<TypeArgument, any>,
   >(
     typeArgs: [X, Y, LP],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPosition(data.bcs.type)) {
@@ -1963,7 +2209,7 @@ export class Position<
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 3) {
         throw new Error(
-          `type argument mismatch: expected 3 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 3; i++) {
@@ -1971,18 +2217,18 @@ export class Position<
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return Position.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return Position.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return Position.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -1991,19 +2237,32 @@ export class Position<
     Y extends PhantomReified<PhantomTypeArgument>,
     LP extends Reified<TypeArgument, any>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [X, Y, LP],
-    id: string
+    id: string,
   ): Promise<Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching Position object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPosition(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPosition(res.type)) {
       throw new Error(`object at id ${id} is not a Position object`)
     }
 
-    return Position.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 3) {
+      throw new Error(
+        `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Position.fromBcs(typeArgs, res.bcsBytes)
   }
 }
 
@@ -2011,7 +2270,10 @@ export class Position<
 
 export function isPositionCap(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::PositionCap`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCap')
+    }::position_core_clmm::PositionCap`
 }
 
 export interface PositionCapFields {
@@ -2021,17 +2283,30 @@ export interface PositionCapFields {
 
 export type PositionCapReified = Reified<PositionCap, PositionCapFields>
 
+export type PositionCapJSONField = {
+  id: string
+  positionId: string
+}
+
+export type PositionCapJSON = {
+  $typeName: typeof PositionCap.$typeName
+  $typeArgs: []
+} & PositionCapJSONField
+
+/** Capability granting ownership and control over a position. */
 export class PositionCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::PositionCap`
+  static readonly $typeName: `${string}::position_core_clmm::PositionCap` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCap')
+  }::position_core_clmm::PositionCap` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionCap.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::PositionCap`
+  readonly $typeName: typeof PositionCap.$typeName = PositionCap.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::PositionCap`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionCap.$isPhantom
+  readonly $isPhantom: typeof PositionCap.$isPhantom = PositionCap.$isPhantom
 
   readonly id: ToField<UID>
   readonly positionId: ToField<ID>
@@ -2039,8 +2314,8 @@ export class PositionCap implements StructClass {
   private constructor(typeArgs: [], fields: PositionCapFields) {
     this.$fullTypeName = composeSuiType(
       PositionCap.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::PositionCap`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::PositionCap`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -2053,8 +2328,8 @@ export class PositionCap implements StructClass {
       typeName: PositionCap.$typeName,
       fullTypeName: composeSuiType(
         PositionCap.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::PositionCap`,
+        ...[],
+      ) as `${string}::position_core_clmm::PositionCap`,
       typeArgs: [] as [],
       isPhantom: PositionCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -2066,7 +2341,7 @@ export class PositionCap implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionCap.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionCap.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionCap.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionCap.fetch(client, id),
       new: (fields: PositionCapFields) => {
         return new PositionCap([], fields)
       },
@@ -2074,14 +2349,15 @@ export class PositionCap implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionCapReified {
     return PositionCap.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionCap>> {
     return phantom(PositionCap.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionCap>> {
     return PositionCap.phantom()
   }
 
@@ -2123,14 +2399,14 @@ export class PositionCap implements StructClass {
     return PositionCap.fromFields(PositionCap.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionCapJSONField {
     return {
       id: this.id,
       positionId: this.positionId,
     }
   }
 
-  toJSON() {
+  toJSON(): PositionCapJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2143,7 +2419,9 @@ export class PositionCap implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionCap {
     if (json.$typeName !== PositionCap.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionCap json object: expected '${PositionCap.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionCap.fromJSONField(json)
@@ -2165,26 +2443,23 @@ export class PositionCap implements StructClass {
         throw new Error(`object at is not a PositionCap object`)
       }
 
-      return PositionCap.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionCap.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionCap.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionCap> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionCap object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionCap(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionCap> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionCap(res.type)) {
       throw new Error(`object at id ${id} is not a PositionCap object`)
     }
 
-    return PositionCap.fromSuiObjectData(res.data)
+    return PositionCap.fromBcs(res.bcsBytes)
   }
 }
 
@@ -2192,7 +2467,10 @@ export class PositionCap implements StructClass {
 
 export function isPythConfig(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::PythConfig`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PythConfig')
+    }::position_core_clmm::PythConfig`
 }
 
 export interface PythConfigFields {
@@ -2202,17 +2480,30 @@ export interface PythConfigFields {
 
 export type PythConfigReified = Reified<PythConfig, PythConfigFields>
 
+export type PythConfigJSONField = {
+  maxAgeSecs: string
+  pioAllowlist: ToJSON<VecMap<TypeName, ID>>
+}
+
+export type PythConfigJSON = {
+  $typeName: typeof PythConfig.$typeName
+  $typeArgs: []
+} & PythConfigJSONField
+
+/** Configuration for Pyth oracle integration. */
 export class PythConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::PythConfig`
+  static readonly $typeName: `${string}::position_core_clmm::PythConfig` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::PythConfig')
+  }::position_core_clmm::PythConfig` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PythConfig.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::PythConfig`
+  readonly $typeName: typeof PythConfig.$typeName = PythConfig.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::PythConfig`
   readonly $typeArgs: []
-  readonly $isPhantom = PythConfig.$isPhantom
+  readonly $isPhantom: typeof PythConfig.$isPhantom = PythConfig.$isPhantom
 
   readonly maxAgeSecs: ToField<'u64'>
   readonly pioAllowlist: ToField<VecMap<TypeName, ID>>
@@ -2220,8 +2511,8 @@ export class PythConfig implements StructClass {
   private constructor(typeArgs: [], fields: PythConfigFields) {
     this.$fullTypeName = composeSuiType(
       PythConfig.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::PythConfig`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::PythConfig`
     this.$typeArgs = typeArgs
 
     this.maxAgeSecs = fields.maxAgeSecs
@@ -2234,8 +2525,8 @@ export class PythConfig implements StructClass {
       typeName: PythConfig.$typeName,
       fullTypeName: composeSuiType(
         PythConfig.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::PythConfig`,
+        ...[],
+      ) as `${string}::position_core_clmm::PythConfig`,
       typeArgs: [] as [],
       isPhantom: PythConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -2247,7 +2538,7 @@ export class PythConfig implements StructClass {
       fromJSON: (json: Record<string, any>) => PythConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythConfig.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PythConfig.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PythConfig.fetch(client, id),
       new: (fields: PythConfigFields) => {
         return new PythConfig([], fields)
       },
@@ -2255,14 +2546,15 @@ export class PythConfig implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PythConfigReified {
     return PythConfig.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PythConfig>> {
     return phantom(PythConfig.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PythConfig>> {
     return PythConfig.phantom()
   }
 
@@ -2287,7 +2579,7 @@ export class PythConfig implements StructClass {
       maxAgeSecs: decodeFromFields('u64', fields.max_age_secs),
       pioAllowlist: decodeFromFields(
         VecMap.reified(TypeName.reified(), ID.reified()),
-        fields.pio_allowlist
+        fields.pio_allowlist,
       ),
     })
   }
@@ -2301,7 +2593,7 @@ export class PythConfig implements StructClass {
       maxAgeSecs: decodeFromFieldsWithTypes('u64', item.fields.max_age_secs),
       pioAllowlist: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), ID.reified()),
-        item.fields.pio_allowlist
+        item.fields.pio_allowlist,
       ),
     })
   }
@@ -2310,14 +2602,14 @@ export class PythConfig implements StructClass {
     return PythConfig.fromFields(PythConfig.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PythConfigJSONField {
     return {
       maxAgeSecs: this.maxAgeSecs.toString(),
       pioAllowlist: this.pioAllowlist.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): PythConfigJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2326,14 +2618,16 @@ export class PythConfig implements StructClass {
       maxAgeSecs: decodeFromJSONField('u64', field.maxAgeSecs),
       pioAllowlist: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), ID.reified()),
-        field.pioAllowlist
+        field.pioAllowlist,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): PythConfig {
     if (json.$typeName !== PythConfig.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PythConfig json object: expected '${PythConfig.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PythConfig.fromJSONField(json)
@@ -2355,26 +2649,23 @@ export class PythConfig implements StructClass {
         throw new Error(`object at is not a PythConfig object`)
       }
 
-      return PythConfig.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PythConfig.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PythConfig.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PythConfig> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PythConfig object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPythConfig(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PythConfig> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPythConfig(res.type)) {
       throw new Error(`object at id ${id} is not a PythConfig object`)
     }
 
-    return PythConfig.fromSuiObjectData(res.data)
+    return PythConfig.fromBcs(res.bcsBytes)
   }
 }
 
@@ -2382,70 +2673,227 @@ export class PythConfig implements StructClass {
 
 export function isPositionConfig(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::PositionConfig`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionConfig')
+    }::position_core_clmm::PositionConfig`
 }
 
 export interface PositionConfigFields {
   id: ToField<UID>
+  /** The object ID of the underlying AMM pool this configuration applies to. */
   poolObjectId: ToField<ID>
+  /** Whether new positions can be created under this configuration. */
   allowNewPositions: ToField<'bool'>
+  /** Lending facility capability (`SupplyPool`) associated with this position configuration. */
   lendFacilCap: ToField<LendFacilCap>
+  /**
+   * Minimum price deviation required between initial price and liquidation trigger price.
+   * Prevents positions from being created too close to liquidation thresholds.
+   * Based on paper's price range analysis ensuring safe margin evolution.
+   */
   minLiqStartPriceDeltaBps: ToField<'u16'>
+  /**
+   * Minimum initial margin level required for position creation (basis points).
+   * Ensures sufficient collateralization based on margin function M(P) = A(P)/D(P).
+   */
   minInitMarginBps: ToField<'u16'>
+  /** Bag of allowed oracle sources for this position configuration. */
   allowedOracles: ToField<Bag>
+  /**
+   * Deleveraging margin threshold (basis points). When margin falls to this level,
+   * automated deleveraging reduces position size to restore safety.
+   * Must be higher than liquidation margin to provide deleveraging buffer.
+   */
   deleverageMarginBps: ToField<'u16'>
+  /**
+   * Base factor for deleveraging amount calculation (basis points).
+   * Determines how aggressively positions are deleveraged when margin deteriorates.
+   */
   baseDeleverageFactorBps: ToField<'u16'>
+  /**
+   * Liquidation margin threshold (basis points). Positions below this margin
+   * can be liquidated by external parties to protect lenders from losses.
+   */
   liqMarginBps: ToField<'u16'>
+  /**
+   * Base liquidation factor (basis points) controlling liquidation aggressiveness.
+   * Ensures liquidations restore position health while minimizing impact.
+   */
   baseLiqFactorBps: ToField<'u16'>
+  /**
+   * Liquidation bonus (basis points) guaranteed to liquidators as incentive.
+   * Always awarded even for underwater positions to minimize bad debt formation.
+   */
   liqBonusBps: ToField<'u16'>
+  /**
+   * Maximum liquidity allowed per individual position.
+   * Implements position size limits for risk management.
+   */
   maxPositionL: ToField<'u128'>
+  /**
+   * Maximum total liquidity across all positions globally.
+   * Implements system-wide exposure limits.
+   */
   maxGlobalL: ToField<'u128'>
+  /**
+   * Current total liquidity across all active positions.
+   * Tracked for enforcing global limits.
+   */
   currentGlobalL: ToField<'u128'>
+  /**
+   * Protocol fee taken during rebalancing operations (basis points).
+   * Applied to collected AMM fees and rewards.
+   */
   rebalanceFeeBps: ToField<'u16'>
+  /**
+   * Protocol fee taken during liquidation operations (basis points).
+   * Applied to liquidation bonuses before distribution to liquidators.
+   */
   liqFeeBps: ToField<'u16'>
+  /**
+   * Fee charged for position creation in SUI tokens.
+   * Helps cover operational costs and prevent spam.
+   */
   positionCreationFeeSui: ToField<'u64'>
+  /** Version for upgrade compatibility. */
   version: ToField<'u16'>
 }
 
 export type PositionConfigReified = Reified<PositionConfig, PositionConfigFields>
 
+export type PositionConfigJSONField = {
+  id: string
+  poolObjectId: string
+  allowNewPositions: boolean
+  lendFacilCap: ToJSON<LendFacilCap>
+  minLiqStartPriceDeltaBps: number
+  minInitMarginBps: number
+  allowedOracles: ToJSON<Bag>
+  deleverageMarginBps: number
+  baseDeleverageFactorBps: number
+  liqMarginBps: number
+  baseLiqFactorBps: number
+  liqBonusBps: number
+  maxPositionL: string
+  maxGlobalL: string
+  currentGlobalL: string
+  rebalanceFeeBps: number
+  liqFeeBps: number
+  positionCreationFeeSui: string
+  version: number
+}
+
+export type PositionConfigJSON = {
+  $typeName: typeof PositionConfig.$typeName
+  $typeArgs: []
+} & PositionConfigJSONField
+
+/**
+ * Configuration for leveraged concentrated liquidity position parameters and risk management.
+ *
+ * This configuration implements the theoretical framework described in "Concentrated Liquidity
+ * with Leverage" (arXiv:2409.12803), which provides mathematical guarantees for safe leveraged
+ * liquidity provisioning.
+ */
 export class PositionConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::PositionConfig`
+  static readonly $typeName: `${string}::position_core_clmm::PositionConfig` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionConfig')
+  }::position_core_clmm::PositionConfig` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionConfig.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::PositionConfig`
+  readonly $typeName: typeof PositionConfig.$typeName = PositionConfig.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::PositionConfig`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionConfig.$isPhantom
+  readonly $isPhantom: typeof PositionConfig.$isPhantom = PositionConfig.$isPhantom
 
   readonly id: ToField<UID>
+  /** The object ID of the underlying AMM pool this configuration applies to. */
   readonly poolObjectId: ToField<ID>
+  /** Whether new positions can be created under this configuration. */
   readonly allowNewPositions: ToField<'bool'>
+  /** Lending facility capability (`SupplyPool`) associated with this position configuration. */
   readonly lendFacilCap: ToField<LendFacilCap>
+  /**
+   * Minimum price deviation required between initial price and liquidation trigger price.
+   * Prevents positions from being created too close to liquidation thresholds.
+   * Based on paper's price range analysis ensuring safe margin evolution.
+   */
   readonly minLiqStartPriceDeltaBps: ToField<'u16'>
+  /**
+   * Minimum initial margin level required for position creation (basis points).
+   * Ensures sufficient collateralization based on margin function M(P) = A(P)/D(P).
+   */
   readonly minInitMarginBps: ToField<'u16'>
+  /** Bag of allowed oracle sources for this position configuration. */
   readonly allowedOracles: ToField<Bag>
+  /**
+   * Deleveraging margin threshold (basis points). When margin falls to this level,
+   * automated deleveraging reduces position size to restore safety.
+   * Must be higher than liquidation margin to provide deleveraging buffer.
+   */
   readonly deleverageMarginBps: ToField<'u16'>
+  /**
+   * Base factor for deleveraging amount calculation (basis points).
+   * Determines how aggressively positions are deleveraged when margin deteriorates.
+   */
   readonly baseDeleverageFactorBps: ToField<'u16'>
+  /**
+   * Liquidation margin threshold (basis points). Positions below this margin
+   * can be liquidated by external parties to protect lenders from losses.
+   */
   readonly liqMarginBps: ToField<'u16'>
+  /**
+   * Base liquidation factor (basis points) controlling liquidation aggressiveness.
+   * Ensures liquidations restore position health while minimizing impact.
+   */
   readonly baseLiqFactorBps: ToField<'u16'>
+  /**
+   * Liquidation bonus (basis points) guaranteed to liquidators as incentive.
+   * Always awarded even for underwater positions to minimize bad debt formation.
+   */
   readonly liqBonusBps: ToField<'u16'>
+  /**
+   * Maximum liquidity allowed per individual position.
+   * Implements position size limits for risk management.
+   */
   readonly maxPositionL: ToField<'u128'>
+  /**
+   * Maximum total liquidity across all positions globally.
+   * Implements system-wide exposure limits.
+   */
   readonly maxGlobalL: ToField<'u128'>
+  /**
+   * Current total liquidity across all active positions.
+   * Tracked for enforcing global limits.
+   */
   readonly currentGlobalL: ToField<'u128'>
+  /**
+   * Protocol fee taken during rebalancing operations (basis points).
+   * Applied to collected AMM fees and rewards.
+   */
   readonly rebalanceFeeBps: ToField<'u16'>
+  /**
+   * Protocol fee taken during liquidation operations (basis points).
+   * Applied to liquidation bonuses before distribution to liquidators.
+   */
   readonly liqFeeBps: ToField<'u16'>
+  /**
+   * Fee charged for position creation in SUI tokens.
+   * Helps cover operational costs and prevent spam.
+   */
   readonly positionCreationFeeSui: ToField<'u64'>
+  /** Version for upgrade compatibility. */
   readonly version: ToField<'u16'>
 
   private constructor(typeArgs: [], fields: PositionConfigFields) {
     this.$fullTypeName = composeSuiType(
       PositionConfig.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::PositionConfig`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::PositionConfig`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -2475,8 +2923,8 @@ export class PositionConfig implements StructClass {
       typeName: PositionConfig.$typeName,
       fullTypeName: composeSuiType(
         PositionConfig.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::PositionConfig`,
+        ...[],
+      ) as `${string}::position_core_clmm::PositionConfig`,
       typeArgs: [] as [],
       isPhantom: PositionConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -2488,7 +2936,7 @@ export class PositionConfig implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionConfig.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionConfig.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionConfig.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionConfig.fetch(client, id),
       new: (fields: PositionConfigFields) => {
         return new PositionConfig([], fields)
       },
@@ -2496,14 +2944,15 @@ export class PositionConfig implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionConfigReified {
     return PositionConfig.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionConfig>> {
     return phantom(PositionConfig.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionConfig>> {
     return PositionConfig.phantom()
   }
 
@@ -2576,14 +3025,14 @@ export class PositionConfig implements StructClass {
       lendFacilCap: decodeFromFieldsWithTypes(LendFacilCap.reified(), item.fields.lend_facil_cap),
       minLiqStartPriceDeltaBps: decodeFromFieldsWithTypes(
         'u16',
-        item.fields.min_liq_start_price_delta_bps
+        item.fields.min_liq_start_price_delta_bps,
       ),
       minInitMarginBps: decodeFromFieldsWithTypes('u16', item.fields.min_init_margin_bps),
       allowedOracles: decodeFromFieldsWithTypes(Bag.reified(), item.fields.allowed_oracles),
       deleverageMarginBps: decodeFromFieldsWithTypes('u16', item.fields.deleverage_margin_bps),
       baseDeleverageFactorBps: decodeFromFieldsWithTypes(
         'u16',
-        item.fields.base_deleverage_factor_bps
+        item.fields.base_deleverage_factor_bps,
       ),
       liqMarginBps: decodeFromFieldsWithTypes('u16', item.fields.liq_margin_bps),
       baseLiqFactorBps: decodeFromFieldsWithTypes('u16', item.fields.base_liq_factor_bps),
@@ -2595,7 +3044,7 @@ export class PositionConfig implements StructClass {
       liqFeeBps: decodeFromFieldsWithTypes('u16', item.fields.liq_fee_bps),
       positionCreationFeeSui: decodeFromFieldsWithTypes(
         'u64',
-        item.fields.position_creation_fee_sui
+        item.fields.position_creation_fee_sui,
       ),
       version: decodeFromFieldsWithTypes('u16', item.fields.version),
     })
@@ -2605,7 +3054,7 @@ export class PositionConfig implements StructClass {
     return PositionConfig.fromFields(PositionConfig.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionConfigJSONField {
     return {
       id: this.id,
       poolObjectId: this.poolObjectId,
@@ -2629,7 +3078,7 @@ export class PositionConfig implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionConfigJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2659,7 +3108,9 @@ export class PositionConfig implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionConfig {
     if (json.$typeName !== PositionConfig.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionConfig json object: expected '${PositionConfig.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionConfig.fromJSONField(json)
@@ -2681,26 +3132,23 @@ export class PositionConfig implements StructClass {
         throw new Error(`object at is not a PositionConfig object`)
       }
 
-      return PositionConfig.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionConfig.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionConfig.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionConfig> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionConfig object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionConfig(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionConfig> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionConfig(res.type)) {
       throw new Error(`object at id ${id} is not a PositionConfig object`)
     }
 
-    return PositionConfig.fromSuiObjectData(res.data)
+    return PositionConfig.fromBcs(res.bcsBytes)
   }
 }
 
@@ -2708,7 +3156,10 @@ export class PositionConfig implements StructClass {
 
 export function isLiquidationDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationDisabledKey')
+    }::position_core_clmm::LiquidationDisabledKey`
 }
 
 export interface LiquidationDisabledKeyFields {
@@ -2720,25 +3171,36 @@ export type LiquidationDisabledKeyReified = Reified<
   LiquidationDisabledKeyFields
 >
 
+export type LiquidationDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type LiquidationDisabledKeyJSON = {
+  $typeName: typeof LiquidationDisabledKey.$typeName
+  $typeArgs: []
+} & LiquidationDisabledKeyJSONField
+
 export class LiquidationDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::LiquidationDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationDisabledKey')
+  }::position_core_clmm::LiquidationDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = LiquidationDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+  readonly $typeName: typeof LiquidationDisabledKey.$typeName = LiquidationDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::LiquidationDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = LiquidationDisabledKey.$isPhantom
+  readonly $isPhantom: typeof LiquidationDisabledKey.$isPhantom = LiquidationDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: LiquidationDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       LiquidationDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::LiquidationDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -2750,8 +3212,8 @@ export class LiquidationDisabledKey implements StructClass {
       typeName: LiquidationDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         LiquidationDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::LiquidationDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::LiquidationDisabledKey`,
       typeArgs: [] as [],
       isPhantom: LiquidationDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -2766,7 +3228,8 @@ export class LiquidationDisabledKey implements StructClass {
         LiquidationDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LiquidationDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => LiquidationDisabledKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        LiquidationDisabledKey.fetch(client, id),
       new: (fields: LiquidationDisabledKeyFields) => {
         return new LiquidationDisabledKey([], fields)
       },
@@ -2774,14 +3237,15 @@ export class LiquidationDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): LiquidationDisabledKeyReified {
     return LiquidationDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<LiquidationDisabledKey>> {
     return phantom(LiquidationDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<LiquidationDisabledKey>> {
     return LiquidationDisabledKey.phantom()
   }
 
@@ -2820,13 +3284,13 @@ export class LiquidationDisabledKey implements StructClass {
     return LiquidationDisabledKey.fromFields(LiquidationDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LiquidationDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): LiquidationDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -2838,7 +3302,9 @@ export class LiquidationDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): LiquidationDisabledKey {
     if (json.$typeName !== LiquidationDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LiquidationDisabledKey json object: expected '${LiquidationDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return LiquidationDisabledKey.fromJSONField(json)
@@ -2850,7 +3316,7 @@ export class LiquidationDisabledKey implements StructClass {
     }
     if (!isLiquidationDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a LiquidationDisabledKey object`
+        `object at ${(content.fields as any).id} is not a LiquidationDisabledKey object`,
       )
     }
     return LiquidationDisabledKey.fromFieldsWithTypes(content)
@@ -2862,26 +3328,23 @@ export class LiquidationDisabledKey implements StructClass {
         throw new Error(`object at is not a LiquidationDisabledKey object`)
       }
 
-      return LiquidationDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return LiquidationDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LiquidationDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<LiquidationDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LiquidationDisabledKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLiquidationDisabledKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidationDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLiquidationDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a LiquidationDisabledKey object`)
     }
 
-    return LiquidationDisabledKey.fromSuiObjectData(res.data)
+    return LiquidationDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -2889,7 +3352,10 @@ export class LiquidationDisabledKey implements StructClass {
 
 export function isReductionDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::ReductionDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionDisabledKey')
+    }::position_core_clmm::ReductionDisabledKey`
 }
 
 export interface ReductionDisabledKeyFields {
@@ -2898,25 +3364,36 @@ export interface ReductionDisabledKeyFields {
 
 export type ReductionDisabledKeyReified = Reified<ReductionDisabledKey, ReductionDisabledKeyFields>
 
+export type ReductionDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type ReductionDisabledKeyJSON = {
+  $typeName: typeof ReductionDisabledKey.$typeName
+  $typeArgs: []
+} & ReductionDisabledKeyJSONField
+
 export class ReductionDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::ReductionDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::ReductionDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionDisabledKey')
+  }::position_core_clmm::ReductionDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ReductionDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`
+  readonly $typeName: typeof ReductionDisabledKey.$typeName = ReductionDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ReductionDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = ReductionDisabledKey.$isPhantom
+  readonly $isPhantom: typeof ReductionDisabledKey.$isPhantom = ReductionDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: ReductionDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       ReductionDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ReductionDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -2928,8 +3405,8 @@ export class ReductionDisabledKey implements StructClass {
       typeName: ReductionDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         ReductionDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::ReductionDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::ReductionDisabledKey`,
       typeArgs: [] as [],
       isPhantom: ReductionDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -2944,7 +3421,8 @@ export class ReductionDisabledKey implements StructClass {
         ReductionDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ReductionDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ReductionDisabledKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ReductionDisabledKey.fetch(client, id),
       new: (fields: ReductionDisabledKeyFields) => {
         return new ReductionDisabledKey([], fields)
       },
@@ -2952,14 +3430,15 @@ export class ReductionDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ReductionDisabledKeyReified {
     return ReductionDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ReductionDisabledKey>> {
     return phantom(ReductionDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ReductionDisabledKey>> {
     return ReductionDisabledKey.phantom()
   }
 
@@ -2998,13 +3477,13 @@ export class ReductionDisabledKey implements StructClass {
     return ReductionDisabledKey.fromFields(ReductionDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ReductionDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): ReductionDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3016,7 +3495,9 @@ export class ReductionDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): ReductionDisabledKey {
     if (json.$typeName !== ReductionDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ReductionDisabledKey json object: expected '${ReductionDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ReductionDisabledKey.fromJSONField(json)
@@ -3028,7 +3509,7 @@ export class ReductionDisabledKey implements StructClass {
     }
     if (!isReductionDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a ReductionDisabledKey object`
+        `object at ${(content.fields as any).id} is not a ReductionDisabledKey object`,
       )
     }
     return ReductionDisabledKey.fromFieldsWithTypes(content)
@@ -3040,26 +3521,23 @@ export class ReductionDisabledKey implements StructClass {
         throw new Error(`object at is not a ReductionDisabledKey object`)
       }
 
-      return ReductionDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ReductionDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ReductionDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ReductionDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ReductionDisabledKey object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isReductionDisabledKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ReductionDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isReductionDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a ReductionDisabledKey object`)
     }
 
-    return ReductionDisabledKey.fromSuiObjectData(res.data)
+    return ReductionDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -3067,7 +3545,10 @@ export class ReductionDisabledKey implements StructClass {
 
 export function isAddLiquidityDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityDisabledKey')
+    }::position_core_clmm::AddLiquidityDisabledKey`
 }
 
 export interface AddLiquidityDisabledKeyFields {
@@ -3079,25 +3560,37 @@ export type AddLiquidityDisabledKeyReified = Reified<
   AddLiquidityDisabledKeyFields
 >
 
+export type AddLiquidityDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type AddLiquidityDisabledKeyJSON = {
+  $typeName: typeof AddLiquidityDisabledKey.$typeName
+  $typeArgs: []
+} & AddLiquidityDisabledKeyJSONField
+
 export class AddLiquidityDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::AddLiquidityDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityDisabledKey')
+  }::position_core_clmm::AddLiquidityDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AddLiquidityDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+  readonly $typeName: typeof AddLiquidityDisabledKey.$typeName = AddLiquidityDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::AddLiquidityDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = AddLiquidityDisabledKey.$isPhantom
+  readonly $isPhantom: typeof AddLiquidityDisabledKey.$isPhantom =
+    AddLiquidityDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AddLiquidityDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       AddLiquidityDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::AddLiquidityDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -3109,8 +3602,8 @@ export class AddLiquidityDisabledKey implements StructClass {
       typeName: AddLiquidityDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         AddLiquidityDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::AddLiquidityDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::AddLiquidityDisabledKey`,
       typeArgs: [] as [],
       isPhantom: AddLiquidityDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3125,7 +3618,8 @@ export class AddLiquidityDisabledKey implements StructClass {
         AddLiquidityDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AddLiquidityDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddLiquidityDisabledKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        AddLiquidityDisabledKey.fetch(client, id),
       new: (fields: AddLiquidityDisabledKeyFields) => {
         return new AddLiquidityDisabledKey([], fields)
       },
@@ -3133,14 +3627,15 @@ export class AddLiquidityDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AddLiquidityDisabledKeyReified {
     return AddLiquidityDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AddLiquidityDisabledKey>> {
     return phantom(AddLiquidityDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AddLiquidityDisabledKey>> {
     return AddLiquidityDisabledKey.phantom()
   }
 
@@ -3179,13 +3674,13 @@ export class AddLiquidityDisabledKey implements StructClass {
     return AddLiquidityDisabledKey.fromFields(AddLiquidityDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AddLiquidityDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AddLiquidityDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3197,7 +3692,9 @@ export class AddLiquidityDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): AddLiquidityDisabledKey {
     if (json.$typeName !== AddLiquidityDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AddLiquidityDisabledKey json object: expected '${AddLiquidityDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AddLiquidityDisabledKey.fromJSONField(json)
@@ -3209,7 +3706,7 @@ export class AddLiquidityDisabledKey implements StructClass {
     }
     if (!isAddLiquidityDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a AddLiquidityDisabledKey object`
+        `object at ${(content.fields as any).id} is not a AddLiquidityDisabledKey object`,
       )
     }
     return AddLiquidityDisabledKey.fromFieldsWithTypes(content)
@@ -3221,28 +3718,23 @@ export class AddLiquidityDisabledKey implements StructClass {
         throw new Error(`object at is not a AddLiquidityDisabledKey object`)
       }
 
-      return AddLiquidityDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AddLiquidityDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AddLiquidityDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AddLiquidityDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching AddLiquidityDisabledKey object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddLiquidityDisabledKey(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAddLiquidityDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityDisabledKey object`)
     }
 
-    return AddLiquidityDisabledKey.fromSuiObjectData(res.data)
+    return AddLiquidityDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -3250,7 +3742,10 @@ export class AddLiquidityDisabledKey implements StructClass {
 
 export function isOwnerCollectFeeDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeDisabledKey')
+    }::position_core_clmm::OwnerCollectFeeDisabledKey`
 }
 
 export interface OwnerCollectFeeDisabledKeyFields {
@@ -3262,25 +3757,38 @@ export type OwnerCollectFeeDisabledKeyReified = Reified<
   OwnerCollectFeeDisabledKeyFields
 >
 
+export type OwnerCollectFeeDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type OwnerCollectFeeDisabledKeyJSON = {
+  $typeName: typeof OwnerCollectFeeDisabledKey.$typeName
+  $typeArgs: []
+} & OwnerCollectFeeDisabledKeyJSONField
+
 export class OwnerCollectFeeDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectFeeDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeDisabledKey')
+  }::position_core_clmm::OwnerCollectFeeDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = OwnerCollectFeeDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+  readonly $typeName: typeof OwnerCollectFeeDisabledKey.$typeName =
+    OwnerCollectFeeDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::OwnerCollectFeeDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = OwnerCollectFeeDisabledKey.$isPhantom
+  readonly $isPhantom: typeof OwnerCollectFeeDisabledKey.$isPhantom =
+    OwnerCollectFeeDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: OwnerCollectFeeDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       OwnerCollectFeeDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OwnerCollectFeeDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -3292,8 +3800,8 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
       typeName: OwnerCollectFeeDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         OwnerCollectFeeDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectFeeDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::OwnerCollectFeeDisabledKey`,
       typeArgs: [] as [],
       isPhantom: OwnerCollectFeeDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3308,7 +3816,8 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
         OwnerCollectFeeDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectFeeDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => OwnerCollectFeeDisabledKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        OwnerCollectFeeDisabledKey.fetch(client, id),
       new: (fields: OwnerCollectFeeDisabledKeyFields) => {
         return new OwnerCollectFeeDisabledKey([], fields)
       },
@@ -3316,14 +3825,15 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): OwnerCollectFeeDisabledKeyReified {
     return OwnerCollectFeeDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<OwnerCollectFeeDisabledKey>> {
     return phantom(OwnerCollectFeeDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<OwnerCollectFeeDisabledKey>> {
     return OwnerCollectFeeDisabledKey.phantom()
   }
 
@@ -3363,13 +3873,13 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     return OwnerCollectFeeDisabledKey.fromFields(OwnerCollectFeeDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): OwnerCollectFeeDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): OwnerCollectFeeDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3381,7 +3891,9 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): OwnerCollectFeeDisabledKey {
     if (json.$typeName !== OwnerCollectFeeDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a OwnerCollectFeeDisabledKey json object: expected '${OwnerCollectFeeDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return OwnerCollectFeeDisabledKey.fromJSONField(json)
@@ -3393,7 +3905,7 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     }
     if (!isOwnerCollectFeeDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a OwnerCollectFeeDisabledKey object`
+        `object at ${(content.fields as any).id} is not a OwnerCollectFeeDisabledKey object`,
       )
     }
     return OwnerCollectFeeDisabledKey.fromFieldsWithTypes(content)
@@ -3405,31 +3917,23 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
         throw new Error(`object at is not a OwnerCollectFeeDisabledKey object`)
       }
 
-      return OwnerCollectFeeDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return OwnerCollectFeeDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return OwnerCollectFeeDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<OwnerCollectFeeDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching OwnerCollectFeeDisabledKey object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isOwnerCollectFeeDisabledKey(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<OwnerCollectFeeDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isOwnerCollectFeeDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectFeeDisabledKey object`)
     }
 
-    return OwnerCollectFeeDisabledKey.fromSuiObjectData(res.data)
+    return OwnerCollectFeeDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -3437,7 +3941,10 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
 
 export function isOwnerCollectRewardDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardDisabledKey')
+    }::position_core_clmm::OwnerCollectRewardDisabledKey`
 }
 
 export interface OwnerCollectRewardDisabledKeyFields {
@@ -3449,25 +3956,38 @@ export type OwnerCollectRewardDisabledKeyReified = Reified<
   OwnerCollectRewardDisabledKeyFields
 >
 
+export type OwnerCollectRewardDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type OwnerCollectRewardDisabledKeyJSON = {
+  $typeName: typeof OwnerCollectRewardDisabledKey.$typeName
+  $typeArgs: []
+} & OwnerCollectRewardDisabledKeyJSONField
+
 export class OwnerCollectRewardDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectRewardDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardDisabledKey')
+  }::position_core_clmm::OwnerCollectRewardDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = OwnerCollectRewardDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+  readonly $typeName: typeof OwnerCollectRewardDisabledKey.$typeName =
+    OwnerCollectRewardDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::OwnerCollectRewardDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = OwnerCollectRewardDisabledKey.$isPhantom
+  readonly $isPhantom: typeof OwnerCollectRewardDisabledKey.$isPhantom =
+    OwnerCollectRewardDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: OwnerCollectRewardDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       OwnerCollectRewardDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OwnerCollectRewardDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -3479,8 +3999,8 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
       typeName: OwnerCollectRewardDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         OwnerCollectRewardDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::OwnerCollectRewardDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::OwnerCollectRewardDisabledKey`,
       typeArgs: [] as [],
       isPhantom: OwnerCollectRewardDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3496,7 +4016,7 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
         OwnerCollectRewardDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectRewardDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         OwnerCollectRewardDisabledKey.fetch(client, id),
       new: (fields: OwnerCollectRewardDisabledKeyFields) => {
         return new OwnerCollectRewardDisabledKey([], fields)
@@ -3505,14 +4025,15 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): OwnerCollectRewardDisabledKeyReified {
     return OwnerCollectRewardDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<OwnerCollectRewardDisabledKey>> {
     return phantom(OwnerCollectRewardDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<OwnerCollectRewardDisabledKey>> {
     return OwnerCollectRewardDisabledKey.phantom()
   }
 
@@ -3552,13 +4073,13 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     return OwnerCollectRewardDisabledKey.fromFields(OwnerCollectRewardDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): OwnerCollectRewardDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): OwnerCollectRewardDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3570,7 +4091,9 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): OwnerCollectRewardDisabledKey {
     if (json.$typeName !== OwnerCollectRewardDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a OwnerCollectRewardDisabledKey json object: expected '${OwnerCollectRewardDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return OwnerCollectRewardDisabledKey.fromJSONField(json)
@@ -3582,7 +4105,7 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     }
     if (!isOwnerCollectRewardDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a OwnerCollectRewardDisabledKey object`
+        `object at ${(content.fields as any).id} is not a OwnerCollectRewardDisabledKey object`,
       )
     }
     return OwnerCollectRewardDisabledKey.fromFieldsWithTypes(content)
@@ -3594,31 +4117,26 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
         throw new Error(`object at is not a OwnerCollectRewardDisabledKey object`)
       }
 
-      return OwnerCollectRewardDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return OwnerCollectRewardDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return OwnerCollectRewardDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<OwnerCollectRewardDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching OwnerCollectRewardDisabledKey object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isOwnerCollectRewardDisabledKey(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<OwnerCollectRewardDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isOwnerCollectRewardDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectRewardDisabledKey object`)
     }
 
-    return OwnerCollectRewardDisabledKey.fromSuiObjectData(res.data)
+    return OwnerCollectRewardDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -3626,7 +4144,10 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
 
 export function isDeletePositionDisabledKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionDisabledKey')
+    }::position_core_clmm::DeletePositionDisabledKey`
 }
 
 export interface DeletePositionDisabledKeyFields {
@@ -3638,25 +4159,38 @@ export type DeletePositionDisabledKeyReified = Reified<
   DeletePositionDisabledKeyFields
 >
 
+export type DeletePositionDisabledKeyJSONField = {
+  dummyField: boolean
+}
+
+export type DeletePositionDisabledKeyJSON = {
+  $typeName: typeof DeletePositionDisabledKey.$typeName
+  $typeArgs: []
+} & DeletePositionDisabledKeyJSONField
+
 export class DeletePositionDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+  static readonly $typeName: `${string}::position_core_clmm::DeletePositionDisabledKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionDisabledKey')
+  }::position_core_clmm::DeletePositionDisabledKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeletePositionDisabledKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+  readonly $typeName: typeof DeletePositionDisabledKey.$typeName =
+    DeletePositionDisabledKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeletePositionDisabledKey`
   readonly $typeArgs: []
-  readonly $isPhantom = DeletePositionDisabledKey.$isPhantom
+  readonly $isPhantom: typeof DeletePositionDisabledKey.$isPhantom =
+    DeletePositionDisabledKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: DeletePositionDisabledKeyFields) {
     this.$fullTypeName = composeSuiType(
       DeletePositionDisabledKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeletePositionDisabledKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -3668,8 +4202,8 @@ export class DeletePositionDisabledKey implements StructClass {
       typeName: DeletePositionDisabledKey.$typeName,
       fullTypeName: composeSuiType(
         DeletePositionDisabledKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V11}::position_core_clmm::DeletePositionDisabledKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeletePositionDisabledKey`,
       typeArgs: [] as [],
       isPhantom: DeletePositionDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3684,7 +4218,8 @@ export class DeletePositionDisabledKey implements StructClass {
         DeletePositionDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletePositionDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeletePositionDisabledKey.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        DeletePositionDisabledKey.fetch(client, id),
       new: (fields: DeletePositionDisabledKeyFields) => {
         return new DeletePositionDisabledKey([], fields)
       },
@@ -3692,14 +4227,15 @@ export class DeletePositionDisabledKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeletePositionDisabledKeyReified {
     return DeletePositionDisabledKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeletePositionDisabledKey>> {
     return phantom(DeletePositionDisabledKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeletePositionDisabledKey>> {
     return DeletePositionDisabledKey.phantom()
   }
 
@@ -3739,13 +4275,13 @@ export class DeletePositionDisabledKey implements StructClass {
     return DeletePositionDisabledKey.fromFields(DeletePositionDisabledKey.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeletePositionDisabledKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): DeletePositionDisabledKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3757,7 +4293,9 @@ export class DeletePositionDisabledKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeletePositionDisabledKey {
     if (json.$typeName !== DeletePositionDisabledKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeletePositionDisabledKey json object: expected '${DeletePositionDisabledKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeletePositionDisabledKey.fromJSONField(json)
@@ -3769,7 +4307,7 @@ export class DeletePositionDisabledKey implements StructClass {
     }
     if (!isDeletePositionDisabledKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a DeletePositionDisabledKey object`
+        `object at ${(content.fields as any).id} is not a DeletePositionDisabledKey object`,
       )
     }
     return DeletePositionDisabledKey.fromFieldsWithTypes(content)
@@ -3781,31 +4319,23 @@ export class DeletePositionDisabledKey implements StructClass {
         throw new Error(`object at is not a DeletePositionDisabledKey object`)
       }
 
-      return DeletePositionDisabledKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeletePositionDisabledKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeletePositionDisabledKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeletePositionDisabledKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching DeletePositionDisabledKey object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isDeletePositionDisabledKey(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DeletePositionDisabledKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeletePositionDisabledKey(res.type)) {
       throw new Error(`object at id ${id} is not a DeletePositionDisabledKey object`)
     }
 
-    return DeletePositionDisabledKey.fromSuiObjectData(res.data)
+    return DeletePositionDisabledKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -3813,7 +4343,10 @@ export class DeletePositionDisabledKey implements StructClass {
 
 export function isPositionCreateWithdrawLimiterKey(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreateWithdrawLimiterKey')
+    }::position_core_clmm::PositionCreateWithdrawLimiterKey`
 }
 
 export interface PositionCreateWithdrawLimiterKeyFields {
@@ -3825,25 +4358,38 @@ export type PositionCreateWithdrawLimiterKeyReified = Reified<
   PositionCreateWithdrawLimiterKeyFields
 >
 
+export type PositionCreateWithdrawLimiterKeyJSONField = {
+  dummyField: boolean
+}
+
+export type PositionCreateWithdrawLimiterKeyJSON = {
+  $typeName: typeof PositionCreateWithdrawLimiterKey.$typeName
+  $typeArgs: []
+} & PositionCreateWithdrawLimiterKeyJSONField
+
 export class PositionCreateWithdrawLimiterKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+  static readonly $typeName: `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreateWithdrawLimiterKey')
+  }::position_core_clmm::PositionCreateWithdrawLimiterKey` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionCreateWithdrawLimiterKey.$typeName
-  readonly $fullTypeName: `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+  readonly $typeName: typeof PositionCreateWithdrawLimiterKey.$typeName =
+    PositionCreateWithdrawLimiterKey.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionCreateWithdrawLimiterKey.$isPhantom
+  readonly $isPhantom: typeof PositionCreateWithdrawLimiterKey.$isPhantom =
+    PositionCreateWithdrawLimiterKey.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: PositionCreateWithdrawLimiterKeyFields) {
     this.$fullTypeName = composeSuiType(
       PositionCreateWithdrawLimiterKey.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -3855,8 +4401,8 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
       typeName: PositionCreateWithdrawLimiterKey.$typeName,
       fullTypeName: composeSuiType(
         PositionCreateWithdrawLimiterKey.$typeName,
-        ...[]
-      ) as `${typeof PKG_V17}::position_core_clmm::PositionCreateWithdrawLimiterKey`,
+        ...[],
+      ) as `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey`,
       typeArgs: [] as [],
       isPhantom: PositionCreateWithdrawLimiterKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3873,7 +4419,7 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
         PositionCreateWithdrawLimiterKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PositionCreateWithdrawLimiterKey.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         PositionCreateWithdrawLimiterKey.fetch(client, id),
       new: (fields: PositionCreateWithdrawLimiterKeyFields) => {
         return new PositionCreateWithdrawLimiterKey([], fields)
@@ -3882,14 +4428,15 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionCreateWithdrawLimiterKeyReified {
     return PositionCreateWithdrawLimiterKey.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionCreateWithdrawLimiterKey>> {
     return phantom(PositionCreateWithdrawLimiterKey.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionCreateWithdrawLimiterKey>> {
     return PositionCreateWithdrawLimiterKey.phantom()
   }
 
@@ -3899,9 +4446,9 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
     })
   }
 
-  private static cachedBcs: ReturnType<
-    typeof PositionCreateWithdrawLimiterKey.instantiateBcs
-  > | null = null
+  private static cachedBcs:
+    | ReturnType<typeof PositionCreateWithdrawLimiterKey.instantiateBcs>
+    | null = null
 
   static get bcs(): ReturnType<typeof PositionCreateWithdrawLimiterKey.instantiateBcs> {
     if (!PositionCreateWithdrawLimiterKey.cachedBcs) {
@@ -3928,17 +4475,17 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
 
   static fromBcs(data: Uint8Array): PositionCreateWithdrawLimiterKey {
     return PositionCreateWithdrawLimiterKey.fromFields(
-      PositionCreateWithdrawLimiterKey.bcs.parse(data)
+      PositionCreateWithdrawLimiterKey.bcs.parse(data),
     )
   }
 
-  toJSONField() {
+  toJSONField(): PositionCreateWithdrawLimiterKeyJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): PositionCreateWithdrawLimiterKeyJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -3950,7 +4497,9 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionCreateWithdrawLimiterKey {
     if (json.$typeName !== PositionCreateWithdrawLimiterKey.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionCreateWithdrawLimiterKey json object: expected '${PositionCreateWithdrawLimiterKey.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionCreateWithdrawLimiterKey.fromJSONField(json)
@@ -3962,7 +4511,7 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
     }
     if (!isPositionCreateWithdrawLimiterKey(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PositionCreateWithdrawLimiterKey object`
+        `object at ${(content.fields as any).id} is not a PositionCreateWithdrawLimiterKey object`,
       )
     }
     return PositionCreateWithdrawLimiterKey.fromFieldsWithTypes(content)
@@ -3971,37 +4520,31 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
   static fromSuiObjectData(data: SuiObjectData): PositionCreateWithdrawLimiterKey {
     if (data.bcs) {
       if (
-        data.bcs.dataType !== 'moveObject' ||
-        !isPositionCreateWithdrawLimiterKey(data.bcs.type)
+        data.bcs.dataType !== 'moveObject' || !isPositionCreateWithdrawLimiterKey(data.bcs.type)
       ) {
         throw new Error(`object at is not a PositionCreateWithdrawLimiterKey object`)
       }
 
-      return PositionCreateWithdrawLimiterKey.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionCreateWithdrawLimiterKey.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionCreateWithdrawLimiterKey.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionCreateWithdrawLimiterKey> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching PositionCreateWithdrawLimiterKey object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isPositionCreateWithdrawLimiterKey(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<PositionCreateWithdrawLimiterKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionCreateWithdrawLimiterKey(res.type)) {
       throw new Error(`object at id ${id} is not a PositionCreateWithdrawLimiterKey object`)
     }
 
-    return PositionCreateWithdrawLimiterKey.fromSuiObjectData(res.data)
+    return PositionCreateWithdrawLimiterKey.fromBcs(res.bcsBytes)
   }
 }
 
@@ -4009,7 +4552,10 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
 
 export function isDeleverageTicket(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::DeleverageTicket`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageTicket')
+    }::position_core_clmm::DeleverageTicket`
 }
 
 export interface DeleverageTicketFields {
@@ -4021,17 +4567,31 @@ export interface DeleverageTicketFields {
 
 export type DeleverageTicketReified = Reified<DeleverageTicket, DeleverageTicketFields>
 
+export type DeleverageTicketJSONField = {
+  positionId: string
+  canRepayX: boolean
+  canRepayY: boolean
+  info: ToJSON<DeleverageInfo>
+}
+
+export type DeleverageTicketJSON = {
+  $typeName: typeof DeleverageTicket.$typeName
+  $typeArgs: []
+} & DeleverageTicketJSONField
+
 export class DeleverageTicket implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::DeleverageTicket`
+  static readonly $typeName: `${string}::position_core_clmm::DeleverageTicket` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageTicket')
+  }::position_core_clmm::DeleverageTicket` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeleverageTicket.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::DeleverageTicket`
+  readonly $typeName: typeof DeleverageTicket.$typeName = DeleverageTicket.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeleverageTicket`
   readonly $typeArgs: []
-  readonly $isPhantom = DeleverageTicket.$isPhantom
+  readonly $isPhantom: typeof DeleverageTicket.$isPhantom = DeleverageTicket.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly canRepayX: ToField<'bool'>
@@ -4041,8 +4601,8 @@ export class DeleverageTicket implements StructClass {
   private constructor(typeArgs: [], fields: DeleverageTicketFields) {
     this.$fullTypeName = composeSuiType(
       DeleverageTicket.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::DeleverageTicket`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeleverageTicket`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -4057,8 +4617,8 @@ export class DeleverageTicket implements StructClass {
       typeName: DeleverageTicket.$typeName,
       fullTypeName: composeSuiType(
         DeleverageTicket.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::DeleverageTicket`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeleverageTicket`,
       typeArgs: [] as [],
       isPhantom: DeleverageTicket.$isPhantom,
       reifiedTypeArgs: [],
@@ -4070,7 +4630,7 @@ export class DeleverageTicket implements StructClass {
       fromJSON: (json: Record<string, any>) => DeleverageTicket.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageTicket.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeleverageTicket.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeleverageTicket.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DeleverageTicket.fetch(client, id),
       new: (fields: DeleverageTicketFields) => {
         return new DeleverageTicket([], fields)
       },
@@ -4078,14 +4638,15 @@ export class DeleverageTicket implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeleverageTicketReified {
     return DeleverageTicket.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeleverageTicket>> {
     return phantom(DeleverageTicket.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeleverageTicket>> {
     return DeleverageTicket.phantom()
   }
 
@@ -4133,7 +4694,7 @@ export class DeleverageTicket implements StructClass {
     return DeleverageTicket.fromFields(DeleverageTicket.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeleverageTicketJSONField {
     return {
       positionId: this.positionId,
       canRepayX: this.canRepayX,
@@ -4142,7 +4703,7 @@ export class DeleverageTicket implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): DeleverageTicketJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -4157,7 +4718,9 @@ export class DeleverageTicket implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeleverageTicket {
     if (json.$typeName !== DeleverageTicket.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeleverageTicket json object: expected '${DeleverageTicket.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeleverageTicket.fromJSONField(json)
@@ -4179,26 +4742,23 @@ export class DeleverageTicket implements StructClass {
         throw new Error(`object at is not a DeleverageTicket object`)
       }
 
-      return DeleverageTicket.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeleverageTicket.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeleverageTicket.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeleverageTicket> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DeleverageTicket object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeleverageTicket(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DeleverageTicket> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeleverageTicket(res.type)) {
       throw new Error(`object at id ${id} is not a DeleverageTicket object`)
     }
 
-    return DeleverageTicket.fromSuiObjectData(res.data)
+    return DeleverageTicket.fromBcs(res.bcsBytes)
   }
 }
 
@@ -4206,7 +4766,11 @@ export class DeleverageTicket implements StructClass {
 
 export function isReductionRepaymentTicket(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V1}::position_core_clmm::ReductionRepaymentTicket` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionRepaymentTicket')
+    }::position_core_clmm::ReductionRepaymentTicket` + '<',
+  )
 }
 
 export interface ReductionRepaymentTicketFields<
@@ -4223,21 +4787,43 @@ export type ReductionRepaymentTicketReified<
   SY extends PhantomTypeArgument,
 > = Reified<ReductionRepaymentTicket<SX, SY>, ReductionRepaymentTicketFields<SX, SY>>
 
+export type ReductionRepaymentTicketJSONField<
+  SX extends PhantomTypeArgument,
+  SY extends PhantomTypeArgument,
+> = {
+  sx: ToJSON<FacilDebtShare<SX>>
+  sy: ToJSON<FacilDebtShare<SY>>
+  info: ToJSON<ReductionInfo>
+}
+
+export type ReductionRepaymentTicketJSON<
+  SX extends PhantomTypeArgument,
+  SY extends PhantomTypeArgument,
+> = {
+  $typeName: typeof ReductionRepaymentTicket.$typeName
+  $typeArgs: [PhantomToTypeStr<SX>, PhantomToTypeStr<SY>]
+} & ReductionRepaymentTicketJSONField<SX, SY>
+
 export class ReductionRepaymentTicket<
   SX extends PhantomTypeArgument,
   SY extends PhantomTypeArgument,
-> implements StructClass
-{
+> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::ReductionRepaymentTicket`
+  static readonly $typeName: `${string}::position_core_clmm::ReductionRepaymentTicket` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionRepaymentTicket')
+  }::position_core_clmm::ReductionRepaymentTicket` as const
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
-  readonly $typeName = ReductionRepaymentTicket.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<SX>}, ${PhantomToTypeStr<SY>}>`
+  readonly $typeName: typeof ReductionRepaymentTicket.$typeName = ReductionRepaymentTicket.$typeName
+  readonly $fullTypeName:
+    `${string}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<
+      SX
+    >}, ${PhantomToTypeStr<SY>}>`
   readonly $typeArgs: [PhantomToTypeStr<SX>, PhantomToTypeStr<SY>]
-  readonly $isPhantom = ReductionRepaymentTicket.$isPhantom
+  readonly $isPhantom: typeof ReductionRepaymentTicket.$isPhantom =
+    ReductionRepaymentTicket.$isPhantom
 
   readonly sx: ToField<FacilDebtShare<SX>>
   readonly sy: ToField<FacilDebtShare<SY>>
@@ -4245,12 +4831,14 @@ export class ReductionRepaymentTicket<
 
   private constructor(
     typeArgs: [PhantomToTypeStr<SX>, PhantomToTypeStr<SY>],
-    fields: ReductionRepaymentTicketFields<SX, SY>
+    fields: ReductionRepaymentTicketFields<SX, SY>,
   ) {
     this.$fullTypeName = composeSuiType(
       ReductionRepaymentTicket.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<SX>}, ${PhantomToTypeStr<SY>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<
+      SX
+    >}, ${PhantomToTypeStr<SY>}>`
     this.$typeArgs = typeArgs
 
     this.sx = fields.sx
@@ -4263,15 +4851,17 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     SX: SX,
-    SY: SY
+    SY: SY,
   ): ReductionRepaymentTicketReified<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     const reifiedBcs = ReductionRepaymentTicket.bcs
     return {
       typeName: ReductionRepaymentTicket.$typeName,
       fullTypeName: composeSuiType(
         ReductionRepaymentTicket.$typeName,
-        ...[extractType(SX), extractType(SY)]
-      ) as `${typeof PKG_V1}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<ToPhantomTypeArgument<SX>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<SY>>}>`,
+        ...[extractType(SX), extractType(SY)],
+      ) as `${string}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<
+        ToPhantomTypeArgument<SX>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<SY>>}>`,
       typeArgs: [extractType(SX), extractType(SY)] as [
         PhantomToTypeStr<ToPhantomTypeArgument<SX>>,
         PhantomToTypeStr<ToPhantomTypeArgument<SY>>,
@@ -4291,10 +4881,13 @@ export class ReductionRepaymentTicket<
         ReductionRepaymentTicket.fromSuiParsedData([SX, SY], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ReductionRepaymentTicket.fromSuiObjectData([SX, SY], content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         ReductionRepaymentTicket.fetch(client, [SX, SY], id),
       new: (
-        fields: ReductionRepaymentTicketFields<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>>
+        fields: ReductionRepaymentTicketFields<
+          ToPhantomTypeArgument<SX>,
+          ToPhantomTypeArgument<SY>
+        >,
       ) => {
         return new ReductionRepaymentTicket([extractType(SX), extractType(SY)], fields)
       },
@@ -4302,7 +4895,7 @@ export class ReductionRepaymentTicket<
     }
   }
 
-  static get r() {
+  static get r(): typeof ReductionRepaymentTicket.reified {
     return ReductionRepaymentTicket.reified
   }
 
@@ -4311,13 +4904,14 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     SX: SX,
-    SY: SY
+    SY: SY,
   ): PhantomReified<
     ToTypeStr<ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>>>
   > {
     return phantom(ReductionRepaymentTicket.reified(SX, SY))
   }
-  static get p() {
+
+  static get p(): typeof ReductionRepaymentTicket.phantom {
     return ReductionRepaymentTicket.phantom
   }
 
@@ -4343,7 +4937,7 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     return ReductionRepaymentTicket.reified(typeArgs[0], typeArgs[1]).new({
       sx: decodeFromFields(FacilDebtShare.reified(typeArgs[0]), fields.sx),
@@ -4357,7 +4951,7 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     if (!isReductionRepaymentTicket(item.type)) {
       throw new Error('not a ReductionRepaymentTicket type')
@@ -4376,12 +4970,12 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    data: Uint8Array
+    data: Uint8Array,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     return ReductionRepaymentTicket.fromFields(typeArgs, ReductionRepaymentTicket.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ReductionRepaymentTicketJSONField<SX, SY> {
     return {
       sx: this.sx.toJSONField(),
       sy: this.sy.toJSONField(),
@@ -4389,7 +4983,7 @@ export class ReductionRepaymentTicket<
     }
   }
 
-  toJSON() {
+  toJSON(): ReductionRepaymentTicketJSON<SX, SY> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -4398,7 +4992,7 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    field: any
+    field: any,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     return ReductionRepaymentTicket.reified(typeArgs[0], typeArgs[1]).new({
       sx: decodeFromJSONField(FacilDebtShare.reified(typeArgs[0]), field.sx),
@@ -4412,15 +5006,17 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    json: Record<string, any>
+    json: Record<string, any>,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     if (json.$typeName !== ReductionRepaymentTicket.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ReductionRepaymentTicket json object: expected '${ReductionRepaymentTicket.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
       composeSuiType(ReductionRepaymentTicket.$typeName, ...typeArgs.map(extractType)),
       json.$typeArgs,
-      typeArgs
+      typeArgs,
     )
 
     return ReductionRepaymentTicket.fromJSONField(typeArgs, json)
@@ -4431,14 +5027,14 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    content: SuiParsedData
+    content: SuiParsedData,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isReductionRepaymentTicket(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a ReductionRepaymentTicket object`
+        `object at ${(content.fields as any).id} is not a ReductionRepaymentTicket object`,
       )
     }
     return ReductionRepaymentTicket.fromFieldsWithTypes(typeArgs, content)
@@ -4449,7 +5045,7 @@ export class ReductionRepaymentTicket<
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
     typeArgs: [SX, SY],
-    data: SuiObjectData
+    data: SuiObjectData,
   ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isReductionRepaymentTicket(data.bcs.type)) {
@@ -4459,7 +5055,7 @@ export class ReductionRepaymentTicket<
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 2) {
         throw new Error(
-          `type argument mismatch: expected 2 type arguments but got ${gotTypeArgs.length}`
+          `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
       for (let i = 0; i < 2; i++) {
@@ -4467,18 +5063,18 @@ export class ReductionRepaymentTicket<
         const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
         if (gotTypeArg !== expectedTypeArg) {
           throw new Error(
-            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
           )
         }
       }
 
-      return ReductionRepaymentTicket.fromBcs(typeArgs, fromB64(data.bcs.bcsBytes))
+      return ReductionRepaymentTicket.fromBcs(typeArgs, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ReductionRepaymentTicket.fromSuiParsedData(typeArgs, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
@@ -4486,24 +5082,32 @@ export class ReductionRepaymentTicket<
     SX extends PhantomReified<PhantomTypeArgument>,
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArgs: [SX, SY],
-    id: string
+    id: string,
   ): Promise<ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching ReductionRepaymentTicket object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isReductionRepaymentTicket(res.data.bcs.type)
-    ) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isReductionRepaymentTicket(res.type)) {
       throw new Error(`object at id ${id} is not a ReductionRepaymentTicket object`)
     }
 
-    return ReductionRepaymentTicket.fromSuiObjectData(typeArgs, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ReductionRepaymentTicket.fromBcs(typeArgs, res.bcsBytes)
   }
 }
 
@@ -4511,64 +5115,128 @@ export class ReductionRepaymentTicket<
 
 export function isRebalanceReceipt(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::RebalanceReceipt`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceReceipt')
+    }::position_core_clmm::RebalanceReceipt`
 }
 
 export interface RebalanceReceiptFields {
   id: ToField<ID>
   positionId: ToField<ID>
+  /** The amount of X collected from AMM fees (before fees are taken). */
   collectedAmmFeeX: ToField<'u64'>
+  /** The amount of Y collected from AMM fees (before fees are taken). */
   collectedAmmFeeY: ToField<'u64'>
+  /** The amount other AMM rewards collected (before fees are taken). */
   collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  /** The amount fees taken from collected rewards (both AMM fees and AMM rewards). */
   feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  /** The amount of X taken from cx. */
   takenCx: ToField<'u64'>
+  /** The amount of Y taken from cy. */
   takenCy: ToField<'u64'>
+  /** The amount of liquidity added to the LP position. */
   deltaL: ToField<'u128'>
+  /** The amount of X added to the LP position (corresponds to delta_l). */
   deltaX: ToField<'u64'>
+  /** The amount of Y added to the LP position (corresponds to delta_l). */
   deltaY: ToField<'u64'>
+  /** The amount of X debt repaid. */
   xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid. */
   yRepaid: ToField<'u64'>
+  /** The amount of X added to cx. */
   addedCx: ToField<'u64'>
+  /** The amount of Y added to cy. */
   addedCy: ToField<'u64'>
+  /** The amount rewards stashed back into the position. */
   stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
 }
 
 export type RebalanceReceiptReified = Reified<RebalanceReceipt, RebalanceReceiptFields>
 
+export type RebalanceReceiptJSONField = {
+  id: string
+  positionId: string
+  collectedAmmFeeX: string
+  collectedAmmFeeY: string
+  collectedAmmRewards: ToJSON<VecMap<TypeName, 'u64'>>
+  feesTaken: ToJSON<VecMap<TypeName, 'u64'>>
+  takenCx: string
+  takenCy: string
+  deltaL: string
+  deltaX: string
+  deltaY: string
+  xRepaid: string
+  yRepaid: string
+  addedCx: string
+  addedCy: string
+  stashedAmmRewards: ToJSON<VecMap<TypeName, 'u64'>>
+}
+
+export type RebalanceReceiptJSON = {
+  $typeName: typeof RebalanceReceipt.$typeName
+  $typeArgs: []
+} & RebalanceReceiptJSONField
+
+/**
+ * Receipt for a position rebalance operation, tracking all fee, reward, and liquidity changes.
+ *
+ * This struct records the results of a rebalance, including all AMM fees and rewards collected,
+ * protocol fees taken, changes to position liquidity, debt repayments, and any rewards stashed
+ * back into the position. It is used for event emission and downstream accounting.
+ */
 export class RebalanceReceipt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::RebalanceReceipt`
+  static readonly $typeName: `${string}::position_core_clmm::RebalanceReceipt` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceReceipt')
+  }::position_core_clmm::RebalanceReceipt` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RebalanceReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::RebalanceReceipt`
+  readonly $typeName: typeof RebalanceReceipt.$typeName = RebalanceReceipt.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::RebalanceReceipt`
   readonly $typeArgs: []
-  readonly $isPhantom = RebalanceReceipt.$isPhantom
+  readonly $isPhantom: typeof RebalanceReceipt.$isPhantom = RebalanceReceipt.$isPhantom
 
   readonly id: ToField<ID>
   readonly positionId: ToField<ID>
+  /** The amount of X collected from AMM fees (before fees are taken). */
   readonly collectedAmmFeeX: ToField<'u64'>
+  /** The amount of Y collected from AMM fees (before fees are taken). */
   readonly collectedAmmFeeY: ToField<'u64'>
+  /** The amount other AMM rewards collected (before fees are taken). */
   readonly collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  /** The amount fees taken from collected rewards (both AMM fees and AMM rewards). */
   readonly feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  /** The amount of X taken from cx. */
   readonly takenCx: ToField<'u64'>
+  /** The amount of Y taken from cy. */
   readonly takenCy: ToField<'u64'>
+  /** The amount of liquidity added to the LP position. */
   readonly deltaL: ToField<'u128'>
+  /** The amount of X added to the LP position (corresponds to delta_l). */
   readonly deltaX: ToField<'u64'>
+  /** The amount of Y added to the LP position (corresponds to delta_l). */
   readonly deltaY: ToField<'u64'>
+  /** The amount of X debt repaid. */
   readonly xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid. */
   readonly yRepaid: ToField<'u64'>
+  /** The amount of X added to cx. */
   readonly addedCx: ToField<'u64'>
+  /** The amount of Y added to cy. */
   readonly addedCy: ToField<'u64'>
+  /** The amount rewards stashed back into the position. */
   readonly stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
 
   private constructor(typeArgs: [], fields: RebalanceReceiptFields) {
     this.$fullTypeName = composeSuiType(
       RebalanceReceipt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::RebalanceReceipt`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::RebalanceReceipt`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -4595,8 +5263,8 @@ export class RebalanceReceipt implements StructClass {
       typeName: RebalanceReceipt.$typeName,
       fullTypeName: composeSuiType(
         RebalanceReceipt.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::RebalanceReceipt`,
+        ...[],
+      ) as `${string}::position_core_clmm::RebalanceReceipt`,
       typeArgs: [] as [],
       isPhantom: RebalanceReceipt.$isPhantom,
       reifiedTypeArgs: [],
@@ -4608,7 +5276,7 @@ export class RebalanceReceipt implements StructClass {
       fromJSON: (json: Record<string, any>) => RebalanceReceipt.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceReceipt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceReceipt.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RebalanceReceipt.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RebalanceReceipt.fetch(client, id),
       new: (fields: RebalanceReceiptFields) => {
         return new RebalanceReceipt([], fields)
       },
@@ -4616,14 +5284,15 @@ export class RebalanceReceipt implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RebalanceReceiptReified {
     return RebalanceReceipt.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RebalanceReceipt>> {
     return phantom(RebalanceReceipt.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RebalanceReceipt>> {
     return RebalanceReceipt.phantom()
   }
 
@@ -4665,7 +5334,7 @@ export class RebalanceReceipt implements StructClass {
       collectedAmmFeeY: decodeFromFields('u64', fields.collected_amm_fee_y),
       collectedAmmRewards: decodeFromFields(
         VecMap.reified(TypeName.reified(), 'u64'),
-        fields.collected_amm_rewards
+        fields.collected_amm_rewards,
       ),
       feesTaken: decodeFromFields(VecMap.reified(TypeName.reified(), 'u64'), fields.fees_taken),
       takenCx: decodeFromFields('u64', fields.taken_cx),
@@ -4679,7 +5348,7 @@ export class RebalanceReceipt implements StructClass {
       addedCy: decodeFromFields('u64', fields.added_cy),
       stashedAmmRewards: decodeFromFields(
         VecMap.reified(TypeName.reified(), 'u64'),
-        fields.stashed_amm_rewards
+        fields.stashed_amm_rewards,
       ),
     })
   }
@@ -4696,11 +5365,11 @@ export class RebalanceReceipt implements StructClass {
       collectedAmmFeeY: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_y),
       collectedAmmRewards: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.collected_amm_rewards
+        item.fields.collected_amm_rewards,
       ),
       feesTaken: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.fees_taken
+        item.fields.fees_taken,
       ),
       takenCx: decodeFromFieldsWithTypes('u64', item.fields.taken_cx),
       takenCy: decodeFromFieldsWithTypes('u64', item.fields.taken_cy),
@@ -4713,7 +5382,7 @@ export class RebalanceReceipt implements StructClass {
       addedCy: decodeFromFieldsWithTypes('u64', item.fields.added_cy),
       stashedAmmRewards: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.stashed_amm_rewards
+        item.fields.stashed_amm_rewards,
       ),
     })
   }
@@ -4722,7 +5391,7 @@ export class RebalanceReceipt implements StructClass {
     return RebalanceReceipt.fromFields(RebalanceReceipt.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RebalanceReceiptJSONField {
     return {
       id: this.id,
       positionId: this.positionId,
@@ -4743,7 +5412,7 @@ export class RebalanceReceipt implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): RebalanceReceiptJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -4755,7 +5424,7 @@ export class RebalanceReceipt implements StructClass {
       collectedAmmFeeY: decodeFromJSONField('u64', field.collectedAmmFeeY),
       collectedAmmRewards: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), 'u64'),
-        field.collectedAmmRewards
+        field.collectedAmmRewards,
       ),
       feesTaken: decodeFromJSONField(VecMap.reified(TypeName.reified(), 'u64'), field.feesTaken),
       takenCx: decodeFromJSONField('u64', field.takenCx),
@@ -4769,14 +5438,16 @@ export class RebalanceReceipt implements StructClass {
       addedCy: decodeFromJSONField('u64', field.addedCy),
       stashedAmmRewards: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), 'u64'),
-        field.stashedAmmRewards
+        field.stashedAmmRewards,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): RebalanceReceipt {
     if (json.$typeName !== RebalanceReceipt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RebalanceReceipt json object: expected '${RebalanceReceipt.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RebalanceReceipt.fromJSONField(json)
@@ -4798,26 +5469,23 @@ export class RebalanceReceipt implements StructClass {
         throw new Error(`object at is not a RebalanceReceipt object`)
       }
 
-      return RebalanceReceipt.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RebalanceReceipt.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RebalanceReceipt.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RebalanceReceipt> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RebalanceReceipt object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceReceipt(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceReceipt> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRebalanceReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a RebalanceReceipt object`)
     }
 
-    return RebalanceReceipt.fromSuiObjectData(res.data)
+    return RebalanceReceipt.fromBcs(res.bcsBytes)
   }
 }
 
@@ -4825,7 +5493,10 @@ export class RebalanceReceipt implements StructClass {
 
 export function isDeletedPositionCollectedFees(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::position_core_clmm::DeletedPositionCollectedFees`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFees')
+    }::position_core_clmm::DeletedPositionCollectedFees`
 }
 
 export interface DeletedPositionCollectedFeesFields {
@@ -4839,17 +5510,40 @@ export type DeletedPositionCollectedFeesReified = Reified<
   DeletedPositionCollectedFeesFields
 >
 
+export type DeletedPositionCollectedFeesJSONField = {
+  id: string
+  positionId: string
+  balanceBag: ToJSON<BalanceBag>
+}
+
+export type DeletedPositionCollectedFeesJSON = {
+  $typeName: typeof DeletedPositionCollectedFees.$typeName
+  $typeArgs: []
+} & DeletedPositionCollectedFeesJSONField
+
+/**
+ * Object representing the collected fees from a deleted position.
+ *
+ * This struct is created and shared when a position is deleted, containing
+ * the final balance bag of fees and rewards that were accumulated by the position.
+ * It allows downstream consumers to claim or account for these fees after
+ * the position object has been deleted.
+ */
 export class DeletedPositionCollectedFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::DeletedPositionCollectedFees`
+  static readonly $typeName: `${string}::position_core_clmm::DeletedPositionCollectedFees` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFees')
+  }::position_core_clmm::DeletedPositionCollectedFees` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeletedPositionCollectedFees.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFees`
+  readonly $typeName: typeof DeletedPositionCollectedFees.$typeName =
+    DeletedPositionCollectedFees.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeletedPositionCollectedFees`
   readonly $typeArgs: []
-  readonly $isPhantom = DeletedPositionCollectedFees.$isPhantom
+  readonly $isPhantom: typeof DeletedPositionCollectedFees.$isPhantom =
+    DeletedPositionCollectedFees.$isPhantom
 
   readonly id: ToField<UID>
   readonly positionId: ToField<ID>
@@ -4858,8 +5552,8 @@ export class DeletedPositionCollectedFees implements StructClass {
   private constructor(typeArgs: [], fields: DeletedPositionCollectedFeesFields) {
     this.$fullTypeName = composeSuiType(
       DeletedPositionCollectedFees.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFees`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeletedPositionCollectedFees`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -4873,8 +5567,8 @@ export class DeletedPositionCollectedFees implements StructClass {
       typeName: DeletedPositionCollectedFees.$typeName,
       fullTypeName: composeSuiType(
         DeletedPositionCollectedFees.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFees`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeletedPositionCollectedFees`,
       typeArgs: [] as [],
       isPhantom: DeletedPositionCollectedFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -4890,7 +5584,7 @@ export class DeletedPositionCollectedFees implements StructClass {
         DeletedPositionCollectedFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletedPositionCollectedFees.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         DeletedPositionCollectedFees.fetch(client, id),
       new: (fields: DeletedPositionCollectedFeesFields) => {
         return new DeletedPositionCollectedFees([], fields)
@@ -4899,14 +5593,15 @@ export class DeletedPositionCollectedFees implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeletedPositionCollectedFeesReified {
     return DeletedPositionCollectedFees.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeletedPositionCollectedFees>> {
     return phantom(DeletedPositionCollectedFees.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeletedPositionCollectedFees>> {
     return DeletedPositionCollectedFees.phantom()
   }
 
@@ -4952,7 +5647,7 @@ export class DeletedPositionCollectedFees implements StructClass {
     return DeletedPositionCollectedFees.fromFields(DeletedPositionCollectedFees.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeletedPositionCollectedFeesJSONField {
     return {
       id: this.id,
       positionId: this.positionId,
@@ -4960,7 +5655,7 @@ export class DeletedPositionCollectedFees implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): DeletedPositionCollectedFeesJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -4974,7 +5669,9 @@ export class DeletedPositionCollectedFees implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeletedPositionCollectedFees {
     if (json.$typeName !== DeletedPositionCollectedFees.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeletedPositionCollectedFees json object: expected '${DeletedPositionCollectedFees.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeletedPositionCollectedFees.fromJSONField(json)
@@ -4986,7 +5683,7 @@ export class DeletedPositionCollectedFees implements StructClass {
     }
     if (!isDeletedPositionCollectedFees(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a DeletedPositionCollectedFees object`
+        `object at ${(content.fields as any).id} is not a DeletedPositionCollectedFees object`,
       )
     }
     return DeletedPositionCollectedFees.fromFieldsWithTypes(content)
@@ -4998,31 +5695,26 @@ export class DeletedPositionCollectedFees implements StructClass {
         throw new Error(`object at is not a DeletedPositionCollectedFees object`)
       }
 
-      return DeletedPositionCollectedFees.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeletedPositionCollectedFees.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeletedPositionCollectedFees.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeletedPositionCollectedFees> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching DeletedPositionCollectedFees object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isDeletedPositionCollectedFees(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<DeletedPositionCollectedFees> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeletedPositionCollectedFees(res.type)) {
       throw new Error(`object at id ${id} is not a DeletedPositionCollectedFees object`)
     }
 
-    return DeletedPositionCollectedFees.fromSuiObjectData(res.data)
+    return DeletedPositionCollectedFees.fromBcs(res.bcsBytes)
   }
 }
 
@@ -5030,7 +5722,10 @@ export class DeletedPositionCollectedFees implements StructClass {
 
 export function isPositionCreationInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::PositionCreationInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreationInfo')
+    }::position_core_clmm::PositionCreationInfo`
 }
 
 export interface PositionCreationInfoFields {
@@ -5050,17 +5745,47 @@ export interface PositionCreationInfoFields {
 
 export type PositionCreationInfoReified = Reified<PositionCreationInfo, PositionCreationInfoFields>
 
+export type PositionCreationInfoJSONField = {
+  positionId: string
+  configId: string
+  sqrtPaX64: string
+  sqrtPbX64: string
+  l: string
+  x0: string
+  y0: string
+  cx: string
+  cy: string
+  dx: string
+  dy: string
+  creationFeeAmtSui: string
+}
+
+export type PositionCreationInfoJSON = {
+  $typeName: typeof PositionCreationInfo.$typeName
+  $typeArgs: []
+} & PositionCreationInfoJSONField
+
+/**
+ * Event emitted when a new leveraged position is created.
+ *
+ * This event records all relevant parameters and amounts for the newly created position,
+ * including the position and config IDs, price range, liquidity, initial and collateral
+ * balances, borrowed amounts, and the SUI fee paid at creation. It is used for downstream
+ * analytics, auditing, and protocol integrations.
+ */
 export class PositionCreationInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::PositionCreationInfo`
+  static readonly $typeName: `${string}::position_core_clmm::PositionCreationInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreationInfo')
+  }::position_core_clmm::PositionCreationInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionCreationInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::PositionCreationInfo`
+  readonly $typeName: typeof PositionCreationInfo.$typeName = PositionCreationInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::PositionCreationInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionCreationInfo.$isPhantom
+  readonly $isPhantom: typeof PositionCreationInfo.$isPhantom = PositionCreationInfo.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly configId: ToField<ID>
@@ -5078,8 +5803,8 @@ export class PositionCreationInfo implements StructClass {
   private constructor(typeArgs: [], fields: PositionCreationInfoFields) {
     this.$fullTypeName = composeSuiType(
       PositionCreationInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::PositionCreationInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::PositionCreationInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -5102,8 +5827,8 @@ export class PositionCreationInfo implements StructClass {
       typeName: PositionCreationInfo.$typeName,
       fullTypeName: composeSuiType(
         PositionCreationInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::PositionCreationInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::PositionCreationInfo`,
       typeArgs: [] as [],
       isPhantom: PositionCreationInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -5118,7 +5843,8 @@ export class PositionCreationInfo implements StructClass {
         PositionCreationInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PositionCreationInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionCreationInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        PositionCreationInfo.fetch(client, id),
       new: (fields: PositionCreationInfoFields) => {
         return new PositionCreationInfo([], fields)
       },
@@ -5126,14 +5852,15 @@ export class PositionCreationInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionCreationInfoReified {
     return PositionCreationInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionCreationInfo>> {
     return phantom(PositionCreationInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionCreationInfo>> {
     return PositionCreationInfo.phantom()
   }
 
@@ -5205,7 +5932,7 @@ export class PositionCreationInfo implements StructClass {
     return PositionCreationInfo.fromFields(PositionCreationInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionCreationInfoJSONField {
     return {
       positionId: this.positionId,
       configId: this.configId,
@@ -5222,7 +5949,7 @@ export class PositionCreationInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionCreationInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -5245,7 +5972,9 @@ export class PositionCreationInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionCreationInfo {
     if (json.$typeName !== PositionCreationInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionCreationInfo json object: expected '${PositionCreationInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionCreationInfo.fromJSONField(json)
@@ -5257,7 +5986,7 @@ export class PositionCreationInfo implements StructClass {
     }
     if (!isPositionCreationInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a PositionCreationInfo object`
+        `object at ${(content.fields as any).id} is not a PositionCreationInfo object`,
       )
     }
     return PositionCreationInfo.fromFieldsWithTypes(content)
@@ -5269,26 +5998,23 @@ export class PositionCreationInfo implements StructClass {
         throw new Error(`object at is not a PositionCreationInfo object`)
       }
 
-      return PositionCreationInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionCreationInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionCreationInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionCreationInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionCreationInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionCreationInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionCreationInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionCreationInfo(res.type)) {
       throw new Error(`object at id ${id} is not a PositionCreationInfo object`)
     }
 
-    return PositionCreationInfo.fromSuiObjectData(res.data)
+    return PositionCreationInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -5296,50 +6022,103 @@ export class PositionCreationInfo implements StructClass {
 
 export function isDeleverageInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::DeleverageInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageInfo')
+    }::position_core_clmm::DeleverageInfo`
 }
 
 export interface DeleverageInfoFields {
+  /** The unique ID of the position being deleveraged. */
   positionId: ToField<ID>
+  /** The position model snapshot at the time of deleverage. */
   model: ToField<PositionModel>
+  /** The oracle-reported price at the time of deleverage, as a Q128.128 fixed-point value. */
   oraclePriceX128: ToField<'u256'>
+  /** The pool's square root price at the time of deleverage, as a Q64.64 fixed-point value. */
   sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of liquidity (L) removed from the LP position during deleverage. */
   deltaL: ToField<'u128'>
+  /**
+   * The amount of X withdrawn from the LP position (corresponding to `delta_l`)
+   * and added to the position's cx (collateral X) balance.
+   */
   deltaX: ToField<'u64'>
+  /**
+   * The amount of Y withdrawn from the LP position (corresponding to `delta_l`)
+   * and added to the position's cy (collateral Y) balance.
+   */
   deltaY: ToField<'u64'>
+  /** The amount of X debt repaid using cx (collateral X) as part of deleverage. */
   xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid using cy (collateral Y) as part of deleverage. */
   yRepaid: ToField<'u64'>
 }
 
 export type DeleverageInfoReified = Reified<DeleverageInfo, DeleverageInfoFields>
 
+export type DeleverageInfoJSONField = {
+  positionId: string
+  model: ToJSON<PositionModel>
+  oraclePriceX128: string
+  sqrtPoolPriceX64: string
+  deltaL: string
+  deltaX: string
+  deltaY: string
+  xRepaid: string
+  yRepaid: string
+}
+
+export type DeleverageInfoJSON = {
+  $typeName: typeof DeleverageInfo.$typeName
+  $typeArgs: []
+} & DeleverageInfoJSONField
+
+/** Information about a deleveraging operation on a leveraged CLMM position. */
 export class DeleverageInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::DeleverageInfo`
+  static readonly $typeName: `${string}::position_core_clmm::DeleverageInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageInfo')
+  }::position_core_clmm::DeleverageInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeleverageInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::DeleverageInfo`
+  readonly $typeName: typeof DeleverageInfo.$typeName = DeleverageInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeleverageInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = DeleverageInfo.$isPhantom
+  readonly $isPhantom: typeof DeleverageInfo.$isPhantom = DeleverageInfo.$isPhantom
 
+  /** The unique ID of the position being deleveraged. */
   readonly positionId: ToField<ID>
+  /** The position model snapshot at the time of deleverage. */
   readonly model: ToField<PositionModel>
+  /** The oracle-reported price at the time of deleverage, as a Q128.128 fixed-point value. */
   readonly oraclePriceX128: ToField<'u256'>
+  /** The pool's square root price at the time of deleverage, as a Q64.64 fixed-point value. */
   readonly sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of liquidity (L) removed from the LP position during deleverage. */
   readonly deltaL: ToField<'u128'>
+  /**
+   * The amount of X withdrawn from the LP position (corresponding to `delta_l`)
+   * and added to the position's cx (collateral X) balance.
+   */
   readonly deltaX: ToField<'u64'>
+  /**
+   * The amount of Y withdrawn from the LP position (corresponding to `delta_l`)
+   * and added to the position's cy (collateral Y) balance.
+   */
   readonly deltaY: ToField<'u64'>
+  /** The amount of X debt repaid using cx (collateral X) as part of deleverage. */
   readonly xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid using cy (collateral Y) as part of deleverage. */
   readonly yRepaid: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: DeleverageInfoFields) {
     this.$fullTypeName = composeSuiType(
       DeleverageInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::DeleverageInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeleverageInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -5359,8 +6138,8 @@ export class DeleverageInfo implements StructClass {
       typeName: DeleverageInfo.$typeName,
       fullTypeName: composeSuiType(
         DeleverageInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::DeleverageInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeleverageInfo`,
       typeArgs: [] as [],
       isPhantom: DeleverageInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -5372,7 +6151,7 @@ export class DeleverageInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => DeleverageInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeleverageInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeleverageInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DeleverageInfo.fetch(client, id),
       new: (fields: DeleverageInfoFields) => {
         return new DeleverageInfo([], fields)
       },
@@ -5380,14 +6159,15 @@ export class DeleverageInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeleverageInfoReified {
     return DeleverageInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeleverageInfo>> {
     return phantom(DeleverageInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeleverageInfo>> {
     return DeleverageInfo.phantom()
   }
 
@@ -5450,7 +6230,7 @@ export class DeleverageInfo implements StructClass {
     return DeleverageInfo.fromFields(DeleverageInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeleverageInfoJSONField {
     return {
       positionId: this.positionId,
       model: this.model.toJSONField(),
@@ -5464,7 +6244,7 @@ export class DeleverageInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): DeleverageInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -5484,7 +6264,9 @@ export class DeleverageInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeleverageInfo {
     if (json.$typeName !== DeleverageInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeleverageInfo json object: expected '${DeleverageInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeleverageInfo.fromJSONField(json)
@@ -5506,26 +6288,23 @@ export class DeleverageInfo implements StructClass {
         throw new Error(`object at is not a DeleverageInfo object`)
       }
 
-      return DeleverageInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeleverageInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeleverageInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeleverageInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DeleverageInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeleverageInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DeleverageInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeleverageInfo(res.type)) {
       throw new Error(`object at id ${id} is not a DeleverageInfo object`)
     }
 
-    return DeleverageInfo.fromSuiObjectData(res.data)
+    return DeleverageInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -5533,50 +6312,91 @@ export class DeleverageInfo implements StructClass {
 
 export function isLiquidationInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::LiquidationInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationInfo')
+    }::position_core_clmm::LiquidationInfo`
 }
 
 export interface LiquidationInfoFields {
+  /** The ID of the liquidated position. */
   positionId: ToField<ID>
+  /** The position model at the time of liquidation. */
   model: ToField<PositionModel>
+  /** The oracle price (P = Y / X) at the time of liquidation, Q128 fixed-point. */
   oraclePriceX128: ToField<'u256'>
+  /** The amount of X debt repaid by the liquidator (from their inputted Balance<X>). */
   xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid by the liquidator (from their inputted Balance<Y>). */
   yRepaid: ToField<'u64'>
+  /** The amount of X paid out to the liquidator as a reward (after protocol fees), taken from cx. */
   liquidatorRewardX: ToField<'u64'>
+  /** The amount of Y paid out to the liquidator as a reward (after protocol fees), taken from cy. */
   liquidatorRewardY: ToField<'u64'>
+  /** The protocol fee (in X) taken from the liquidator's reward before payout. */
   liquidationFeeX: ToField<'u64'>
+  /** The protocol fee (in Y) taken from the liquidator's reward before payout. */
   liquidationFeeY: ToField<'u64'>
 }
 
 export type LiquidationInfoReified = Reified<LiquidationInfo, LiquidationInfoFields>
 
+export type LiquidationInfoJSONField = {
+  positionId: string
+  model: ToJSON<PositionModel>
+  oraclePriceX128: string
+  xRepaid: string
+  yRepaid: string
+  liquidatorRewardX: string
+  liquidatorRewardY: string
+  liquidationFeeX: string
+  liquidationFeeY: string
+}
+
+export type LiquidationInfoJSON = {
+  $typeName: typeof LiquidationInfo.$typeName
+  $typeArgs: []
+} & LiquidationInfoJSONField
+
+/** Information emitted for a position liquidation event, capturing all key amounts and rewards. */
 export class LiquidationInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::LiquidationInfo`
+  static readonly $typeName: `${string}::position_core_clmm::LiquidationInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationInfo')
+  }::position_core_clmm::LiquidationInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = LiquidationInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::LiquidationInfo`
+  readonly $typeName: typeof LiquidationInfo.$typeName = LiquidationInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::LiquidationInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = LiquidationInfo.$isPhantom
+  readonly $isPhantom: typeof LiquidationInfo.$isPhantom = LiquidationInfo.$isPhantom
 
+  /** The ID of the liquidated position. */
   readonly positionId: ToField<ID>
+  /** The position model at the time of liquidation. */
   readonly model: ToField<PositionModel>
+  /** The oracle price (P = Y / X) at the time of liquidation, Q128 fixed-point. */
   readonly oraclePriceX128: ToField<'u256'>
+  /** The amount of X debt repaid by the liquidator (from their inputted Balance<X>). */
   readonly xRepaid: ToField<'u64'>
+  /** The amount of Y debt repaid by the liquidator (from their inputted Balance<Y>). */
   readonly yRepaid: ToField<'u64'>
+  /** The amount of X paid out to the liquidator as a reward (after protocol fees), taken from cx. */
   readonly liquidatorRewardX: ToField<'u64'>
+  /** The amount of Y paid out to the liquidator as a reward (after protocol fees), taken from cy. */
   readonly liquidatorRewardY: ToField<'u64'>
+  /** The protocol fee (in X) taken from the liquidator's reward before payout. */
   readonly liquidationFeeX: ToField<'u64'>
+  /** The protocol fee (in Y) taken from the liquidator's reward before payout. */
   readonly liquidationFeeY: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: LiquidationInfoFields) {
     this.$fullTypeName = composeSuiType(
       LiquidationInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::LiquidationInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::LiquidationInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -5596,8 +6416,8 @@ export class LiquidationInfo implements StructClass {
       typeName: LiquidationInfo.$typeName,
       fullTypeName: composeSuiType(
         LiquidationInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::LiquidationInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::LiquidationInfo`,
       typeArgs: [] as [],
       isPhantom: LiquidationInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -5609,7 +6429,7 @@ export class LiquidationInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => LiquidationInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => LiquidationInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LiquidationInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => LiquidationInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => LiquidationInfo.fetch(client, id),
       new: (fields: LiquidationInfoFields) => {
         return new LiquidationInfo([], fields)
       },
@@ -5617,14 +6437,15 @@ export class LiquidationInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): LiquidationInfoReified {
     return LiquidationInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<LiquidationInfo>> {
     return phantom(LiquidationInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<LiquidationInfo>> {
     return LiquidationInfo.phantom()
   }
 
@@ -5687,7 +6508,7 @@ export class LiquidationInfo implements StructClass {
     return LiquidationInfo.fromFields(LiquidationInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): LiquidationInfoJSONField {
     return {
       positionId: this.positionId,
       model: this.model.toJSONField(),
@@ -5701,7 +6522,7 @@ export class LiquidationInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): LiquidationInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -5721,7 +6542,9 @@ export class LiquidationInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): LiquidationInfo {
     if (json.$typeName !== LiquidationInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a LiquidationInfo json object: expected '${LiquidationInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return LiquidationInfo.fromJSONField(json)
@@ -5743,26 +6566,23 @@ export class LiquidationInfo implements StructClass {
         throw new Error(`object at is not a LiquidationInfo object`)
       }
 
-      return LiquidationInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return LiquidationInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return LiquidationInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<LiquidationInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching LiquidationInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isLiquidationInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidationInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isLiquidationInfo(res.type)) {
       throw new Error(`object at id ${id} is not a LiquidationInfo object`)
     }
 
-    return LiquidationInfo.fromSuiObjectData(res.data)
+    return LiquidationInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -5770,7 +6590,10 @@ export class LiquidationInfo implements StructClass {
 
 export function isReductionInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::ReductionInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionInfo')
+    }::position_core_clmm::ReductionInfo`
 }
 
 export interface ReductionInfoFields {
@@ -5778,46 +6601,81 @@ export interface ReductionInfoFields {
   model: ToField<PositionModel>
   oraclePriceX128: ToField<'u256'>
   sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of L removed from the LP position. */
   deltaL: ToField<'u128'>
+  /** The amount of X withdrawn from the LP position (corresponds to delta_l). */
   deltaX: ToField<'u64'>
+  /** The amount of Y withdrawn from the LP position (corresponds to delta_l). */
   deltaY: ToField<'u64'>
+  /** The total amount of X returned from the position (delta_x + cx). */
   withdrawnX: ToField<'u64'>
+  /** The total amount of Y returned from the position (delta_y + cy). */
   withdrawnY: ToField<'u64'>
+  /** The amount X debt repaid. */
   xRepaid: ToField<'u64'>
+  /** The amount Y debt repaid. */
   yRepaid: ToField<'u64'>
 }
 
 export type ReductionInfoReified = Reified<ReductionInfo, ReductionInfoFields>
 
+export type ReductionInfoJSONField = {
+  positionId: string
+  model: ToJSON<PositionModel>
+  oraclePriceX128: string
+  sqrtPoolPriceX64: string
+  deltaL: string
+  deltaX: string
+  deltaY: string
+  withdrawnX: string
+  withdrawnY: string
+  xRepaid: string
+  yRepaid: string
+}
+
+export type ReductionInfoJSON = {
+  $typeName: typeof ReductionInfo.$typeName
+  $typeArgs: []
+} & ReductionInfoJSONField
+
 export class ReductionInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::ReductionInfo`
+  static readonly $typeName: `${string}::position_core_clmm::ReductionInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionInfo')
+  }::position_core_clmm::ReductionInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ReductionInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::ReductionInfo`
+  readonly $typeName: typeof ReductionInfo.$typeName = ReductionInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::ReductionInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = ReductionInfo.$isPhantom
+  readonly $isPhantom: typeof ReductionInfo.$isPhantom = ReductionInfo.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly model: ToField<PositionModel>
   readonly oraclePriceX128: ToField<'u256'>
   readonly sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of L removed from the LP position. */
   readonly deltaL: ToField<'u128'>
+  /** The amount of X withdrawn from the LP position (corresponds to delta_l). */
   readonly deltaX: ToField<'u64'>
+  /** The amount of Y withdrawn from the LP position (corresponds to delta_l). */
   readonly deltaY: ToField<'u64'>
+  /** The total amount of X returned from the position (delta_x + cx). */
   readonly withdrawnX: ToField<'u64'>
+  /** The total amount of Y returned from the position (delta_y + cy). */
   readonly withdrawnY: ToField<'u64'>
+  /** The amount X debt repaid. */
   readonly xRepaid: ToField<'u64'>
+  /** The amount Y debt repaid. */
   readonly yRepaid: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: ReductionInfoFields) {
     this.$fullTypeName = composeSuiType(
       ReductionInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::ReductionInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::ReductionInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -5839,8 +6697,8 @@ export class ReductionInfo implements StructClass {
       typeName: ReductionInfo.$typeName,
       fullTypeName: composeSuiType(
         ReductionInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::ReductionInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::ReductionInfo`,
       typeArgs: [] as [],
       isPhantom: ReductionInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -5852,7 +6710,7 @@ export class ReductionInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => ReductionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ReductionInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ReductionInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ReductionInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ReductionInfo.fetch(client, id),
       new: (fields: ReductionInfoFields) => {
         return new ReductionInfo([], fields)
       },
@@ -5860,14 +6718,15 @@ export class ReductionInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ReductionInfoReified {
     return ReductionInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ReductionInfo>> {
     return phantom(ReductionInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ReductionInfo>> {
     return ReductionInfo.phantom()
   }
 
@@ -5936,7 +6795,7 @@ export class ReductionInfo implements StructClass {
     return ReductionInfo.fromFields(ReductionInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ReductionInfoJSONField {
     return {
       positionId: this.positionId,
       model: this.model.toJSONField(),
@@ -5952,7 +6811,7 @@ export class ReductionInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): ReductionInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -5974,7 +6833,9 @@ export class ReductionInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): ReductionInfo {
     if (json.$typeName !== ReductionInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ReductionInfo json object: expected '${ReductionInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ReductionInfo.fromJSONField(json)
@@ -5996,26 +6857,23 @@ export class ReductionInfo implements StructClass {
         throw new Error(`object at is not a ReductionInfo object`)
       }
 
-      return ReductionInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ReductionInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ReductionInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ReductionInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ReductionInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isReductionInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ReductionInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isReductionInfo(res.type)) {
       throw new Error(`object at id ${id} is not a ReductionInfo object`)
     }
 
-    return ReductionInfo.fromSuiObjectData(res.data)
+    return ReductionInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -6023,38 +6881,61 @@ export class ReductionInfo implements StructClass {
 
 export function isAddCollateralInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::AddCollateralInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddCollateralInfo')
+    }::position_core_clmm::AddCollateralInfo`
 }
 
 export interface AddCollateralInfoFields {
+  /** The ID of the position to which collateral was added. */
   positionId: ToField<ID>
+  /** The amount of X collateral added. */
   amountX: ToField<'u64'>
+  /** The amount of Y collateral added. */
   amountY: ToField<'u64'>
 }
 
 export type AddCollateralInfoReified = Reified<AddCollateralInfo, AddCollateralInfoFields>
 
+export type AddCollateralInfoJSONField = {
+  positionId: string
+  amountX: string
+  amountY: string
+}
+
+export type AddCollateralInfoJSON = {
+  $typeName: typeof AddCollateralInfo.$typeName
+  $typeArgs: []
+} & AddCollateralInfoJSONField
+
+/** Event emitted when collateral is added to a position. */
 export class AddCollateralInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::AddCollateralInfo`
+  static readonly $typeName: `${string}::position_core_clmm::AddCollateralInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::AddCollateralInfo')
+  }::position_core_clmm::AddCollateralInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AddCollateralInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AddCollateralInfo`
+  readonly $typeName: typeof AddCollateralInfo.$typeName = AddCollateralInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::AddCollateralInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = AddCollateralInfo.$isPhantom
+  readonly $isPhantom: typeof AddCollateralInfo.$isPhantom = AddCollateralInfo.$isPhantom
 
+  /** The ID of the position to which collateral was added. */
   readonly positionId: ToField<ID>
+  /** The amount of X collateral added. */
   readonly amountX: ToField<'u64'>
+  /** The amount of Y collateral added. */
   readonly amountY: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: AddCollateralInfoFields) {
     this.$fullTypeName = composeSuiType(
       AddCollateralInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::AddCollateralInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::AddCollateralInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -6068,8 +6949,8 @@ export class AddCollateralInfo implements StructClass {
       typeName: AddCollateralInfo.$typeName,
       fullTypeName: composeSuiType(
         AddCollateralInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::AddCollateralInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::AddCollateralInfo`,
       typeArgs: [] as [],
       isPhantom: AddCollateralInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6081,7 +6962,7 @@ export class AddCollateralInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => AddCollateralInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddCollateralInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddCollateralInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddCollateralInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AddCollateralInfo.fetch(client, id),
       new: (fields: AddCollateralInfoFields) => {
         return new AddCollateralInfo([], fields)
       },
@@ -6089,14 +6970,15 @@ export class AddCollateralInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AddCollateralInfoReified {
     return AddCollateralInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AddCollateralInfo>> {
     return phantom(AddCollateralInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AddCollateralInfo>> {
     return AddCollateralInfo.phantom()
   }
 
@@ -6141,7 +7023,7 @@ export class AddCollateralInfo implements StructClass {
     return AddCollateralInfo.fromFields(AddCollateralInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AddCollateralInfoJSONField {
     return {
       positionId: this.positionId,
       amountX: this.amountX.toString(),
@@ -6149,7 +7031,7 @@ export class AddCollateralInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): AddCollateralInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -6163,7 +7045,9 @@ export class AddCollateralInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): AddCollateralInfo {
     if (json.$typeName !== AddCollateralInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AddCollateralInfo json object: expected '${AddCollateralInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AddCollateralInfo.fromJSONField(json)
@@ -6185,26 +7069,23 @@ export class AddCollateralInfo implements StructClass {
         throw new Error(`object at is not a AddCollateralInfo object`)
       }
 
-      return AddCollateralInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AddCollateralInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AddCollateralInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AddCollateralInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AddCollateralInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddCollateralInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AddCollateralInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAddCollateralInfo(res.type)) {
       throw new Error(`object at id ${id} is not a AddCollateralInfo object`)
     }
 
-    return AddCollateralInfo.fromSuiObjectData(res.data)
+    return AddCollateralInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -6212,42 +7093,71 @@ export class AddCollateralInfo implements StructClass {
 
 export function isAddLiquidityInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::AddLiquidityInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityInfo')
+    }::position_core_clmm::AddLiquidityInfo`
 }
 
 export interface AddLiquidityInfoFields {
+  /** The ID of the position to which liquidity was added. */
   positionId: ToField<ID>
+  /** The pool's square root price (Q64.64) at the time of liquidity addition. */
   sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of liquidity (L) added to the position. */
   deltaL: ToField<'u128'>
+  /** The amount of X tokens added to the position (corresponds to delta_l). */
   deltaX: ToField<'u64'>
+  /** The amount of Y tokens added to the position (corresponds to delta_l). */
   deltaY: ToField<'u64'>
 }
 
 export type AddLiquidityInfoReified = Reified<AddLiquidityInfo, AddLiquidityInfoFields>
 
+export type AddLiquidityInfoJSONField = {
+  positionId: string
+  sqrtPoolPriceX64: string
+  deltaL: string
+  deltaX: string
+  deltaY: string
+}
+
+export type AddLiquidityInfoJSON = {
+  $typeName: typeof AddLiquidityInfo.$typeName
+  $typeArgs: []
+} & AddLiquidityInfoJSONField
+
+/** Event emitted when liquidity is added to a position. */
 export class AddLiquidityInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::AddLiquidityInfo`
+  static readonly $typeName: `${string}::position_core_clmm::AddLiquidityInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityInfo')
+  }::position_core_clmm::AddLiquidityInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AddLiquidityInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::AddLiquidityInfo`
+  readonly $typeName: typeof AddLiquidityInfo.$typeName = AddLiquidityInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::AddLiquidityInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = AddLiquidityInfo.$isPhantom
+  readonly $isPhantom: typeof AddLiquidityInfo.$isPhantom = AddLiquidityInfo.$isPhantom
 
+  /** The ID of the position to which liquidity was added. */
   readonly positionId: ToField<ID>
+  /** The pool's square root price (Q64.64) at the time of liquidity addition. */
   readonly sqrtPoolPriceX64: ToField<'u128'>
+  /** The amount of liquidity (L) added to the position. */
   readonly deltaL: ToField<'u128'>
+  /** The amount of X tokens added to the position (corresponds to delta_l). */
   readonly deltaX: ToField<'u64'>
+  /** The amount of Y tokens added to the position (corresponds to delta_l). */
   readonly deltaY: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: AddLiquidityInfoFields) {
     this.$fullTypeName = composeSuiType(
       AddLiquidityInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::AddLiquidityInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::AddLiquidityInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -6263,8 +7173,8 @@ export class AddLiquidityInfo implements StructClass {
       typeName: AddLiquidityInfo.$typeName,
       fullTypeName: composeSuiType(
         AddLiquidityInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::AddLiquidityInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::AddLiquidityInfo`,
       typeArgs: [] as [],
       isPhantom: AddLiquidityInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6276,7 +7186,7 @@ export class AddLiquidityInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => AddLiquidityInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddLiquidityInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AddLiquidityInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => AddLiquidityInfo.fetch(client, id),
       new: (fields: AddLiquidityInfoFields) => {
         return new AddLiquidityInfo([], fields)
       },
@@ -6284,14 +7194,15 @@ export class AddLiquidityInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AddLiquidityInfoReified {
     return AddLiquidityInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AddLiquidityInfo>> {
     return phantom(AddLiquidityInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AddLiquidityInfo>> {
     return AddLiquidityInfo.phantom()
   }
 
@@ -6342,7 +7253,7 @@ export class AddLiquidityInfo implements StructClass {
     return AddLiquidityInfo.fromFields(AddLiquidityInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AddLiquidityInfoJSONField {
     return {
       positionId: this.positionId,
       sqrtPoolPriceX64: this.sqrtPoolPriceX64.toString(),
@@ -6352,7 +7263,7 @@ export class AddLiquidityInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): AddLiquidityInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -6368,7 +7279,9 @@ export class AddLiquidityInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): AddLiquidityInfo {
     if (json.$typeName !== AddLiquidityInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AddLiquidityInfo json object: expected '${AddLiquidityInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AddLiquidityInfo.fromJSONField(json)
@@ -6390,26 +7303,23 @@ export class AddLiquidityInfo implements StructClass {
         throw new Error(`object at is not a AddLiquidityInfo object`)
       }
 
-      return AddLiquidityInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AddLiquidityInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AddLiquidityInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AddLiquidityInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching AddLiquidityInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isAddLiquidityInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAddLiquidityInfo(res.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityInfo object`)
     }
 
-    return AddLiquidityInfo.fromSuiObjectData(res.data)
+    return AddLiquidityInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -6417,38 +7327,61 @@ export class AddLiquidityInfo implements StructClass {
 
 export function isRepayDebtInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::RepayDebtInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RepayDebtInfo')
+    }::position_core_clmm::RepayDebtInfo`
 }
 
 export interface RepayDebtInfoFields {
+  /** The ID of the position for which debt was repaid. */
   positionId: ToField<ID>
+  /** The amount of X repaid to the position's debt. */
   xRepaid: ToField<'u64'>
+  /** The amount of Y repaid to the position's debt. */
   yRepaid: ToField<'u64'>
 }
 
 export type RepayDebtInfoReified = Reified<RepayDebtInfo, RepayDebtInfoFields>
 
+export type RepayDebtInfoJSONField = {
+  positionId: string
+  xRepaid: string
+  yRepaid: string
+}
+
+export type RepayDebtInfoJSON = {
+  $typeName: typeof RepayDebtInfo.$typeName
+  $typeArgs: []
+} & RepayDebtInfoJSONField
+
+/** Event emitted when debt is repaid on a position by the owner. */
 export class RepayDebtInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::RepayDebtInfo`
+  static readonly $typeName: `${string}::position_core_clmm::RepayDebtInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::RepayDebtInfo')
+  }::position_core_clmm::RepayDebtInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RepayDebtInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::RepayDebtInfo`
+  readonly $typeName: typeof RepayDebtInfo.$typeName = RepayDebtInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::RepayDebtInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = RepayDebtInfo.$isPhantom
+  readonly $isPhantom: typeof RepayDebtInfo.$isPhantom = RepayDebtInfo.$isPhantom
 
+  /** The ID of the position for which debt was repaid. */
   readonly positionId: ToField<ID>
+  /** The amount of X repaid to the position's debt. */
   readonly xRepaid: ToField<'u64'>
+  /** The amount of Y repaid to the position's debt. */
   readonly yRepaid: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: RepayDebtInfoFields) {
     this.$fullTypeName = composeSuiType(
       RepayDebtInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::RepayDebtInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::RepayDebtInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -6462,8 +7395,8 @@ export class RepayDebtInfo implements StructClass {
       typeName: RepayDebtInfo.$typeName,
       fullTypeName: composeSuiType(
         RepayDebtInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::RepayDebtInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::RepayDebtInfo`,
       typeArgs: [] as [],
       isPhantom: RepayDebtInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6475,7 +7408,7 @@ export class RepayDebtInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => RepayDebtInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RepayDebtInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RepayDebtInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RepayDebtInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RepayDebtInfo.fetch(client, id),
       new: (fields: RepayDebtInfoFields) => {
         return new RepayDebtInfo([], fields)
       },
@@ -6483,14 +7416,15 @@ export class RepayDebtInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RepayDebtInfoReified {
     return RepayDebtInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RepayDebtInfo>> {
     return phantom(RepayDebtInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RepayDebtInfo>> {
     return RepayDebtInfo.phantom()
   }
 
@@ -6535,7 +7469,7 @@ export class RepayDebtInfo implements StructClass {
     return RepayDebtInfo.fromFields(RepayDebtInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RepayDebtInfoJSONField {
     return {
       positionId: this.positionId,
       xRepaid: this.xRepaid.toString(),
@@ -6543,7 +7477,7 @@ export class RepayDebtInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): RepayDebtInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -6557,7 +7491,9 @@ export class RepayDebtInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): RepayDebtInfo {
     if (json.$typeName !== RepayDebtInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RepayDebtInfo json object: expected '${RepayDebtInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RepayDebtInfo.fromJSONField(json)
@@ -6579,26 +7515,23 @@ export class RepayDebtInfo implements StructClass {
         throw new Error(`object at is not a RepayDebtInfo object`)
       }
 
-      return RepayDebtInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RepayDebtInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RepayDebtInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RepayDebtInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RepayDebtInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRepayDebtInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RepayDebtInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRepayDebtInfo(res.type)) {
       throw new Error(`object at id ${id} is not a RepayDebtInfo object`)
     }
 
-    return RepayDebtInfo.fromSuiObjectData(res.data)
+    return RepayDebtInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -6606,42 +7539,71 @@ export class RepayDebtInfo implements StructClass {
 
 export function isOwnerCollectFeeInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::position_core_clmm::OwnerCollectFeeInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeInfo')
+    }::position_core_clmm::OwnerCollectFeeInfo`
 }
 
 export interface OwnerCollectFeeInfoFields {
+  /** The ID of the position for which AMM trading fees were collected. */
   positionId: ToField<ID>
+  /** The total amount of X fees collected from the AMM (before protocol fees are taken). */
   collectedXAmt: ToField<'u64'>
+  /** The total amount of Y fees collected from the AMM (before protocol fees are taken). */
   collectedYAmt: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected X fees. */
   feeAmtX: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected Y fees. */
   feeAmtY: ToField<'u64'>
 }
 
 export type OwnerCollectFeeInfoReified = Reified<OwnerCollectFeeInfo, OwnerCollectFeeInfoFields>
 
+export type OwnerCollectFeeInfoJSONField = {
+  positionId: string
+  collectedXAmt: string
+  collectedYAmt: string
+  feeAmtX: string
+  feeAmtY: string
+}
+
+export type OwnerCollectFeeInfoJSON = {
+  $typeName: typeof OwnerCollectFeeInfo.$typeName
+  $typeArgs: []
+} & OwnerCollectFeeInfoJSONField
+
+/** Event emitted when the position owner collects AMM trading fees directly. */
 export class OwnerCollectFeeInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::OwnerCollectFeeInfo`
+  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectFeeInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeInfo')
+  }::position_core_clmm::OwnerCollectFeeInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = OwnerCollectFeeInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::OwnerCollectFeeInfo`
+  readonly $typeName: typeof OwnerCollectFeeInfo.$typeName = OwnerCollectFeeInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::OwnerCollectFeeInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = OwnerCollectFeeInfo.$isPhantom
+  readonly $isPhantom: typeof OwnerCollectFeeInfo.$isPhantom = OwnerCollectFeeInfo.$isPhantom
 
+  /** The ID of the position for which AMM trading fees were collected. */
   readonly positionId: ToField<ID>
+  /** The total amount of X fees collected from the AMM (before protocol fees are taken). */
   readonly collectedXAmt: ToField<'u64'>
+  /** The total amount of Y fees collected from the AMM (before protocol fees are taken). */
   readonly collectedYAmt: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected X fees. */
   readonly feeAmtX: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected Y fees. */
   readonly feeAmtY: ToField<'u64'>
 
   private constructor(typeArgs: [], fields: OwnerCollectFeeInfoFields) {
     this.$fullTypeName = composeSuiType(
       OwnerCollectFeeInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::OwnerCollectFeeInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OwnerCollectFeeInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -6657,8 +7619,8 @@ export class OwnerCollectFeeInfo implements StructClass {
       typeName: OwnerCollectFeeInfo.$typeName,
       fullTypeName: composeSuiType(
         OwnerCollectFeeInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::position_core_clmm::OwnerCollectFeeInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::OwnerCollectFeeInfo`,
       typeArgs: [] as [],
       isPhantom: OwnerCollectFeeInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6670,7 +7632,8 @@ export class OwnerCollectFeeInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => OwnerCollectFeeInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => OwnerCollectFeeInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => OwnerCollectFeeInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => OwnerCollectFeeInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        OwnerCollectFeeInfo.fetch(client, id),
       new: (fields: OwnerCollectFeeInfoFields) => {
         return new OwnerCollectFeeInfo([], fields)
       },
@@ -6678,14 +7641,15 @@ export class OwnerCollectFeeInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): OwnerCollectFeeInfoReified {
     return OwnerCollectFeeInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<OwnerCollectFeeInfo>> {
     return phantom(OwnerCollectFeeInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<OwnerCollectFeeInfo>> {
     return OwnerCollectFeeInfo.phantom()
   }
 
@@ -6736,7 +7700,7 @@ export class OwnerCollectFeeInfo implements StructClass {
     return OwnerCollectFeeInfo.fromFields(OwnerCollectFeeInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): OwnerCollectFeeInfoJSONField {
     return {
       positionId: this.positionId,
       collectedXAmt: this.collectedXAmt.toString(),
@@ -6746,7 +7710,7 @@ export class OwnerCollectFeeInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): OwnerCollectFeeInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -6762,7 +7726,9 @@ export class OwnerCollectFeeInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): OwnerCollectFeeInfo {
     if (json.$typeName !== OwnerCollectFeeInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a OwnerCollectFeeInfo json object: expected '${OwnerCollectFeeInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return OwnerCollectFeeInfo.fromJSONField(json)
@@ -6784,26 +7750,23 @@ export class OwnerCollectFeeInfo implements StructClass {
         throw new Error(`object at is not a OwnerCollectFeeInfo object`)
       }
 
-      return OwnerCollectFeeInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return OwnerCollectFeeInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return OwnerCollectFeeInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<OwnerCollectFeeInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching OwnerCollectFeeInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerCollectFeeInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<OwnerCollectFeeInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isOwnerCollectFeeInfo(res.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectFeeInfo object`)
     }
 
-    return OwnerCollectFeeInfo.fromSuiObjectData(res.data)
+    return OwnerCollectFeeInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -6811,12 +7774,19 @@ export class OwnerCollectFeeInfo implements StructClass {
 
 export function isOwnerCollectRewardInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V3}::position_core_clmm::OwnerCollectRewardInfo` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardInfo')
+    }::position_core_clmm::OwnerCollectRewardInfo` + '<',
+  )
 }
 
 export interface OwnerCollectRewardInfoFields<T extends PhantomTypeArgument> {
+  /** The ID of the position for which AMM rewards were collected. */
   positionId: ToField<ID>
+  /** The total amount of rewards collected from the AMM (before protocol fees are taken). */
   collectedRewardAmt: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected rewards. */
   feeAmt: ToField<'u64'>
 }
 
@@ -6825,27 +7795,46 @@ export type OwnerCollectRewardInfoReified<T extends PhantomTypeArgument> = Reifi
   OwnerCollectRewardInfoFields<T>
 >
 
+export type OwnerCollectRewardInfoJSONField<T extends PhantomTypeArgument> = {
+  positionId: string
+  collectedRewardAmt: string
+  feeAmt: string
+}
+
+export type OwnerCollectRewardInfoJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof OwnerCollectRewardInfo.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & OwnerCollectRewardInfoJSONField<T>
+
+/** Event emitted when the position owner collects AMM rewards directly (not trading fees). */
 export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::OwnerCollectRewardInfo`
+  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectRewardInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardInfo')
+  }::position_core_clmm::OwnerCollectRewardInfo` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = OwnerCollectRewardInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof OwnerCollectRewardInfo.$typeName = OwnerCollectRewardInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<
+    T
+  >}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = OwnerCollectRewardInfo.$isPhantom
+  readonly $isPhantom: typeof OwnerCollectRewardInfo.$isPhantom = OwnerCollectRewardInfo.$isPhantom
 
+  /** The ID of the position for which AMM rewards were collected. */
   readonly positionId: ToField<ID>
+  /** The total amount of rewards collected from the AMM (before protocol fees are taken). */
   readonly collectedRewardAmt: ToField<'u64'>
+  /** The protocol fee amount deducted from the collected rewards. */
   readonly feeAmt: ToField<'u64'>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: OwnerCollectRewardInfoFields<T>) {
     this.$fullTypeName = composeSuiType(
       OwnerCollectRewardInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -6854,15 +7843,17 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): OwnerCollectRewardInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = OwnerCollectRewardInfo.bcs
     return {
       typeName: OwnerCollectRewardInfo.$typeName,
       fullTypeName: composeSuiType(
         OwnerCollectRewardInfo.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V3}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: OwnerCollectRewardInfo.$isPhantom,
       reifiedTypeArgs: [T],
@@ -6877,7 +7868,8 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
         OwnerCollectRewardInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectRewardInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => OwnerCollectRewardInfo.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        OwnerCollectRewardInfo.fetch(client, T, id),
       new: (fields: OwnerCollectRewardInfoFields<ToPhantomTypeArgument<T>>) => {
         return new OwnerCollectRewardInfo([extractType(T)], fields)
       },
@@ -6885,16 +7877,17 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
     }
   }
 
-  static get r() {
+  static get r(): typeof OwnerCollectRewardInfo.reified {
     return OwnerCollectRewardInfo.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<OwnerCollectRewardInfo<ToPhantomTypeArgument<T>>>> {
     return phantom(OwnerCollectRewardInfo.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof OwnerCollectRewardInfo.phantom {
     return OwnerCollectRewardInfo.phantom
   }
 
@@ -6917,7 +7910,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     return OwnerCollectRewardInfo.reified(typeArg).new({
       positionId: decodeFromFields(ID.reified(), fields.position_id),
@@ -6928,7 +7921,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     if (!isOwnerCollectRewardInfo(item.type)) {
       throw new Error('not a OwnerCollectRewardInfo type')
@@ -6944,12 +7937,12 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     return OwnerCollectRewardInfo.fromFields(typeArg, OwnerCollectRewardInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): OwnerCollectRewardInfoJSONField<T> {
     return {
       positionId: this.positionId,
       collectedRewardAmt: this.collectedRewardAmt.toString(),
@@ -6957,13 +7950,13 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
     }
   }
 
-  toJSON() {
+  toJSON(): OwnerCollectRewardInfoJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     return OwnerCollectRewardInfo.reified(typeArg).new({
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
@@ -6974,15 +7967,17 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== OwnerCollectRewardInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a OwnerCollectRewardInfo json object: expected '${OwnerCollectRewardInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(OwnerCollectRewardInfo.$typeName, extractType(typeArg)),
+      composeSuiType(OwnerCollectRewardInfo.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return OwnerCollectRewardInfo.fromJSONField(typeArg, json)
@@ -6990,14 +7985,14 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isOwnerCollectRewardInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a OwnerCollectRewardInfo object`
+        `object at ${(content.fields as any).id} is not a OwnerCollectRewardInfo object`,
       )
     }
     return OwnerCollectRewardInfo.fromFieldsWithTypes(typeArg, content)
@@ -7005,7 +8000,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectRewardInfo(data.bcs.type)) {
@@ -7015,41 +8010,56 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return OwnerCollectRewardInfo.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return OwnerCollectRewardInfo.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return OwnerCollectRewardInfo.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<OwnerCollectRewardInfo<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching OwnerCollectRewardInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isOwnerCollectRewardInfo(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isOwnerCollectRewardInfo(res.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectRewardInfo object`)
     }
 
-    return OwnerCollectRewardInfo.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return OwnerCollectRewardInfo.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -7057,11 +8067,17 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
 
 export function isOwnerTakeStashedRewardsInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V3}::position_core_clmm::OwnerTakeStashedRewardsInfo` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerTakeStashedRewardsInfo')
+    }::position_core_clmm::OwnerTakeStashedRewardsInfo` + '<',
+  )
 }
 
 export interface OwnerTakeStashedRewardsInfoFields<T extends PhantomTypeArgument> {
+  /** The ID of the position from which stashed rewards were taken. */
   positionId: ToField<ID>
+  /** The amount of stashed rewards of type `T` that were taken. */
   amount: ToField<'u64'>
 }
 
@@ -7070,29 +8086,47 @@ export type OwnerTakeStashedRewardsInfoReified<T extends PhantomTypeArgument> = 
   OwnerTakeStashedRewardsInfoFields<T>
 >
 
+export type OwnerTakeStashedRewardsInfoJSONField<T extends PhantomTypeArgument> = {
+  positionId: string
+  amount: string
+}
+
+export type OwnerTakeStashedRewardsInfoJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof OwnerTakeStashedRewardsInfo.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & OwnerTakeStashedRewardsInfoJSONField<T>
+
+/** Event emitted when the position owner takes stashed AMM rewards of a specific type from their position. */
 export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::OwnerTakeStashedRewardsInfo`
+  static readonly $typeName: `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerTakeStashedRewardsInfo')
+  }::position_core_clmm::OwnerTakeStashedRewardsInfo` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = OwnerTakeStashedRewardsInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof OwnerTakeStashedRewardsInfo.$typeName =
+    OwnerTakeStashedRewardsInfo.$typeName
+  readonly $fullTypeName:
+    `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = OwnerTakeStashedRewardsInfo.$isPhantom
+  readonly $isPhantom: typeof OwnerTakeStashedRewardsInfo.$isPhantom =
+    OwnerTakeStashedRewardsInfo.$isPhantom
 
+  /** The ID of the position from which stashed rewards were taken. */
   readonly positionId: ToField<ID>
+  /** The amount of stashed rewards of type `T` that were taken. */
   readonly amount: ToField<'u64'>
 
   private constructor(
     typeArgs: [PhantomToTypeStr<T>],
-    fields: OwnerTakeStashedRewardsInfoFields<T>
+    fields: OwnerTakeStashedRewardsInfoFields<T>,
   ) {
     this.$fullTypeName = composeSuiType(
       OwnerTakeStashedRewardsInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -7100,15 +8134,17 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): OwnerTakeStashedRewardsInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = OwnerTakeStashedRewardsInfo.bcs
     return {
       typeName: OwnerTakeStashedRewardsInfo.$typeName,
       fullTypeName: composeSuiType(
         OwnerTakeStashedRewardsInfo.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V3}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: OwnerTakeStashedRewardsInfo.$isPhantom,
       reifiedTypeArgs: [T],
@@ -7125,7 +8161,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
         OwnerTakeStashedRewardsInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerTakeStashedRewardsInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         OwnerTakeStashedRewardsInfo.fetch(client, T, id),
       new: (fields: OwnerTakeStashedRewardsInfoFields<ToPhantomTypeArgument<T>>) => {
         return new OwnerTakeStashedRewardsInfo([extractType(T)], fields)
@@ -7134,16 +8170,17 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
     }
   }
 
-  static get r() {
+  static get r(): typeof OwnerTakeStashedRewardsInfo.reified {
     return OwnerTakeStashedRewardsInfo.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>>>> {
     return phantom(OwnerTakeStashedRewardsInfo.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof OwnerTakeStashedRewardsInfo.phantom {
     return OwnerTakeStashedRewardsInfo.phantom
   }
 
@@ -7166,7 +8203,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     return OwnerTakeStashedRewardsInfo.reified(typeArg).new({
       positionId: decodeFromFields(ID.reified(), fields.position_id),
@@ -7176,7 +8213,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     if (!isOwnerTakeStashedRewardsInfo(item.type)) {
       throw new Error('not a OwnerTakeStashedRewardsInfo type')
@@ -7191,28 +8228,28 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     return OwnerTakeStashedRewardsInfo.fromFields(
       typeArg,
-      OwnerTakeStashedRewardsInfo.bcs.parse(data)
+      OwnerTakeStashedRewardsInfo.bcs.parse(data),
     )
   }
 
-  toJSONField() {
+  toJSONField(): OwnerTakeStashedRewardsInfoJSONField<T> {
     return {
       positionId: this.positionId,
       amount: this.amount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): OwnerTakeStashedRewardsInfoJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     return OwnerTakeStashedRewardsInfo.reified(typeArg).new({
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
@@ -7222,15 +8259,17 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== OwnerTakeStashedRewardsInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a OwnerTakeStashedRewardsInfo json object: expected '${OwnerTakeStashedRewardsInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(OwnerTakeStashedRewardsInfo.$typeName, extractType(typeArg)),
+      composeSuiType(OwnerTakeStashedRewardsInfo.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return OwnerTakeStashedRewardsInfo.fromJSONField(typeArg, json)
@@ -7238,14 +8277,14 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isOwnerTakeStashedRewardsInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a OwnerTakeStashedRewardsInfo object`
+        `object at ${(content.fields as any).id} is not a OwnerTakeStashedRewardsInfo object`,
       )
     }
     return OwnerTakeStashedRewardsInfo.fromFieldsWithTypes(typeArg, content)
@@ -7253,7 +8292,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnerTakeStashedRewardsInfo(data.bcs.type)) {
@@ -7263,46 +8302,56 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return OwnerTakeStashedRewardsInfo.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching OwnerTakeStashedRewardsInfo object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isOwnerTakeStashedRewardsInfo(res.data.bcs.type)
-    ) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isOwnerTakeStashedRewardsInfo(res.type)) {
       throw new Error(`object at id ${id} is not a OwnerTakeStashedRewardsInfo object`)
     }
 
-    return OwnerTakeStashedRewardsInfo.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -7310,36 +8359,56 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
 
 export function isDeletePositionInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::position_core_clmm::DeletePositionInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionInfo')
+    }::position_core_clmm::DeletePositionInfo`
 }
 
 export interface DeletePositionInfoFields {
+  /** The ID of the deleted position. */
   positionId: ToField<ID>
+  /** The ID of the `PositionCap` capability associated with the deleted position. */
   capId: ToField<ID>
 }
 
 export type DeletePositionInfoReified = Reified<DeletePositionInfo, DeletePositionInfoFields>
 
+export type DeletePositionInfoJSONField = {
+  positionId: string
+  capId: string
+}
+
+export type DeletePositionInfoJSON = {
+  $typeName: typeof DeletePositionInfo.$typeName
+  $typeArgs: []
+} & DeletePositionInfoJSONField
+
+/** Event emitted when a leveraged position is deleted. */
 export class DeletePositionInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::DeletePositionInfo`
+  static readonly $typeName: `${string}::position_core_clmm::DeletePositionInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionInfo')
+  }::position_core_clmm::DeletePositionInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeletePositionInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::DeletePositionInfo`
+  readonly $typeName: typeof DeletePositionInfo.$typeName = DeletePositionInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeletePositionInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = DeletePositionInfo.$isPhantom
+  readonly $isPhantom: typeof DeletePositionInfo.$isPhantom = DeletePositionInfo.$isPhantom
 
+  /** The ID of the deleted position. */
   readonly positionId: ToField<ID>
+  /** The ID of the `PositionCap` capability associated with the deleted position. */
   readonly capId: ToField<ID>
 
   private constructor(typeArgs: [], fields: DeletePositionInfoFields) {
     this.$fullTypeName = composeSuiType(
       DeletePositionInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::DeletePositionInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeletePositionInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -7352,8 +8421,8 @@ export class DeletePositionInfo implements StructClass {
       typeName: DeletePositionInfo.$typeName,
       fullTypeName: composeSuiType(
         DeletePositionInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::position_core_clmm::DeletePositionInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeletePositionInfo`,
       typeArgs: [] as [],
       isPhantom: DeletePositionInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -7365,7 +8434,7 @@ export class DeletePositionInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => DeletePositionInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DeletePositionInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeletePositionInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DeletePositionInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DeletePositionInfo.fetch(client, id),
       new: (fields: DeletePositionInfoFields) => {
         return new DeletePositionInfo([], fields)
       },
@@ -7373,14 +8442,15 @@ export class DeletePositionInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeletePositionInfoReified {
     return DeletePositionInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeletePositionInfo>> {
     return phantom(DeletePositionInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeletePositionInfo>> {
     return DeletePositionInfo.phantom()
   }
 
@@ -7422,14 +8492,14 @@ export class DeletePositionInfo implements StructClass {
     return DeletePositionInfo.fromFields(DeletePositionInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DeletePositionInfoJSONField {
     return {
       positionId: this.positionId,
       capId: this.capId,
     }
   }
 
-  toJSON() {
+  toJSON(): DeletePositionInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -7442,7 +8512,9 @@ export class DeletePositionInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeletePositionInfo {
     if (json.$typeName !== DeletePositionInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeletePositionInfo json object: expected '${DeletePositionInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeletePositionInfo.fromJSONField(json)
@@ -7464,26 +8536,23 @@ export class DeletePositionInfo implements StructClass {
         throw new Error(`object at is not a DeletePositionInfo object`)
       }
 
-      return DeletePositionInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeletePositionInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeletePositionInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeletePositionInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DeletePositionInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDeletePositionInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DeletePositionInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeletePositionInfo(res.type)) {
       throw new Error(`object at id ${id} is not a DeletePositionInfo object`)
     }
 
-    return DeletePositionInfo.fromSuiObjectData(res.data)
+    return DeletePositionInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -7491,64 +8560,126 @@ export class DeletePositionInfo implements StructClass {
 
 export function isRebalanceInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_core_clmm::RebalanceInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceInfo')
+    }::position_core_clmm::RebalanceInfo`
 }
 
 export interface RebalanceInfoFields {
+  /** Unique identifier for this rebalancing operation. Used for tracking and auditing. */
   id: ToField<ID>
+  /** ID of the position that was rebalanced */
   positionId: ToField<ID>
+  /** Amount of X tokens collected from AMM fees (before protocol fee deduction) */
   collectedAmmFeeX: ToField<'u64'>
+  /** Amount of Y tokens collected from AMM fees (before protocol fee deduction) */
   collectedAmmFeeY: ToField<'u64'>
+  /** Protocol-specific rewards collected from AMM (before protocol fee deduction) */
   collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  /** Protocol fees taken from collected rewards and fees */
   feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  /** Amount of X tokens taken from extra collateral */
   takenCx: ToField<'u64'>
+  /** Amount of Y tokens taken from extra collateral */
   takenCy: ToField<'u64'>
+  /** Liquidity added to the LP position */
   deltaL: ToField<'u128'>
+  /** Amount of X tokens added to LP position (corresponding to delta_l) */
   deltaX: ToField<'u64'>
+  /** Amount of Y tokens added to LP position (corresponding to delta_l) */
   deltaY: ToField<'u64'>
+  /** Amount of X debt repaid */
   xRepaid: ToField<'u64'>
+  /** Amount of Y debt repaid */
   yRepaid: ToField<'u64'>
+  /** Amount of X tokens added to extra collateral */
   addedCx: ToField<'u64'>
+  /** Amount of Y tokens added to extra collateral */
   addedCy: ToField<'u64'>
+  /** Protocol-specific rewards stashed in position for later owner withdrawal */
   stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
 }
 
 export type RebalanceInfoReified = Reified<RebalanceInfo, RebalanceInfoFields>
 
+export type RebalanceInfoJSONField = {
+  id: string
+  positionId: string
+  collectedAmmFeeX: string
+  collectedAmmFeeY: string
+  collectedAmmRewards: ToJSON<VecMap<TypeName, 'u64'>>
+  feesTaken: ToJSON<VecMap<TypeName, 'u64'>>
+  takenCx: string
+  takenCy: string
+  deltaL: string
+  deltaX: string
+  deltaY: string
+  xRepaid: string
+  yRepaid: string
+  addedCx: string
+  addedCy: string
+  stashedAmmRewards: ToJSON<VecMap<TypeName, 'u64'>>
+}
+
+export type RebalanceInfoJSON = {
+  $typeName: typeof RebalanceInfo.$typeName
+  $typeArgs: []
+} & RebalanceInfoJSONField
+
+/** Comprehensive information about position rebalancing operations. */
 export class RebalanceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_core_clmm::RebalanceInfo`
+  static readonly $typeName: `${string}::position_core_clmm::RebalanceInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceInfo')
+  }::position_core_clmm::RebalanceInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = RebalanceInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
+  readonly $typeName: typeof RebalanceInfo.$typeName = RebalanceInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::RebalanceInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = RebalanceInfo.$isPhantom
+  readonly $isPhantom: typeof RebalanceInfo.$isPhantom = RebalanceInfo.$isPhantom
 
+  /** Unique identifier for this rebalancing operation. Used for tracking and auditing. */
   readonly id: ToField<ID>
+  /** ID of the position that was rebalanced */
   readonly positionId: ToField<ID>
+  /** Amount of X tokens collected from AMM fees (before protocol fee deduction) */
   readonly collectedAmmFeeX: ToField<'u64'>
+  /** Amount of Y tokens collected from AMM fees (before protocol fee deduction) */
   readonly collectedAmmFeeY: ToField<'u64'>
+  /** Protocol-specific rewards collected from AMM (before protocol fee deduction) */
   readonly collectedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
+  /** Protocol fees taken from collected rewards and fees */
   readonly feesTaken: ToField<VecMap<TypeName, 'u64'>>
+  /** Amount of X tokens taken from extra collateral */
   readonly takenCx: ToField<'u64'>
+  /** Amount of Y tokens taken from extra collateral */
   readonly takenCy: ToField<'u64'>
+  /** Liquidity added to the LP position */
   readonly deltaL: ToField<'u128'>
+  /** Amount of X tokens added to LP position (corresponding to delta_l) */
   readonly deltaX: ToField<'u64'>
+  /** Amount of Y tokens added to LP position (corresponding to delta_l) */
   readonly deltaY: ToField<'u64'>
+  /** Amount of X debt repaid */
   readonly xRepaid: ToField<'u64'>
+  /** Amount of Y debt repaid */
   readonly yRepaid: ToField<'u64'>
+  /** Amount of X tokens added to extra collateral */
   readonly addedCx: ToField<'u64'>
+  /** Amount of Y tokens added to extra collateral */
   readonly addedCy: ToField<'u64'>
+  /** Protocol-specific rewards stashed in position for later owner withdrawal */
   readonly stashedAmmRewards: ToField<VecMap<TypeName, 'u64'>>
 
   private constructor(typeArgs: [], fields: RebalanceInfoFields) {
     this.$fullTypeName = composeSuiType(
       RebalanceInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::RebalanceInfo`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -7575,8 +8706,8 @@ export class RebalanceInfo implements StructClass {
       typeName: RebalanceInfo.$typeName,
       fullTypeName: composeSuiType(
         RebalanceInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_core_clmm::RebalanceInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::RebalanceInfo`,
       typeArgs: [] as [],
       isPhantom: RebalanceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -7588,7 +8719,7 @@ export class RebalanceInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => RebalanceInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => RebalanceInfo.fetch(client, id),
       new: (fields: RebalanceInfoFields) => {
         return new RebalanceInfo([], fields)
       },
@@ -7596,14 +8727,15 @@ export class RebalanceInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): RebalanceInfoReified {
     return RebalanceInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<RebalanceInfo>> {
     return phantom(RebalanceInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<RebalanceInfo>> {
     return RebalanceInfo.phantom()
   }
 
@@ -7645,7 +8777,7 @@ export class RebalanceInfo implements StructClass {
       collectedAmmFeeY: decodeFromFields('u64', fields.collected_amm_fee_y),
       collectedAmmRewards: decodeFromFields(
         VecMap.reified(TypeName.reified(), 'u64'),
-        fields.collected_amm_rewards
+        fields.collected_amm_rewards,
       ),
       feesTaken: decodeFromFields(VecMap.reified(TypeName.reified(), 'u64'), fields.fees_taken),
       takenCx: decodeFromFields('u64', fields.taken_cx),
@@ -7659,7 +8791,7 @@ export class RebalanceInfo implements StructClass {
       addedCy: decodeFromFields('u64', fields.added_cy),
       stashedAmmRewards: decodeFromFields(
         VecMap.reified(TypeName.reified(), 'u64'),
-        fields.stashed_amm_rewards
+        fields.stashed_amm_rewards,
       ),
     })
   }
@@ -7676,11 +8808,11 @@ export class RebalanceInfo implements StructClass {
       collectedAmmFeeY: decodeFromFieldsWithTypes('u64', item.fields.collected_amm_fee_y),
       collectedAmmRewards: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.collected_amm_rewards
+        item.fields.collected_amm_rewards,
       ),
       feesTaken: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.fees_taken
+        item.fields.fees_taken,
       ),
       takenCx: decodeFromFieldsWithTypes('u64', item.fields.taken_cx),
       takenCy: decodeFromFieldsWithTypes('u64', item.fields.taken_cy),
@@ -7693,7 +8825,7 @@ export class RebalanceInfo implements StructClass {
       addedCy: decodeFromFieldsWithTypes('u64', item.fields.added_cy),
       stashedAmmRewards: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.stashed_amm_rewards
+        item.fields.stashed_amm_rewards,
       ),
     })
   }
@@ -7702,7 +8834,7 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.fromFields(RebalanceInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): RebalanceInfoJSONField {
     return {
       id: this.id,
       positionId: this.positionId,
@@ -7723,7 +8855,7 @@ export class RebalanceInfo implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): RebalanceInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -7735,7 +8867,7 @@ export class RebalanceInfo implements StructClass {
       collectedAmmFeeY: decodeFromJSONField('u64', field.collectedAmmFeeY),
       collectedAmmRewards: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), 'u64'),
-        field.collectedAmmRewards
+        field.collectedAmmRewards,
       ),
       feesTaken: decodeFromJSONField(VecMap.reified(TypeName.reified(), 'u64'), field.feesTaken),
       takenCx: decodeFromJSONField('u64', field.takenCx),
@@ -7749,14 +8881,16 @@ export class RebalanceInfo implements StructClass {
       addedCy: decodeFromJSONField('u64', field.addedCy),
       stashedAmmRewards: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), 'u64'),
-        field.stashedAmmRewards
+        field.stashedAmmRewards,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): RebalanceInfo {
     if (json.$typeName !== RebalanceInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a RebalanceInfo json object: expected '${RebalanceInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return RebalanceInfo.fromJSONField(json)
@@ -7778,26 +8912,23 @@ export class RebalanceInfo implements StructClass {
         throw new Error(`object at is not a RebalanceInfo object`)
       }
 
-      return RebalanceInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return RebalanceInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return RebalanceInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<RebalanceInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching RebalanceInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isRebalanceInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isRebalanceInfo(res.type)) {
       throw new Error(`object at id ${id} is not a RebalanceInfo object`)
     }
 
-    return RebalanceInfo.fromSuiObjectData(res.data)
+    return RebalanceInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -7805,11 +8936,17 @@ export class RebalanceInfo implements StructClass {
 
 export function isCollectProtocolFeesInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V3}::position_core_clmm::CollectProtocolFeesInfo` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::CollectProtocolFeesInfo')
+    }::position_core_clmm::CollectProtocolFeesInfo` + '<',
+  )
 }
 
 export interface CollectProtocolFeesInfoFields<T extends PhantomTypeArgument> {
+  /** The ID of the position from which protocol fees were collected. */
   positionId: ToField<ID>
+  /** The amount of protocol fees collected (in token T). */
   amount: ToField<'u64'>
 }
 
@@ -7818,26 +8955,43 @@ export type CollectProtocolFeesInfoReified<T extends PhantomTypeArgument> = Reif
   CollectProtocolFeesInfoFields<T>
 >
 
+export type CollectProtocolFeesInfoJSONField<T extends PhantomTypeArgument> = {
+  positionId: string
+  amount: string
+}
+
+export type CollectProtocolFeesInfoJSON<T extends PhantomTypeArgument> = {
+  $typeName: typeof CollectProtocolFeesInfo.$typeName
+  $typeArgs: [PhantomToTypeStr<T>]
+} & CollectProtocolFeesInfoJSONField<T>
+
+/** Event emitted when protocol fees are collected from a position for a specific token type. */
 export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::CollectProtocolFeesInfo`
+  static readonly $typeName: `${string}::position_core_clmm::CollectProtocolFeesInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::CollectProtocolFeesInfo')
+  }::position_core_clmm::CollectProtocolFeesInfo` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = CollectProtocolFeesInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<T>}>`
+  readonly $typeName: typeof CollectProtocolFeesInfo.$typeName = CollectProtocolFeesInfo.$typeName
+  readonly $fullTypeName:
+    `${string}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<T>}>`
   readonly $typeArgs: [PhantomToTypeStr<T>]
-  readonly $isPhantom = CollectProtocolFeesInfo.$isPhantom
+  readonly $isPhantom: typeof CollectProtocolFeesInfo.$isPhantom =
+    CollectProtocolFeesInfo.$isPhantom
 
+  /** The ID of the position from which protocol fees were collected. */
   readonly positionId: ToField<ID>
+  /** The amount of protocol fees collected (in token T). */
   readonly amount: ToField<'u64'>
 
   private constructor(typeArgs: [PhantomToTypeStr<T>], fields: CollectProtocolFeesInfoFields<T>) {
     this.$fullTypeName = composeSuiType(
       CollectProtocolFeesInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<T>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -7845,15 +8999,17 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
   }
 
   static reified<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): CollectProtocolFeesInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = CollectProtocolFeesInfo.bcs
     return {
       typeName: CollectProtocolFeesInfo.$typeName,
       fullTypeName: composeSuiType(
         CollectProtocolFeesInfo.$typeName,
-        ...[extractType(T)]
-      ) as `${typeof PKG_V3}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+        ...[extractType(T)],
+      ) as `${string}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<
+        ToPhantomTypeArgument<T>
+      >}>`,
       typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: CollectProtocolFeesInfo.$isPhantom,
       reifiedTypeArgs: [T],
@@ -7868,7 +9024,8 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
         CollectProtocolFeesInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollectProtocolFeesInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SuiClient, id: string) => CollectProtocolFeesInfo.fetch(client, T, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        CollectProtocolFeesInfo.fetch(client, T, id),
       new: (fields: CollectProtocolFeesInfoFields<ToPhantomTypeArgument<T>>) => {
         return new CollectProtocolFeesInfo([extractType(T)], fields)
       },
@@ -7876,16 +9033,17 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
     }
   }
 
-  static get r() {
+  static get r(): typeof CollectProtocolFeesInfo.reified {
     return CollectProtocolFeesInfo.reified
   }
 
   static phantom<T extends PhantomReified<PhantomTypeArgument>>(
-    T: T
+    T: T,
   ): PhantomReified<ToTypeStr<CollectProtocolFeesInfo<ToPhantomTypeArgument<T>>>> {
     return phantom(CollectProtocolFeesInfo.reified(T))
   }
-  static get p() {
+
+  static get p(): typeof CollectProtocolFeesInfo.phantom {
     return CollectProtocolFeesInfo.phantom
   }
 
@@ -7907,7 +9065,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     return CollectProtocolFeesInfo.reified(typeArg).new({
       positionId: decodeFromFields(ID.reified(), fields.position_id),
@@ -7917,7 +9075,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     if (!isCollectProtocolFeesInfo(item.type)) {
       throw new Error('not a CollectProtocolFeesInfo type')
@@ -7932,25 +9090,25 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: Uint8Array
+    data: Uint8Array,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     return CollectProtocolFeesInfo.fromFields(typeArg, CollectProtocolFeesInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): CollectProtocolFeesInfoJSONField<T> {
     return {
       positionId: this.positionId,
       amount: this.amount.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): CollectProtocolFeesInfoJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    field: any
+    field: any,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     return CollectProtocolFeesInfo.reified(typeArg).new({
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
@@ -7960,15 +9118,17 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== CollectProtocolFeesInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CollectProtocolFeesInfo json object: expected '${CollectProtocolFeesInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(CollectProtocolFeesInfo.$typeName, extractType(typeArg)),
+      composeSuiType(CollectProtocolFeesInfo.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return CollectProtocolFeesInfo.fromJSONField(typeArg, json)
@@ -7976,14 +9136,14 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
     if (!isCollectProtocolFeesInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a CollectProtocolFeesInfo object`
+        `object at ${(content.fields as any).id} is not a CollectProtocolFeesInfo object`,
       )
     }
     return CollectProtocolFeesInfo.fromFieldsWithTypes(typeArg, content)
@@ -7991,7 +9151,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollectProtocolFeesInfo(data.bcs.type)) {
@@ -8001,43 +9161,56 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return CollectProtocolFeesInfo.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return CollectProtocolFeesInfo.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CollectProtocolFeesInfo.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: T,
-    id: string
+    id: string,
   ): Promise<CollectProtocolFeesInfo<ToPhantomTypeArgument<T>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching CollectProtocolFeesInfo object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isCollectProtocolFeesInfo(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCollectProtocolFeesInfo(res.type)) {
       throw new Error(`object at id ${id} is not a CollectProtocolFeesInfo object`)
     }
 
-    return CollectProtocolFeesInfo.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return CollectProtocolFeesInfo.fromBcs(typeArg, res.bcsBytes)
   }
 }
 
@@ -8045,11 +9218,16 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
 
 export function isDeletedPositionCollectedFeesInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V3}::position_core_clmm::DeletedPositionCollectedFeesInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFeesInfo')
+    }::position_core_clmm::DeletedPositionCollectedFeesInfo`
 }
 
 export interface DeletedPositionCollectedFeesInfoFields {
+  /** The ID of the deleted position. */
   positionId: ToField<ID>
+  /** Mapping from token type to amount of fees collected. */
   amounts: ToField<VecMap<TypeName, 'u64'>>
 }
 
@@ -8058,26 +9236,43 @@ export type DeletedPositionCollectedFeesInfoReified = Reified<
   DeletedPositionCollectedFeesInfoFields
 >
 
+export type DeletedPositionCollectedFeesInfoJSONField = {
+  positionId: string
+  amounts: ToJSON<VecMap<TypeName, 'u64'>>
+}
+
+export type DeletedPositionCollectedFeesInfoJSON = {
+  $typeName: typeof DeletedPositionCollectedFeesInfo.$typeName
+  $typeArgs: []
+} & DeletedPositionCollectedFeesInfoJSONField
+
+/** Event emitted when the remaining fees are collected from a position that was previously deleted. */
 export class DeletedPositionCollectedFeesInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V3}::position_core_clmm::DeletedPositionCollectedFeesInfo`
+  static readonly $typeName: `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFeesInfo')
+  }::position_core_clmm::DeletedPositionCollectedFeesInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DeletedPositionCollectedFeesInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFeesInfo`
+  readonly $typeName: typeof DeletedPositionCollectedFeesInfo.$typeName =
+    DeletedPositionCollectedFeesInfo.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = DeletedPositionCollectedFeesInfo.$isPhantom
+  readonly $isPhantom: typeof DeletedPositionCollectedFeesInfo.$isPhantom =
+    DeletedPositionCollectedFeesInfo.$isPhantom
 
+  /** The ID of the deleted position. */
   readonly positionId: ToField<ID>
+  /** Mapping from token type to amount of fees collected. */
   readonly amounts: ToField<VecMap<TypeName, 'u64'>>
 
   private constructor(typeArgs: [], fields: DeletedPositionCollectedFeesInfoFields) {
     this.$fullTypeName = composeSuiType(
       DeletedPositionCollectedFeesInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFeesInfo`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -8090,8 +9285,8 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
       typeName: DeletedPositionCollectedFeesInfo.$typeName,
       fullTypeName: composeSuiType(
         DeletedPositionCollectedFeesInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V3}::position_core_clmm::DeletedPositionCollectedFeesInfo`,
+        ...[],
+      ) as `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo`,
       typeArgs: [] as [],
       isPhantom: DeletedPositionCollectedFeesInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -8108,7 +9303,7 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
         DeletedPositionCollectedFeesInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletedPositionCollectedFeesInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         DeletedPositionCollectedFeesInfo.fetch(client, id),
       new: (fields: DeletedPositionCollectedFeesInfoFields) => {
         return new DeletedPositionCollectedFeesInfo([], fields)
@@ -8117,14 +9312,15 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DeletedPositionCollectedFeesInfoReified {
     return DeletedPositionCollectedFeesInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DeletedPositionCollectedFeesInfo>> {
     return phantom(DeletedPositionCollectedFeesInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DeletedPositionCollectedFeesInfo>> {
     return DeletedPositionCollectedFeesInfo.phantom()
   }
 
@@ -8135,9 +9331,9 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     })
   }
 
-  private static cachedBcs: ReturnType<
-    typeof DeletedPositionCollectedFeesInfo.instantiateBcs
-  > | null = null
+  private static cachedBcs:
+    | ReturnType<typeof DeletedPositionCollectedFeesInfo.instantiateBcs>
+    | null = null
 
   static get bcs(): ReturnType<typeof DeletedPositionCollectedFeesInfo.instantiateBcs> {
     if (!DeletedPositionCollectedFeesInfo.cachedBcs) {
@@ -8162,25 +9358,25 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
       positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
       amounts: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), 'u64'),
-        item.fields.amounts
+        item.fields.amounts,
       ),
     })
   }
 
   static fromBcs(data: Uint8Array): DeletedPositionCollectedFeesInfo {
     return DeletedPositionCollectedFeesInfo.fromFields(
-      DeletedPositionCollectedFeesInfo.bcs.parse(data)
+      DeletedPositionCollectedFeesInfo.bcs.parse(data),
     )
   }
 
-  toJSONField() {
+  toJSONField(): DeletedPositionCollectedFeesInfoJSONField {
     return {
       positionId: this.positionId,
       amounts: this.amounts.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): DeletedPositionCollectedFeesInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -8193,7 +9389,9 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
 
   static fromJSON(json: Record<string, any>): DeletedPositionCollectedFeesInfo {
     if (json.$typeName !== DeletedPositionCollectedFeesInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DeletedPositionCollectedFeesInfo json object: expected '${DeletedPositionCollectedFeesInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DeletedPositionCollectedFeesInfo.fromJSONField(json)
@@ -8205,7 +9403,7 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     }
     if (!isDeletedPositionCollectedFeesInfo(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a DeletedPositionCollectedFeesInfo object`
+        `object at ${(content.fields as any).id} is not a DeletedPositionCollectedFeesInfo object`,
       )
     }
     return DeletedPositionCollectedFeesInfo.fromFieldsWithTypes(content)
@@ -8214,37 +9412,31 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
   static fromSuiObjectData(data: SuiObjectData): DeletedPositionCollectedFeesInfo {
     if (data.bcs) {
       if (
-        data.bcs.dataType !== 'moveObject' ||
-        !isDeletedPositionCollectedFeesInfo(data.bcs.type)
+        data.bcs.dataType !== 'moveObject' || !isDeletedPositionCollectedFeesInfo(data.bcs.type)
       ) {
         throw new Error(`object at is not a DeletedPositionCollectedFeesInfo object`)
       }
 
-      return DeletedPositionCollectedFeesInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DeletedPositionCollectedFeesInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DeletedPositionCollectedFeesInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DeletedPositionCollectedFeesInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching DeletedPositionCollectedFeesInfo object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isDeletedPositionCollectedFeesInfo(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<DeletedPositionCollectedFeesInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDeletedPositionCollectedFeesInfo(res.type)) {
       throw new Error(`object at id ${id} is not a DeletedPositionCollectedFeesInfo object`)
     }
 
-    return DeletedPositionCollectedFeesInfo.fromSuiObjectData(res.data)
+    return DeletedPositionCollectedFeesInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -8252,12 +9444,19 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
 
 export function isBadDebtRepaid(type: string): boolean {
   type = compressSuiType(type)
-  return type.startsWith(`${PKG_V16}::position_core_clmm::BadDebtRepaid` + '<')
+  return type.startsWith(
+    `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::BadDebtRepaid')
+    }::position_core_clmm::BadDebtRepaid` + '<',
+  )
 }
 
 export interface BadDebtRepaidFields<ST extends PhantomTypeArgument> {
+  /** The ID of the position for which bad debt was repaid. */
   positionId: ToField<ID>
+  /** The number of debt shares repaid. */
   sharesRepaid: ToField<'u128'>
+  /** The amount of underlying balance repaid. */
   balanceRepaid: ToField<'u64'>
 }
 
@@ -8266,27 +9465,44 @@ export type BadDebtRepaidReified<ST extends PhantomTypeArgument> = Reified<
   BadDebtRepaidFields<ST>
 >
 
+export type BadDebtRepaidJSONField<ST extends PhantomTypeArgument> = {
+  positionId: string
+  sharesRepaid: string
+  balanceRepaid: string
+}
+
+export type BadDebtRepaidJSON<ST extends PhantomTypeArgument> = {
+  $typeName: typeof BadDebtRepaid.$typeName
+  $typeArgs: [PhantomToTypeStr<ST>]
+} & BadDebtRepaidJSONField<ST>
+
+/** Event emitted when bad debt is repaid for a position. */
 export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V16}::position_core_clmm::BadDebtRepaid`
+  static readonly $typeName: `${string}::position_core_clmm::BadDebtRepaid` = `${
+    getTypeOrigin('kai-leverage', 'position_core_clmm::BadDebtRepaid')
+  }::position_core_clmm::BadDebtRepaid` as const
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
-  readonly $typeName = BadDebtRepaid.$typeName
-  readonly $fullTypeName: `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
+  readonly $typeName: typeof BadDebtRepaid.$typeName = BadDebtRepaid.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
   readonly $typeArgs: [PhantomToTypeStr<ST>]
-  readonly $isPhantom = BadDebtRepaid.$isPhantom
+  readonly $isPhantom: typeof BadDebtRepaid.$isPhantom = BadDebtRepaid.$isPhantom
 
+  /** The ID of the position for which bad debt was repaid. */
   readonly positionId: ToField<ID>
+  /** The number of debt shares repaid. */
   readonly sharesRepaid: ToField<'u128'>
+  /** The amount of underlying balance repaid. */
   readonly balanceRepaid: ToField<'u64'>
 
   private constructor(typeArgs: [PhantomToTypeStr<ST>], fields: BadDebtRepaidFields<ST>) {
     this.$fullTypeName = composeSuiType(
       BadDebtRepaid.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ST>}>`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -8295,15 +9511,17 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
   }
 
   static reified<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): BadDebtRepaidReified<ToPhantomTypeArgument<ST>> {
     const reifiedBcs = BadDebtRepaid.bcs
     return {
       typeName: BadDebtRepaid.$typeName,
       fullTypeName: composeSuiType(
         BadDebtRepaid.$typeName,
-        ...[extractType(ST)]
-      ) as `${typeof PKG_V16}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
+        ...[extractType(ST)],
+      ) as `${string}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<
+        ToPhantomTypeArgument<ST>
+      >}>`,
       typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
       isPhantom: BadDebtRepaid.$isPhantom,
       reifiedTypeArgs: [ST],
@@ -8315,7 +9533,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
       fromJSON: (json: Record<string, any>) => BadDebtRepaid.fromJSON(ST, json),
       fromSuiParsedData: (content: SuiParsedData) => BadDebtRepaid.fromSuiParsedData(ST, content),
       fromSuiObjectData: (content: SuiObjectData) => BadDebtRepaid.fromSuiObjectData(ST, content),
-      fetch: async (client: SuiClient, id: string) => BadDebtRepaid.fetch(client, ST, id),
+      fetch: async (client: SupportedSuiClient, id: string) => BadDebtRepaid.fetch(client, ST, id),
       new: (fields: BadDebtRepaidFields<ToPhantomTypeArgument<ST>>) => {
         return new BadDebtRepaid([extractType(ST)], fields)
       },
@@ -8323,16 +9541,17 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  static get r() {
+  static get r(): typeof BadDebtRepaid.reified {
     return BadDebtRepaid.reified
   }
 
   static phantom<ST extends PhantomReified<PhantomTypeArgument>>(
-    ST: ST
+    ST: ST,
   ): PhantomReified<ToTypeStr<BadDebtRepaid<ToPhantomTypeArgument<ST>>>> {
     return phantom(BadDebtRepaid.reified(ST))
   }
-  static get p() {
+
+  static get p(): typeof BadDebtRepaid.phantom {
     return BadDebtRepaid.phantom
   }
 
@@ -8355,7 +9574,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromFields<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    fields: Record<string, any>
+    fields: Record<string, any>,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     return BadDebtRepaid.reified(typeArg).new({
       positionId: decodeFromFields(ID.reified(), fields.position_id),
@@ -8366,7 +9585,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromFieldsWithTypes<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    item: FieldsWithTypes
+    item: FieldsWithTypes,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     if (!isBadDebtRepaid(item.type)) {
       throw new Error('not a BadDebtRepaid type')
@@ -8382,12 +9601,12 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromBcs<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: Uint8Array
+    data: Uint8Array,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     return BadDebtRepaid.fromFields(typeArg, BadDebtRepaid.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): BadDebtRepaidJSONField<ST> {
     return {
       positionId: this.positionId,
       sharesRepaid: this.sharesRepaid.toString(),
@@ -8395,13 +9614,13 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  toJSON() {
+  toJSON(): BadDebtRepaidJSON<ST> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    field: any
+    field: any,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     return BadDebtRepaid.reified(typeArg).new({
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
@@ -8412,15 +9631,17 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromJSON<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    json: Record<string, any>
+    json: Record<string, any>,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     if (json.$typeName !== BadDebtRepaid.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a BadDebtRepaid json object: expected '${BadDebtRepaid.$typeName}' but got '${json.$typeName}'`,
+      )
     }
     assertReifiedTypeArgsMatch(
-      composeSuiType(BadDebtRepaid.$typeName, extractType(typeArg)),
+      composeSuiType(BadDebtRepaid.$typeName, ...[extractType(typeArg)]),
       json.$typeArgs,
-      [typeArg]
+      [typeArg],
     )
 
     return BadDebtRepaid.fromJSONField(typeArg, json)
@@ -8428,7 +9649,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    content: SuiParsedData
+    content: SuiParsedData,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -8441,7 +9662,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
 
   static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
-    data: SuiObjectData
+    data: SuiObjectData,
   ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBadDebtRepaid(data.bcs.type)) {
@@ -8451,40 +9672,55 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
       const gotTypeArgs = parseTypeName(data.bcs.type).typeArgs
       if (gotTypeArgs.length !== 1) {
         throw new Error(
-          `type argument mismatch: expected 1 type argument but got '${gotTypeArgs.length}'`
+          `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
         )
       }
-      const gotTypeArg = compressSuiType(gotTypeArgs[0])
-      const expectedTypeArg = compressSuiType(extractType(typeArg))
-      if (gotTypeArg !== compressSuiType(extractType(typeArg))) {
-        throw new Error(
-          `type argument mismatch: expected '${expectedTypeArg}' but got '${gotTypeArg}'`
-        )
+      for (let i = 0; i < 1; i++) {
+        const gotTypeArg = compressSuiType(gotTypeArgs[i])
+        const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+        if (gotTypeArg !== expectedTypeArg) {
+          throw new Error(
+            `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+          )
+        }
       }
 
-      return BadDebtRepaid.fromBcs(typeArg, fromB64(data.bcs.bcsBytes))
+      return BadDebtRepaid.fromBcs(typeArg, fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return BadDebtRepaid.fromSuiParsedData(typeArg, data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
   static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
-    client: SuiClient,
+    client: SupportedSuiClient,
     typeArg: ST,
-    id: string
+    id: string,
   ): Promise<BadDebtRepaid<ToPhantomTypeArgument<ST>>> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching BadDebtRepaid object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isBadDebtRepaid(res.data.bcs.type)) {
+    const res = await fetchObjectBcs(client, id)
+    if (!isBadDebtRepaid(res.type)) {
       throw new Error(`object at id ${id} is not a BadDebtRepaid object`)
     }
 
-    return BadDebtRepaid.fromSuiObjectData(typeArg, res.data)
+    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BadDebtRepaid.fromBcs(typeArg, res.bcsBytes)
   }
 }

@@ -1,0 +1,10 @@
+import { StructClassLoader } from '../../_framework/loader'
+import * as i128 from './i128/structs'
+import * as i32 from './i32/structs'
+import * as i64 from './i64/structs'
+
+export function registerClasses(loader: StructClassLoader): void {
+  loader.register(i128.I128)
+  loader.register(i32.I32)
+  loader.register(i64.I64)
+}

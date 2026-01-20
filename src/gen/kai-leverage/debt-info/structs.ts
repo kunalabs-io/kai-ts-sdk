@@ -1,28 +1,41 @@
+/**
+ * Debt information for a `SupplyPool` lending facility. Can contain
+ * debt information for multiple share types for the same lending facility.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { TypeName } from '../../move-stdlib/type-name/structs'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
+import { TypeName } from '../../std/type-name/structs'
 import { ID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== DebtInfoEntry =============================== */
 
 export function isDebtInfoEntry(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_info::DebtInfoEntry`
+  return type
+    === `${getTypeOrigin('kai-leverage', 'debt_info::DebtInfoEntry')}::debt_info::DebtInfoEntry`
 }
 
 export interface DebtInfoEntryFields {
@@ -32,17 +45,30 @@ export interface DebtInfoEntryFields {
 
 export type DebtInfoEntryReified = Reified<DebtInfoEntry, DebtInfoEntryFields>
 
+export type DebtInfoEntryJSONField = {
+  supplyX64: string
+  liabilityValueX64: string
+}
+
+export type DebtInfoEntryJSON = {
+  $typeName: typeof DebtInfoEntry.$typeName
+  $typeArgs: []
+} & DebtInfoEntryJSONField
+
+/** Entry containing debt information for a specific share type. */
 export class DebtInfoEntry implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_info::DebtInfoEntry`
+  static readonly $typeName: `${string}::debt_info::DebtInfoEntry` = `${
+    getTypeOrigin('kai-leverage', 'debt_info::DebtInfoEntry')
+  }::debt_info::DebtInfoEntry` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DebtInfoEntry.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_info::DebtInfoEntry`
+  readonly $typeName: typeof DebtInfoEntry.$typeName = DebtInfoEntry.$typeName
+  readonly $fullTypeName: `${string}::debt_info::DebtInfoEntry`
   readonly $typeArgs: []
-  readonly $isPhantom = DebtInfoEntry.$isPhantom
+  readonly $isPhantom: typeof DebtInfoEntry.$isPhantom = DebtInfoEntry.$isPhantom
 
   readonly supplyX64: ToField<'u128'>
   readonly liabilityValueX64: ToField<'u128'>
@@ -50,8 +76,8 @@ export class DebtInfoEntry implements StructClass {
   private constructor(typeArgs: [], fields: DebtInfoEntryFields) {
     this.$fullTypeName = composeSuiType(
       DebtInfoEntry.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`
+      ...typeArgs,
+    ) as `${string}::debt_info::DebtInfoEntry`
     this.$typeArgs = typeArgs
 
     this.supplyX64 = fields.supplyX64
@@ -64,8 +90,8 @@ export class DebtInfoEntry implements StructClass {
       typeName: DebtInfoEntry.$typeName,
       fullTypeName: composeSuiType(
         DebtInfoEntry.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::debt_info::DebtInfoEntry`,
+        ...[],
+      ) as `${string}::debt_info::DebtInfoEntry`,
       typeArgs: [] as [],
       isPhantom: DebtInfoEntry.$isPhantom,
       reifiedTypeArgs: [],
@@ -77,7 +103,7 @@ export class DebtInfoEntry implements StructClass {
       fromJSON: (json: Record<string, any>) => DebtInfoEntry.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DebtInfoEntry.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DebtInfoEntry.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DebtInfoEntry.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DebtInfoEntry.fetch(client, id),
       new: (fields: DebtInfoEntryFields) => {
         return new DebtInfoEntry([], fields)
       },
@@ -85,14 +111,15 @@ export class DebtInfoEntry implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DebtInfoEntryReified {
     return DebtInfoEntry.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DebtInfoEntry>> {
     return phantom(DebtInfoEntry.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DebtInfoEntry>> {
     return DebtInfoEntry.phantom()
   }
 
@@ -134,14 +161,14 @@ export class DebtInfoEntry implements StructClass {
     return DebtInfoEntry.fromFields(DebtInfoEntry.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DebtInfoEntryJSONField {
     return {
       supplyX64: this.supplyX64.toString(),
       liabilityValueX64: this.liabilityValueX64.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): DebtInfoEntryJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -154,7 +181,9 @@ export class DebtInfoEntry implements StructClass {
 
   static fromJSON(json: Record<string, any>): DebtInfoEntry {
     if (json.$typeName !== DebtInfoEntry.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DebtInfoEntry json object: expected '${DebtInfoEntry.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DebtInfoEntry.fromJSONField(json)
@@ -176,26 +205,23 @@ export class DebtInfoEntry implements StructClass {
         throw new Error(`object at is not a DebtInfoEntry object`)
       }
 
-      return DebtInfoEntry.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DebtInfoEntry.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DebtInfoEntry.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DebtInfoEntry> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DebtInfoEntry object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtInfoEntry(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DebtInfoEntry> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDebtInfoEntry(res.type)) {
       throw new Error(`object at id ${id} is not a DebtInfoEntry object`)
     }
 
-    return DebtInfoEntry.fromSuiObjectData(res.data)
+    return DebtInfoEntry.fromBcs(res.bcsBytes)
   }
 }
 
@@ -203,7 +229,7 @@ export class DebtInfoEntry implements StructClass {
 
 export function isDebtInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_info::DebtInfo`
+  return type === `${getTypeOrigin('kai-leverage', 'debt_info::DebtInfo')}::debt_info::DebtInfo`
 }
 
 export interface DebtInfoFields {
@@ -213,17 +239,30 @@ export interface DebtInfoFields {
 
 export type DebtInfoReified = Reified<DebtInfo, DebtInfoFields>
 
+export type DebtInfoJSONField = {
+  facilId: string
+  map: ToJSON<VecMap<TypeName, DebtInfoEntry>>
+}
+
+export type DebtInfoJSON = {
+  $typeName: typeof DebtInfo.$typeName
+  $typeArgs: []
+} & DebtInfoJSONField
+
+/** Collection of debt information for a lending facility. */
 export class DebtInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_info::DebtInfo`
+  static readonly $typeName: `${string}::debt_info::DebtInfo` = `${
+    getTypeOrigin('kai-leverage', 'debt_info::DebtInfo')
+  }::debt_info::DebtInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = DebtInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_info::DebtInfo`
+  readonly $typeName: typeof DebtInfo.$typeName = DebtInfo.$typeName
+  readonly $fullTypeName: `${string}::debt_info::DebtInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = DebtInfo.$isPhantom
+  readonly $isPhantom: typeof DebtInfo.$isPhantom = DebtInfo.$isPhantom
 
   readonly facilId: ToField<ID>
   readonly map: ToField<VecMap<TypeName, DebtInfoEntry>>
@@ -231,8 +270,8 @@ export class DebtInfo implements StructClass {
   private constructor(typeArgs: [], fields: DebtInfoFields) {
     this.$fullTypeName = composeSuiType(
       DebtInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_info::DebtInfo`
+      ...typeArgs,
+    ) as `${string}::debt_info::DebtInfo`
     this.$typeArgs = typeArgs
 
     this.facilId = fields.facilId
@@ -245,8 +284,8 @@ export class DebtInfo implements StructClass {
       typeName: DebtInfo.$typeName,
       fullTypeName: composeSuiType(
         DebtInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::debt_info::DebtInfo`,
+        ...[],
+      ) as `${string}::debt_info::DebtInfo`,
       typeArgs: [] as [],
       isPhantom: DebtInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -258,7 +297,7 @@ export class DebtInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => DebtInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => DebtInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DebtInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => DebtInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => DebtInfo.fetch(client, id),
       new: (fields: DebtInfoFields) => {
         return new DebtInfo([], fields)
       },
@@ -266,14 +305,15 @@ export class DebtInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): DebtInfoReified {
     return DebtInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<DebtInfo>> {
     return phantom(DebtInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<DebtInfo>> {
     return DebtInfo.phantom()
   }
 
@@ -298,7 +338,7 @@ export class DebtInfo implements StructClass {
       facilId: decodeFromFields(ID.reified(), fields.facil_id),
       map: decodeFromFields(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        fields.map
+        fields.map,
       ),
     })
   }
@@ -312,7 +352,7 @@ export class DebtInfo implements StructClass {
       facilId: decodeFromFieldsWithTypes(ID.reified(), item.fields.facil_id),
       map: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        item.fields.map
+        item.fields.map,
       ),
     })
   }
@@ -321,14 +361,14 @@ export class DebtInfo implements StructClass {
     return DebtInfo.fromFields(DebtInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): DebtInfoJSONField {
     return {
       facilId: this.facilId,
       map: this.map.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): DebtInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -337,14 +377,16 @@ export class DebtInfo implements StructClass {
       facilId: decodeFromJSONField(ID.reified(), field.facilId),
       map: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        field.map
+        field.map,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): DebtInfo {
     if (json.$typeName !== DebtInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a DebtInfo json object: expected '${DebtInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return DebtInfo.fromJSONField(json)
@@ -366,26 +408,23 @@ export class DebtInfo implements StructClass {
         throw new Error(`object at is not a DebtInfo object`)
       }
 
-      return DebtInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return DebtInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return DebtInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<DebtInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching DebtInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isDebtInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<DebtInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isDebtInfo(res.type)) {
       throw new Error(`object at id ${id} is not a DebtInfo object`)
     }
 
-    return DebtInfo.fromSuiObjectData(res.data)
+    return DebtInfo.fromBcs(res.bcsBytes)
   }
 }
 
@@ -393,7 +432,10 @@ export class DebtInfo implements StructClass {
 
 export function isValidatedDebtInfo(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::debt_info::ValidatedDebtInfo`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'debt_info::ValidatedDebtInfo')
+    }::debt_info::ValidatedDebtInfo`
 }
 
 export interface ValidatedDebtInfoFields {
@@ -402,25 +444,40 @@ export interface ValidatedDebtInfoFields {
 
 export type ValidatedDebtInfoReified = Reified<ValidatedDebtInfo, ValidatedDebtInfoFields>
 
+export type ValidatedDebtInfoJSONField = {
+  map: ToJSON<VecMap<TypeName, DebtInfoEntry>>
+}
+
+export type ValidatedDebtInfoJSON = {
+  $typeName: typeof ValidatedDebtInfo.$typeName
+  $typeArgs: []
+} & ValidatedDebtInfoJSONField
+
+/**
+ * Validated debt information ready for calculations. Extra percausion to ensure
+ * the info is for the expected lending facility.
+ */
 export class ValidatedDebtInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::debt_info::ValidatedDebtInfo`
+  static readonly $typeName: `${string}::debt_info::ValidatedDebtInfo` = `${
+    getTypeOrigin('kai-leverage', 'debt_info::ValidatedDebtInfo')
+  }::debt_info::ValidatedDebtInfo` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = ValidatedDebtInfo.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::debt_info::ValidatedDebtInfo`
+  readonly $typeName: typeof ValidatedDebtInfo.$typeName = ValidatedDebtInfo.$typeName
+  readonly $fullTypeName: `${string}::debt_info::ValidatedDebtInfo`
   readonly $typeArgs: []
-  readonly $isPhantom = ValidatedDebtInfo.$isPhantom
+  readonly $isPhantom: typeof ValidatedDebtInfo.$isPhantom = ValidatedDebtInfo.$isPhantom
 
   readonly map: ToField<VecMap<TypeName, DebtInfoEntry>>
 
   private constructor(typeArgs: [], fields: ValidatedDebtInfoFields) {
     this.$fullTypeName = composeSuiType(
       ValidatedDebtInfo.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::debt_info::ValidatedDebtInfo`
+      ...typeArgs,
+    ) as `${string}::debt_info::ValidatedDebtInfo`
     this.$typeArgs = typeArgs
 
     this.map = fields.map
@@ -432,8 +489,8 @@ export class ValidatedDebtInfo implements StructClass {
       typeName: ValidatedDebtInfo.$typeName,
       fullTypeName: composeSuiType(
         ValidatedDebtInfo.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::debt_info::ValidatedDebtInfo`,
+        ...[],
+      ) as `${string}::debt_info::ValidatedDebtInfo`,
       typeArgs: [] as [],
       isPhantom: ValidatedDebtInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -445,7 +502,7 @@ export class ValidatedDebtInfo implements StructClass {
       fromJSON: (json: Record<string, any>) => ValidatedDebtInfo.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => ValidatedDebtInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ValidatedDebtInfo.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => ValidatedDebtInfo.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => ValidatedDebtInfo.fetch(client, id),
       new: (fields: ValidatedDebtInfoFields) => {
         return new ValidatedDebtInfo([], fields)
       },
@@ -453,14 +510,15 @@ export class ValidatedDebtInfo implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): ValidatedDebtInfoReified {
     return ValidatedDebtInfo.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<ValidatedDebtInfo>> {
     return phantom(ValidatedDebtInfo.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<ValidatedDebtInfo>> {
     return ValidatedDebtInfo.phantom()
   }
 
@@ -483,7 +541,7 @@ export class ValidatedDebtInfo implements StructClass {
     return ValidatedDebtInfo.reified().new({
       map: decodeFromFields(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        fields.map
+        fields.map,
       ),
     })
   }
@@ -496,7 +554,7 @@ export class ValidatedDebtInfo implements StructClass {
     return ValidatedDebtInfo.reified().new({
       map: decodeFromFieldsWithTypes(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        item.fields.map
+        item.fields.map,
       ),
     })
   }
@@ -505,13 +563,13 @@ export class ValidatedDebtInfo implements StructClass {
     return ValidatedDebtInfo.fromFields(ValidatedDebtInfo.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): ValidatedDebtInfoJSONField {
     return {
       map: this.map.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): ValidatedDebtInfoJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -519,14 +577,16 @@ export class ValidatedDebtInfo implements StructClass {
     return ValidatedDebtInfo.reified().new({
       map: decodeFromJSONField(
         VecMap.reified(TypeName.reified(), DebtInfoEntry.reified()),
-        field.map
+        field.map,
       ),
     })
   }
 
   static fromJSON(json: Record<string, any>): ValidatedDebtInfo {
     if (json.$typeName !== ValidatedDebtInfo.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a ValidatedDebtInfo json object: expected '${ValidatedDebtInfo.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return ValidatedDebtInfo.fromJSONField(json)
@@ -548,25 +608,22 @@ export class ValidatedDebtInfo implements StructClass {
         throw new Error(`object at is not a ValidatedDebtInfo object`)
       }
 
-      return ValidatedDebtInfo.fromBcs(fromB64(data.bcs.bcsBytes))
+      return ValidatedDebtInfo.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return ValidatedDebtInfo.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<ValidatedDebtInfo> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching ValidatedDebtInfo object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isValidatedDebtInfo(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ValidatedDebtInfo> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isValidatedDebtInfo(res.type)) {
       throw new Error(`object at id ${id} is not a ValidatedDebtInfo object`)
     }
 
-    return ValidatedDebtInfo.fromSuiObjectData(res.data)
+    return ValidatedDebtInfo.fromBcs(res.bcsBytes)
   }
 }

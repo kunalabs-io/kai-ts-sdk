@@ -1,102 +1,208 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
-export function init(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::init`, arguments: [] })
-}
-
-export function new_(tx: Transaction) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::new`, arguments: [] })
-}
-
-export function rewarders(tx: Transaction, manager: TransactionObjectInput) {
+/**
+ * init the `RewarderGlobalVault`
+ * * `ctx` - The transaction context
+ */
+export function init(tx: Transaction): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewarders`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::init`,
+    arguments: [],
+  })
+}
+
+/**
+ * initialize the `RewarderManager`.
+ * * Returns the new `RewarderManager`
+ */
+export function new_(tx: Transaction): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::new`,
+    arguments: [],
+  })
+}
+
+/**
+ * get the rewarders
+ * * `manager` - The `RewarderManager`
+ * * Returns the rewarders
+ */
+export function rewarders(tx: Transaction, manager: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::rewarders`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function rewardsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
+/**
+ * get the reward_growth_globals
+ * * `manager` - The `RewarderManager`
+ * * Returns the reward growth globals
+ */
+export function rewardsGrowthGlobal(
+  tx: Transaction,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewards_growth_global`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::rewards_growth_global`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function pointsReleased(tx: Transaction, manager: TransactionObjectInput) {
+/**
+ * get the points_released
+ * * `manager` - The `RewarderManager`
+ * * Returns the points released
+ */
+export function pointsReleased(
+  tx: Transaction,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::points_released`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::points_released`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function pointsGrowthGlobal(tx: Transaction, manager: TransactionObjectInput) {
+/**
+ * get the points_growth_global
+ * * `manager` - The `RewarderManager`
+ * * Returns the points growth global
+ */
+export function pointsGrowthGlobal(
+  tx: Transaction,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::points_growth_global`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::points_growth_global`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function lastUpdateTime(tx: Transaction, manager: TransactionObjectInput) {
+/**
+ * get the last_updated_time
+ * * `manager` - The `RewarderManager`
+ * * Returns the last updated time
+ */
+export function lastUpdateTime(
+  tx: Transaction,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::last_update_time`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::last_update_time`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function rewardCoin(tx: Transaction, rewarder: TransactionObjectInput) {
+/**
+ * get the rewarder coin Type.
+ * * `rewarder` - The `Rewarder`
+ * * Returns the rewarder coin type
+ */
+export function rewardCoin(tx: Transaction, rewarder: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::reward_coin`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::reward_coin`,
     arguments: [obj(tx, rewarder)],
   })
 }
 
-export function emissionsPerSecond(tx: Transaction, rewarder: TransactionObjectInput) {
+/**
+ * get the rewarder emissions_per_second.
+ * * `rewarder` - The `Rewarder`
+ * * Returns the rewarder emissions per second
+ */
+export function emissionsPerSecond(
+  tx: Transaction,
+  rewarder: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::emissions_per_second`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::emissions_per_second`,
     arguments: [obj(tx, rewarder)],
   })
 }
 
-export function growthGlobal(tx: Transaction, rewarder: TransactionObjectInput) {
+/**
+ * get the rewarder growth_global.
+ * * `rewarder` - The `Rewarder`
+ * * Returns the rewarder growth global
+ */
+export function growthGlobal(tx: Transaction, rewarder: TransactionObjectInput): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::growth_global`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::growth_global`,
     arguments: [obj(tx, rewarder)],
   })
 }
 
-export function rewarderIndex(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
+/**
+ * Get index of CoinType in `RewarderManager`, if not exists, return `None`
+ * * `manager` - The `RewarderManager`
+ * * Returns the index of the rewarder
+ */
+export function rewarderIndex(
+  tx: Transaction,
+  typeArg: string,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::rewarder_index`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::rewarder_index`,
     typeArguments: [typeArg],
     arguments: [obj(tx, manager)],
   })
 }
 
-export function borrowRewarder(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
+/**
+ * Borrow `Rewarder` from `RewarderManager`
+ * * `manager` - The `RewarderManager`
+ * * Returns the rewarder
+ */
+export function borrowRewarder(
+  tx: Transaction,
+  typeArg: string,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::borrow_rewarder`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::borrow_rewarder`,
     typeArguments: [typeArg],
     arguments: [obj(tx, manager)],
   })
 }
 
+/**
+ * Borrow mutable `Rewarder` from `RewarderManager`
+ * * `manager` - The `RewarderManager`
+ * * Returns the mutable rewarder
+ */
 export function borrowMutRewarder(
   tx: Transaction,
   typeArg: string,
-  manager: TransactionObjectInput
-) {
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::borrow_mut_rewarder`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::borrow_mut_rewarder`,
     typeArguments: [typeArg],
     arguments: [obj(tx, manager)],
   })
 }
 
-export function addRewarder(tx: Transaction, typeArg: string, manager: TransactionObjectInput) {
+/**
+ * Add rewarder into `RewarderManager`
+ * Only support at most REWARDER_NUM rewarders.
+ * * `manager` - The `RewarderManager`
+ */
+export function addRewarder(
+  tx: Transaction,
+  typeArg: string,
+  manager: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::add_rewarder`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::add_rewarder`,
     typeArguments: [typeArg],
     arguments: [obj(tx, manager)],
   })
@@ -108,9 +214,17 @@ export interface SettleArgs {
   timestamp: bigint | TransactionArgument
 }
 
-export function settle(tx: Transaction, args: SettleArgs) {
+/**
+ * Settle the reward.
+ * Update the last_updated_time, the growth_global of each rewarder and points_growth_global.
+ * Settlement is needed when swap, modify position liquidity, update emission speed.
+ * * `manager` - The `RewarderManager`
+ * * `liquidity` - The liquidity of the pool
+ * * `timestamp` - The timestamp
+ */
+export function settle(tx: Transaction, args: SettleArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::settle`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::settle`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.liquidity, `u128`),
@@ -127,9 +241,25 @@ export interface UpdateEmissionArgs {
   timestamp: bigint | TransactionArgument
 }
 
-export function updateEmission(tx: Transaction, typeArg: string, args: UpdateEmissionArgs) {
+/**
+ * Update the reward emission speed.
+ * The reward balance at least enough for one day should in `RewarderGlobalVault` when the emission speed is not zero.
+ * The reward settlement is needed when update the emission speed.
+ * emissions_per_second is Q64.X64
+ * Params
+ * - `vault`: `RewarderGlobalVault`
+ * - `manager`: `RewarderManager`
+ * - `liquidity`: The current pool liquidity.
+ * - `emissions_per_second`: The emission speed
+ * - `timestamp`: The timestamp
+ */
+export function updateEmission(
+  tx: Transaction,
+  typeArg: string,
+  args: UpdateEmissionArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::update_emission`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::update_emission`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.vault),
@@ -146,11 +276,25 @@ export interface WithdrawRewardArgs {
   amount: bigint | TransactionArgument
 }
 
-export function withdrawReward(tx: Transaction, typeArg: string, args: WithdrawRewardArgs) {
+/**
+ * Withdraw Reward from `RewarderGlobalVault`
+ * This method is used for claim reward in pool and emergent_withdraw.
+ * * `vault` - The `RewarderGlobalVault`
+ * * `amount` - The amount of reward coin to withdraw
+ * * Returns the balance of the reward coin
+ */
+export function withdrawReward(
+  tx: Transaction,
+  typeArg: string,
+  args: WithdrawRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::withdraw_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::withdraw_reward`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.vault), pure(tx, args.amount, `u64`)],
+    arguments: [
+      obj(tx, args.vault),
+      pure(tx, args.amount, `u64`),
+    ],
   })
 }
 
@@ -160,11 +304,26 @@ export interface DepositRewardArgs {
   balance: TransactionObjectInput
 }
 
-export function depositReward(tx: Transaction, typeArg: string, args: DepositRewardArgs) {
+/**
+ * Deposit Reward into `RewarderGlobalVault`
+ * * `config` - The global config
+ * * `vault` - The `RewarderGlobalVault`
+ * * `balance` - The balance of the reward coin
+ * * Returns the amount of reward coin deposited
+ */
+export function depositReward(
+  tx: Transaction,
+  typeArg: string,
+  args: DepositRewardArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::deposit_reward`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::deposit_reward`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.config), obj(tx, args.vault), obj(tx, args.balance)],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.vault),
+      obj(tx, args.balance),
+    ],
   })
 }
 
@@ -175,9 +334,21 @@ export interface EmergentWithdrawArgs {
   amount: bigint | TransactionArgument
 }
 
-export function emergentWithdraw(tx: Transaction, typeArg: string, args: EmergentWithdrawArgs) {
+/**
+ * Withdraw reward Balance of CoinType from vault by the protocol `AdminCap`.
+ * This function is only used for emergency.
+ * * `config` - The global config
+ * * `vault` - The `RewarderGlobalVault`
+ * * `amount` - The amount of reward coin to withdraw
+ * * Returns the balance of the reward coin
+ */
+export function emergentWithdraw(
+  tx: Transaction,
+  typeArg: string,
+  args: EmergentWithdrawArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::emergent_withdraw`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::emergent_withdraw`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.adminCap),
@@ -188,13 +359,30 @@ export function emergentWithdraw(tx: Transaction, typeArg: string, args: Emergen
   })
 }
 
-export function balances(tx: Transaction, vault: TransactionObjectInput) {
-  return tx.moveCall({ target: `${PUBLISHED_AT}::rewarder::balances`, arguments: [obj(tx, vault)] })
+/**
+ * Get the balances in vault.
+ * * `vault` - The `RewarderGlobalVault`
+ * * Returns the balances
+ */
+export function balances(tx: Transaction, vault: TransactionObjectInput): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::balances`,
+    arguments: [obj(tx, vault)],
+  })
 }
 
-export function balanceOf(tx: Transaction, typeArg: string, vault: TransactionObjectInput) {
+/**
+ * Get the balance value of CoinType in vault.
+ * * `vault` - The `RewarderGlobalVault`
+ * * Returns the balance value of the reward coin
+ */
+export function balanceOf(
+  tx: Transaction,
+  typeArg: string,
+  vault: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::rewarder::balance_of`,
+    target: `${getPublishedAt('cetus-clmm')}::rewarder::balance_of`,
     typeArguments: [typeArg],
     arguments: [obj(tx, vault)],
   })

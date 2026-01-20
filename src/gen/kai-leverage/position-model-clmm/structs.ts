@@ -1,25 +1,51 @@
+/**
+ * Mathematical model for leveraged CLMM position analysis implementing formal theoretical guarantees.
+ *
+ * This module implements the mathematical framework from "Concentrated Liquidity with Leverage"
+ * ([arXiv:2409.12803](https://arxiv.org/pdf/2409.12803)), providing analytical functions for position
+ * valuation, risk assessment, and safety validation with formal mathematical proofs.
+ *
+ * ## Theoretical Foundation
+ *
+ * The module implements key mathematical concepts from the paper:
+ * - **Position Value**: V_pos(P) = L·f(P, p_a, p_b) where f varies by price range
+ * - **Asset Value**: A(P) = V_pos(P) + x_C·P + y_C (total position assets)
+ * - **Debt Value**: D(P) = x_D·P + y_D (linear debt evolution)
+ * - **Margin Function**: M(P) = A(P)/D(P) with proven monotonicity properties
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== PositionModel =============================== */
 
 export function isPositionModel(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::position_model_clmm::PositionModel`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_model_clmm::PositionModel')
+    }::position_model_clmm::PositionModel`
 }
 
 export interface PositionModelFields {
@@ -34,17 +60,35 @@ export interface PositionModelFields {
 
 export type PositionModelReified = Reified<PositionModel, PositionModelFields>
 
+export type PositionModelJSONField = {
+  sqrtPaX64: string
+  sqrtPbX64: string
+  l: string
+  cx: string
+  cy: string
+  dx: string
+  dy: string
+}
+
+export type PositionModelJSON = {
+  $typeName: typeof PositionModel.$typeName
+  $typeArgs: []
+} & PositionModelJSONField
+
+/** Immutable snapshot of a position's parameters. */
 export class PositionModel implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::position_model_clmm::PositionModel`
+  static readonly $typeName: `${string}::position_model_clmm::PositionModel` = `${
+    getTypeOrigin('kai-leverage', 'position_model_clmm::PositionModel')
+  }::position_model_clmm::PositionModel` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PositionModel.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::position_model_clmm::PositionModel`
+  readonly $typeName: typeof PositionModel.$typeName = PositionModel.$typeName
+  readonly $fullTypeName: `${string}::position_model_clmm::PositionModel`
   readonly $typeArgs: []
-  readonly $isPhantom = PositionModel.$isPhantom
+  readonly $isPhantom: typeof PositionModel.$isPhantom = PositionModel.$isPhantom
 
   readonly sqrtPaX64: ToField<'u128'>
   readonly sqrtPbX64: ToField<'u128'>
@@ -57,8 +101,8 @@ export class PositionModel implements StructClass {
   private constructor(typeArgs: [], fields: PositionModelFields) {
     this.$fullTypeName = composeSuiType(
       PositionModel.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::position_model_clmm::PositionModel`
+      ...typeArgs,
+    ) as `${string}::position_model_clmm::PositionModel`
     this.$typeArgs = typeArgs
 
     this.sqrtPaX64 = fields.sqrtPaX64
@@ -76,8 +120,8 @@ export class PositionModel implements StructClass {
       typeName: PositionModel.$typeName,
       fullTypeName: composeSuiType(
         PositionModel.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::position_model_clmm::PositionModel`,
+        ...[],
+      ) as `${string}::position_model_clmm::PositionModel`,
       typeArgs: [] as [],
       isPhantom: PositionModel.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,7 +133,7 @@ export class PositionModel implements StructClass {
       fromJSON: (json: Record<string, any>) => PositionModel.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PositionModel.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionModel.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PositionModel.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PositionModel.fetch(client, id),
       new: (fields: PositionModelFields) => {
         return new PositionModel([], fields)
       },
@@ -97,14 +141,15 @@ export class PositionModel implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PositionModelReified {
     return PositionModel.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PositionModel>> {
     return phantom(PositionModel.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PositionModel>> {
     return PositionModel.phantom()
   }
 
@@ -161,7 +206,7 @@ export class PositionModel implements StructClass {
     return PositionModel.fromFields(PositionModel.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PositionModelJSONField {
     return {
       sqrtPaX64: this.sqrtPaX64.toString(),
       sqrtPbX64: this.sqrtPbX64.toString(),
@@ -173,7 +218,7 @@ export class PositionModel implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): PositionModelJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -191,7 +236,9 @@ export class PositionModel implements StructClass {
 
   static fromJSON(json: Record<string, any>): PositionModel {
     if (json.$typeName !== PositionModel.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PositionModel json object: expected '${PositionModel.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PositionModel.fromJSONField(json)
@@ -213,25 +260,22 @@ export class PositionModel implements StructClass {
         throw new Error(`object at is not a PositionModel object`)
       }
 
-      return PositionModel.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PositionModel.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PositionModel.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PositionModel> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PositionModel object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPositionModel(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionModel> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPositionModel(res.type)) {
       throw new Error(`object at id ${id} is not a PositionModel object`)
     }
 
-    return PositionModel.fromSuiObjectData(res.data)
+    return PositionModel.fromBcs(res.bcsBytes)
   }
 }

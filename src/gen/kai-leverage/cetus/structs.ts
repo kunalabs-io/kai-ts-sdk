@@ -1,25 +1,44 @@
+/**
+ * Cetus DEX integration for leveraged concentrated liquidity positions.
+ *
+ * This module provides a complete adapter layer for integrating Kai Leverage
+ * with the Cetus concentrated liquidity AMM. It translates between the generic
+ * position management interface and Cetus-specific pool operations, handling
+ * liquidity provision, fee collection, and reward distribution.
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V12 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== AHandleExploitedPosition =============================== */
 
 export function isAHandleExploitedPosition(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V12}::cetus::AHandleExploitedPosition`
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'cetus::AHandleExploitedPosition')
+    }::cetus::AHandleExploitedPosition`
 }
 
 export interface AHandleExploitedPositionFields {
@@ -31,25 +50,37 @@ export type AHandleExploitedPositionReified = Reified<
   AHandleExploitedPositionFields
 >
 
+export type AHandleExploitedPositionJSONField = {
+  dummyField: boolean
+}
+
+export type AHandleExploitedPositionJSON = {
+  $typeName: typeof AHandleExploitedPosition.$typeName
+  $typeArgs: []
+} & AHandleExploitedPositionJSONField
+
 export class AHandleExploitedPosition implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V12}::cetus::AHandleExploitedPosition`
+  static readonly $typeName: `${string}::cetus::AHandleExploitedPosition` = `${
+    getTypeOrigin('kai-leverage', 'cetus::AHandleExploitedPosition')
+  }::cetus::AHandleExploitedPosition` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = AHandleExploitedPosition.$typeName
-  readonly $fullTypeName: `${typeof PKG_V12}::cetus::AHandleExploitedPosition`
+  readonly $typeName: typeof AHandleExploitedPosition.$typeName = AHandleExploitedPosition.$typeName
+  readonly $fullTypeName: `${string}::cetus::AHandleExploitedPosition`
   readonly $typeArgs: []
-  readonly $isPhantom = AHandleExploitedPosition.$isPhantom
+  readonly $isPhantom: typeof AHandleExploitedPosition.$isPhantom =
+    AHandleExploitedPosition.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
   private constructor(typeArgs: [], fields: AHandleExploitedPositionFields) {
     this.$fullTypeName = composeSuiType(
       AHandleExploitedPosition.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V12}::cetus::AHandleExploitedPosition`
+      ...typeArgs,
+    ) as `${string}::cetus::AHandleExploitedPosition`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
@@ -61,8 +92,8 @@ export class AHandleExploitedPosition implements StructClass {
       typeName: AHandleExploitedPosition.$typeName,
       fullTypeName: composeSuiType(
         AHandleExploitedPosition.$typeName,
-        ...[]
-      ) as `${typeof PKG_V12}::cetus::AHandleExploitedPosition`,
+        ...[],
+      ) as `${string}::cetus::AHandleExploitedPosition`,
       typeArgs: [] as [],
       isPhantom: AHandleExploitedPosition.$isPhantom,
       reifiedTypeArgs: [],
@@ -77,7 +108,8 @@ export class AHandleExploitedPosition implements StructClass {
         AHandleExploitedPosition.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AHandleExploitedPosition.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => AHandleExploitedPosition.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        AHandleExploitedPosition.fetch(client, id),
       new: (fields: AHandleExploitedPositionFields) => {
         return new AHandleExploitedPosition([], fields)
       },
@@ -85,14 +117,15 @@ export class AHandleExploitedPosition implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): AHandleExploitedPositionReified {
     return AHandleExploitedPosition.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<AHandleExploitedPosition>> {
     return phantom(AHandleExploitedPosition.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<AHandleExploitedPosition>> {
     return AHandleExploitedPosition.phantom()
   }
 
@@ -131,13 +164,13 @@ export class AHandleExploitedPosition implements StructClass {
     return AHandleExploitedPosition.fromFields(AHandleExploitedPosition.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): AHandleExploitedPositionJSONField {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON() {
+  toJSON(): AHandleExploitedPositionJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -149,7 +182,9 @@ export class AHandleExploitedPosition implements StructClass {
 
   static fromJSON(json: Record<string, any>): AHandleExploitedPosition {
     if (json.$typeName !== AHandleExploitedPosition.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a AHandleExploitedPosition json object: expected '${AHandleExploitedPosition.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return AHandleExploitedPosition.fromJSONField(json)
@@ -161,7 +196,7 @@ export class AHandleExploitedPosition implements StructClass {
     }
     if (!isAHandleExploitedPosition(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a AHandleExploitedPosition object`
+        `object at ${(content.fields as any).id} is not a AHandleExploitedPosition object`,
       )
     }
     return AHandleExploitedPosition.fromFieldsWithTypes(content)
@@ -173,30 +208,22 @@ export class AHandleExploitedPosition implements StructClass {
         throw new Error(`object at is not a AHandleExploitedPosition object`)
       }
 
-      return AHandleExploitedPosition.fromBcs(fromB64(data.bcs.bcsBytes))
+      return AHandleExploitedPosition.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return AHandleExploitedPosition.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<AHandleExploitedPosition> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching AHandleExploitedPosition object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isAHandleExploitedPosition(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AHandleExploitedPosition> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAHandleExploitedPosition(res.type)) {
       throw new Error(`object at id ${id} is not a AHandleExploitedPosition object`)
     }
 
-    return AHandleExploitedPosition.fromSuiObjectData(res.data)
+    return AHandleExploitedPosition.fromBcs(res.bcsBytes)
   }
 }

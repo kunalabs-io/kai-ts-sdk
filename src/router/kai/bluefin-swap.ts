@@ -10,7 +10,7 @@ import * as bluefinUtil from '../../gen/kai-leverage-util/bluefin-spot/functions
 import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
-import * as bluefinSpot from '../../gen/bluefin_spot/pool/functions'
+import * as bluefinSpot from '../../gen/bluefin-spot/pool/functions'
 import { PoolInfo } from './pool-info'
 import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../constants'
 

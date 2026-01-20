@@ -1,29 +1,39 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Bytes32 } from '../../wormhole/bytes32/structs'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== WormholeVAAVerificationReceipt =============================== */
 
 export function isWormholeVAAVerificationReceipt(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::governance::WormholeVAAVerificationReceipt`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'governance::WormholeVAAVerificationReceipt')
+    }::governance::WormholeVAAVerificationReceipt`
 }
 
 export interface WormholeVAAVerificationReceiptFields {
@@ -37,17 +47,32 @@ export type WormholeVAAVerificationReceiptReified = Reified<
   WormholeVAAVerificationReceiptFields
 >
 
+export type WormholeVAAVerificationReceiptJSONField = {
+  payload: number[]
+  digest: ToJSON<Bytes32>
+  sequence: string
+}
+
+export type WormholeVAAVerificationReceiptJSON = {
+  $typeName: typeof WormholeVAAVerificationReceipt.$typeName
+  $typeArgs: []
+} & WormholeVAAVerificationReceiptJSONField
+
 export class WormholeVAAVerificationReceipt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::governance::WormholeVAAVerificationReceipt`
+  static readonly $typeName: `${string}::governance::WormholeVAAVerificationReceipt` = `${
+    getTypeOrigin('pyth', 'governance::WormholeVAAVerificationReceipt')
+  }::governance::WormholeVAAVerificationReceipt` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = WormholeVAAVerificationReceipt.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::governance::WormholeVAAVerificationReceipt`
+  readonly $typeName: typeof WormholeVAAVerificationReceipt.$typeName =
+    WormholeVAAVerificationReceipt.$typeName
+  readonly $fullTypeName: `${string}::governance::WormholeVAAVerificationReceipt`
   readonly $typeArgs: []
-  readonly $isPhantom = WormholeVAAVerificationReceipt.$isPhantom
+  readonly $isPhantom: typeof WormholeVAAVerificationReceipt.$isPhantom =
+    WormholeVAAVerificationReceipt.$isPhantom
 
   readonly payload: ToField<Vector<'u8'>>
   readonly digest: ToField<Bytes32>
@@ -56,8 +81,8 @@ export class WormholeVAAVerificationReceipt implements StructClass {
   private constructor(typeArgs: [], fields: WormholeVAAVerificationReceiptFields) {
     this.$fullTypeName = composeSuiType(
       WormholeVAAVerificationReceipt.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::governance::WormholeVAAVerificationReceipt`
+      ...typeArgs,
+    ) as `${string}::governance::WormholeVAAVerificationReceipt`
     this.$typeArgs = typeArgs
 
     this.payload = fields.payload
@@ -71,8 +96,8 @@ export class WormholeVAAVerificationReceipt implements StructClass {
       typeName: WormholeVAAVerificationReceipt.$typeName,
       fullTypeName: composeSuiType(
         WormholeVAAVerificationReceipt.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::governance::WormholeVAAVerificationReceipt`,
+        ...[],
+      ) as `${string}::governance::WormholeVAAVerificationReceipt`,
       typeArgs: [] as [],
       isPhantom: WormholeVAAVerificationReceipt.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,7 +114,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
         WormholeVAAVerificationReceipt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WormholeVAAVerificationReceipt.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) =>
+      fetch: async (client: SupportedSuiClient, id: string) =>
         WormholeVAAVerificationReceipt.fetch(client, id),
       new: (fields: WormholeVAAVerificationReceiptFields) => {
         return new WormholeVAAVerificationReceipt([], fields)
@@ -98,14 +123,15 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): WormholeVAAVerificationReceiptReified {
     return WormholeVAAVerificationReceipt.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<WormholeVAAVerificationReceipt>> {
     return phantom(WormholeVAAVerificationReceipt.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<WormholeVAAVerificationReceipt>> {
     return WormholeVAAVerificationReceipt.phantom()
   }
 
@@ -117,9 +143,9 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     })
   }
 
-  private static cachedBcs: ReturnType<
-    typeof WormholeVAAVerificationReceipt.instantiateBcs
-  > | null = null
+  private static cachedBcs:
+    | ReturnType<typeof WormholeVAAVerificationReceipt.instantiateBcs>
+    | null = null
 
   static get bcs(): ReturnType<typeof WormholeVAAVerificationReceipt.instantiateBcs> {
     if (!WormholeVAAVerificationReceipt.cachedBcs) {
@@ -130,7 +156,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
 
   static fromFields(fields: Record<string, any>): WormholeVAAVerificationReceipt {
     return WormholeVAAVerificationReceipt.reified().new({
-      payload: decodeFromFields(reified.vector('u8'), fields.payload),
+      payload: decodeFromFields(vector('u8'), fields.payload),
       digest: decodeFromFields(Bytes32.reified(), fields.digest),
       sequence: decodeFromFields('u64', fields.sequence),
     })
@@ -142,7 +168,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     }
 
     return WormholeVAAVerificationReceipt.reified().new({
-      payload: decodeFromFieldsWithTypes(reified.vector('u8'), item.fields.payload),
+      payload: decodeFromFieldsWithTypes(vector('u8'), item.fields.payload),
       digest: decodeFromFieldsWithTypes(Bytes32.reified(), item.fields.digest),
       sequence: decodeFromFieldsWithTypes('u64', item.fields.sequence),
     })
@@ -152,7 +178,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     return WormholeVAAVerificationReceipt.fromFields(WormholeVAAVerificationReceipt.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): WormholeVAAVerificationReceiptJSONField {
     return {
       payload: fieldToJSON<Vector<'u8'>>(`vector<u8>`, this.payload),
       digest: this.digest.toJSONField(),
@@ -160,13 +186,13 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): WormholeVAAVerificationReceiptJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): WormholeVAAVerificationReceipt {
     return WormholeVAAVerificationReceipt.reified().new({
-      payload: decodeFromJSONField(reified.vector('u8'), field.payload),
+      payload: decodeFromJSONField(vector('u8'), field.payload),
       digest: decodeFromJSONField(Bytes32.reified(), field.digest),
       sequence: decodeFromJSONField('u64', field.sequence),
     })
@@ -174,7 +200,9 @@ export class WormholeVAAVerificationReceipt implements StructClass {
 
   static fromJSON(json: Record<string, any>): WormholeVAAVerificationReceipt {
     if (json.$typeName !== WormholeVAAVerificationReceipt.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a WormholeVAAVerificationReceipt json object: expected '${WormholeVAAVerificationReceipt.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return WormholeVAAVerificationReceipt.fromJSONField(json)
@@ -186,7 +214,7 @@ export class WormholeVAAVerificationReceipt implements StructClass {
     }
     if (!isWormholeVAAVerificationReceipt(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a WormholeVAAVerificationReceipt object`
+        `object at ${(content.fields as any).id} is not a WormholeVAAVerificationReceipt object`,
       )
     }
     return WormholeVAAVerificationReceipt.fromFieldsWithTypes(content)
@@ -198,30 +226,25 @@ export class WormholeVAAVerificationReceipt implements StructClass {
         throw new Error(`object at is not a WormholeVAAVerificationReceipt object`)
       }
 
-      return WormholeVAAVerificationReceipt.fromBcs(fromB64(data.bcs.bcsBytes))
+      return WormholeVAAVerificationReceipt.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return WormholeVAAVerificationReceipt.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<WormholeVAAVerificationReceipt> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching WormholeVAAVerificationReceipt object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isWormholeVAAVerificationReceipt(res.data.bcs.type)
-    ) {
+  static async fetch(
+    client: SupportedSuiClient,
+    id: string,
+  ): Promise<WormholeVAAVerificationReceipt> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isWormholeVAAVerificationReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a WormholeVAAVerificationReceipt object`)
     }
 
-    return WormholeVAAVerificationReceipt.fromSuiObjectData(res.data)
+    return WormholeVAAVerificationReceipt.fromBcs(res.bcsBytes)
   }
 }

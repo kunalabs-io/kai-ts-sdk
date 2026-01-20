@@ -1,33 +1,43 @@
-import * as reified from '../../_framework/reified'
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64 } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   fieldToJSON,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+  vector,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { PoolSimpleInfo } from '../../cetus-clmm/factory/structs'
 import { CalculatedSwapResult } from '../../cetus-clmm/pool/structs'
 import { PositionInfo } from '../../cetus-clmm/position/structs'
 import { Tick } from '../../cetus-clmm/tick/structs'
 import { ID } from '../../sui/object/structs'
-import { PKG_V1, PKG_V2 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64 } from '@mysten/sui/utils'
 
 /* ============================== FetchTicksResultEvent =============================== */
 
 export function isFetchTicksResultEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchTicksResultEvent')
+    }::fetcher_script::FetchTicksResultEvent`
 }
 
 export interface FetchTicksResultEventFields {
@@ -39,25 +49,36 @@ export type FetchTicksResultEventReified = Reified<
   FetchTicksResultEventFields
 >
 
+export type FetchTicksResultEventJSONField = {
+  ticks: ToJSON<Tick>[]
+}
+
+export type FetchTicksResultEventJSON = {
+  $typeName: typeof FetchTicksResultEvent.$typeName
+  $typeArgs: []
+} & FetchTicksResultEventJSONField
+
 export class FetchTicksResultEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchTicksResultEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchTicksResultEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchTicksResultEvent')
+  }::fetcher_script::FetchTicksResultEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchTicksResultEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
+  readonly $typeName: typeof FetchTicksResultEvent.$typeName = FetchTicksResultEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchTicksResultEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchTicksResultEvent.$isPhantom
+  readonly $isPhantom: typeof FetchTicksResultEvent.$isPhantom = FetchTicksResultEvent.$isPhantom
 
   readonly ticks: ToField<Vector<Tick>>
 
   private constructor(typeArgs: [], fields: FetchTicksResultEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchTicksResultEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchTicksResultEvent`
     this.$typeArgs = typeArgs
 
     this.ticks = fields.ticks
@@ -69,8 +90,8 @@ export class FetchTicksResultEvent implements StructClass {
       typeName: FetchTicksResultEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchTicksResultEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchTicksResultEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchTicksResultEvent`,
       typeArgs: [] as [],
       isPhantom: FetchTicksResultEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -85,7 +106,8 @@ export class FetchTicksResultEvent implements StructClass {
         FetchTicksResultEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FetchTicksResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchTicksResultEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        FetchTicksResultEvent.fetch(client, id),
       new: (fields: FetchTicksResultEventFields) => {
         return new FetchTicksResultEvent([], fields)
       },
@@ -93,14 +115,15 @@ export class FetchTicksResultEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchTicksResultEventReified {
     return FetchTicksResultEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchTicksResultEvent>> {
     return phantom(FetchTicksResultEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchTicksResultEvent>> {
     return FetchTicksResultEvent.phantom()
   }
 
@@ -121,7 +144,7 @@ export class FetchTicksResultEvent implements StructClass {
 
   static fromFields(fields: Record<string, any>): FetchTicksResultEvent {
     return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromFields(reified.vector(Tick.reified()), fields.ticks),
+      ticks: decodeFromFields(vector(Tick.reified()), fields.ticks),
     })
   }
 
@@ -131,7 +154,7 @@ export class FetchTicksResultEvent implements StructClass {
     }
 
     return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromFieldsWithTypes(reified.vector(Tick.reified()), item.fields.ticks),
+      ticks: decodeFromFieldsWithTypes(vector(Tick.reified()), item.fields.ticks),
     })
   }
 
@@ -139,25 +162,27 @@ export class FetchTicksResultEvent implements StructClass {
     return FetchTicksResultEvent.fromFields(FetchTicksResultEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchTicksResultEventJSONField {
     return {
       ticks: fieldToJSON<Vector<Tick>>(`vector<${Tick.$typeName}>`, this.ticks),
     }
   }
 
-  toJSON() {
+  toJSON(): FetchTicksResultEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): FetchTicksResultEvent {
     return FetchTicksResultEvent.reified().new({
-      ticks: decodeFromJSONField(reified.vector(Tick.reified()), field.ticks),
+      ticks: decodeFromJSONField(vector(Tick.reified()), field.ticks),
     })
   }
 
   static fromJSON(json: Record<string, any>): FetchTicksResultEvent {
     if (json.$typeName !== FetchTicksResultEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchTicksResultEvent json object: expected '${FetchTicksResultEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchTicksResultEvent.fromJSONField(json)
@@ -169,7 +194,7 @@ export class FetchTicksResultEvent implements StructClass {
     }
     if (!isFetchTicksResultEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchTicksResultEvent object`
+        `object at ${(content.fields as any).id} is not a FetchTicksResultEvent object`,
       )
     }
     return FetchTicksResultEvent.fromFieldsWithTypes(content)
@@ -181,26 +206,23 @@ export class FetchTicksResultEvent implements StructClass {
         throw new Error(`object at is not a FetchTicksResultEvent object`)
       }
 
-      return FetchTicksResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchTicksResultEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchTicksResultEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchTicksResultEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchTicksResultEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchTicksResultEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchTicksResultEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchTicksResultEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchTicksResultEvent object`)
     }
 
-    return FetchTicksResultEvent.fromSuiObjectData(res.data)
+    return FetchTicksResultEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -208,7 +230,10 @@ export class FetchTicksResultEvent implements StructClass {
 
 export function isCalculatedSwapResultEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::CalculatedSwapResultEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::CalculatedSwapResultEvent')
+    }::fetcher_script::CalculatedSwapResultEvent`
 }
 
 export interface CalculatedSwapResultEventFields {
@@ -220,25 +245,38 @@ export type CalculatedSwapResultEventReified = Reified<
   CalculatedSwapResultEventFields
 >
 
+export type CalculatedSwapResultEventJSONField = {
+  data: ToJSON<CalculatedSwapResult>
+}
+
+export type CalculatedSwapResultEventJSON = {
+  $typeName: typeof CalculatedSwapResultEvent.$typeName
+  $typeArgs: []
+} & CalculatedSwapResultEventJSONField
+
 export class CalculatedSwapResultEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fetcher_script::CalculatedSwapResultEvent`
+  static readonly $typeName: `${string}::fetcher_script::CalculatedSwapResultEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::CalculatedSwapResultEvent')
+  }::fetcher_script::CalculatedSwapResultEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = CalculatedSwapResultEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::CalculatedSwapResultEvent`
+  readonly $typeName: typeof CalculatedSwapResultEvent.$typeName =
+    CalculatedSwapResultEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::CalculatedSwapResultEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = CalculatedSwapResultEvent.$isPhantom
+  readonly $isPhantom: typeof CalculatedSwapResultEvent.$isPhantom =
+    CalculatedSwapResultEvent.$isPhantom
 
   readonly data: ToField<CalculatedSwapResult>
 
   private constructor(typeArgs: [], fields: CalculatedSwapResultEventFields) {
     this.$fullTypeName = composeSuiType(
       CalculatedSwapResultEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::CalculatedSwapResultEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::CalculatedSwapResultEvent`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
@@ -250,8 +288,8 @@ export class CalculatedSwapResultEvent implements StructClass {
       typeName: CalculatedSwapResultEvent.$typeName,
       fullTypeName: composeSuiType(
         CalculatedSwapResultEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::CalculatedSwapResultEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::CalculatedSwapResultEvent`,
       typeArgs: [] as [],
       isPhantom: CalculatedSwapResultEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -266,7 +304,8 @@ export class CalculatedSwapResultEvent implements StructClass {
         CalculatedSwapResultEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CalculatedSwapResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => CalculatedSwapResultEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        CalculatedSwapResultEvent.fetch(client, id),
       new: (fields: CalculatedSwapResultEventFields) => {
         return new CalculatedSwapResultEvent([], fields)
       },
@@ -274,14 +313,15 @@ export class CalculatedSwapResultEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): CalculatedSwapResultEventReified {
     return CalculatedSwapResultEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<CalculatedSwapResultEvent>> {
     return phantom(CalculatedSwapResultEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<CalculatedSwapResultEvent>> {
     return CalculatedSwapResultEvent.phantom()
   }
 
@@ -321,13 +361,13 @@ export class CalculatedSwapResultEvent implements StructClass {
     return CalculatedSwapResultEvent.fromFields(CalculatedSwapResultEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): CalculatedSwapResultEventJSONField {
     return {
       data: this.data.toJSONField(),
     }
   }
 
-  toJSON() {
+  toJSON(): CalculatedSwapResultEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -339,7 +379,9 @@ export class CalculatedSwapResultEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): CalculatedSwapResultEvent {
     if (json.$typeName !== CalculatedSwapResultEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a CalculatedSwapResultEvent json object: expected '${CalculatedSwapResultEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return CalculatedSwapResultEvent.fromJSONField(json)
@@ -351,7 +393,7 @@ export class CalculatedSwapResultEvent implements StructClass {
     }
     if (!isCalculatedSwapResultEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a CalculatedSwapResultEvent object`
+        `object at ${(content.fields as any).id} is not a CalculatedSwapResultEvent object`,
       )
     }
     return CalculatedSwapResultEvent.fromFieldsWithTypes(content)
@@ -363,31 +405,23 @@ export class CalculatedSwapResultEvent implements StructClass {
         throw new Error(`object at is not a CalculatedSwapResultEvent object`)
       }
 
-      return CalculatedSwapResultEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return CalculatedSwapResultEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return CalculatedSwapResultEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<CalculatedSwapResultEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching CalculatedSwapResultEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isCalculatedSwapResultEvent(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<CalculatedSwapResultEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isCalculatedSwapResultEvent(res.type)) {
       throw new Error(`object at id ${id} is not a CalculatedSwapResultEvent object`)
     }
 
-    return CalculatedSwapResultEvent.fromSuiObjectData(res.data)
+    return CalculatedSwapResultEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -395,7 +429,10 @@ export class CalculatedSwapResultEvent implements StructClass {
 
 export function isFetchPositionsEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchPositionsEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionsEvent')
+    }::fetcher_script::FetchPositionsEvent`
 }
 
 export interface FetchPositionsEventFields {
@@ -404,25 +441,36 @@ export interface FetchPositionsEventFields {
 
 export type FetchPositionsEventReified = Reified<FetchPositionsEvent, FetchPositionsEventFields>
 
+export type FetchPositionsEventJSONField = {
+  positions: ToJSON<PositionInfo>[]
+}
+
+export type FetchPositionsEventJSON = {
+  $typeName: typeof FetchPositionsEvent.$typeName
+  $typeArgs: []
+} & FetchPositionsEventJSONField
+
 export class FetchPositionsEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionsEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchPositionsEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionsEvent')
+  }::fetcher_script::FetchPositionsEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchPositionsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
+  readonly $typeName: typeof FetchPositionsEvent.$typeName = FetchPositionsEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchPositionsEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionsEvent.$isPhantom
+  readonly $isPhantom: typeof FetchPositionsEvent.$isPhantom = FetchPositionsEvent.$isPhantom
 
   readonly positions: ToField<Vector<PositionInfo>>
 
   private constructor(typeArgs: [], fields: FetchPositionsEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchPositionsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchPositionsEvent`
     this.$typeArgs = typeArgs
 
     this.positions = fields.positions
@@ -434,8 +482,8 @@ export class FetchPositionsEvent implements StructClass {
       typeName: FetchPositionsEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchPositionsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionsEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchPositionsEvent`,
       typeArgs: [] as [],
       isPhantom: FetchPositionsEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -447,7 +495,8 @@ export class FetchPositionsEvent implements StructClass {
       fromJSON: (json: Record<string, any>) => FetchPositionsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FetchPositionsEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FetchPositionsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionsEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        FetchPositionsEvent.fetch(client, id),
       new: (fields: FetchPositionsEventFields) => {
         return new FetchPositionsEvent([], fields)
       },
@@ -455,14 +504,15 @@ export class FetchPositionsEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchPositionsEventReified {
     return FetchPositionsEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchPositionsEvent>> {
     return phantom(FetchPositionsEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchPositionsEvent>> {
     return FetchPositionsEvent.phantom()
   }
 
@@ -483,7 +533,7 @@ export class FetchPositionsEvent implements StructClass {
 
   static fromFields(fields: Record<string, any>): FetchPositionsEvent {
     return FetchPositionsEvent.reified().new({
-      positions: decodeFromFields(reified.vector(PositionInfo.reified()), fields.positions),
+      positions: decodeFromFields(vector(PositionInfo.reified()), fields.positions),
     })
   }
 
@@ -493,10 +543,7 @@ export class FetchPositionsEvent implements StructClass {
     }
 
     return FetchPositionsEvent.reified().new({
-      positions: decodeFromFieldsWithTypes(
-        reified.vector(PositionInfo.reified()),
-        item.fields.positions
-      ),
+      positions: decodeFromFieldsWithTypes(vector(PositionInfo.reified()), item.fields.positions),
     })
   }
 
@@ -504,28 +551,30 @@ export class FetchPositionsEvent implements StructClass {
     return FetchPositionsEvent.fromFields(FetchPositionsEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchPositionsEventJSONField {
     return {
       positions: fieldToJSON<Vector<PositionInfo>>(
         `vector<${PositionInfo.$typeName}>`,
-        this.positions
+        this.positions,
       ),
     }
   }
 
-  toJSON() {
+  toJSON(): FetchPositionsEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): FetchPositionsEvent {
     return FetchPositionsEvent.reified().new({
-      positions: decodeFromJSONField(reified.vector(PositionInfo.reified()), field.positions),
+      positions: decodeFromJSONField(vector(PositionInfo.reified()), field.positions),
     })
   }
 
   static fromJSON(json: Record<string, any>): FetchPositionsEvent {
     if (json.$typeName !== FetchPositionsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchPositionsEvent json object: expected '${FetchPositionsEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchPositionsEvent.fromJSONField(json)
@@ -547,26 +596,23 @@ export class FetchPositionsEvent implements StructClass {
         throw new Error(`object at is not a FetchPositionsEvent object`)
       }
 
-      return FetchPositionsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchPositionsEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchPositionsEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchPositionsEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchPositionsEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchPositionsEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchPositionsEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchPositionsEvent object`)
     }
 
-    return FetchPositionsEvent.fromSuiObjectData(res.data)
+    return FetchPositionsEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -574,7 +620,10 @@ export class FetchPositionsEvent implements StructClass {
 
 export function isFetchPoolsEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchPoolsEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPoolsEvent')
+    }::fetcher_script::FetchPoolsEvent`
 }
 
 export interface FetchPoolsEventFields {
@@ -583,25 +632,36 @@ export interface FetchPoolsEventFields {
 
 export type FetchPoolsEventReified = Reified<FetchPoolsEvent, FetchPoolsEventFields>
 
+export type FetchPoolsEventJSONField = {
+  pools: ToJSON<PoolSimpleInfo>[]
+}
+
+export type FetchPoolsEventJSON = {
+  $typeName: typeof FetchPoolsEvent.$typeName
+  $typeArgs: []
+} & FetchPoolsEventJSONField
+
 export class FetchPoolsEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPoolsEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchPoolsEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPoolsEvent')
+  }::fetcher_script::FetchPoolsEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchPoolsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPoolsEvent`
+  readonly $typeName: typeof FetchPoolsEvent.$typeName = FetchPoolsEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchPoolsEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchPoolsEvent.$isPhantom
+  readonly $isPhantom: typeof FetchPoolsEvent.$isPhantom = FetchPoolsEvent.$isPhantom
 
   readonly pools: ToField<Vector<PoolSimpleInfo>>
 
   private constructor(typeArgs: [], fields: FetchPoolsEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchPoolsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchPoolsEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchPoolsEvent`
     this.$typeArgs = typeArgs
 
     this.pools = fields.pools
@@ -613,8 +673,8 @@ export class FetchPoolsEvent implements StructClass {
       typeName: FetchPoolsEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchPoolsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchPoolsEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchPoolsEvent`,
       typeArgs: [] as [],
       isPhantom: FetchPoolsEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -626,7 +686,7 @@ export class FetchPoolsEvent implements StructClass {
       fromJSON: (json: Record<string, any>) => FetchPoolsEvent.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => FetchPoolsEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FetchPoolsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPoolsEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => FetchPoolsEvent.fetch(client, id),
       new: (fields: FetchPoolsEventFields) => {
         return new FetchPoolsEvent([], fields)
       },
@@ -634,14 +694,15 @@ export class FetchPoolsEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchPoolsEventReified {
     return FetchPoolsEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchPoolsEvent>> {
     return phantom(FetchPoolsEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchPoolsEvent>> {
     return FetchPoolsEvent.phantom()
   }
 
@@ -662,7 +723,7 @@ export class FetchPoolsEvent implements StructClass {
 
   static fromFields(fields: Record<string, any>): FetchPoolsEvent {
     return FetchPoolsEvent.reified().new({
-      pools: decodeFromFields(reified.vector(PoolSimpleInfo.reified()), fields.pools),
+      pools: decodeFromFields(vector(PoolSimpleInfo.reified()), fields.pools),
     })
   }
 
@@ -672,7 +733,7 @@ export class FetchPoolsEvent implements StructClass {
     }
 
     return FetchPoolsEvent.reified().new({
-      pools: decodeFromFieldsWithTypes(reified.vector(PoolSimpleInfo.reified()), item.fields.pools),
+      pools: decodeFromFieldsWithTypes(vector(PoolSimpleInfo.reified()), item.fields.pools),
     })
   }
 
@@ -680,25 +741,27 @@ export class FetchPoolsEvent implements StructClass {
     return FetchPoolsEvent.fromFields(FetchPoolsEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchPoolsEventJSONField {
     return {
       pools: fieldToJSON<Vector<PoolSimpleInfo>>(`vector<${PoolSimpleInfo.$typeName}>`, this.pools),
     }
   }
 
-  toJSON() {
+  toJSON(): FetchPoolsEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): FetchPoolsEvent {
     return FetchPoolsEvent.reified().new({
-      pools: decodeFromJSONField(reified.vector(PoolSimpleInfo.reified()), field.pools),
+      pools: decodeFromJSONField(vector(PoolSimpleInfo.reified()), field.pools),
     })
   }
 
   static fromJSON(json: Record<string, any>): FetchPoolsEvent {
     if (json.$typeName !== FetchPoolsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchPoolsEvent json object: expected '${FetchPoolsEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchPoolsEvent.fromJSONField(json)
@@ -720,26 +783,23 @@ export class FetchPoolsEvent implements StructClass {
         throw new Error(`object at is not a FetchPoolsEvent object`)
       }
 
-      return FetchPoolsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchPoolsEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchPoolsEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchPoolsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchPoolsEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchPoolsEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchPoolsEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchPoolsEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchPoolsEvent object`)
     }
 
-    return FetchPoolsEvent.fromSuiObjectData(res.data)
+    return FetchPoolsEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -747,7 +807,10 @@ export class FetchPoolsEvent implements StructClass {
 
 export function isFetchPositionRewardsEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionRewardsEvent')
+    }::fetcher_script::FetchPositionRewardsEvent`
 }
 
 export interface FetchPositionRewardsEventFields {
@@ -760,17 +823,31 @@ export type FetchPositionRewardsEventReified = Reified<
   FetchPositionRewardsEventFields
 >
 
+export type FetchPositionRewardsEventJSONField = {
+  data: string[]
+  positionId: string
+}
+
+export type FetchPositionRewardsEventJSON = {
+  $typeName: typeof FetchPositionRewardsEvent.$typeName
+  $typeArgs: []
+} & FetchPositionRewardsEventJSONField
+
 export class FetchPositionRewardsEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchPositionRewardsEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionRewardsEvent')
+  }::fetcher_script::FetchPositionRewardsEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchPositionRewardsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+  readonly $typeName: typeof FetchPositionRewardsEvent.$typeName =
+    FetchPositionRewardsEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchPositionRewardsEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionRewardsEvent.$isPhantom
+  readonly $isPhantom: typeof FetchPositionRewardsEvent.$isPhantom =
+    FetchPositionRewardsEvent.$isPhantom
 
   readonly data: ToField<Vector<'u64'>>
   readonly positionId: ToField<ID>
@@ -778,8 +855,8 @@ export class FetchPositionRewardsEvent implements StructClass {
   private constructor(typeArgs: [], fields: FetchPositionRewardsEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchPositionRewardsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchPositionRewardsEvent`
     this.$typeArgs = typeArgs
 
     this.data = fields.data
@@ -792,8 +869,8 @@ export class FetchPositionRewardsEvent implements StructClass {
       typeName: FetchPositionRewardsEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchPositionRewardsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::fetcher_script::FetchPositionRewardsEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchPositionRewardsEvent`,
       typeArgs: [] as [],
       isPhantom: FetchPositionRewardsEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -808,7 +885,8 @@ export class FetchPositionRewardsEvent implements StructClass {
         FetchPositionRewardsEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FetchPositionRewardsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionRewardsEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        FetchPositionRewardsEvent.fetch(client, id),
       new: (fields: FetchPositionRewardsEventFields) => {
         return new FetchPositionRewardsEvent([], fields)
       },
@@ -816,14 +894,15 @@ export class FetchPositionRewardsEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchPositionRewardsEventReified {
     return FetchPositionRewardsEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchPositionRewardsEvent>> {
     return phantom(FetchPositionRewardsEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchPositionRewardsEvent>> {
     return FetchPositionRewardsEvent.phantom()
   }
 
@@ -846,7 +925,7 @@ export class FetchPositionRewardsEvent implements StructClass {
 
   static fromFields(fields: Record<string, any>): FetchPositionRewardsEvent {
     return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromFields(reified.vector('u64'), fields.data),
+      data: decodeFromFields(vector('u64'), fields.data),
       positionId: decodeFromFields(ID.reified(), fields.position_id),
     })
   }
@@ -857,7 +936,7 @@ export class FetchPositionRewardsEvent implements StructClass {
     }
 
     return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromFieldsWithTypes(reified.vector('u64'), item.fields.data),
+      data: decodeFromFieldsWithTypes(vector('u64'), item.fields.data),
       positionId: decodeFromFieldsWithTypes(ID.reified(), item.fields.position_id),
     })
   }
@@ -866,27 +945,29 @@ export class FetchPositionRewardsEvent implements StructClass {
     return FetchPositionRewardsEvent.fromFields(FetchPositionRewardsEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchPositionRewardsEventJSONField {
     return {
       data: fieldToJSON<Vector<'u64'>>(`vector<u64>`, this.data),
       positionId: this.positionId,
     }
   }
 
-  toJSON() {
+  toJSON(): FetchPositionRewardsEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField(field: any): FetchPositionRewardsEvent {
     return FetchPositionRewardsEvent.reified().new({
-      data: decodeFromJSONField(reified.vector('u64'), field.data),
+      data: decodeFromJSONField(vector('u64'), field.data),
       positionId: decodeFromJSONField(ID.reified(), field.positionId),
     })
   }
 
   static fromJSON(json: Record<string, any>): FetchPositionRewardsEvent {
     if (json.$typeName !== FetchPositionRewardsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchPositionRewardsEvent json object: expected '${FetchPositionRewardsEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchPositionRewardsEvent.fromJSONField(json)
@@ -898,7 +979,7 @@ export class FetchPositionRewardsEvent implements StructClass {
     }
     if (!isFetchPositionRewardsEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchPositionRewardsEvent object`
+        `object at ${(content.fields as any).id} is not a FetchPositionRewardsEvent object`,
       )
     }
     return FetchPositionRewardsEvent.fromFieldsWithTypes(content)
@@ -910,31 +991,23 @@ export class FetchPositionRewardsEvent implements StructClass {
         throw new Error(`object at is not a FetchPositionRewardsEvent object`)
       }
 
-      return FetchPositionRewardsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchPositionRewardsEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchPositionRewardsEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionRewardsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching FetchPositionRewardsEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isFetchPositionRewardsEvent(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchPositionRewardsEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchPositionRewardsEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchPositionRewardsEvent object`)
     }
 
-    return FetchPositionRewardsEvent.fromSuiObjectData(res.data)
+    return FetchPositionRewardsEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -942,7 +1015,10 @@ export class FetchPositionRewardsEvent implements StructClass {
 
 export function isFetchPositionFeesEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V2}::fetcher_script::FetchPositionFeesEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionFeesEvent')
+    }::fetcher_script::FetchPositionFeesEvent`
 }
 
 export interface FetchPositionFeesEventFields {
@@ -956,17 +1032,30 @@ export type FetchPositionFeesEventReified = Reified<
   FetchPositionFeesEventFields
 >
 
+export type FetchPositionFeesEventJSONField = {
+  positionId: string
+  feeOwnedA: string
+  feeOwnedB: string
+}
+
+export type FetchPositionFeesEventJSON = {
+  $typeName: typeof FetchPositionFeesEvent.$typeName
+  $typeArgs: []
+} & FetchPositionFeesEventJSONField
+
 export class FetchPositionFeesEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V2}::fetcher_script::FetchPositionFeesEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchPositionFeesEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionFeesEvent')
+  }::fetcher_script::FetchPositionFeesEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchPositionFeesEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V2}::fetcher_script::FetchPositionFeesEvent`
+  readonly $typeName: typeof FetchPositionFeesEvent.$typeName = FetchPositionFeesEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchPositionFeesEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionFeesEvent.$isPhantom
+  readonly $isPhantom: typeof FetchPositionFeesEvent.$isPhantom = FetchPositionFeesEvent.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly feeOwnedA: ToField<'u64'>
@@ -975,8 +1064,8 @@ export class FetchPositionFeesEvent implements StructClass {
   private constructor(typeArgs: [], fields: FetchPositionFeesEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchPositionFeesEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V2}::fetcher_script::FetchPositionFeesEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchPositionFeesEvent`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -990,8 +1079,8 @@ export class FetchPositionFeesEvent implements StructClass {
       typeName: FetchPositionFeesEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchPositionFeesEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V2}::fetcher_script::FetchPositionFeesEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchPositionFeesEvent`,
       typeArgs: [] as [],
       isPhantom: FetchPositionFeesEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1006,7 +1095,8 @@ export class FetchPositionFeesEvent implements StructClass {
         FetchPositionFeesEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FetchPositionFeesEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionFeesEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        FetchPositionFeesEvent.fetch(client, id),
       new: (fields: FetchPositionFeesEventFields) => {
         return new FetchPositionFeesEvent([], fields)
       },
@@ -1014,14 +1104,15 @@ export class FetchPositionFeesEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchPositionFeesEventReified {
     return FetchPositionFeesEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchPositionFeesEvent>> {
     return phantom(FetchPositionFeesEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchPositionFeesEvent>> {
     return FetchPositionFeesEvent.phantom()
   }
 
@@ -1066,7 +1157,7 @@ export class FetchPositionFeesEvent implements StructClass {
     return FetchPositionFeesEvent.fromFields(FetchPositionFeesEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchPositionFeesEventJSONField {
     return {
       positionId: this.positionId,
       feeOwnedA: this.feeOwnedA.toString(),
@@ -1074,7 +1165,7 @@ export class FetchPositionFeesEvent implements StructClass {
     }
   }
 
-  toJSON() {
+  toJSON(): FetchPositionFeesEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1088,7 +1179,9 @@ export class FetchPositionFeesEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): FetchPositionFeesEvent {
     if (json.$typeName !== FetchPositionFeesEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchPositionFeesEvent json object: expected '${FetchPositionFeesEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchPositionFeesEvent.fromJSONField(json)
@@ -1100,7 +1193,7 @@ export class FetchPositionFeesEvent implements StructClass {
     }
     if (!isFetchPositionFeesEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchPositionFeesEvent object`
+        `object at ${(content.fields as any).id} is not a FetchPositionFeesEvent object`,
       )
     }
     return FetchPositionFeesEvent.fromFieldsWithTypes(content)
@@ -1112,26 +1205,23 @@ export class FetchPositionFeesEvent implements StructClass {
         throw new Error(`object at is not a FetchPositionFeesEvent object`)
       }
 
-      return FetchPositionFeesEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchPositionFeesEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchPositionFeesEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionFeesEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching FetchPositionFeesEvent object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isFetchPositionFeesEvent(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchPositionFeesEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchPositionFeesEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchPositionFeesEvent object`)
     }
 
-    return FetchPositionFeesEvent.fromSuiObjectData(res.data)
+    return FetchPositionFeesEvent.fromBcs(res.bcsBytes)
   }
 }
 
@@ -1139,7 +1229,10 @@ export class FetchPositionFeesEvent implements StructClass {
 
 export function isFetchPositionPointsEvent(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V2}::fetcher_script::FetchPositionPointsEvent`
+  return type
+    === `${
+      getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionPointsEvent')
+    }::fetcher_script::FetchPositionPointsEvent`
 }
 
 export interface FetchPositionPointsEventFields {
@@ -1152,17 +1245,30 @@ export type FetchPositionPointsEventReified = Reified<
   FetchPositionPointsEventFields
 >
 
+export type FetchPositionPointsEventJSONField = {
+  positionId: string
+  pointsOwned: string
+}
+
+export type FetchPositionPointsEventJSON = {
+  $typeName: typeof FetchPositionPointsEvent.$typeName
+  $typeArgs: []
+} & FetchPositionPointsEventJSONField
+
 export class FetchPositionPointsEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V2}::fetcher_script::FetchPositionPointsEvent`
+  static readonly $typeName: `${string}::fetcher_script::FetchPositionPointsEvent` = `${
+    getTypeOrigin('cetus-integrate', 'fetcher_script::FetchPositionPointsEvent')
+  }::fetcher_script::FetchPositionPointsEvent` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = FetchPositionPointsEvent.$typeName
-  readonly $fullTypeName: `${typeof PKG_V2}::fetcher_script::FetchPositionPointsEvent`
+  readonly $typeName: typeof FetchPositionPointsEvent.$typeName = FetchPositionPointsEvent.$typeName
+  readonly $fullTypeName: `${string}::fetcher_script::FetchPositionPointsEvent`
   readonly $typeArgs: []
-  readonly $isPhantom = FetchPositionPointsEvent.$isPhantom
+  readonly $isPhantom: typeof FetchPositionPointsEvent.$isPhantom =
+    FetchPositionPointsEvent.$isPhantom
 
   readonly positionId: ToField<ID>
   readonly pointsOwned: ToField<'u128'>
@@ -1170,8 +1276,8 @@ export class FetchPositionPointsEvent implements StructClass {
   private constructor(typeArgs: [], fields: FetchPositionPointsEventFields) {
     this.$fullTypeName = composeSuiType(
       FetchPositionPointsEvent.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V2}::fetcher_script::FetchPositionPointsEvent`
+      ...typeArgs,
+    ) as `${string}::fetcher_script::FetchPositionPointsEvent`
     this.$typeArgs = typeArgs
 
     this.positionId = fields.positionId
@@ -1184,8 +1290,8 @@ export class FetchPositionPointsEvent implements StructClass {
       typeName: FetchPositionPointsEvent.$typeName,
       fullTypeName: composeSuiType(
         FetchPositionPointsEvent.$typeName,
-        ...[]
-      ) as `${typeof PKG_V2}::fetcher_script::FetchPositionPointsEvent`,
+        ...[],
+      ) as `${string}::fetcher_script::FetchPositionPointsEvent`,
       typeArgs: [] as [],
       isPhantom: FetchPositionPointsEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1200,7 +1306,8 @@ export class FetchPositionPointsEvent implements StructClass {
         FetchPositionPointsEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FetchPositionPointsEvent.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => FetchPositionPointsEvent.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        FetchPositionPointsEvent.fetch(client, id),
       new: (fields: FetchPositionPointsEventFields) => {
         return new FetchPositionPointsEvent([], fields)
       },
@@ -1208,14 +1315,15 @@ export class FetchPositionPointsEvent implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): FetchPositionPointsEventReified {
     return FetchPositionPointsEvent.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<FetchPositionPointsEvent>> {
     return phantom(FetchPositionPointsEvent.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<FetchPositionPointsEvent>> {
     return FetchPositionPointsEvent.phantom()
   }
 
@@ -1257,14 +1365,14 @@ export class FetchPositionPointsEvent implements StructClass {
     return FetchPositionPointsEvent.fromFields(FetchPositionPointsEvent.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): FetchPositionPointsEventJSONField {
     return {
       positionId: this.positionId,
       pointsOwned: this.pointsOwned.toString(),
     }
   }
 
-  toJSON() {
+  toJSON(): FetchPositionPointsEventJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -1277,7 +1385,9 @@ export class FetchPositionPointsEvent implements StructClass {
 
   static fromJSON(json: Record<string, any>): FetchPositionPointsEvent {
     if (json.$typeName !== FetchPositionPointsEvent.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a FetchPositionPointsEvent json object: expected '${FetchPositionPointsEvent.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return FetchPositionPointsEvent.fromJSONField(json)
@@ -1289,7 +1399,7 @@ export class FetchPositionPointsEvent implements StructClass {
     }
     if (!isFetchPositionPointsEvent(content.type)) {
       throw new Error(
-        `object at ${(content.fields as any).id} is not a FetchPositionPointsEvent object`
+        `object at ${(content.fields as any).id} is not a FetchPositionPointsEvent object`,
       )
     }
     return FetchPositionPointsEvent.fromFieldsWithTypes(content)
@@ -1301,30 +1411,22 @@ export class FetchPositionPointsEvent implements StructClass {
         throw new Error(`object at is not a FetchPositionPointsEvent object`)
       }
 
-      return FetchPositionPointsEvent.fromBcs(fromB64(data.bcs.bcsBytes))
+      return FetchPositionPointsEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return FetchPositionPointsEvent.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<FetchPositionPointsEvent> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(
-        `error fetching FetchPositionPointsEvent object at id ${id}: ${res.error.code}`
-      )
-    }
-    if (
-      res.data?.bcs?.dataType !== 'moveObject' ||
-      !isFetchPositionPointsEvent(res.data.bcs.type)
-    ) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<FetchPositionPointsEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isFetchPositionPointsEvent(res.type)) {
       throw new Error(`object at id ${id} is not a FetchPositionPointsEvent object`)
     }
 
-    return FetchPositionPointsEvent.fromSuiObjectData(res.data)
+    return FetchPositionPointsEvent.fromBcs(res.bcsBytes)
   }
 }

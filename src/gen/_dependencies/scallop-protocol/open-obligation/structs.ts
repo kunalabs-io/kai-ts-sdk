@@ -1,0 +1,429 @@
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../../_envs'
+import {
+  decodeFromFields,
+  decodeFromFieldsWithTypes,
+  decodeFromJSONField,
+  phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
+} from '../../../_framework/reified'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../../_framework/util'
+import { ID } from '../../../sui/object/structs'
+
+/* ============================== ObligationHotPotato =============================== */
+
+export function isObligationHotPotato(type: string): boolean {
+  type = compressSuiType(type)
+  return type
+    === `${
+      getTypeOrigin('scallop-protocol', 'open_obligation::ObligationHotPotato')
+    }::open_obligation::ObligationHotPotato`
+}
+
+export interface ObligationHotPotatoFields {
+  obligationId: ToField<ID>
+}
+
+export type ObligationHotPotatoReified = Reified<ObligationHotPotato, ObligationHotPotatoFields>
+
+export type ObligationHotPotatoJSONField = {
+  obligationId: string
+}
+
+export type ObligationHotPotatoJSON = {
+  $typeName: typeof ObligationHotPotato.$typeName
+  $typeArgs: []
+} & ObligationHotPotatoJSONField
+
+export class ObligationHotPotato implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName: `${string}::open_obligation::ObligationHotPotato` = `${
+    getTypeOrigin('scallop-protocol', 'open_obligation::ObligationHotPotato')
+  }::open_obligation::ObligationHotPotato` as const
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName: typeof ObligationHotPotato.$typeName = ObligationHotPotato.$typeName
+  readonly $fullTypeName: `${string}::open_obligation::ObligationHotPotato`
+  readonly $typeArgs: []
+  readonly $isPhantom: typeof ObligationHotPotato.$isPhantom = ObligationHotPotato.$isPhantom
+
+  readonly obligationId: ToField<ID>
+
+  private constructor(typeArgs: [], fields: ObligationHotPotatoFields) {
+    this.$fullTypeName = composeSuiType(
+      ObligationHotPotato.$typeName,
+      ...typeArgs,
+    ) as `${string}::open_obligation::ObligationHotPotato`
+    this.$typeArgs = typeArgs
+
+    this.obligationId = fields.obligationId
+  }
+
+  static reified(): ObligationHotPotatoReified {
+    const reifiedBcs = ObligationHotPotato.bcs
+    return {
+      typeName: ObligationHotPotato.$typeName,
+      fullTypeName: composeSuiType(
+        ObligationHotPotato.$typeName,
+        ...[],
+      ) as `${string}::open_obligation::ObligationHotPotato`,
+      typeArgs: [] as [],
+      isPhantom: ObligationHotPotato.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ObligationHotPotato.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ObligationHotPotato.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ObligationHotPotato.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => ObligationHotPotato.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ObligationHotPotato.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) => ObligationHotPotato.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => ObligationHotPotato.fromSuiObjectData(content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ObligationHotPotato.fetch(client, id),
+      new: (fields: ObligationHotPotatoFields) => {
+        return new ObligationHotPotato([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): ObligationHotPotatoReified {
+    return ObligationHotPotato.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ObligationHotPotato>> {
+    return phantom(ObligationHotPotato.reified())
+  }
+
+  static get p(): PhantomReified<ToTypeStr<ObligationHotPotato>> {
+    return ObligationHotPotato.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('ObligationHotPotato', {
+      obligation_id: ID.bcs,
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationHotPotato.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof ObligationHotPotato.instantiateBcs> {
+    if (!ObligationHotPotato.cachedBcs) {
+      ObligationHotPotato.cachedBcs = ObligationHotPotato.instantiateBcs()
+    }
+    return ObligationHotPotato.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): ObligationHotPotato {
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromFields(ID.reified(), fields.obligation_id),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationHotPotato {
+    if (!isObligationHotPotato(item.type)) {
+      throw new Error('not a ObligationHotPotato type')
+    }
+
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation_id),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ObligationHotPotato {
+    return ObligationHotPotato.fromFields(ObligationHotPotato.bcs.parse(data))
+  }
+
+  toJSONField(): ObligationHotPotatoJSONField {
+    return {
+      obligationId: this.obligationId,
+    }
+  }
+
+  toJSON(): ObligationHotPotatoJSON {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ObligationHotPotato {
+    return ObligationHotPotato.reified().new({
+      obligationId: decodeFromJSONField(ID.reified(), field.obligationId),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ObligationHotPotato {
+    if (json.$typeName !== ObligationHotPotato.$typeName) {
+      throw new Error(
+        `not a ObligationHotPotato json object: expected '${ObligationHotPotato.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+
+    return ObligationHotPotato.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ObligationHotPotato {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isObligationHotPotato(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a ObligationHotPotato object`)
+    }
+    return ObligationHotPotato.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ObligationHotPotato {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isObligationHotPotato(data.bcs.type)) {
+        throw new Error(`object at is not a ObligationHotPotato object`)
+      }
+
+      return ObligationHotPotato.fromBcs(fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ObligationHotPotato.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationHotPotato> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isObligationHotPotato(res.type)) {
+      throw new Error(`object at id ${id} is not a ObligationHotPotato object`)
+    }
+
+    return ObligationHotPotato.fromBcs(res.bcsBytes)
+  }
+}
+
+/* ============================== ObligationCreatedEvent =============================== */
+
+export function isObligationCreatedEvent(type: string): boolean {
+  type = compressSuiType(type)
+  return type
+    === `${
+      getTypeOrigin('scallop-protocol', 'open_obligation::ObligationCreatedEvent')
+    }::open_obligation::ObligationCreatedEvent`
+}
+
+export interface ObligationCreatedEventFields {
+  sender: ToField<'address'>
+  obligation: ToField<ID>
+  obligationKey: ToField<ID>
+}
+
+export type ObligationCreatedEventReified = Reified<
+  ObligationCreatedEvent,
+  ObligationCreatedEventFields
+>
+
+export type ObligationCreatedEventJSONField = {
+  sender: string
+  obligation: string
+  obligationKey: string
+}
+
+export type ObligationCreatedEventJSON = {
+  $typeName: typeof ObligationCreatedEvent.$typeName
+  $typeArgs: []
+} & ObligationCreatedEventJSONField
+
+export class ObligationCreatedEvent implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName: `${string}::open_obligation::ObligationCreatedEvent` = `${
+    getTypeOrigin('scallop-protocol', 'open_obligation::ObligationCreatedEvent')
+  }::open_obligation::ObligationCreatedEvent` as const
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName: typeof ObligationCreatedEvent.$typeName = ObligationCreatedEvent.$typeName
+  readonly $fullTypeName: `${string}::open_obligation::ObligationCreatedEvent`
+  readonly $typeArgs: []
+  readonly $isPhantom: typeof ObligationCreatedEvent.$isPhantom = ObligationCreatedEvent.$isPhantom
+
+  readonly sender: ToField<'address'>
+  readonly obligation: ToField<ID>
+  readonly obligationKey: ToField<ID>
+
+  private constructor(typeArgs: [], fields: ObligationCreatedEventFields) {
+    this.$fullTypeName = composeSuiType(
+      ObligationCreatedEvent.$typeName,
+      ...typeArgs,
+    ) as `${string}::open_obligation::ObligationCreatedEvent`
+    this.$typeArgs = typeArgs
+
+    this.sender = fields.sender
+    this.obligation = fields.obligation
+    this.obligationKey = fields.obligationKey
+  }
+
+  static reified(): ObligationCreatedEventReified {
+    const reifiedBcs = ObligationCreatedEvent.bcs
+    return {
+      typeName: ObligationCreatedEvent.$typeName,
+      fullTypeName: composeSuiType(
+        ObligationCreatedEvent.$typeName,
+        ...[],
+      ) as `${string}::open_obligation::ObligationCreatedEvent`,
+      typeArgs: [] as [],
+      isPhantom: ObligationCreatedEvent.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => ObligationCreatedEvent.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        ObligationCreatedEvent.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => ObligationCreatedEvent.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => ObligationCreatedEvent.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => ObligationCreatedEvent.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        ObligationCreatedEvent.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        ObligationCreatedEvent.fromSuiObjectData(content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        ObligationCreatedEvent.fetch(client, id),
+      new: (fields: ObligationCreatedEventFields) => {
+        return new ObligationCreatedEvent([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): ObligationCreatedEventReified {
+    return ObligationCreatedEvent.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<ObligationCreatedEvent>> {
+    return phantom(ObligationCreatedEvent.reified())
+  }
+
+  static get p(): PhantomReified<ToTypeStr<ObligationCreatedEvent>> {
+    return ObligationCreatedEvent.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('ObligationCreatedEvent', {
+      sender: bcs.bytes(32).transform({
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
+      }),
+      obligation: ID.bcs,
+      obligation_key: ID.bcs,
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof ObligationCreatedEvent.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof ObligationCreatedEvent.instantiateBcs> {
+    if (!ObligationCreatedEvent.cachedBcs) {
+      ObligationCreatedEvent.cachedBcs = ObligationCreatedEvent.instantiateBcs()
+    }
+    return ObligationCreatedEvent.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): ObligationCreatedEvent {
+    return ObligationCreatedEvent.reified().new({
+      sender: decodeFromFields('address', fields.sender),
+      obligation: decodeFromFields(ID.reified(), fields.obligation),
+      obligationKey: decodeFromFields(ID.reified(), fields.obligation_key),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): ObligationCreatedEvent {
+    if (!isObligationCreatedEvent(item.type)) {
+      throw new Error('not a ObligationCreatedEvent type')
+    }
+
+    return ObligationCreatedEvent.reified().new({
+      sender: decodeFromFieldsWithTypes('address', item.fields.sender),
+      obligation: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation),
+      obligationKey: decodeFromFieldsWithTypes(ID.reified(), item.fields.obligation_key),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): ObligationCreatedEvent {
+    return ObligationCreatedEvent.fromFields(ObligationCreatedEvent.bcs.parse(data))
+  }
+
+  toJSONField(): ObligationCreatedEventJSONField {
+    return {
+      sender: this.sender,
+      obligation: this.obligation,
+      obligationKey: this.obligationKey,
+    }
+  }
+
+  toJSON(): ObligationCreatedEventJSON {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): ObligationCreatedEvent {
+    return ObligationCreatedEvent.reified().new({
+      sender: decodeFromJSONField('address', field.sender),
+      obligation: decodeFromJSONField(ID.reified(), field.obligation),
+      obligationKey: decodeFromJSONField(ID.reified(), field.obligationKey),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): ObligationCreatedEvent {
+    if (json.$typeName !== ObligationCreatedEvent.$typeName) {
+      throw new Error(
+        `not a ObligationCreatedEvent json object: expected '${ObligationCreatedEvent.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+
+    return ObligationCreatedEvent.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): ObligationCreatedEvent {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isObligationCreatedEvent(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a ObligationCreatedEvent object`,
+      )
+    }
+    return ObligationCreatedEvent.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): ObligationCreatedEvent {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isObligationCreatedEvent(data.bcs.type)) {
+        throw new Error(`object at is not a ObligationCreatedEvent object`)
+      }
+
+      return ObligationCreatedEvent.fromBcs(fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return ObligationCreatedEvent.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationCreatedEvent> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isObligationCreatedEvent(res.type)) {
+      throw new Error(`object at id ${id} is not a ObligationCreatedEvent object`)
+    }
+
+    return ObligationCreatedEvent.fromBcs(res.bcsBytes)
+  }
+}

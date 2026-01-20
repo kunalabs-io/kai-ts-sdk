@@ -1,25 +1,40 @@
+/**
+ * The previous version of the contract sent the fees to a recipient address but this state is not used anymore
+ * This module is kept for backward compatibility
+ */
+
+import { bcs } from '@mysten/sui/bcs'
+import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
+import { getTypeOrigin } from '../../_envs'
 import {
-  PhantomReified,
-  Reified,
-  StructClass,
-  ToField,
-  ToTypeStr,
   decodeFromFields,
   decodeFromFieldsWithTypes,
   decodeFromJSONField,
   phantom,
+  PhantomReified,
+  Reified,
+  StructClass,
+  ToField,
+  ToJSON,
+  ToTypeStr,
 } from '../../_framework/reified'
-import { FieldsWithTypes, composeSuiType, compressSuiType } from '../../_framework/util'
-import { PKG_V1 } from '../index'
-import { bcs } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
-import { fromB64, fromHEX, toHEX } from '@mysten/sui/utils'
+import {
+  composeSuiType,
+  compressSuiType,
+  fetchObjectBcs,
+  FieldsWithTypes,
+  SupportedSuiClient,
+} from '../../_framework/util'
 
 /* ============================== PythFeeRecipient =============================== */
 
 export function isPythFeeRecipient(type: string): boolean {
   type = compressSuiType(type)
-  return type === `${PKG_V1}::set_fee_recipient::PythFeeRecipient`
+  return type
+    === `${
+      getTypeOrigin('pyth', 'set_fee_recipient::PythFeeRecipient')
+    }::set_fee_recipient::PythFeeRecipient`
 }
 
 export interface PythFeeRecipientFields {
@@ -28,25 +43,36 @@ export interface PythFeeRecipientFields {
 
 export type PythFeeRecipientReified = Reified<PythFeeRecipient, PythFeeRecipientFields>
 
+export type PythFeeRecipientJSONField = {
+  recipient: string
+}
+
+export type PythFeeRecipientJSON = {
+  $typeName: typeof PythFeeRecipient.$typeName
+  $typeArgs: []
+} & PythFeeRecipientJSONField
+
 export class PythFeeRecipient implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName = `${PKG_V1}::set_fee_recipient::PythFeeRecipient`
+  static readonly $typeName: `${string}::set_fee_recipient::PythFeeRecipient` = `${
+    getTypeOrigin('pyth', 'set_fee_recipient::PythFeeRecipient')
+  }::set_fee_recipient::PythFeeRecipient` as const
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
-  readonly $typeName = PythFeeRecipient.$typeName
-  readonly $fullTypeName: `${typeof PKG_V1}::set_fee_recipient::PythFeeRecipient`
+  readonly $typeName: typeof PythFeeRecipient.$typeName = PythFeeRecipient.$typeName
+  readonly $fullTypeName: `${string}::set_fee_recipient::PythFeeRecipient`
   readonly $typeArgs: []
-  readonly $isPhantom = PythFeeRecipient.$isPhantom
+  readonly $isPhantom: typeof PythFeeRecipient.$isPhantom = PythFeeRecipient.$isPhantom
 
   readonly recipient: ToField<'address'>
 
   private constructor(typeArgs: [], fields: PythFeeRecipientFields) {
     this.$fullTypeName = composeSuiType(
       PythFeeRecipient.$typeName,
-      ...typeArgs
-    ) as `${typeof PKG_V1}::set_fee_recipient::PythFeeRecipient`
+      ...typeArgs,
+    ) as `${string}::set_fee_recipient::PythFeeRecipient`
     this.$typeArgs = typeArgs
 
     this.recipient = fields.recipient
@@ -58,8 +84,8 @@ export class PythFeeRecipient implements StructClass {
       typeName: PythFeeRecipient.$typeName,
       fullTypeName: composeSuiType(
         PythFeeRecipient.$typeName,
-        ...[]
-      ) as `${typeof PKG_V1}::set_fee_recipient::PythFeeRecipient`,
+        ...[],
+      ) as `${string}::set_fee_recipient::PythFeeRecipient`,
       typeArgs: [] as [],
       isPhantom: PythFeeRecipient.$isPhantom,
       reifiedTypeArgs: [],
@@ -71,7 +97,7 @@ export class PythFeeRecipient implements StructClass {
       fromJSON: (json: Record<string, any>) => PythFeeRecipient.fromJSON(json),
       fromSuiParsedData: (content: SuiParsedData) => PythFeeRecipient.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythFeeRecipient.fromSuiObjectData(content),
-      fetch: async (client: SuiClient, id: string) => PythFeeRecipient.fetch(client, id),
+      fetch: async (client: SupportedSuiClient, id: string) => PythFeeRecipient.fetch(client, id),
       new: (fields: PythFeeRecipientFields) => {
         return new PythFeeRecipient([], fields)
       },
@@ -79,22 +105,23 @@ export class PythFeeRecipient implements StructClass {
     }
   }
 
-  static get r() {
+  static get r(): PythFeeRecipientReified {
     return PythFeeRecipient.reified()
   }
 
   static phantom(): PhantomReified<ToTypeStr<PythFeeRecipient>> {
     return phantom(PythFeeRecipient.reified())
   }
-  static get p() {
+
+  static get p(): PhantomReified<ToTypeStr<PythFeeRecipient>> {
     return PythFeeRecipient.phantom()
   }
 
   private static instantiateBcs() {
     return bcs.struct('PythFeeRecipient', {
       recipient: bcs.bytes(32).transform({
-        input: (val: string) => fromHEX(val),
-        output: (val: Uint8Array) => toHEX(val),
+        input: (val: string) => fromHex(val),
+        output: (val: Uint8Array) => toHex(val),
       }),
     })
   }
@@ -128,13 +155,13 @@ export class PythFeeRecipient implements StructClass {
     return PythFeeRecipient.fromFields(PythFeeRecipient.bcs.parse(data))
   }
 
-  toJSONField() {
+  toJSONField(): PythFeeRecipientJSONField {
     return {
       recipient: this.recipient,
     }
   }
 
-  toJSON() {
+  toJSON(): PythFeeRecipientJSON {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
@@ -146,7 +173,9 @@ export class PythFeeRecipient implements StructClass {
 
   static fromJSON(json: Record<string, any>): PythFeeRecipient {
     if (json.$typeName !== PythFeeRecipient.$typeName) {
-      throw new Error('not a WithTwoGenerics json object')
+      throw new Error(
+        `not a PythFeeRecipient json object: expected '${PythFeeRecipient.$typeName}' but got '${json.$typeName}'`,
+      )
     }
 
     return PythFeeRecipient.fromJSONField(json)
@@ -168,25 +197,22 @@ export class PythFeeRecipient implements StructClass {
         throw new Error(`object at is not a PythFeeRecipient object`)
       }
 
-      return PythFeeRecipient.fromBcs(fromB64(data.bcs.bcsBytes))
+      return PythFeeRecipient.fromBcs(fromBase64(data.bcs.bcsBytes))
     }
     if (data.content) {
       return PythFeeRecipient.fromSuiParsedData(data.content)
     }
     throw new Error(
-      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.'
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
     )
   }
 
-  static async fetch(client: SuiClient, id: string): Promise<PythFeeRecipient> {
-    const res = await client.getObject({ id, options: { showBcs: true } })
-    if (res.error) {
-      throw new Error(`error fetching PythFeeRecipient object at id ${id}: ${res.error.code}`)
-    }
-    if (res.data?.bcs?.dataType !== 'moveObject' || !isPythFeeRecipient(res.data.bcs.type)) {
+  static async fetch(client: SupportedSuiClient, id: string): Promise<PythFeeRecipient> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isPythFeeRecipient(res.type)) {
       throw new Error(`object at id ${id} is not a PythFeeRecipient object`)
     }
 
-    return PythFeeRecipient.fromSuiObjectData(res.data)
+    return PythFeeRecipient.fromBcs(res.bcsBytes)
   }
 }

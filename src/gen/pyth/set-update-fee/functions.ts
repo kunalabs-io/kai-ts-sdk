@@ -1,6 +1,11 @@
-import { PUBLISHED_AT } from '..'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
 
 export interface ExecuteArgs {
   latestOnly: TransactionObjectInput
@@ -8,9 +13,9 @@ export interface ExecuteArgs {
   payload: Array<number | TransactionArgument> | TransactionArgument
 }
 
-export function execute(tx: Transaction, args: ExecuteArgs) {
+export function execute(tx: Transaction, args: ExecuteArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set_update_fee::execute`,
+    target: `${getPublishedAt('pyth')}::set_update_fee::execute`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.pythState),
@@ -21,10 +26,10 @@ export function execute(tx: Transaction, args: ExecuteArgs) {
 
 export function fromByteVec(
   tx: Transaction,
-  bytes: Array<number | TransactionArgument> | TransactionArgument
-) {
+  bytes: Array<number | TransactionArgument> | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set_update_fee::from_byte_vec`,
+    target: `${getPublishedAt('pyth')}::set_update_fee::from_byte_vec`,
     arguments: [pure(tx, bytes, `vector<u8>`)],
   })
 }
@@ -34,9 +39,12 @@ export interface ApplyExponentArgs {
   exponent: number | TransactionArgument
 }
 
-export function applyExponent(tx: Transaction, args: ApplyExponentArgs) {
+export function applyExponent(tx: Transaction, args: ApplyExponentArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::set_update_fee::apply_exponent`,
-    arguments: [pure(tx, args.mantissa, `u64`), pure(tx, args.exponent, `u8`)],
+    target: `${getPublishedAt('pyth')}::set_update_fee::apply_exponent`,
+    arguments: [
+      pure(tx, args.mantissa, `u64`),
+      pure(tx, args.exponent, `u8`),
+    ],
   })
 }

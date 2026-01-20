@@ -1,26 +1,42 @@
-import { PUBLISHED_AT } from '..'
-import { GenericArg, generic, obj, pure } from '../../_framework/util'
-import { Transaction, TransactionArgument, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  Transaction,
+  TransactionArgument,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
+import { getPublishedAt } from '../../_envs'
+import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
-export function value(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/** Get the amount stored in a `Balance`. */
+export function value(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::value`,
+    target: `${getPublishedAt('sui')}::balance::value`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
 }
 
-export function supplyValue(tx: Transaction, typeArg: string, supply: TransactionObjectInput) {
+/** Get the `Supply` value. */
+export function supplyValue(
+  tx: Transaction,
+  typeArg: string,
+  supply: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::supply_value`,
+    target: `${getPublishedAt('sui')}::balance::supply_value`,
     typeArguments: [typeArg],
     arguments: [obj(tx, supply)],
   })
 }
 
-export function createSupply(tx: Transaction, typeArg: string, t: GenericArg) {
+/** Create a new supply for type T. */
+export function createSupply(tx: Transaction, typeArg: string, t: GenericArg): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::create_supply`,
+    target: `${getPublishedAt('sui')}::balance::create_supply`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, t)],
   })
@@ -31,11 +47,19 @@ export interface IncreaseSupplyArgs {
   value: bigint | TransactionArgument
 }
 
-export function increaseSupply(tx: Transaction, typeArg: string, args: IncreaseSupplyArgs) {
+/** Increase supply by `value` and create a new `Balance<T>` with this value. */
+export function increaseSupply(
+  tx: Transaction,
+  typeArg: string,
+  args: IncreaseSupplyArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::increase_supply`,
+    target: `${getPublishedAt('sui')}::balance::increase_supply`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), pure(tx, args.value, `u64`)],
+    arguments: [
+      obj(tx, args.self),
+      pure(tx, args.value, `u64`),
+    ],
   })
 }
 
@@ -44,17 +68,26 @@ export interface DecreaseSupplyArgs {
   balance: TransactionObjectInput
 }
 
-export function decreaseSupply(tx: Transaction, typeArg: string, args: DecreaseSupplyArgs) {
+/** Burn a Balance<T> and decrease Supply<T>. */
+export function decreaseSupply(
+  tx: Transaction,
+  typeArg: string,
+  args: DecreaseSupplyArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::decrease_supply`,
+    target: `${getPublishedAt('sui')}::balance::decrease_supply`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), obj(tx, args.balance)],
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.balance),
+    ],
   })
 }
 
-export function zero(tx: Transaction, typeArg: string) {
+/** Create a zero `Balance` for type `T`. */
+export function zero(tx: Transaction, typeArg: string): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::zero`,
+    target: `${getPublishedAt('sui')}::balance::zero`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -65,11 +98,15 @@ export interface JoinArgs {
   balance: TransactionObjectInput
 }
 
-export function join(tx: Transaction, typeArg: string, args: JoinArgs) {
+/** Join two balances together. */
+export function join(tx: Transaction, typeArg: string, args: JoinArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::join`,
+    target: `${getPublishedAt('sui')}::balance::join`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), obj(tx, args.balance)],
+    arguments: [
+      obj(tx, args.self),
+      obj(tx, args.balance),
+    ],
   })
 }
 
@@ -78,57 +115,86 @@ export interface SplitArgs {
   value: bigint | TransactionArgument
 }
 
-export function split(tx: Transaction, typeArg: string, args: SplitArgs) {
+/** Split a `Balance` and take a sub balance from it. */
+export function split(tx: Transaction, typeArg: string, args: SplitArgs): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::split`,
+    target: `${getPublishedAt('sui')}::balance::split`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.self), pure(tx, args.value, `u64`)],
+    arguments: [
+      obj(tx, args.self),
+      pure(tx, args.value, `u64`),
+    ],
   })
 }
 
-export function withdrawAll(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/** Withdraw all balance. After this the remaining balance must be 0. */
+export function withdrawAll(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::withdraw_all`,
+    target: `${getPublishedAt('sui')}::balance::withdraw_all`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
 }
 
-export function destroyZero(tx: Transaction, typeArg: string, balance: TransactionObjectInput) {
+/** Destroy a zero `Balance`. */
+export function destroyZero(
+  tx: Transaction,
+  typeArg: string,
+  balance: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::destroy_zero`,
+    target: `${getPublishedAt('sui')}::balance::destroy_zero`,
     typeArguments: [typeArg],
     arguments: [obj(tx, balance)],
   })
 }
 
+/**
+ * CAUTION: this function creates a `Balance` without increasing the supply.
+ * It should only be called by the epoch change system txn to create staking rewards,
+ * and nowhere else.
+ */
 export function createStakingRewards(
   tx: Transaction,
   typeArg: string,
-  value: bigint | TransactionArgument
-) {
+  value: bigint | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::create_staking_rewards`,
+    target: `${getPublishedAt('sui')}::balance::create_staking_rewards`,
     typeArguments: [typeArg],
     arguments: [pure(tx, value, `u64`)],
   })
 }
 
+/**
+ * CAUTION: this function destroys a `Balance` without decreasing the supply.
+ * It should only be called by the epoch change system txn to destroy storage rebates,
+ * and nowhere else.
+ */
 export function destroyStorageRebates(
   tx: Transaction,
   typeArg: string,
-  self: TransactionObjectInput
-) {
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::destroy_storage_rebates`,
+    target: `${getPublishedAt('sui')}::balance::destroy_storage_rebates`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
 }
 
-export function destroySupply(tx: Transaction, typeArg: string, self: TransactionObjectInput) {
+/** Destroy a `Supply` preventing any further minting and burning. */
+export function destroySupply(
+  tx: Transaction,
+  typeArg: string,
+  self: TransactionObjectInput,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::destroy_supply`,
+    target: `${getPublishedAt('sui')}::balance::destroy_supply`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -139,21 +205,28 @@ export interface SendToAccountArgs {
   recipient: string | TransactionArgument
 }
 
-export function sendToAccount(tx: Transaction, typeArg: string, args: SendToAccountArgs) {
+export function sendToAccount(
+  tx: Transaction,
+  typeArg: string,
+  args: SendToAccountArgs,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::send_to_account`,
+    target: `${getPublishedAt('sui')}::balance::send_to_account`,
     typeArguments: [typeArg],
-    arguments: [obj(tx, args.balance), pure(tx, args.recipient, `address`)],
+    arguments: [
+      obj(tx, args.balance),
+      pure(tx, args.recipient, `address`),
+    ],
   })
 }
 
 export function withdrawFromAccount(
   tx: Transaction,
   typeArg: string,
-  amount: bigint | TransactionArgument
-) {
+  amount: bigint | TransactionArgument,
+): TransactionResult {
   return tx.moveCall({
-    target: `${PUBLISHED_AT}::balance::withdraw_from_account`,
+    target: `${getPublishedAt('sui')}::balance::withdraw_from_account`,
     typeArguments: [typeArg],
     arguments: [pure(tx, amount, `u64`)],
   })
