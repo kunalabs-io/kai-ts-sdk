@@ -3,8 +3,8 @@
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
-import { SpoolAccount } from '../../_dependencies/scallop-pool/spool-account/structs'
-import { MarketCoin } from '../../_dependencies/scallop-protocol/reserve/structs'
+import { MarketCoin } from '../../_dependencies/protocol/reserve/structs'
+import { SpoolAccount } from '../../_dependencies/spool/spool-account/structs'
 import { COIN } from '../../_dependencies/whusdce/coin/structs'
 import { getTypeOrigin } from '../../_envs'
 import {

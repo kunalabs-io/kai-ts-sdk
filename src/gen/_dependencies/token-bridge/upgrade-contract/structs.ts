@@ -1,3 +1,13 @@
+/**
+ * This module implements handling a governance VAA to enact upgrading the
+ * Token Bridge contract to a new build. The procedure to upgrade this contract
+ * requires a Programmable Transaction, which includes the following procedure:
+ * 1.  Load new build.
+ * 2.  Authorize upgrade.
+ * 3.  Upgrade.
+ * 4.  Commit upgrade.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'

@@ -4,12 +4,13 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
-export function length(tx: Transaction): TransactionResult {
+export function length(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::length`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::length`,
     arguments: [],
   })
 }
@@ -18,25 +19,30 @@ export function length(tx: Transaction): TransactionResult {
 export function new_(
   tx: Transaction,
   data: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::new`,
     arguments: [pure(tx, data, `vector<u8>`)],
   })
 }
 
 /** Create new `Bytes20` of all zeros. */
-export function default_(tx: Transaction): TransactionResult {
+export function default_(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::default`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::default`,
     arguments: [],
   })
 }
 
 /** Retrieve underlying `data`. */
-export function data(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function data(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::data`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::data`,
     arguments: [obj(tx, self)],
   })
 }
@@ -48,33 +54,46 @@ export function data(tx: Transaction, self: TransactionObjectInput): Transaction
 export function fromBytes(
   tx: Transaction,
   buf: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::from_bytes`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::from_bytes`,
     arguments: [pure(tx, buf, `vector<u8>`)],
   })
 }
 
 /** Destroy `Bytes20` for its underlying data. */
-export function toBytes(tx: Transaction, value: TransactionObjectInput): TransactionResult {
+export function toBytes(
+  tx: Transaction,
+  value: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::to_bytes`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::to_bytes`,
     arguments: [obj(tx, value)],
   })
 }
 
 /** Drain 20 elements of `Cursor<u8>` to create `Bytes20`. */
-export function take(tx: Transaction, cur: TransactionObjectInput): TransactionResult {
+export function take(
+  tx: Transaction,
+  cur: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::take`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::take`,
     arguments: [obj(tx, cur)],
   })
 }
 
 /** Validate that any of the bytes in underlying data is non-zero. */
-export function isNonzero(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function isNonzero(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::is_nonzero`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::is_nonzero`,
     arguments: [obj(tx, self)],
   })
 }
@@ -83,9 +102,10 @@ export function isNonzero(tx: Transaction, self: TransactionObjectInput): Transa
 export function isValid(
   tx: Transaction,
   data: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::is_valid`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::is_valid`,
     arguments: [pure(tx, data, `vector<u8>`)],
   })
 }
@@ -96,9 +116,13 @@ export interface PadLeftArgs {
 }
 
 /** For vector size less than 20, add zeros to the left. */
-export function padLeft(tx: Transaction, args: PadLeftArgs): TransactionResult {
+export function padLeft(
+  tx: Transaction,
+  args: PadLeftArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::pad_left`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::pad_left`,
     arguments: [
       pure(tx, args.data, `vector<u8>`),
       pure(tx, args.dataReversed, `bool`),
@@ -113,9 +137,10 @@ export function padLeft(tx: Transaction, args: PadLeftArgs): TransactionResult {
 export function trimNonzeroLeft(
   tx: Transaction,
   data: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::bytes20::trim_nonzero_left`,
+    target: `${getPublishedAt('wormhole', options?.env)}::bytes20::trim_nonzero_left`,
     arguments: [pure(tx, data, `vector<u8>`)],
   })
 }

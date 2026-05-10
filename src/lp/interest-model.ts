@@ -19,7 +19,7 @@ export class InterestModel {
     this.sections = args.sections
   }
 
-  valueAt(x: bigint) {
+  valueAt(x: bigint): bigint {
     if (x < this.start) {
       throw new Error('EOutOfRange')
     }

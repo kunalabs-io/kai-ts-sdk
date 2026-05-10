@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -17,9 +18,13 @@ export interface MigrateArgs {
  * Execute migration logic. See `wormhole::migrate` description for more
  * info.
  */
-export function migrate(tx: Transaction, args: MigrateArgs): TransactionResult {
+export function migrate(
+  tx: Transaction,
+  args: MigrateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::migrate::migrate`,
+    target: `${getPublishedAt('wormhole', options?.env)}::migrate::migrate`,
     arguments: [
       obj(tx, args.wormholeState),
       pure(tx, args.upgradeVaaBuf, `vector<u8>`),
@@ -34,9 +39,13 @@ export interface HandleMigrateArgs {
   theClock: TransactionObjectInput
 }
 
-export function handleMigrate(tx: Transaction, args: HandleMigrateArgs): TransactionResult {
+export function handleMigrate(
+  tx: Transaction,
+  args: HandleMigrateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::migrate::handle_migrate`,
+    target: `${getPublishedAt('wormhole', options?.env)}::migrate::handle_migrate`,
     arguments: [
       obj(tx, args.wormholeState),
       pure(tx, args.upgradeVaaBuf, `vector<u8>`),

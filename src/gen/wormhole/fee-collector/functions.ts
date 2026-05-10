@@ -4,29 +4,42 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 /** Create new `FeeCollector` with specified amount to collect. */
-export function new_(tx: Transaction, feeAmount: bigint | TransactionArgument): TransactionResult {
+export function new_(
+  tx: Transaction,
+  feeAmount: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::new`,
     arguments: [pure(tx, feeAmount, `u64`)],
   })
 }
 
 /** Retrieve configured amount to collect. */
-export function feeAmount(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function feeAmount(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::fee_amount`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::fee_amount`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Retrieve current SUI balance. */
-export function balanceValue(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function balanceValue(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::balance_value`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::balance_value`,
     arguments: [obj(tx, self)],
   })
 }
@@ -37,9 +50,13 @@ export interface DepositBalanceArgs {
 }
 
 /** Take `Balance<SUI>` and add it to current collected balance. */
-export function depositBalance(tx: Transaction, args: DepositBalanceArgs): TransactionResult {
+export function depositBalance(
+  tx: Transaction,
+  args: DepositBalanceArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::deposit_balance`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::deposit_balance`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.fee),
@@ -53,9 +70,13 @@ export interface DepositArgs {
 }
 
 /** Take `Coin<SUI>` and add it to current collected balance. */
-export function deposit(tx: Transaction, args: DepositArgs): TransactionResult {
+export function deposit(
+  tx: Transaction,
+  args: DepositArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::deposit`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::deposit`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.fee),
@@ -69,9 +90,13 @@ export interface WithdrawBalanceArgs {
 }
 
 /** Create `Balance<SUI>` of some `amount` by taking from collected balance. */
-export function withdrawBalance(tx: Transaction, args: WithdrawBalanceArgs): TransactionResult {
+export function withdrawBalance(
+  tx: Transaction,
+  args: WithdrawBalanceArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::withdraw_balance`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::withdraw_balance`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.amount, `u64`),
@@ -85,9 +110,13 @@ export interface WithdrawArgs {
 }
 
 /** Create `Coin<SUI>` of some `amount` by taking from collected balance. */
-export function withdraw(tx: Transaction, args: WithdrawArgs): TransactionResult {
+export function withdraw(
+  tx: Transaction,
+  args: WithdrawArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::withdraw`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::withdraw`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.amount, `u64`),
@@ -101,9 +130,13 @@ export interface ChangeFeeArgs {
 }
 
 /** Re-configure current `fee_amount`. */
-export function changeFee(tx: Transaction, args: ChangeFeeArgs): TransactionResult {
+export function changeFee(
+  tx: Transaction,
+  args: ChangeFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::fee_collector::change_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::fee_collector::change_fee`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.newAmount, `u64`),

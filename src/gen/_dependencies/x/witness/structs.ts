@@ -38,25 +38,26 @@ export function isWitnessGenerator(type: string): boolean {
   )
 }
 
-export interface WitnessGeneratorFields<T0 extends PhantomTypeArgument> {
+export interface WitnessGeneratorFields<T extends PhantomTypeArgument> {
   dummyField: ToField<'bool'>
 }
 
-export type WitnessGeneratorReified<T0 extends PhantomTypeArgument> = Reified<
-  WitnessGenerator<T0>,
-  WitnessGeneratorFields<T0>
+export type WitnessGeneratorReified<T extends PhantomTypeArgument> = Reified<
+  WitnessGenerator<T>,
+  WitnessGeneratorFields<T>
 >
 
-export type WitnessGeneratorJSONField<T0 extends PhantomTypeArgument> = {
+export type WitnessGeneratorJSONField<T extends PhantomTypeArgument> = {
   dummyField: boolean
 }
 
-export type WitnessGeneratorJSON<T0 extends PhantomTypeArgument> = {
+export type WitnessGeneratorJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof WitnessGenerator.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & WitnessGeneratorJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & WitnessGeneratorJSONField<T>
 
-export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructClass {
+/** Witness generator */
+export class WitnessGenerator<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::witness::WitnessGenerator` = `${
@@ -66,50 +67,47 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof WitnessGenerator.$typeName = WitnessGenerator.$typeName
-  readonly $fullTypeName: `${string}::witness::WitnessGenerator<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::witness::WitnessGenerator<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof WitnessGenerator.$isPhantom = WitnessGenerator.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: WitnessGeneratorFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: WitnessGeneratorFields<T>) {
     this.$fullTypeName = composeSuiType(
       WitnessGenerator.$typeName,
       ...typeArgs,
-    ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): WitnessGeneratorReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): WitnessGeneratorReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = WitnessGenerator.bcs
     return {
       typeName: WitnessGenerator.$typeName,
       fullTypeName: composeSuiType(
         WitnessGenerator.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)],
+      ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: WitnessGenerator.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => WitnessGenerator.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        WitnessGenerator.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => WitnessGenerator.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => WitnessGenerator.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WitnessGenerator.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => WitnessGenerator.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => WitnessGenerator.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => WitnessGenerator.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        WitnessGenerator.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        WitnessGenerator.fromSuiObjectData(T0, content),
+      fromJSONField: (field: any) => WitnessGenerator.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => WitnessGenerator.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => WitnessGenerator.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => WitnessGenerator.fromSuiObjectData(T, content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        WitnessGenerator.fetch(client, T0, id),
-      new: (fields: WitnessGeneratorFields<ToPhantomTypeArgument<T0>>) => {
-        return new WitnessGenerator([extractType(T0)], fields)
+        WitnessGenerator.fetch(client, T, id),
+      new: (fields: WitnessGeneratorFields<ToPhantomTypeArgument<T>>) => {
+        return new WitnessGenerator([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -119,10 +117,10 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     return WitnessGenerator.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<WitnessGenerator<ToPhantomTypeArgument<T0>>>> {
-    return phantom(WitnessGenerator.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<WitnessGenerator<ToPhantomTypeArgument<T>>>> {
+    return phantom(WitnessGenerator.reified(T))
   }
 
   static get p(): typeof WitnessGenerator.phantom {
@@ -144,19 +142,19 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     return WitnessGenerator.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     return WitnessGenerator.reified(typeArg).new({
       dummyField: decodeFromFields('bool', fields.dummy_field),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     if (!isWitnessGenerator(item.type)) {
       throw new Error('not a WitnessGenerator type')
     }
@@ -167,36 +165,36 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     return WitnessGenerator.fromFields(typeArg, WitnessGenerator.bcs.parse(data))
   }
 
-  toJSONField(): WitnessGeneratorJSONField<T0> {
+  toJSONField(): WitnessGeneratorJSONField<T> {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON(): WitnessGeneratorJSON<T0> {
+  toJSON(): WitnessGeneratorJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     return WitnessGenerator.reified(typeArg).new({
       dummyField: decodeFromJSONField('bool', field.dummyField),
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== WitnessGenerator.$typeName) {
       throw new Error(
         `not a WitnessGenerator json object: expected '${WitnessGenerator.$typeName}' but got '${json.$typeName}'`,
@@ -211,10 +209,10 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     return WitnessGenerator.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -224,10 +222,10 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     return WitnessGenerator.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): WitnessGenerator<ToPhantomTypeArgument<T0>> {
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWitnessGenerator(data.bcs.type)) {
         throw new Error(`object at is not a WitnessGenerator object`)
@@ -259,11 +257,11 @@ export class WitnessGenerator<T0 extends PhantomTypeArgument> implements StructC
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<WitnessGenerator<ToPhantomTypeArgument<T0>>> {
+  ): Promise<WitnessGenerator<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isWitnessGenerator(res.type)) {
       throw new Error(`object at id ${id} is not a WitnessGenerator object`)
@@ -296,22 +294,23 @@ export function isWitness(type: string): boolean {
   return type.startsWith(`${getTypeOrigin('x', 'witness::Witness')}::witness::Witness` + '<')
 }
 
-export interface WitnessFields<T0 extends PhantomTypeArgument> {
+export interface WitnessFields<T extends PhantomTypeArgument> {
   dummyField: ToField<'bool'>
 }
 
-export type WitnessReified<T0 extends PhantomTypeArgument> = Reified<Witness<T0>, WitnessFields<T0>>
+export type WitnessReified<T extends PhantomTypeArgument> = Reified<Witness<T>, WitnessFields<T>>
 
-export type WitnessJSONField<T0 extends PhantomTypeArgument> = {
+export type WitnessJSONField<T extends PhantomTypeArgument> = {
   dummyField: boolean
 }
 
-export type WitnessJSON<T0 extends PhantomTypeArgument> = {
+export type WitnessJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof Witness.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & WitnessJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & WitnessJSONField<T>
 
-export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
+/** Delegated witness of a generic type. The type `T` can be any type. */
+export class Witness<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::witness::Witness` = `${
@@ -321,46 +320,46 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof Witness.$typeName = Witness.$typeName
-  readonly $fullTypeName: `${string}::witness::Witness<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::witness::Witness<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof Witness.$isPhantom = Witness.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: WitnessFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: WitnessFields<T>) {
     this.$fullTypeName = composeSuiType(
       Witness.$typeName,
       ...typeArgs,
-    ) as `${string}::witness::Witness<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::witness::Witness<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): WitnessReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): WitnessReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = Witness.bcs
     return {
       typeName: Witness.$typeName,
       fullTypeName: composeSuiType(
         Witness.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::witness::Witness<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)],
+      ) as `${string}::witness::Witness<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: Witness.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => Witness.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Witness.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Witness.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => Witness.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Witness.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => Witness.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => Witness.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => Witness.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => Witness.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => Witness.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Witness.fetch(client, T0, id),
-      new: (fields: WitnessFields<ToPhantomTypeArgument<T0>>) => {
-        return new Witness([extractType(T0)], fields)
+      fromJSONField: (field: any) => Witness.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => Witness.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => Witness.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => Witness.fromSuiObjectData(T, content),
+      fetch: async (client: SupportedSuiClient, id: string) => Witness.fetch(client, T, id),
+      new: (fields: WitnessFields<ToPhantomTypeArgument<T>>) => {
+        return new Witness([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -370,10 +369,10 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     return Witness.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<Witness<ToPhantomTypeArgument<T0>>>> {
-    return phantom(Witness.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<Witness<ToPhantomTypeArgument<T>>>> {
+    return phantom(Witness.reified(T))
   }
 
   static get p(): typeof Witness.phantom {
@@ -395,19 +394,19 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     return Witness.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     return Witness.reified(typeArg).new({
       dummyField: decodeFromFields('bool', fields.dummy_field),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     if (!isWitness(item.type)) {
       throw new Error('not a Witness type')
     }
@@ -418,36 +417,36 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     return Witness.fromFields(typeArg, Witness.bcs.parse(data))
   }
 
-  toJSONField(): WitnessJSONField<T0> {
+  toJSONField(): WitnessJSONField<T> {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON(): WitnessJSON<T0> {
+  toJSON(): WitnessJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     return Witness.reified(typeArg).new({
       dummyField: decodeFromJSONField('bool', field.dummyField),
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== Witness.$typeName) {
       throw new Error(
         `not a Witness json object: expected '${Witness.$typeName}' but got '${json.$typeName}'`,
@@ -462,10 +461,10 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     return Witness.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -475,10 +474,10 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     return Witness.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): Witness<ToPhantomTypeArgument<T0>> {
+  ): Witness<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWitness(data.bcs.type)) {
         throw new Error(`object at is not a Witness object`)
@@ -510,11 +509,11 @@ export class Witness<T0 extends PhantomTypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<Witness<ToPhantomTypeArgument<T0>>> {
+  ): Promise<Witness<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isWitness(res.type)) {
       throw new Error(`object at id ${id} is not a Witness object`)

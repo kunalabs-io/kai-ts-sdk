@@ -1,10 +1,13 @@
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/sui/transactions'
 import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui/utils'
 import { stSUI, SUI } from '../../coin-info'
 import * as coin from '../../gen/sui/coin/functions'
 import { RouteStep } from '.'
 
-export function redeemStSuiCoin(tx: Transaction, coinIn: TransactionObjectInput) {
+export function redeemStSuiCoin(
+  tx: Transaction,
+  coinIn: TransactionObjectInput
+): TransactionResult {
   const coinOut = tx.moveCall({
     target: `0x059f94b85c07eb74d2847f8255d8cc0a67c9a8dcc039eabf9f8b9e23a0de2700::liquid_staking::redeem`,
     arguments: [
@@ -18,12 +21,19 @@ export function redeemStSuiCoin(tx: Transaction, coinIn: TransactionObjectInput)
   return coinOut
 }
 
-export function redeemStSuiBalance(tx: Transaction, balanceIn: TransactionObjectInput) {
+export function redeemStSuiBalance(
+  tx: Transaction,
+  balanceIn: TransactionObjectInput
+): TransactionResult {
   const coinOut = redeemStSuiCoin(tx, coin.fromBalance(tx, stSUI.typeName, balanceIn))
   return coin.intoBalance(tx, SUI.typeName, coinOut)
 }
 
-export function swapStep(tx: Transaction, step: RouteStep, balanceIn: TransactionObjectInput) {
+export function swapStep(
+  tx: Transaction,
+  step: RouteStep,
+  balanceIn: TransactionObjectInput
+): TransactionResult {
   const { pool, a2b } = step
   if (pool.protocol !== 'stsui') {
     throw new Error(`stsuiSwapStep: Only 'stsui' protocol supported, but got '${pool.protocol}'`)

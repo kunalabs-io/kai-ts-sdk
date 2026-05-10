@@ -25,11 +25,15 @@ export const mainnetEnv: EnvConfig = {
         'accumulator::AccumulatorRoot': '0x2',
         'accumulator::Key': '0x2',
         'accumulator::U128': '0x2',
+        'accumulator_metadata::AccumulatorObjectCountKey': '0x2',
         'accumulator_metadata::Metadata': '0x2',
         'accumulator_metadata::MetadataKey': '0x2',
         'accumulator_metadata::Owner': '0x2',
         'accumulator_metadata::OwnerKey': '0x2',
         'accumulator_settlement::EventStreamHead': '0x2',
+        'address_alias::AddressAliasState': '0x2',
+        'address_alias::AddressAliases': '0x2',
+        'address_alias::AliasKey': '0x2',
         'authenticator_state::ActiveJwk': '0x2',
         'authenticator_state::AuthenticatorState': '0x2',
         'authenticator_state::AuthenticatorStateInner': '0x2',
@@ -81,6 +85,11 @@ export const mainnetEnv: EnvConfig = {
         'display::Display': '0x2',
         'display::DisplayCreated': '0x2',
         'display::VersionUpdated': '0x2',
+        'display_registry::Display': '0x2',
+        'display_registry::DisplayCap': '0x2',
+        'display_registry::DisplayKey': '0x2',
+        'display_registry::DisplayRegistry': '0x2',
+        'display_registry::SystemMigrationCap': '0x2',
         'dynamic_field::Field': '0x2',
         'dynamic_object_field::Wrapper': '0x2',
         'funds_accumulator::Withdrawal': '0x2',
@@ -120,6 +129,8 @@ export const mainnetEnv: EnvConfig = {
         'random::Random': '0x2',
         'random::RandomGenerator': '0x2',
         'random::RandomInner': '0x2',
+        'ristretto255::G': '0x2',
+        'ristretto255::Scalar': '0x2',
         'sui::SUI': '0x2',
         'table::Table': '0x2',
         'table_vec::TableVec': '0x2',
@@ -1074,7 +1085,7 @@ export const mainnetEnv: EnvConfig = {
           '0xe829c047cf805d54bde8ff2390883004d4557193d33bac516f3232105a2f2bb2',
       },
     },
-    'scallop-pool': {
+    'spool': {
       originalId: '0xe87f1b2d498106a2c61421cec75b7b5c5e348512b0dc263949a0e7a3c256571a',
       publishedAt: '0xec1ac7f4d01c5bf178ff4e62e523e7df7721453d81d4904a42a0ffc2686c843d',
       typeOrigins: {
@@ -1108,7 +1119,7 @@ export const mainnetEnv: EnvConfig = {
           '0xe87f1b2d498106a2c61421cec75b7b5c5e348512b0dc263949a0e7a3c256571a',
       },
     },
-    'scallop-protocol': {
+    'protocol': {
       originalId: '0xefe8b36d5b2e43728cc323298626b83177803521d195cfb11e15b910e892fddf',
       publishedAt: '0xc2596018248934aa86b3065390bf69ba5f7007e34df7e4032b736eb256f82f1c',
       typeOrigins: {

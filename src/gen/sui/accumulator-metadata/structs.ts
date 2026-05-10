@@ -54,14 +54,7 @@ export type OwnerKeyJSON = {
 /**
  * === Accumulator metadata ===
  *
- * Accumulator metadata is organized as follows:
- * - Each address that holds at least one type of accumulator has an owner field attached
- * to the accumulator root.
- * - For each type of accumulator held by that address, there is an AccumulatorMetadata field
- * attached to the owner field.
- * - When the value of an accumulator drops to zero, the metadata field is removed.
- * - If the owner field has no more accumulator metadata field attached to it, it is removed
- * as well.
+ * Metadata system has been removed, but structs must remain for backwards compatibility.
  */
 export class OwnerKey implements StructClass {
   __StructClass = true as const
@@ -931,5 +924,204 @@ export class Metadata<T extends PhantomTypeArgument> implements StructClass {
     }
 
     return Metadata.fromBcs(typeArg, res.bcsBytes)
+  }
+}
+
+/* ============================== AccumulatorObjectCountKey =============================== */
+
+export function isAccumulatorObjectCountKey(type: string): boolean {
+  type = compressSuiType(type)
+  return type === `0x2::accumulator_metadata::AccumulatorObjectCountKey`
+}
+
+export interface AccumulatorObjectCountKeyFields {
+  dummyField: ToField<'bool'>
+}
+
+export type AccumulatorObjectCountKeyReified = Reified<
+  AccumulatorObjectCountKey,
+  AccumulatorObjectCountKeyFields
+>
+
+export type AccumulatorObjectCountKeyJSONField = {
+  dummyField: boolean
+}
+
+export type AccumulatorObjectCountKeyJSON = {
+  $typeName: typeof AccumulatorObjectCountKey.$typeName
+  $typeArgs: []
+} & AccumulatorObjectCountKeyJSONField
+
+/**
+ * === Accumulator object count storage ===
+ * Key for storing the net count of accumulator objects as a dynamic field on the accumulator root.
+ */
+export class AccumulatorObjectCountKey implements StructClass {
+  __StructClass = true as const
+
+  static readonly $typeName: `0x2::accumulator_metadata::AccumulatorObjectCountKey` =
+    `0x2::accumulator_metadata::AccumulatorObjectCountKey` as const
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName: typeof AccumulatorObjectCountKey.$typeName =
+    AccumulatorObjectCountKey.$typeName
+  readonly $fullTypeName: `0x2::accumulator_metadata::AccumulatorObjectCountKey`
+  readonly $typeArgs: []
+  readonly $isPhantom: typeof AccumulatorObjectCountKey.$isPhantom =
+    AccumulatorObjectCountKey.$isPhantom
+
+  readonly dummyField: ToField<'bool'>
+
+  private constructor(typeArgs: [], fields: AccumulatorObjectCountKeyFields) {
+    this.$fullTypeName = composeSuiType(
+      AccumulatorObjectCountKey.$typeName,
+      ...typeArgs,
+    ) as `0x2::accumulator_metadata::AccumulatorObjectCountKey`
+    this.$typeArgs = typeArgs
+
+    this.dummyField = fields.dummyField
+  }
+
+  static reified(): AccumulatorObjectCountKeyReified {
+    const reifiedBcs = AccumulatorObjectCountKey.bcs
+    return {
+      typeName: AccumulatorObjectCountKey.$typeName,
+      fullTypeName: composeSuiType(
+        AccumulatorObjectCountKey.$typeName,
+        ...[],
+      ) as `0x2::accumulator_metadata::AccumulatorObjectCountKey`,
+      typeArgs: [] as [],
+      isPhantom: AccumulatorObjectCountKey.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => AccumulatorObjectCountKey.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        AccumulatorObjectCountKey.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => AccumulatorObjectCountKey.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => AccumulatorObjectCountKey.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => AccumulatorObjectCountKey.fromJSON(json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        AccumulatorObjectCountKey.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        AccumulatorObjectCountKey.fromSuiObjectData(content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        AccumulatorObjectCountKey.fetch(client, id),
+      new: (fields: AccumulatorObjectCountKeyFields) => {
+        return new AccumulatorObjectCountKey([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): AccumulatorObjectCountKeyReified {
+    return AccumulatorObjectCountKey.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<AccumulatorObjectCountKey>> {
+    return phantom(AccumulatorObjectCountKey.reified())
+  }
+
+  static get p(): PhantomReified<ToTypeStr<AccumulatorObjectCountKey>> {
+    return AccumulatorObjectCountKey.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('AccumulatorObjectCountKey', {
+      dummy_field: bcs.bool(),
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof AccumulatorObjectCountKey.instantiateBcs> | null =
+    null
+
+  static get bcs(): ReturnType<typeof AccumulatorObjectCountKey.instantiateBcs> {
+    if (!AccumulatorObjectCountKey.cachedBcs) {
+      AccumulatorObjectCountKey.cachedBcs = AccumulatorObjectCountKey.instantiateBcs()
+    }
+    return AccumulatorObjectCountKey.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): AccumulatorObjectCountKey {
+    return AccumulatorObjectCountKey.reified().new({
+      dummyField: decodeFromFields('bool', fields.dummy_field),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): AccumulatorObjectCountKey {
+    if (!isAccumulatorObjectCountKey(item.type)) {
+      throw new Error('not a AccumulatorObjectCountKey type')
+    }
+
+    return AccumulatorObjectCountKey.reified().new({
+      dummyField: decodeFromFieldsWithTypes('bool', item.fields.dummy_field),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): AccumulatorObjectCountKey {
+    return AccumulatorObjectCountKey.fromFields(AccumulatorObjectCountKey.bcs.parse(data))
+  }
+
+  toJSONField(): AccumulatorObjectCountKeyJSONField {
+    return {
+      dummyField: this.dummyField,
+    }
+  }
+
+  toJSON(): AccumulatorObjectCountKeyJSON {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): AccumulatorObjectCountKey {
+    return AccumulatorObjectCountKey.reified().new({
+      dummyField: decodeFromJSONField('bool', field.dummyField),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): AccumulatorObjectCountKey {
+    if (json.$typeName !== AccumulatorObjectCountKey.$typeName) {
+      throw new Error(
+        `not a AccumulatorObjectCountKey json object: expected '${AccumulatorObjectCountKey.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+
+    return AccumulatorObjectCountKey.fromJSONField(json)
+  }
+
+  static fromSuiParsedData(content: SuiParsedData): AccumulatorObjectCountKey {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isAccumulatorObjectCountKey(content.type)) {
+      throw new Error(
+        `object at ${(content.fields as any).id} is not a AccumulatorObjectCountKey object`,
+      )
+    }
+    return AccumulatorObjectCountKey.fromFieldsWithTypes(content)
+  }
+
+  static fromSuiObjectData(data: SuiObjectData): AccumulatorObjectCountKey {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isAccumulatorObjectCountKey(data.bcs.type)) {
+        throw new Error(`object at is not a AccumulatorObjectCountKey object`)
+      }
+
+      return AccumulatorObjectCountKey.fromBcs(fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return AccumulatorObjectCountKey.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch(client: SupportedSuiClient, id: string): Promise<AccumulatorObjectCountKey> {
+    const res = await fetchObjectBcs(client, id)
+    if (!isAccumulatorObjectCountKey(res.type)) {
+      throw new Error(`object at id ${id} is not a AccumulatorObjectCountKey object`)
+    }
+
+    return AccumulatorObjectCountKey.fromBcs(res.bcsBytes)
   }
 }

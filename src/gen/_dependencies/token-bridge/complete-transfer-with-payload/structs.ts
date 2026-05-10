@@ -1,3 +1,37 @@
+/**
+ * This module implements two methods: `authorize_transfer` and `redeem_coin`,
+ * which are to be executed in a transaction block in this order.
+ *
+ * `authorize_transfer` allows a contract to complete a Token Bridge transfer
+ * with arbitrary payload. This deserialized `TransferWithPayload` with the
+ * bridged balance and source chain ID are packaged in a `RedeemerReceipt`.
+ *
+ * `redeem_coin` unpacks the `RedeemerReceipt` and checks whether the specified
+ * `EmitterCap` is the specified redeemer for this transfer. If he is the
+ * correct redeemer, the balance is unpacked and transformed into `Coin` and
+ * is returned alongside `TransferWithPayload` and source chain ID.
+ *
+ * The purpose of splitting this transfer redemption into two steps is in case
+ * Token Bridge needs to be upgraded and there is a breaking change for this
+ * module, an integrator would not be left broken. It is discouraged to put
+ * `authorize_transfer` in an integrator's package logic. Otherwise, this
+ * integrator needs to be prepared to upgrade his contract to handle the latest
+ * version of `complete_transfer_with_payload`.
+ *
+ * Instead, an integrator is encouraged to execute a transaction block, which
+ * executes `authorize_transfer` using the latest Token Bridge package ID and
+ * to implement `redeem_coin` in his contract to consume this receipt. This is
+ * similar to how an integrator with Wormhole is not meant to use
+ * `vaa::parse_and_verify` in his contract in case the `vaa` module needs to
+ * be upgraded due to a breaking change.
+ *
+ * Like in `complete_transfer`, a VAA with an encoded transfer can be redeemed
+ * only once.
+ *
+ * See `transfer_with_payload` module for serialization and deserialization of
+ * Wormhole message payload.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -42,29 +76,41 @@ export function isRedeemerReceipt(type: string): boolean {
   )
 }
 
-export interface RedeemerReceiptFields<T0 extends PhantomTypeArgument> {
+export interface RedeemerReceiptFields<CoinType extends PhantomTypeArgument> {
+  /** Which chain ID this transfer originated from. */
   sourceChain: ToField<'u16'>
+  /** Deserialized transfer info. */
   parsed: ToField<TransferWithPayload>
-  bridgedOut: ToField<Coin<T0>>
+  /** Coin of bridged asset. */
+  bridgedOut: ToField<Coin<CoinType>>
 }
 
-export type RedeemerReceiptReified<T0 extends PhantomTypeArgument> = Reified<
-  RedeemerReceipt<T0>,
-  RedeemerReceiptFields<T0>
+export type RedeemerReceiptReified<CoinType extends PhantomTypeArgument> = Reified<
+  RedeemerReceipt<CoinType>,
+  RedeemerReceiptFields<CoinType>
 >
 
-export type RedeemerReceiptJSONField<T0 extends PhantomTypeArgument> = {
+export type RedeemerReceiptJSONField<CoinType extends PhantomTypeArgument> = {
   sourceChain: number
   parsed: ToJSON<TransferWithPayload>
-  bridgedOut: ToJSON<Coin<T0>>
+  bridgedOut: ToJSON<Coin<CoinType>>
 }
 
-export type RedeemerReceiptJSON<T0 extends PhantomTypeArgument> = {
+export type RedeemerReceiptJSON<CoinType extends PhantomTypeArgument> = {
   $typeName: typeof RedeemerReceipt.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & RedeemerReceiptJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<CoinType>]
+} & RedeemerReceiptJSONField<CoinType>
 
-export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructClass {
+/**
+ * This type is only generated from `authorize_transfer` and can only be
+ * redeemed using `redeem_coin`. Integrators are expected to implement
+ * `redeem_coin` within their contracts and call `authorize_transfer` in a
+ * transaction block preceding the method that consumes this receipt. The
+ * only way to destroy this receipt is calling `redeem_coin` with an
+ * `EmitterCap` generated from the `wormhole::emitter` module, whose ID is
+ * the expected redeemer for this token transfer.
+ */
+export class RedeemerReceipt<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::complete_transfer_with_payload::RedeemerReceipt` = `${
@@ -75,19 +121,25 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
 
   readonly $typeName: typeof RedeemerReceipt.$typeName = RedeemerReceipt.$typeName
   readonly $fullTypeName:
-    `${string}::complete_transfer_with_payload::RedeemerReceipt<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+    `${string}::complete_transfer_with_payload::RedeemerReceipt<${PhantomToTypeStr<CoinType>}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinType>]
   readonly $isPhantom: typeof RedeemerReceipt.$isPhantom = RedeemerReceipt.$isPhantom
 
+  /** Which chain ID this transfer originated from. */
   readonly sourceChain: ToField<'u16'>
+  /** Deserialized transfer info. */
   readonly parsed: ToField<TransferWithPayload>
-  readonly bridgedOut: ToField<Coin<T0>>
+  /** Coin of bridged asset. */
+  readonly bridgedOut: ToField<Coin<CoinType>>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: RedeemerReceiptFields<T0>) {
+  private constructor(
+    typeArgs: [PhantomToTypeStr<CoinType>],
+    fields: RedeemerReceiptFields<CoinType>,
+  ) {
     this.$fullTypeName = composeSuiType(
       RedeemerReceipt.$typeName,
       ...typeArgs,
-    ) as `${string}::complete_transfer_with_payload::RedeemerReceipt<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::complete_transfer_with_payload::RedeemerReceipt<${PhantomToTypeStr<CoinType>}>`
     this.$typeArgs = typeArgs
 
     this.sourceChain = fields.sourceChain
@@ -95,33 +147,36 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     this.bridgedOut = fields.bridgedOut
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): RedeemerReceiptReified<ToPhantomTypeArgument<T0>> {
+  static reified<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): RedeemerReceiptReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = RedeemerReceipt.bcs
     return {
       typeName: RedeemerReceipt.$typeName,
       fullTypeName: composeSuiType(
         RedeemerReceipt.$typeName,
-        ...[extractType(T0)],
+        ...[extractType(CoinType)],
       ) as `${string}::complete_transfer_with_payload::RedeemerReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
+        ToPhantomTypeArgument<CoinType>
       >}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
       isPhantom: RedeemerReceipt.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => RedeemerReceipt.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RedeemerReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => RedeemerReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [CoinType],
+      fromFields: (fields: Record<string, any>) => RedeemerReceipt.fromFields(CoinType, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        RedeemerReceipt.fromFieldsWithTypes(CoinType, item),
+      fromBcs: (data: Uint8Array) => RedeemerReceipt.fromFields(CoinType, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => RedeemerReceipt.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => RedeemerReceipt.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => RedeemerReceipt.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => RedeemerReceipt.fromSuiObjectData(T0, content),
+      fromJSONField: (field: any) => RedeemerReceipt.fromJSONField(CoinType, field),
+      fromJSON: (json: Record<string, any>) => RedeemerReceipt.fromJSON(CoinType, json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        RedeemerReceipt.fromSuiParsedData(CoinType, content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        RedeemerReceipt.fromSuiObjectData(CoinType, content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        RedeemerReceipt.fetch(client, T0, id),
-      new: (fields: RedeemerReceiptFields<ToPhantomTypeArgument<T0>>) => {
-        return new RedeemerReceipt([extractType(T0)], fields)
+        RedeemerReceipt.fetch(client, CoinType, id),
+      new: (fields: RedeemerReceiptFields<ToPhantomTypeArgument<CoinType>>) => {
+        return new RedeemerReceipt([extractType(CoinType)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -131,10 +186,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     return RedeemerReceipt.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<RedeemerReceipt<ToPhantomTypeArgument<T0>>>> {
-    return phantom(RedeemerReceipt.reified(T0))
+  static phantom<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): PhantomReified<ToTypeStr<RedeemerReceipt<ToPhantomTypeArgument<CoinType>>>> {
+    return phantom(RedeemerReceipt.reified(CoinType))
   }
 
   static get p(): typeof RedeemerReceipt.phantom {
@@ -158,10 +213,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     return RedeemerReceipt.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     fields: Record<string, any>,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RedeemerReceipt.reified(typeArg).new({
       sourceChain: decodeFromFields('u16', fields.source_chain),
       parsed: decodeFromFields(TransferWithPayload.reified(), fields.parsed),
@@ -169,10 +224,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     item: FieldsWithTypes,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (!isRedeemerReceipt(item.type)) {
       throw new Error('not a RedeemerReceipt type')
     }
@@ -185,14 +240,14 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: Uint8Array,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RedeemerReceipt.fromFields(typeArg, RedeemerReceipt.bcs.parse(data))
   }
 
-  toJSONField(): RedeemerReceiptJSONField<T0> {
+  toJSONField(): RedeemerReceiptJSONField<CoinType> {
     return {
       sourceChain: this.sourceChain,
       parsed: this.parsed.toJSONField(),
@@ -200,14 +255,14 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     }
   }
 
-  toJSON(): RedeemerReceiptJSON<T0> {
+  toJSON(): RedeemerReceiptJSON<CoinType> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     field: any,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RedeemerReceipt.reified(typeArg).new({
       sourceChain: decodeFromJSONField('u16', field.sourceChain),
       parsed: decodeFromJSONField(TransferWithPayload.reified(), field.parsed),
@@ -215,10 +270,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     json: Record<string, any>,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (json.$typeName !== RedeemerReceipt.$typeName) {
       throw new Error(
         `not a RedeemerReceipt json object: expected '${RedeemerReceipt.$typeName}' but got '${json.$typeName}'`,
@@ -233,10 +288,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     return RedeemerReceipt.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     content: SuiParsedData,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -246,10 +301,10 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     return RedeemerReceipt.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: SuiObjectData,
-  ): RedeemerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RedeemerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRedeemerReceipt(data.bcs.type)) {
         throw new Error(`object at is not a RedeemerReceipt object`)
@@ -281,11 +336,11 @@ export class RedeemerReceipt<T0 extends PhantomTypeArgument> implements StructCl
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: CoinType,
     id: string,
-  ): Promise<RedeemerReceipt<ToPhantomTypeArgument<T0>>> {
+  ): Promise<RedeemerReceipt<ToPhantomTypeArgument<CoinType>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isRedeemerReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a RedeemerReceipt object`)

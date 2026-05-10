@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
@@ -11,9 +12,12 @@ import { Option } from '../../std/option/structs'
 export function assertScallopPool(
   tx: Transaction,
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::assert_scallop_pool`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::scallop_whusdte_proper::assert_scallop_pool`,
     arguments: [obj(tx, pool)],
   })
 }
@@ -23,9 +27,13 @@ export interface NewArgs {
   clock: TransactionObjectInput
 }
 
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::new`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::new`,
     arguments: [
       obj(tx, args.scallopPool),
       obj(tx, args.clock),
@@ -36,9 +44,10 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
 export function assertVersion(
   tx: Transaction,
   strategy: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::assert_version`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::assert_version`,
     arguments: [obj(tx, strategy)],
   })
 }
@@ -48,9 +57,13 @@ export interface AssertAdminArgs {
   strategy: TransactionObjectInput
 }
 
-export function assertAdmin(tx: Transaction, args: AssertAdminArgs): TransactionResult {
+export function assertAdmin(
+  tx: Transaction,
+  args: AssertAdminArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::assert_admin`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::assert_admin`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -65,9 +78,13 @@ export interface JoinVaultArgs {
   strategy: TransactionObjectInput
 }
 
-export function joinVault(tx: Transaction, args: JoinVaultArgs): TransactionResult {
+export function joinVault(
+  tx: Transaction,
+  args: JoinVaultArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::join_vault`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::join_vault`,
     arguments: [
       obj(tx, args.vaultCap),
       obj(tx, args.vault),
@@ -80,9 +97,12 @@ export function joinVault(tx: Transaction, args: JoinVaultArgs): TransactionResu
 export function assertScallopMarket(
   tx: Transaction,
   market: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::assert_scallop_market`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::scallop_whusdte_proper::assert_scallop_market`,
     arguments: [obj(tx, market)],
   })
 }
@@ -90,9 +110,12 @@ export function assertScallopMarket(
 export function assertScallopRewardsPool(
   tx: Transaction,
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::assert_scallop_rewards_pool`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::scallop_whusdte_proper::assert_scallop_rewards_pool`,
     arguments: [obj(tx, pool)],
   })
 }
@@ -107,9 +130,13 @@ export interface RemoveFromVaultArgs {
   clock: TransactionObjectInput
 }
 
-export function removeFromVault(tx: Transaction, args: RemoveFromVaultArgs): TransactionResult {
+export function removeFromVault(
+  tx: Transaction,
+  args: RemoveFromVaultArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::remove_from_vault`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::remove_from_vault`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -127,9 +154,13 @@ export interface MigrateArgs {
   strategy: TransactionObjectInput
 }
 
-export function migrate(tx: Transaction, args: MigrateArgs): TransactionResult {
+export function migrate(
+  tx: Transaction,
+  args: MigrateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::migrate`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::migrate`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -148,9 +179,13 @@ export interface RebalanceArgs {
   clock: TransactionObjectInput
 }
 
-export function rebalance(tx: Transaction, args: RebalanceArgs): TransactionResult {
+export function rebalance(
+  tx: Transaction,
+  args: RebalanceArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::rebalance`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::rebalance`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -182,9 +217,12 @@ export interface TakeProfitsForSellingArgs {
 export function takeProfitsForSelling(
   tx: Transaction,
   args: TakeProfitsForSellingArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::take_profits_for_selling`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::scallop_whusdte_proper::take_profits_for_selling`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -206,9 +244,13 @@ export interface SkimBaseProfitsArgs {
 }
 
 /** Skim the profits earned on base APY. */
-export function skimBaseProfits(tx: Transaction, args: SkimBaseProfitsArgs): TransactionResult {
+export function skimBaseProfits(
+  tx: Transaction,
+  args: SkimBaseProfitsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::skim_base_profits`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::skim_base_profits`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -232,9 +274,12 @@ export interface DepositSoldProfitsArgs {
 export function depositSoldProfits(
   tx: Transaction,
   args: DepositSoldProfitsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::deposit_sold_profits`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::scallop_whusdte_proper::deposit_sold_profits`,
     arguments: [
       obj(tx, args.cap),
       obj(tx, args.strategy),
@@ -254,9 +299,13 @@ export interface WithdrawArgs {
   clock: TransactionObjectInput
 }
 
-export function withdraw(tx: Transaction, args: WithdrawArgs): TransactionResult {
+export function withdraw(
+  tx: Transaction,
+  args: WithdrawArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::scallop_whusdte_proper::withdraw`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::scallop_whusdte_proper::withdraw`,
     arguments: [
       obj(tx, args.strategy),
       obj(tx, args.ticket),

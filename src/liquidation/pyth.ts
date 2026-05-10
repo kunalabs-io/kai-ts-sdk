@@ -13,7 +13,7 @@ export const PYTH_STATE_ID = '0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb
 export const WORMHOLE_STATE_ID =
   '0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c'
 
-export function updatePriceFeeds(tx: Transaction, info: PriceFeedUpdateInfo) {
+export function updatePriceFeeds(tx: Transaction, info: PriceFeedUpdateInfo): void {
   if (info.priceFeedsUpdateData.length !== 1) {
     throw new Error('Expected 1 price feed update data')
   }

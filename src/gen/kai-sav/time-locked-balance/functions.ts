@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -12,9 +13,10 @@ export function unlockStartTsSec(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::unlock_start_ts_sec`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::unlock_start_ts_sec`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -25,9 +27,10 @@ export function unlockPerSecond(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::unlock_per_second`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::unlock_per_second`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -38,9 +41,10 @@ export function finalUnlockTsSec(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::final_unlock_ts_sec`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::final_unlock_ts_sec`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -51,9 +55,10 @@ export function getValues(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::get_values`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::get_values`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -69,9 +74,14 @@ export interface CreateArgs {
  * Creates a new `TimeLockedBalance<T>` that will start unlocking at `unlock_start_ts_sec` and
  * unlock `unlock_per_second` of balance per second.
  */
-export function create(tx: Transaction, typeArg: string, args: CreateArgs): TransactionResult {
+export function create(
+  tx: Transaction,
+  typeArg: string,
+  args: CreateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::create`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::create`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.lockedBalance),
@@ -96,9 +106,12 @@ export function extraneousLockedAmount(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::extraneous_locked_amount`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::time_locked_balance::extraneous_locked_amount`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -114,9 +127,10 @@ export function maxWithdrawable(
   tx: Transaction,
   typeArg: string,
   args: MaxWithdrawableArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::max_withdrawable`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::max_withdrawable`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -135,9 +149,10 @@ export function remainingUnlock(
   tx: Transaction,
   typeArg: string,
   args: RemainingUnlockArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::remaining_unlock`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::remaining_unlock`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -153,9 +168,14 @@ export interface WithdrawArgs {
 }
 
 /** Withdraws the specified (unlocked) amount. Errors if amount exceeds max. withdrawable. */
-export function withdraw(tx: Transaction, typeArg: string, args: WithdrawArgs): TransactionResult {
+export function withdraw(
+  tx: Transaction,
+  typeArg: string,
+  args: WithdrawArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::withdraw`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::withdraw`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -175,9 +195,10 @@ export function withdrawAll(
   tx: Transaction,
   typeArg: string,
   args: WithdrawAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::withdraw_all`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::withdraw_all`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -193,9 +214,14 @@ export interface TopUpArgs {
 }
 
 /** Adds additional balance to be distributed (i.e. prolongs the duration of distribution). */
-export function topUp(tx: Transaction, typeArg: string, args: TopUpArgs): TransactionResult {
+export function topUp(
+  tx: Transaction,
+  typeArg: string,
+  args: TopUpArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::top_up`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::top_up`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -220,9 +246,12 @@ export function changeUnlockPerSecond(
   tx: Transaction,
   typeArg: string,
   args: ChangeUnlockPerSecondArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::change_unlock_per_second`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::time_locked_balance::change_unlock_per_second`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -246,9 +275,12 @@ export function changeUnlockStartTsSec(
   tx: Transaction,
   typeArg: string,
   args: ChangeUnlockStartTsSecArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::change_unlock_start_ts_sec`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::time_locked_balance::change_unlock_start_ts_sec`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -271,9 +303,12 @@ export function skimExtraneousBalance(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::skim_extraneous_balance`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::time_locked_balance::skim_extraneous_balance`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -284,9 +319,10 @@ export function destroyEmpty(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::destroy_empty`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::destroy_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -302,9 +338,12 @@ export interface CalcFinalUnlockTsSecArgs {
 export function calcFinalUnlockTsSec(
   tx: Transaction,
   args: CalcFinalUnlockTsSecArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::calc_final_unlock_ts_sec`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::time_locked_balance::calc_final_unlock_ts_sec`,
     arguments: [
       pure(tx, args.startTs, `u64`),
       pure(tx, args.amountToIssue, `u64`),
@@ -323,9 +362,10 @@ export function unlockableAmount(
   tx: Transaction,
   typeArg: string,
   args: UnlockableAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::unlockable_amount`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::unlockable_amount`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -343,9 +383,14 @@ export interface UnlockArgs {
  * Unlocks the balance that is unlockable based on the time passed since previous unlock.
  * Moves the amount from `locked_balance` to `unlocked_balance`.
  */
-export function unlock(tx: Transaction, typeArg: string, args: UnlockArgs): TransactionResult {
+export function unlock(
+  tx: Transaction,
+  typeArg: string,
+  args: UnlockArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::time_locked_balance::unlock`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::time_locked_balance::unlock`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),

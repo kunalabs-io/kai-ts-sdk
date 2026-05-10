@@ -5,7 +5,12 @@ import {
   SupplyPool as SupplyPool_,
   SupplyPoolReified,
 } from '../gen/kai-leverage/supply-pool/structs'
-import { TransactionArgument, Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
+import {
+  TransactionArgument,
+  Transaction,
+  TransactionObjectInput,
+  TransactionResult,
+} from '@mysten/sui/transactions'
 import {
   addLendFacil,
   removeLendFacil,
@@ -79,7 +84,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     tx: Transaction,
     facilId: string | TransactionArgument,
     interestModel: TransactionObjectInput
-  ) {
+  ): TransactionResult {
     return addLendFacil(tx, this.r.typeArgs, {
       pool: this.id,
       facilId,
@@ -87,7 +92,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  removeLendFacil(tx: Transaction, facilId: string | TransactionArgument) {
+  removeLendFacil(tx: Transaction, facilId: string | TransactionArgument): TransactionResult {
     return removeLendFacil(tx, this.r.typeArgs, {
       pool: this.id,
       facilId,
@@ -98,7 +103,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     tx: Transaction,
     facilId: string | TransactionArgument,
     interestModel: TransactionObjectInput
-  ) {
+  ): TransactionResult {
     return setLendFacilInterestModel(tx, this.r.typeArgs, {
       pool: this.id,
       facilId,
@@ -110,7 +115,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     tx: Transaction,
     facilId: string | TransactionArgument,
     maxLiabilityOutstanding: bigint
-  ) {
+  ): TransactionResult {
     return setLendFacilMaxLiabilityOutstanding(tx, this.r.typeArgs, {
       pool: this.id,
       facilId,
@@ -122,7 +127,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     tx: Transaction,
     facilId: string | TransactionArgument,
     maxUtilizationBps: bigint
-  ) {
+  ): TransactionResult {
     return setLendFacilMaxUtilizationBps(tx, this.r.typeArgs, {
       pool: this.id,
       facilId,
@@ -130,7 +135,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  supply(tx: Transaction, balance: TransactionObjectInput) {
+  supply(tx: Transaction, balance: TransactionObjectInput): TransactionResult {
     return supply(tx, this.r.typeArgs, {
       pool: this.id,
       balance,
@@ -138,7 +143,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  withdraw(tx: Transaction, balance: TransactionObjectInput) {
+  withdraw(tx: Transaction, balance: TransactionObjectInput): TransactionResult {
     return withdraw(tx, this.r.typeArgs, {
       pool: this.id,
       balance,
@@ -146,7 +151,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  async fetch(client: SuiClient) {
+  async fetch(client: SuiClient): Promise<SupplyPool<T, ST>> {
     const data = await this.r.fetch(client, this.id)
     return new SupplyPool({
       info: this,
@@ -155,7 +160,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  fromSuiObjectData(data: SuiObjectData) {
+  fromSuiObjectData(data: SuiObjectData): SupplyPool<T, ST> {
     const data_ = this.r.fromSuiObjectData(data)
     return new SupplyPool({
       info: this,
@@ -164,7 +169,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  fromBcs(bcs: Uint8Array) {
+  fromBcs(bcs: Uint8Array): SupplyPool<PhantomTypeArgument, PhantomTypeArgument> | undefined {
     return SupplyPool.fromBcs(bcs, this.r.fullTypeName)
   }
 }
@@ -193,7 +198,10 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     this.id = args.data.id
   }
 
-  static fromBcs(bcs: Uint8Array, type: string) {
+  static fromBcs(
+    bcs: Uint8Array,
+    type: string
+  ): SupplyPool<PhantomTypeArgument, PhantomTypeArgument> | undefined {
     if (!isSupplyPool(type)) {
       throw new Error(`Not a SupplyPool: ${type}`)
     }
@@ -206,7 +214,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
 
   static fromData<T extends PhantomTypeArgument, ST extends PhantomTypeArgument>(
     data: SupplyPool_<T, ST>
-  ) {
+  ): SupplyPool<PhantomTypeArgument, PhantomTypeArgument> | undefined {
     const info = Object.values(SUPPLY_POOL_INFOS).find(
       info => info.id === data.id
     ) as SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
@@ -221,7 +229,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     })
   }
 
-  getFacilInfo(lendFacilId: string) {
+  getFacilInfo(lendFacilId: string): LendFacilInfo<ST> {
     const facilInfo = this.data.debtInfo.contents.find(
       info => compressSuiAddress(info.key) === compressSuiAddress(lendFacilId)
     )
@@ -231,7 +239,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return facilInfo.value
   }
 
-  getInterestModelForFacilInfo(facilInfo: LendFacilInfo<ST>) {
+  getInterestModelForFacilInfo(facilInfo: LendFacilInfo<ST>): InterestModel {
     const start = facilInfo.interestModel.start
     const startVal = facilInfo.interestModel.startVal
     const sections: Array<Section> = []
@@ -245,17 +253,18 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return new InterestModel({ start, startVal, sections })
   }
 
-  getInterestModel(lendFacilId: string) {
+  getInterestModel(lendFacilId: string): InterestModel {
     const facilInfo = this.getFacilInfo(lendFacilId)
     return this.getInterestModelForFacilInfo(facilInfo)
   }
 
-  calcUtilization(timestampMs?: number) {
-    const totalLiabilitiesX64 = new Decimal(
-      this.calcUpdatedTotalLiabilitiesX64(timestampMs).toString()
-    )
+  calcUtilization(timestampMs?: number): Decimal {
+    const updatedTotalLiabilitiesX64 = this.calcUpdatedTotalLiabilitiesX64(timestampMs)
+    const totalLiabilitiesX64 = new Decimal(updatedTotalLiabilitiesX64.toString())
+    // Mirror on-chain update_interest: equity value also increases by accrued interest
+    const accruedInterestX64 = updatedTotalLiabilitiesX64 - this.data.totalLiabilitiesX64
     const equityValueX64 = new Decimal(
-      this.data.supplyEquity.registry.underlyingValueX64.toString()
+      (this.data.supplyEquity.registry.underlyingValueX64 + accruedInterestX64).toString()
     )
     if (equityValueX64.eq(0)) {
       return new Decimal(0)
@@ -263,7 +272,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return totalLiabilitiesX64.div(equityValueX64)
   }
 
-  calcInterestRateBpsForFacilInfo(facilInfo: LendFacilInfo<ST>, timestampMs?: number) {
+  calcInterestRateBpsForFacilInfo(facilInfo: LendFacilInfo<ST>, timestampMs?: number): bigint {
     const interestModel = this.getInterestModelForFacilInfo(facilInfo)
     const utilizationBps = BigInt(
       this.calcUtilization(timestampMs).mul(10000).toFixed(0).toString()
@@ -272,13 +281,13 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return interestModel.valueAt(utilizationBps)
   }
 
-  calcInterestRateBps(lendFacilId: string, timestampMs?: number) {
+  calcInterestRateBps(lendFacilId: string, timestampMs?: number): bigint {
     const facilInfo = this.getFacilInfo(lendFacilId)
     return this.calcInterestRateBpsForFacilInfo(facilInfo, timestampMs)
   }
 
   /// @returns liability value x64 after interest accrued since last update
-  calcUpdatedLiabilityX64(facilInfo: LendFacilInfo<ST>, timestampMs: number | undefined) {
+  calcUpdatedLiabilityX64(facilInfo: LendFacilInfo<ST>, timestampMs: number | undefined): bigint {
     if (timestampMs === undefined) {
       return facilInfo.debtRegistry.liabilityValueX64
     }
@@ -299,7 +308,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return debtRegistry.liabilityValueX64 + accruedInterestX64
   }
 
-  calcUpdatedTotalLiabilitiesX64(timestampMs: number | undefined) {
+  calcUpdatedTotalLiabilitiesX64(timestampMs: number | undefined): bigint {
     if (timestampMs === undefined) {
       return this.data.totalLiabilitiesX64
     }
@@ -311,7 +320,7 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return totalLiabilitiesX64
   }
 
-  calcDebtByShares(lendFacilId: string, shares: bigint, timestampMs?: number) {
+  calcDebtByShares(lendFacilId: string, shares: bigint, timestampMs?: number): Amount {
     const facilInfo = this.getFacilInfo(lendFacilId)
     const debtRegistry = facilInfo.debtRegistry
 
@@ -330,13 +339,17 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return Amount.fromInt(BigInt(amt.toFixed(0, Decimal.ROUND_UP)), this.T.decimals)
   }
 
-  calcUtilizationAfterBorrow(borrowAmount: bigint, timestampMs?: number) {
+  calcUtilizationAfterBorrow(borrowAmount: bigint, timestampMs?: number): Decimal {
     const borrowAmountX64 = borrowAmount << 64n
+    const updatedTotalLiabilitiesX64 = this.calcUpdatedTotalLiabilitiesX64(timestampMs)
     const totalLiabilitiesX64 = new Decimal(
-      (this.calcUpdatedTotalLiabilitiesX64(timestampMs) + borrowAmountX64).toString()
+      (updatedTotalLiabilitiesX64 + borrowAmountX64).toString()
     )
+    // Mirror on-chain update_interest: equity value increases by accrued interest
+    // (borrow doesn't change equity value, only interest accrual does)
+    const accruedInterestX64 = updatedTotalLiabilitiesX64 - this.data.totalLiabilitiesX64
     const equityValueX64 = new Decimal(
-      this.data.supplyEquity.registry.underlyingValueX64.toString()
+      (this.data.supplyEquity.registry.underlyingValueX64 + accruedInterestX64).toString()
     )
     if (equityValueX64.eq(0)) {
       return new Decimal(0)
@@ -344,7 +357,11 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
     return totalLiabilitiesX64.div(equityValueX64)
   }
 
-  calcInterestRateAfterBorrowBps(lendFacilId: string, borrowAmount: bigint, timestampMs?: number) {
+  calcInterestRateAfterBorrowBps(
+    lendFacilId: string,
+    borrowAmount: bigint,
+    timestampMs?: number
+  ): bigint | undefined {
     const interestModel = this.getInterestModel(lendFacilId)
     const utilizationBps = BigInt(
       this.calcUtilizationAfterBorrow(borrowAmount, timestampMs).mul(10000).toFixed(0).toString()
@@ -357,7 +374,21 @@ export class SupplyPool<T extends PhantomTypeArgument, ST extends PhantomTypeArg
   }
 }
 
-export const SUPPLY_POOL_INFOS = {
+export const SUPPLY_POOL_INFOS: {
+  wUSDC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  wUSDT: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  SUI: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  paused_USDC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  paused_suiUSDT: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  USDY: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  DEEP: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  USDC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  suiUSDT: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  WAL: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  wBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  LBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  xBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+} = {
   wUSDC: new SupplyPoolInfo({
     id: '0x86c5ca41be63b5b9a8da0b4ca0f8268d6e87f8cdda8c9e88b25c43efcd5f3074',
     T: whUSDCe,

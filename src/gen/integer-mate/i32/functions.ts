@@ -4,33 +4,46 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
-export function zero(tx: Transaction): TransactionResult {
+export function zero(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::zero`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::zero`,
     arguments: [],
   })
 }
 
-export function fromU32(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+export function fromU32(
+  tx: Transaction,
+  v: number | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::from_u32`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::from_u32`,
     arguments: [pure(tx, v, `u32`)],
   })
 }
 
-export function from(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+export function from(
+  tx: Transaction,
+  v: number | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::from`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::from`,
     arguments: [pure(tx, v, `u32`)],
   })
 }
 
-export function negFrom(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+export function negFrom(
+  tx: Transaction,
+  v: number | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::neg_from`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::neg_from`,
     arguments: [pure(tx, v, `u32`)],
   })
 }
@@ -40,9 +53,13 @@ export interface WrappingAddArgs {
   num2: TransactionObjectInput
 }
 
-export function wrappingAdd(tx: Transaction, args: WrappingAddArgs): TransactionResult {
+export function wrappingAdd(
+  tx: Transaction,
+  args: WrappingAddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::wrapping_add`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::wrapping_add`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -55,9 +72,13 @@ export interface AddArgs {
   num2: TransactionObjectInput
 }
 
-export function add(tx: Transaction, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::add`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::add`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -70,9 +91,13 @@ export interface WrappingSubArgs {
   num2: TransactionObjectInput
 }
 
-export function wrappingSub(tx: Transaction, args: WrappingSubArgs): TransactionResult {
+export function wrappingSub(
+  tx: Transaction,
+  args: WrappingSubArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::wrapping_sub`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::wrapping_sub`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -85,9 +110,13 @@ export interface SubArgs {
   num2: TransactionObjectInput
 }
 
-export function sub(tx: Transaction, args: SubArgs): TransactionResult {
+export function sub(
+  tx: Transaction,
+  args: SubArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::sub`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::sub`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -100,9 +129,13 @@ export interface MulArgs {
   num2: TransactionObjectInput
 }
 
-export function mul(tx: Transaction, args: MulArgs): TransactionResult {
+export function mul(
+  tx: Transaction,
+  args: MulArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::mul`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::mul`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -115,9 +148,13 @@ export interface DivArgs {
   num2: TransactionObjectInput
 }
 
-export function div(tx: Transaction, args: DivArgs): TransactionResult {
+export function div(
+  tx: Transaction,
+  args: DivArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::div`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::div`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -125,16 +162,24 @@ export function div(tx: Transaction, args: DivArgs): TransactionResult {
   })
 }
 
-export function abs(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+export function abs(
+  tx: Transaction,
+  v: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::abs`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::abs`,
     arguments: [obj(tx, v)],
   })
 }
 
-export function absU32(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+export function absU32(
+  tx: Transaction,
+  v: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::abs_u32`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::abs_u32`,
     arguments: [obj(tx, v)],
   })
 }
@@ -144,9 +189,13 @@ export interface ShlArgs {
   shift: number | TransactionArgument
 }
 
-export function shl(tx: Transaction, args: ShlArgs): TransactionResult {
+export function shl(
+  tx: Transaction,
+  args: ShlArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::shl`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::shl`,
     arguments: [
       obj(tx, args.v),
       pure(tx, args.shift, `u8`),
@@ -159,9 +208,13 @@ export interface ShrArgs {
   shift: number | TransactionArgument
 }
 
-export function shr(tx: Transaction, args: ShrArgs): TransactionResult {
+export function shr(
+  tx: Transaction,
+  args: ShrArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::shr`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::shr`,
     arguments: [
       obj(tx, args.v),
       pure(tx, args.shift, `u8`),
@@ -174,9 +227,13 @@ export interface ModArgs {
   n: TransactionObjectInput
 }
 
-export function mod(tx: Transaction, args: ModArgs): TransactionResult {
+export function mod(
+  tx: Transaction,
+  args: ModArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::mod`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::mod`,
     arguments: [
       obj(tx, args.v),
       obj(tx, args.n),
@@ -184,23 +241,35 @@ export function mod(tx: Transaction, args: ModArgs): TransactionResult {
   })
 }
 
-export function asU32(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+export function asU32(
+  tx: Transaction,
+  v: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::as_u32`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::as_u32`,
     arguments: [obj(tx, v)],
   })
 }
 
-export function sign(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+export function sign(
+  tx: Transaction,
+  v: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::sign`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::sign`,
     arguments: [obj(tx, v)],
   })
 }
 
-export function isNeg(tx: Transaction, v: TransactionObjectInput): TransactionResult {
+export function isNeg(
+  tx: Transaction,
+  v: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::is_neg`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::is_neg`,
     arguments: [obj(tx, v)],
   })
 }
@@ -210,9 +279,13 @@ export interface CmpArgs {
   num2: TransactionObjectInput
 }
 
-export function cmp(tx: Transaction, args: CmpArgs): TransactionResult {
+export function cmp(
+  tx: Transaction,
+  args: CmpArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::cmp`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::cmp`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -225,9 +298,13 @@ export interface EqArgs {
   num2: TransactionObjectInput
 }
 
-export function eq(tx: Transaction, args: EqArgs): TransactionResult {
+export function eq(
+  tx: Transaction,
+  args: EqArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::eq`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::eq`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -240,9 +317,13 @@ export interface GtArgs {
   num2: TransactionObjectInput
 }
 
-export function gt(tx: Transaction, args: GtArgs): TransactionResult {
+export function gt(
+  tx: Transaction,
+  args: GtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::gt`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::gt`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -255,9 +336,13 @@ export interface GteArgs {
   num2: TransactionObjectInput
 }
 
-export function gte(tx: Transaction, args: GteArgs): TransactionResult {
+export function gte(
+  tx: Transaction,
+  args: GteArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::gte`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::gte`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -270,9 +355,13 @@ export interface LtArgs {
   num2: TransactionObjectInput
 }
 
-export function lt(tx: Transaction, args: LtArgs): TransactionResult {
+export function lt(
+  tx: Transaction,
+  args: LtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::lt`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::lt`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -285,9 +374,13 @@ export interface LteArgs {
   num2: TransactionObjectInput
 }
 
-export function lte(tx: Transaction, args: LteArgs): TransactionResult {
+export function lte(
+  tx: Transaction,
+  args: LteArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::lte`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::lte`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -300,9 +393,13 @@ export interface OrArgs {
   num2: TransactionObjectInput
 }
 
-export function or(tx: Transaction, args: OrArgs): TransactionResult {
+export function or(
+  tx: Transaction,
+  args: OrArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::or`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::or`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -315,9 +412,13 @@ export interface AndArgs {
   num2: TransactionObjectInput
 }
 
-export function and(tx: Transaction, args: AndArgs): TransactionResult {
+export function and(
+  tx: Transaction,
+  args: AndArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::and`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::and`,
     arguments: [
       obj(tx, args.num1),
       obj(tx, args.num2),
@@ -325,16 +426,24 @@ export function and(tx: Transaction, args: AndArgs): TransactionResult {
   })
 }
 
-export function u32Neg(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+export function u32Neg(
+  tx: Transaction,
+  v: number | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::u32_neg`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::u32_neg`,
     arguments: [pure(tx, v, `u32`)],
   })
 }
 
-export function u8Neg(tx: Transaction, v: number | TransactionArgument): TransactionResult {
+export function u8Neg(
+  tx: Transaction,
+  v: number | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::i32::u8_neg`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::i32::u8_neg`,
     arguments: [pure(tx, v, `u8`)],
   })
 }

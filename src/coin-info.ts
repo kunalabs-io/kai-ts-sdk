@@ -61,7 +61,7 @@ export class CoinInfo<T extends PhantomTypeArgument> {
   }
 }
 
-export const SUI = new CoinInfo({
+export const SUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom('0x2::sui::SUI'),
   decimals: 9,
   name: 'Sui',
@@ -72,7 +72,7 @@ export const SUI = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0x0000000000000000000000000000000000000000000000000000000000000002-sui-SUI.svg',
 })
 
-export const whUSDCe = new CoinInfo({
+export const whUSDCe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN'
   ),
@@ -85,7 +85,7 @@ export const whUSDCe = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf-coin-COIN.webp',
 })
 
-export const whUSDTe = new CoinInfo({
+export const whUSDTe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN'
   ),
@@ -98,7 +98,7 @@ export const whUSDTe = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c-coin-COIN.webp',
 })
 
-export const klwhUSDCe = new CoinInfo({
+export const klwhUSDCe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x27fc520bfa9a98ca098b8f484c445f865fcb0efd79c8e4c5274cd6515282fd14::klwhusdce::KLWHUSDCE'
   ),
@@ -109,7 +109,7 @@ export const klwhUSDCe = new CoinInfo({
   displaySymbol: 'klUSDC',
 })
 
-export const klwhUSDTe = new CoinInfo({
+export const klwhUSDTe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x358b47a13abe067fe4054e414f4ee1d1524236cc60ffc716ec10931c5dbec795::klwhusdte::KLWHUSDTE'
   ),
@@ -120,7 +120,7 @@ export const klwhUSDTe = new CoinInfo({
   displaySymbol: 'klUSDT',
 })
 
-export const klSui = new CoinInfo({
+export const klSui: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x19163b40d52e67e20992f1b74c7376d30616ba966c8174e0990c58074d56eb8d::klsui::KLSUI'
   ),
@@ -131,7 +131,7 @@ export const klSui = new CoinInfo({
   displaySymbol: 'klSUI',
 })
 
-export const paused_klUsdc = new CoinInfo({
+export const paused_klUsdc: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xa47906ee2160b8d1d89591a2bb37ed71053bfb3ed1b39581f03358950a91ca79::klusdc::KLUSDC'
   ),
@@ -142,7 +142,7 @@ export const paused_klUsdc = new CoinInfo({
   displaySymbol: 'klUSDC',
 })
 
-export const paused_klSuiUSDT = new CoinInfo({
+export const paused_klSuiUSDT: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xfd3e54e465577273b7eb211212a01ca17418c667aec490eaf7fa5592bfd799f8::klsuiusdt::KLSUIUSDT'
   ),
@@ -153,7 +153,7 @@ export const paused_klSuiUSDT = new CoinInfo({
   displaySymbol: 'klSuiUSDT',
 })
 
-export const klUSDY = new CoinInfo({
+export const klUSDY: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xcc89168df227621ceab8f2309f134fef00606cc056b61c598a776847367b8e36::klusdy::KLUSDY'
   ),
@@ -164,7 +164,7 @@ export const klUSDY = new CoinInfo({
   displaySymbol: 'klUSDY',
 })
 
-export const klDEEP = new CoinInfo({
+export const klDEEP: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x8fc45d22b3fc276662811e0bada806a3a5f4cb63cd095c418b98df4e8b389f3f::kldeep::KLDEEP'
   ),
@@ -175,7 +175,7 @@ export const klDEEP = new CoinInfo({
   displaySymbol: 'klDEEP',
 })
 
-export const CETUS = new CoinInfo({
+export const CETUS: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS'
   ),
@@ -188,7 +188,7 @@ export const CETUS = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b-cetus-CETUS.webp',
 })
 
-export const klUSDC = new CoinInfo({
+export const klUSDC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x3f110dd8b324ce4c5df8b344b7d71bdd939083a9ea6f454161667dba872f99d6::klusdc::KLUSDC'
   ),
@@ -199,7 +199,7 @@ export const klUSDC = new CoinInfo({
   displaySymbol: 'klUSDC',
 })
 
-export const klSuiUSDT = new CoinInfo({
+export const klSuiUSDT: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x36caf1b10c52057f0f34b42baf53cdb9171ad7ce74f1360a9f94acdcad727ae4::klsuiusdt::KLSUIUSDT'
   ),
@@ -210,7 +210,7 @@ export const klSuiUSDT = new CoinInfo({
   displaySymbol: 'klSuiUSDT',
 })
 
-export const klWAL = new CoinInfo({
+export const klWAL: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x59b208a81be1ed6f1d596d971abf358401304dfbacce30c8ffc637ba5b68f13::klwal::KLWAL'
   ),
@@ -221,7 +221,7 @@ export const klWAL = new CoinInfo({
   displaySymbol: 'klWAL',
 })
 
-export const klWBTC = new CoinInfo({
+export const klWBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x4acb21bc82d09db099d89a5cf48f433d34fbc46c04fc7b79dda0b27e7f32fb20::klwbtc::KLWBTC'
   ),
@@ -232,7 +232,7 @@ export const klWBTC = new CoinInfo({
   displaySymbol: 'klWBTC',
 })
 
-export const klLBTC = new CoinInfo({
+export const klLBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x390b72b290b407c1835c33442cbbdd68c24aeb84397ffdb953994456d020e2fd::kllbtc::KLLBTC'
   ),
@@ -243,7 +243,7 @@ export const klLBTC = new CoinInfo({
   displaySymbol: 'klLBTC',
 })
 
-export const klXBTC = new CoinInfo({
+export const klXBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x439536b0ed9ffa4ead507ec35ae2bdc759a8bb7abe30fafea68a06af54476d75::klxbtc::KLXBTC'
   ),
@@ -254,7 +254,7 @@ export const klXBTC = new CoinInfo({
   displaySymbol: 'klxBTC',
 })
 
-export const USDC = new CoinInfo({
+export const USDC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC'
   ),
@@ -268,7 +268,7 @@ export const USDC = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7-usdc-USDC.svg',
 })
 
-export const yWHUSDCe = new CoinInfo({
+export const yWHUSDCe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273::ywhusdce::YWHUSDCE'
   ),
@@ -279,7 +279,7 @@ export const yWHUSDCe = new CoinInfo({
   displaySymbol: 'ywUSDC',
 })
 
-export const yWHUSDTe = new CoinInfo({
+export const yWHUSDTe: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xb8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613::ywhusdte::YWHUSDTE'
   ),
@@ -290,7 +290,7 @@ export const yWHUSDTe = new CoinInfo({
   displaySymbol: 'yUSDT',
 })
 
-export const ySUI = new CoinInfo({
+export const ySUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xb8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613::ysui::YSUI'
   ),
@@ -301,7 +301,7 @@ export const ySUI = new CoinInfo({
   displaySymbol: 'ySUI',
 })
 
-export const paused_yUSDC = new CoinInfo({
+export const paused_yUSDC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xa4184b1a5829e7cced8e51e8e385b16d02642634cd3e72a50d31cdf4a78bfd5c::yusdc::YUSDC'
   ),
@@ -312,7 +312,7 @@ export const paused_yUSDC = new CoinInfo({
   displaySymbol: 'yUSDC',
 })
 
-export const BLUE = new CoinInfo({
+export const BLUE: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE'
   ),
@@ -325,7 +325,7 @@ export const BLUE = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca-blue-BLUE.webp',
 })
 
-export const suiUSDT = new CoinInfo({
+export const suiUSDT: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT'
   ),
@@ -338,7 +338,7 @@ export const suiUSDT = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c-coin-COIN.webp',
 })
 
-export const paused_ysuiUSDT = new CoinInfo({
+export const paused_ysuiUSDT: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xaa1365f35a163f785b2a660b97831298dc145a3bc71e993407a5991722974e70::ysuiusdt::YSUIUSDT'
   ),
@@ -349,7 +349,7 @@ export const paused_ysuiUSDT = new CoinInfo({
   displaySymbol: 'ysuiUSDT',
 })
 
-export const yUSDY = new CoinInfo({
+export const yUSDY: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdd7108db1a209d23d8a25dda78bdca4547b755094305971ed4064dfe5cdfa026::yusdy::YUSDY'
   ),
@@ -360,7 +360,7 @@ export const yUSDY = new CoinInfo({
   displaySymbol: 'yUSDY',
 })
 
-export const yDEEP = new CoinInfo({
+export const yDEEP: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x5b2fa5c76309a417ccd14a65f036b8d1ff4e76a143ed878a47fdecfe0b09860e::ydeep::YDEEP'
   ),
@@ -371,7 +371,7 @@ export const yDEEP = new CoinInfo({
   displaySymbol: 'yDEEP',
 })
 
-export const yUSDC = new CoinInfo({
+export const yUSDC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x7ea359636b36e7c027c2cd71adedaf19be658e1477d9e71368a0b3824a0a27ff::yusdc::YUSDC'
   ),
@@ -382,7 +382,7 @@ export const yUSDC = new CoinInfo({
   displaySymbol: 'yUSDC',
 })
 
-export const ysuiUSDT = new CoinInfo({
+export const ysuiUSDT: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x36bc697c1dba827a4bf7fa3bfc9f1b0953fe09b91c4b4c103efa0b086e03d923::ysuiusdt::YSUIUSDT'
   ),
@@ -393,7 +393,7 @@ export const ysuiUSDT = new CoinInfo({
   displaySymbol: 'ysuiUSDT',
 })
 
-export const stSUI = new CoinInfo({
+export const stSUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI'
   ),
@@ -405,7 +405,7 @@ export const stSUI = new CoinInfo({
   iconUrl: 'https://images.alphafi.xyz/stSUI.png',
 })
 
-export const USDY = new CoinInfo({
+export const USDY: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY'
   ),
@@ -417,7 +417,7 @@ export const USDY = new CoinInfo({
   iconUrl: 'https://ondo.finance/images/tokens/usdy.svg',
 })
 
-export const DEEP = new CoinInfo({
+export const DEEP: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP'
   ),
@@ -431,7 +431,7 @@ export const DEEP = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270-deep-DEEP.svg',
 })
 
-export const WAL = new CoinInfo({
+export const WAL: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom('0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL'),
   decimals: 9,
   name: 'WAL',
@@ -442,7 +442,7 @@ export const WAL = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59-wal-WAL.svg',
 })
 
-export const wBTC = new CoinInfo({
+export const wBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom('0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b::btc::BTC'),
   decimals: 8,
   name: 'Wrapped Bitcoin',
@@ -453,7 +453,7 @@ export const wBTC = new CoinInfo({
     'https://coinmeta.polymedia.app/img/coins/0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b-btc-BTC.webp',
 })
 
-export const LBTC = new CoinInfo({
+export const LBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC'
   ),
@@ -466,7 +466,7 @@ export const LBTC = new CoinInfo({
   iconUrl: 'https://www.lombard.finance/lbtc/LBTC.png',
 })
 
-export const xBTC = new CoinInfo({
+export const xBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC'
   ),
@@ -478,7 +478,7 @@ export const xBTC = new CoinInfo({
   iconUrl: 'https://static.coinall.ltd/cdn/oksupport/common/20250512-095503.72e1f41d9b9a06.png',
 })
 
-export const yWAL = new CoinInfo({
+export const yWAL: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdab19711df7a4eefc633b9426e15d23305c6815eed775247e477599c706ede98::ywal::YWAL'
   ),
@@ -489,7 +489,7 @@ export const yWAL = new CoinInfo({
   displaySymbol: 'yWAL',
 })
 
-export const yWBTC = new CoinInfo({
+export const yWBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xe4ff5fcc935fddaf808e27017c994b9cd75eaac81cec4bd2b4b8fdeb05a71e07::ywbtc::YWBTC'
   ),
@@ -500,7 +500,7 @@ export const yWBTC = new CoinInfo({
   displaySymbol: 'yWBTC',
 })
 
-export const yLBTC = new CoinInfo({
+export const yLBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0x3e83d9c798902dbcde72b9ede9fa2997ea43b302f83e4894aa793e6791e95c9f::ylbtc::YLBTC'
   ),
@@ -511,7 +511,7 @@ export const yLBTC = new CoinInfo({
   displaySymbol: 'yLBTC',
 })
 
-export const yXBTC = new CoinInfo({
+export const yXBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xfc39a879b5a8772f682f1202cc5a8a3d93654cbb9e716b96bda7e5832af0e0eb::yxbtc::YXBTC'
   ),
@@ -522,7 +522,7 @@ export const yXBTC = new CoinInfo({
   displaySymbol: 'yXBTC',
 })
 
-export const COIN_INFOS = [
+export const COIN_INFOS: CoinInfo<PhantomTypeArgument>[] = [
   SUI,
   whUSDCe,
   whUSDTe,
@@ -565,4 +565,6 @@ export const COIN_INFOS = [
   yXBTC,
 ]
 
-export const COIN_INFO_MAP = new Map(COIN_INFOS.map(c => [compressSuiType(c.typeName), c]))
+export const COIN_INFO_MAP: Map<string, CoinInfo<PhantomTypeArgument>> = new Map(
+  COIN_INFOS.map(c => [compressSuiType(c.typeName), c])
+)

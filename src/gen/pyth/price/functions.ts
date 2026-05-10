@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -14,9 +15,13 @@ export interface NewArgs {
   timestamp: bigint | TransactionArgument
 }
 
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price::new`,
+    target: `${getPublishedAt('pyth', options?.env)}::price::new`,
     arguments: [
       obj(tx, args.price),
       pure(tx, args.conf, `u64`),
@@ -26,30 +31,46 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   })
 }
 
-export function getPrice(tx: Transaction, price: TransactionObjectInput): TransactionResult {
+export function getPrice(
+  tx: Transaction,
+  price: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price::get_price`,
+    target: `${getPublishedAt('pyth', options?.env)}::price::get_price`,
     arguments: [obj(tx, price)],
   })
 }
 
-export function getConf(tx: Transaction, price: TransactionObjectInput): TransactionResult {
+export function getConf(
+  tx: Transaction,
+  price: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price::get_conf`,
+    target: `${getPublishedAt('pyth', options?.env)}::price::get_conf`,
     arguments: [obj(tx, price)],
   })
 }
 
-export function getTimestamp(tx: Transaction, price: TransactionObjectInput): TransactionResult {
+export function getTimestamp(
+  tx: Transaction,
+  price: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price::get_timestamp`,
+    target: `${getPublishedAt('pyth', options?.env)}::price::get_timestamp`,
     arguments: [obj(tx, price)],
   })
 }
 
-export function getExpo(tx: Transaction, price: TransactionObjectInput): TransactionResult {
+export function getExpo(
+  tx: Transaction,
+  price: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price::get_expo`,
+    target: `${getPublishedAt('pyth', options?.env)}::price::get_expo`,
     arguments: [obj(tx, price)],
   })
 }

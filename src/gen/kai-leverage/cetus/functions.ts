@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
@@ -19,9 +20,10 @@ export function slippageToleranceAssertion(
   tx: Transaction,
   typeArgs: [string, string],
   args: SlippageToleranceAssertionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::slippage_tolerance_assertion`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::slippage_tolerance_assertion`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -43,9 +45,12 @@ export function calcDepositAmountsByLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcDepositAmountsByLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::calc_deposit_amounts_by_liquidity`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::cetus::calc_deposit_amounts_by_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -69,9 +74,10 @@ export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::remove_liquidity`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -99,9 +105,10 @@ export function createPositionTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::create_position_ticket`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_position_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cetusPool),
@@ -133,9 +140,10 @@ export function createPositionTicketV2(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionTicketV2Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::create_position_ticket_v2`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_position_ticket_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cetusPool),
@@ -163,9 +171,10 @@ export function borrowForPositionX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: BorrowForPositionXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::borrow_for_position_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::borrow_for_position_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -188,9 +197,10 @@ export function borrowForPositionY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: BorrowForPositionYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::borrow_for_position_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::borrow_for_position_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -215,9 +225,10 @@ export function createPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::create_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -249,9 +260,10 @@ export function createDeleverageTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreateDeleverageTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::create_deleverage_ticket`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_deleverage_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -284,9 +296,12 @@ export function createDeleverageTicketForLiquidation(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreateDeleverageTicketForLiquidationArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::create_deleverage_ticket_for_liquidation`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::cetus::create_deleverage_ticket_for_liquidation`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -320,9 +335,10 @@ export function deleverage(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::deleverage`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -357,9 +373,10 @@ export function deleverageForLiquidation(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageForLiquidationArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::deleverage_for_liquidation`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage_for_liquidation`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -392,9 +409,10 @@ export function liquidateColX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: LiquidateColXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::liquidate_col_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -426,9 +444,10 @@ export function liquidateColY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: LiquidateColYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::liquidate_col_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -457,9 +476,10 @@ export function repayBadDebtX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayBadDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::repay_bad_debt_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -488,9 +508,10 @@ export function repayBadDebtY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayBadDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::repay_bad_debt_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -525,9 +546,10 @@ export function reduce(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: ReduceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::reduce`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::reduce`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -561,9 +583,10 @@ export function addLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::add_liquidity`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -597,9 +620,10 @@ export function addLiquidityFixCoin(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityFixCoinArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::add_liquidity_fix_coin`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::add_liquidity_fix_coin`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -629,9 +653,10 @@ export function repayDebtX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::repay_debt_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -656,9 +681,10 @@ export function repayDebtY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::repay_debt_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -683,9 +709,10 @@ export function ownerCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: OwnerCollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::owner_collect_fee`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::owner_collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -712,9 +739,10 @@ export function ownerCollectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: OwnerCollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::owner_collect_reward`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::owner_collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -739,9 +767,10 @@ export function ownerTakeStashedRewards(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: OwnerTakeStashedRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::owner_take_stashed_rewards`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::owner_take_stashed_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -764,9 +793,10 @@ export function deletePosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: DeletePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::delete_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::delete_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -794,9 +824,10 @@ export function rebalanceCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceCollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::rebalance_collect_fee`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::rebalance_collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -826,9 +857,10 @@ export function rebalanceCollectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceCollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::rebalance_collect_reward`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::rebalance_collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -859,9 +891,10 @@ export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::rebalance_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::rebalance_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -895,9 +928,12 @@ export function rebalanceAddLiquidityByFixCoin(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceAddLiquidityByFixCoinArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::rebalance_add_liquidity_by_fix_coin`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::cetus::rebalance_add_liquidity_by_fix_coin`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -931,10 +967,11 @@ export function syncExploitedPositionLiquidityBySmallWithdraw(
   tx: Transaction,
   typeArgs: [string, string],
   args: SyncExploitedPositionLiquidityBySmallWithdrawArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::cetus::sync_exploited_position_liquidity_by_small_withdraw`,
     typeArguments: typeArgs,
     arguments: [
@@ -960,9 +997,12 @@ export function destructExploitedPositionAndReturnLp(
   tx: Transaction,
   typeArgs: [string, string],
   args: DestructExploitedPositionAndReturnLpArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::destruct_exploited_position_and_return_lp`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::cetus::destruct_exploited_position_and_return_lp`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -988,9 +1028,10 @@ export function positionModel(
   tx: Transaction,
   typeArgs: [string, string],
   args: PositionModelArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::position_model`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::position_model`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -1013,9 +1054,10 @@ export function calcLiquidateColX(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcLiquidateColXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::calc_liquidate_col_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::calc_liquidate_col_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -1040,9 +1082,10 @@ export function calcLiquidateColY(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcLiquidateColYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::cetus::calc_liquidate_col_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::calc_liquidate_col_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

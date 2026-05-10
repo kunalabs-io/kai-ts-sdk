@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
 
@@ -13,9 +14,13 @@ export interface NewArgs {
   emaPrice: TransactionObjectInput
 }
 
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_feed::new`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_feed::new`,
     arguments: [
       obj(tx, args.priceIdentifier),
       obj(tx, args.price),
@@ -24,9 +29,13 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   })
 }
 
-export function from(tx: Transaction, priceFeed: TransactionObjectInput): TransactionResult {
+export function from(
+  tx: Transaction,
+  priceFeed: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_feed::from`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_feed::from`,
     arguments: [obj(tx, priceFeed)],
   })
 }
@@ -34,23 +43,32 @@ export function from(tx: Transaction, priceFeed: TransactionObjectInput): Transa
 export function getPriceIdentifier(
   tx: Transaction,
   priceFeed: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_feed::get_price_identifier`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_feed::get_price_identifier`,
     arguments: [obj(tx, priceFeed)],
   })
 }
 
-export function getPrice(tx: Transaction, priceFeed: TransactionObjectInput): TransactionResult {
+export function getPrice(
+  tx: Transaction,
+  priceFeed: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_feed::get_price`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_feed::get_price`,
     arguments: [obj(tx, priceFeed)],
   })
 }
 
-export function getEmaPrice(tx: Transaction, priceFeed: TransactionObjectInput): TransactionResult {
+export function getEmaPrice(
+  tx: Transaction,
+  priceFeed: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_feed::get_ema_price`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_feed::get_ema_price`,
     arguments: [obj(tx, priceFeed)],
   })
 }

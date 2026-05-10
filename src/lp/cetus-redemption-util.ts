@@ -10,8 +10,8 @@ import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { TypeArgument } from '../gen/_framework/reified'
 
 import { CETUS } from '../coin-info'
-import { isAttackedPosition } from 'gen/cetus-clmm/pool/functions'
-import { destructExploitedPositionAndReturnLp } from 'gen/kai-leverage/cetus/functions'
+import { isAttackedPosition } from '../gen/cetus-clmm/pool/functions'
+import { destructExploitedPositionAndReturnLp } from '../gen/kai-leverage/cetus/functions'
 
 const AFFECTED_CONFIG_IDS = [
   '0x2d52e5fe8af24f2c750250fca6ce5d595d22287f12d29c6ffbae490f5650478d',
@@ -24,14 +24,14 @@ const AFFECTED_CONFIG_IDS = [
 
 export function configIsAffected(
   config: PositionConfigInfo<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
-) {
+): boolean {
   return AFFECTED_CONFIG_IDS.includes(config.configId)
 }
 
 export async function positionIsCut(
   client: SuiClient,
   position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
-) {
+): Promise<boolean> {
   const tx = new Transaction()
 
   const typeArguments = [position.X.typeName, position.Y.typeName] as [string, string]
@@ -99,7 +99,7 @@ export function destructCetusPositionAndTransferLp(
   tx: Transaction,
   positionCapId: string,
   sender: string
-) {
+): void {
   const lp = destructExploitedPositionAndReturnLp(tx, [position.X.typeName, position.Y.typeName], {
     position: position.id,
     config: position.configInfo.configId,

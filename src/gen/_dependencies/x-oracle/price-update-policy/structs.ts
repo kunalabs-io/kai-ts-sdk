@@ -47,29 +47,29 @@ export function isPriceUpdateRequest(type: string): boolean {
   )
 }
 
-export interface PriceUpdateRequestFields<T0 extends PhantomTypeArgument> {
+export interface PriceUpdateRequestFields<T extends PhantomTypeArgument> {
   for: ToField<ID>
   receipts: ToField<VecSet<TypeName>>
   priceFeeds: ToField<Vector<PriceFeed>>
 }
 
-export type PriceUpdateRequestReified<T0 extends PhantomTypeArgument> = Reified<
-  PriceUpdateRequest<T0>,
-  PriceUpdateRequestFields<T0>
+export type PriceUpdateRequestReified<T extends PhantomTypeArgument> = Reified<
+  PriceUpdateRequest<T>,
+  PriceUpdateRequestFields<T>
 >
 
-export type PriceUpdateRequestJSONField<T0 extends PhantomTypeArgument> = {
+export type PriceUpdateRequestJSONField<T extends PhantomTypeArgument> = {
   for: string
   receipts: ToJSON<VecSet<TypeName>>
   priceFeeds: ToJSON<PriceFeed>[]
 }
 
-export type PriceUpdateRequestJSON<T0 extends PhantomTypeArgument> = {
+export type PriceUpdateRequestJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof PriceUpdateRequest.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & PriceUpdateRequestJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & PriceUpdateRequestJSONField<T>
 
-export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements StructClass {
+export class PriceUpdateRequest<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::price_update_policy::PriceUpdateRequest` = `${
@@ -80,20 +80,20 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
 
   readonly $typeName: typeof PriceUpdateRequest.$typeName = PriceUpdateRequest.$typeName
   readonly $fullTypeName: `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<
-    T0
+    T
   >}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof PriceUpdateRequest.$isPhantom = PriceUpdateRequest.$isPhantom
 
   readonly for: ToField<ID>
   readonly receipts: ToField<VecSet<TypeName>>
   readonly priceFeeds: ToField<Vector<PriceFeed>>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: PriceUpdateRequestFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: PriceUpdateRequestFields<T>) {
     this.$fullTypeName = composeSuiType(
       PriceUpdateRequest.$typeName,
       ...typeArgs,
-    ) as `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.for = fields.for
@@ -101,36 +101,36 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     this.priceFeeds = fields.priceFeeds
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PriceUpdateRequestReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PriceUpdateRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = PriceUpdateRequest.bcs
     return {
       typeName: PriceUpdateRequest.$typeName,
       fullTypeName: composeSuiType(
         PriceUpdateRequest.$typeName,
-        ...[extractType(T0)],
+        ...[extractType(T)],
       ) as `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
+        ToPhantomTypeArgument<T>
       >}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: PriceUpdateRequest.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => PriceUpdateRequest.fromFields(T0, fields),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => PriceUpdateRequest.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        PriceUpdateRequest.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => PriceUpdateRequest.fromFields(T0, reifiedBcs.parse(data)),
+        PriceUpdateRequest.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => PriceUpdateRequest.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => PriceUpdateRequest.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => PriceUpdateRequest.fromJSON(T0, json),
+      fromJSONField: (field: any) => PriceUpdateRequest.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => PriceUpdateRequest.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
-        PriceUpdateRequest.fromSuiParsedData(T0, content),
+        PriceUpdateRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
-        PriceUpdateRequest.fromSuiObjectData(T0, content),
+        PriceUpdateRequest.fromSuiObjectData(T, content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        PriceUpdateRequest.fetch(client, T0, id),
-      new: (fields: PriceUpdateRequestFields<ToPhantomTypeArgument<T0>>) => {
-        return new PriceUpdateRequest([extractType(T0)], fields)
+        PriceUpdateRequest.fetch(client, T, id),
+      new: (fields: PriceUpdateRequestFields<ToPhantomTypeArgument<T>>) => {
+        return new PriceUpdateRequest([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -140,10 +140,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     return PriceUpdateRequest.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<PriceUpdateRequest<ToPhantomTypeArgument<T0>>>> {
-    return phantom(PriceUpdateRequest.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<PriceUpdateRequest<ToPhantomTypeArgument<T>>>> {
+    return phantom(PriceUpdateRequest.reified(T))
   }
 
   static get p(): typeof PriceUpdateRequest.phantom {
@@ -167,10 +167,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     return PriceUpdateRequest.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return PriceUpdateRequest.reified(typeArg).new({
       for: decodeFromFields(ID.reified(), fields.for),
       receipts: decodeFromFields(VecSet.reified(TypeName.reified()), fields.receipts),
@@ -178,10 +178,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (!isPriceUpdateRequest(item.type)) {
       throw new Error('not a PriceUpdateRequest type')
     }
@@ -194,14 +194,14 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return PriceUpdateRequest.fromFields(typeArg, PriceUpdateRequest.bcs.parse(data))
   }
 
-  toJSONField(): PriceUpdateRequestJSONField<T0> {
+  toJSONField(): PriceUpdateRequestJSONField<T> {
     return {
       for: this.for,
       receipts: this.receipts.toJSONField(),
@@ -209,14 +209,14 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     }
   }
 
-  toJSON(): PriceUpdateRequestJSON<T0> {
+  toJSON(): PriceUpdateRequestJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return PriceUpdateRequest.reified(typeArg).new({
       for: decodeFromJSONField(ID.reified(), field.for),
       receipts: decodeFromJSONField(VecSet.reified(TypeName.reified()), field.receipts),
@@ -224,10 +224,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== PriceUpdateRequest.$typeName) {
       throw new Error(
         `not a PriceUpdateRequest json object: expected '${PriceUpdateRequest.$typeName}' but got '${json.$typeName}'`,
@@ -242,10 +242,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     return PriceUpdateRequest.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -255,10 +255,10 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     return PriceUpdateRequest.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): PriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceUpdateRequest(data.bcs.type)) {
         throw new Error(`object at is not a PriceUpdateRequest object`)
@@ -290,11 +290,11 @@ export class PriceUpdateRequest<T0 extends PhantomTypeArgument> implements Struc
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<PriceUpdateRequest<ToPhantomTypeArgument<T0>>> {
+  ): Promise<PriceUpdateRequest<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isPriceUpdateRequest(res.type)) {
       throw new Error(`object at id ${id} is not a PriceUpdateRequest object`)

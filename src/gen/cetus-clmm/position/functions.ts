@@ -4,14 +4,19 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
 import { ID } from '../../sui/object/structs'
 
-export function init(tx: Transaction, otw: TransactionObjectInput): TransactionResult {
+export function init(
+  tx: Transaction,
+  otw: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::init`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::init`,
     arguments: [obj(tx, otw)],
   })
 }
@@ -35,9 +40,13 @@ export interface SetDisplayArgs {
  * * `creator` - The creator of the position
  * * `ctx` - The transaction context
  */
-export function setDisplay(tx: Transaction, args: SetDisplayArgs): TransactionResult {
+export function setDisplay(
+  tx: Transaction,
+  args: SetDisplayArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::set_display`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::set_display`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.publisher),
@@ -60,9 +69,10 @@ export interface UpdateDisplayInternalArgs {
 export function updateDisplayInternal(
   tx: Transaction,
   args: UpdateDisplayInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_display_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_display_internal`,
     arguments: [
       obj(tx, args.publisher),
       pure(tx, args.description, `${String.$typeName}`),
@@ -82,9 +92,10 @@ export function updateDisplayInternal(
 export function new_(
   tx: Transaction,
   tickSpacing: number | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::new`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::new`,
     arguments: [pure(tx, tickSpacing, `u32`)],
   })
 }
@@ -113,9 +124,10 @@ export function openPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::open_position`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::open_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.manager),
@@ -138,9 +150,13 @@ export interface ClosePositionArgs {
  * * `manager` - The position manager
  * * `position_nft` - The position NFT
  */
-export function closePosition(tx: Transaction, args: ClosePositionArgs): TransactionResult {
+export function closePosition(
+  tx: Transaction,
+  args: ClosePositionArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::close_position`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::close_position`,
     arguments: [
       obj(tx, args.manager),
       obj(tx, args.positionNft),
@@ -161,9 +177,12 @@ export interface RemovePositionInfoForRestoreArgs {
 export function removePositionInfoForRestore(
   tx: Transaction,
   args: RemovePositionInfoForRestoreArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::remove_position_info_for_restore`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::position::remove_position_info_for_restore`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -192,9 +211,13 @@ export interface IncreaseLiquidityArgs {
  * * `rewards_growth_inside` - The latest position range rewards_growth_inside
  * * Returns the new liquidity
  */
-export function increaseLiquidity(tx: Transaction, args: IncreaseLiquidityArgs): TransactionResult {
+export function increaseLiquidity(
+  tx: Transaction,
+  args: IncreaseLiquidityArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::increase_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::increase_liquidity`,
     arguments: [
       obj(tx, args.manager),
       obj(tx, args.positionNft),
@@ -227,9 +250,13 @@ export interface DecreaseLiquidityArgs {
  * * `points_growth_inside` - The latest position range points_growth_inside
  * * `rewards_growth_inside` - The latest position range rewards_growth_inside
  */
-export function decreaseLiquidity(tx: Transaction, args: DecreaseLiquidityArgs): TransactionResult {
+export function decreaseLiquidity(
+  tx: Transaction,
+  args: DecreaseLiquidityArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::decrease_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::decrease_liquidity`,
     arguments: [
       obj(tx, args.manager),
       obj(tx, args.positionNft),
@@ -263,9 +290,13 @@ export interface ApplyLiquidityCutArgs {
  * * `rewards_growth_inside` - The latest position range rewards_growth_inside
  * * Returns the new liquidity
  */
-export function applyLiquidityCut(tx: Transaction, args: ApplyLiquidityCutArgs): TransactionResult {
+export function applyLiquidityCut(
+  tx: Transaction,
+  args: ApplyLiquidityCutArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::apply_liquidity_cut`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::apply_liquidity_cut`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -293,9 +324,13 @@ export interface UpdateFeeArgs {
  * * `fee_growth_inside_b` - The latest position range fee_growth_inside_b
  * * Returns the fee_owned
  */
-export function updateFee(tx: Transaction, args: UpdateFeeArgs): TransactionResult {
+export function updateFee(
+  tx: Transaction,
+  args: UpdateFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_fee`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -318,9 +353,13 @@ export interface UpdatePointsArgs {
  * * `points_growth_inside` - The latest position range points_growth_inside
  * * Returns the points_owned
  */
-export function updatePoints(tx: Transaction, args: UpdatePointsArgs): TransactionResult {
+export function updatePoints(
+  tx: Transaction,
+  args: UpdatePointsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_points`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_points`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -342,9 +381,13 @@ export interface UpdateRewardsArgs {
  * * `rewards_growth_inside` - The latest position range rewards_growth_inside
  * * Returns the amount_owned vector
  */
-export function updateRewards(tx: Transaction, args: UpdateRewardsArgs): TransactionResult {
+export function updateRewards(
+  tx: Transaction,
+  args: UpdateRewardsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_rewards`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -368,9 +411,13 @@ export interface UpdateAndResetFeeArgs {
  * * `fee_growth_inside_b` - The latest position range fee_growth_inside_b
  * * Returns the amount_owned
  */
-export function updateAndResetFee(tx: Transaction, args: UpdateAndResetFeeArgs): TransactionResult {
+export function updateAndResetFee(
+  tx: Transaction,
+  args: UpdateAndResetFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_and_reset_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_and_reset_fee`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -398,9 +445,10 @@ export interface UpdateAndResetRewardsArgs {
 export function updateAndResetRewards(
   tx: Transaction,
   args: UpdateAndResetRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_and_reset_rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_and_reset_rewards`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -421,9 +469,13 @@ export interface ResetFeeArgs {
  * * `position_id` - The position ID
  * * Returns the fee amount owned
  */
-export function resetFee(tx: Transaction, args: ResetFeeArgs): TransactionResult {
+export function resetFee(
+  tx: Transaction,
+  args: ResetFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::reset_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::reset_fee`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -444,9 +496,13 @@ export interface ResetRewarderArgs {
  * * `rewarder_idx` - The rewarder index
  * * Returns the reward amount owned
  */
-export function resetRewarder(tx: Transaction, args: ResetRewarderArgs): TransactionResult {
+export function resetRewarder(
+  tx: Transaction,
+  args: ResetRewarderArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::reset_rewarder`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::reset_rewarder`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -469,9 +525,10 @@ export interface InitedRewardsCountArgs {
 export function initedRewardsCount(
   tx: Transaction,
   args: InitedRewardsCountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::inited_rewards_count`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::inited_rewards_count`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -492,9 +549,13 @@ export interface FetchPositionsArgs {
  * * `limit` - The max count of `PositionInfo` to fetch
  * * Returns the `PositionInfo` list
  */
-export function fetchPositions(tx: Transaction, args: FetchPositionsArgs): TransactionResult {
+export function fetchPositions(
+  tx: Transaction,
+  args: FetchPositionsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::fetch_positions`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::fetch_positions`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.start, `vector<${ID.$typeName}>`),
@@ -508,9 +569,13 @@ export function fetchPositions(tx: Transaction, args: FetchPositionsArgs): Trans
  * * `position_nft` - The position NFT
  * * Returns the pool ID
  */
-export function poolId(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function poolId(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::pool_id`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::pool_id`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -520,9 +585,13 @@ export function poolId(tx: Transaction, positionNft: TransactionObjectInput): Tr
  * * `position_nft` - The position NFT
  * * Returns the tick range tuple
  */
-export function tickRange(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function tickRange(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::tick_range`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -532,9 +601,13 @@ export function tickRange(tx: Transaction, positionNft: TransactionObjectInput):
  * * `position_nft` - The position NFT
  * * Returns the index
  */
-export function index(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function index(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::index`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::index`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -544,9 +617,13 @@ export function index(tx: Transaction, positionNft: TransactionObjectInput): Tra
  * * `position_nft` - The position NFT
  * * Returns the name
  */
-export function name(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function name(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::name`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::name`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -559,9 +636,10 @@ export function name(tx: Transaction, positionNft: TransactionObjectInput): Tran
 export function description(
   tx: Transaction,
   positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::description`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::description`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -571,9 +649,13 @@ export function description(
  * * `position_nft` - The position NFT
  * * Returns the url
  */
-export function url(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function url(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::url`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::url`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -583,9 +665,13 @@ export function url(tx: Transaction, positionNft: TransactionObjectInput): Trans
  * * `position_nft` - The position NFT
  * * Returns the liquidity
  */
-export function liquidity(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function liquidity(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::liquidity`,
     arguments: [obj(tx, positionNft)],
   })
 }
@@ -595,9 +681,13 @@ export function liquidity(tx: Transaction, positionNft: TransactionObjectInput):
  * * `info` - The `PositionInfo`
  * * Returns the position ID
  */
-export function infoPositionId(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoPositionId(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_position_id`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_position_id`,
     arguments: [obj(tx, info)],
   })
 }
@@ -607,9 +697,13 @@ export function infoPositionId(tx: Transaction, info: TransactionObjectInput): T
  * * `info` - The `PositionInfo`
  * * Returns the liquidity
  */
-export function infoLiquidity(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoLiquidity(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_liquidity`,
     arguments: [obj(tx, info)],
   })
 }
@@ -619,9 +713,13 @@ export function infoLiquidity(tx: Transaction, info: TransactionObjectInput): Tr
  * * `info` - The `PositionInfo`
  * * Returns the tick range tuple
  */
-export function infoTickRange(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoTickRange(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_tick_range`,
     arguments: [obj(tx, info)],
   })
 }
@@ -634,9 +732,10 @@ export function infoTickRange(tx: Transaction, info: TransactionObjectInput): Tr
 export function infoFeeGrowthInside(
   tx: Transaction,
   info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_fee_growth_inside`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_fee_growth_inside`,
     arguments: [obj(tx, info)],
   })
 }
@@ -646,9 +745,13 @@ export function infoFeeGrowthInside(
  * * `info` - The `PositionInfo`
  * * Returns the fee owned tuple
  */
-export function infoFeeOwned(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoFeeOwned(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_fee_owned`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_fee_owned`,
     arguments: [obj(tx, info)],
   })
 }
@@ -658,9 +761,13 @@ export function infoFeeOwned(tx: Transaction, info: TransactionObjectInput): Tra
  * * `info` - The `PositionInfo`
  * * Returns the points owned
  */
-export function infoPointsOwned(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoPointsOwned(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_points_owned`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_points_owned`,
     arguments: [obj(tx, info)],
   })
 }
@@ -673,9 +780,10 @@ export function infoPointsOwned(tx: Transaction, info: TransactionObjectInput): 
 export function infoPointsGrowthInside(
   tx: Transaction,
   info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_points_growth_inside`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_points_growth_inside`,
     arguments: [obj(tx, info)],
   })
 }
@@ -685,9 +793,13 @@ export function infoPointsGrowthInside(
  * * `info` - The `PositionInfo`
  * * Returns the rewards
  */
-export function infoRewards(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function infoRewards(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::info_rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::info_rewards`,
     arguments: [obj(tx, info)],
   })
 }
@@ -700,9 +812,10 @@ export function infoRewards(tx: Transaction, info: TransactionObjectInput): Tran
 export function rewardGrowthInside(
   tx: Transaction,
   reward: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::reward_growth_inside`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::reward_growth_inside`,
     arguments: [obj(tx, reward)],
   })
 }
@@ -715,9 +828,10 @@ export function rewardGrowthInside(
 export function rewardAmountOwned(
   tx: Transaction,
   reward: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::reward_amount_owned`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::reward_amount_owned`,
     arguments: [obj(tx, reward)],
   })
 }
@@ -736,9 +850,10 @@ export interface RewardsAmountOwnedArgs {
 export function rewardsAmountOwned(
   tx: Transaction,
   args: RewardsAmountOwnedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::rewards_amount_owned`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::rewards_amount_owned`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -760,9 +875,10 @@ export interface BorrowPositionInfoArgs {
 export function borrowPositionInfo(
   tx: Transaction,
   args: BorrowPositionInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::borrow_position_info`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::borrow_position_info`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -779,9 +895,13 @@ export function borrowPositionInfo(
  * * `position_info` - The `PositionInfo`
  * * Returns true if the position is empty, false otherwise
  */
-export function isEmpty(tx: Transaction, positionInfo: TransactionObjectInput): TransactionResult {
+export function isEmpty(
+  tx: Transaction,
+  positionInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::is_empty`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::is_empty`,
     arguments: [obj(tx, positionInfo)],
   })
 }
@@ -804,9 +924,10 @@ export interface CheckPositionTickRangeArgs {
 export function checkPositionTickRange(
   tx: Transaction,
   args: CheckPositionTickRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::check_position_tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::check_position_tick_range`,
     arguments: [
       obj(tx, args.lower),
       obj(tx, args.upper),
@@ -826,9 +947,13 @@ export interface IsPositionExistArgs {
  * * `position_id` - The position ID
  * * Returns true if the position exists, false otherwise
  */
-export function isPositionExist(tx: Transaction, args: IsPositionExistArgs): TransactionResult {
+export function isPositionExist(
+  tx: Transaction,
+  args: IsPositionExistArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::is_position_exist`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::is_position_exist`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -849,9 +974,10 @@ export interface UpdateRewardsInternalArgs {
 export function updateRewardsInternal(
   tx: Transaction,
   args: UpdateRewardsInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_rewards_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_rewards_internal`,
     arguments: [
       obj(tx, args.positionInfo),
       pure(tx, args.rewardsGrowthsInside, `vector<u128>`),
@@ -871,9 +997,13 @@ export interface UpdateFeeInternalArgs {
  * * `fee_growth_inside_a` - The fee growth inside of coin A
  * * `fee_growth_inside_b` - The fee growth inside of coin B
  */
-export function updateFeeInternal(tx: Transaction, args: UpdateFeeInternalArgs): TransactionResult {
+export function updateFeeInternal(
+  tx: Transaction,
+  args: UpdateFeeInternalArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_fee_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_fee_internal`,
     arguments: [
       obj(tx, args.positionInfo),
       pure(tx, args.feeGrowthInsideA, `u128`),
@@ -895,9 +1025,10 @@ export interface UpdatePointsInternalArgs {
 export function updatePointsInternal(
   tx: Transaction,
   args: UpdatePointsInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::update_points_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::update_points_internal`,
     arguments: [
       obj(tx, args.positionInfo),
       pure(tx, args.pointsGrowthInside, `u128`),
@@ -916,9 +1047,13 @@ export interface NewPositionNameArgs {
  * * `position_index` - The position index
  * * Returns the position name
  */
-export function newPositionName(tx: Transaction, args: NewPositionNameArgs): TransactionResult {
+export function newPositionName(
+  tx: Transaction,
+  args: NewPositionNameArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::new_position_name`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::new_position_name`,
     arguments: [
       pure(tx, args.poolIndex, `u64`),
       pure(tx, args.positionIndex, `u64`),
@@ -940,9 +1075,10 @@ export interface BorrowMutPositionInfoArgs {
 export function borrowMutPositionInfo(
   tx: Transaction,
   args: BorrowMutPositionInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::borrow_mut_position_info`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::borrow_mut_position_info`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -954,9 +1090,13 @@ export function borrowMutPositionInfo(
  * Destory `Position`.
  * * `position_nft` - The position NFT
  */
-export function destroy(tx: Transaction, positionNft: TransactionObjectInput): TransactionResult {
+export function destroy(
+  tx: Transaction,
+  positionNft: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position::destroy`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position::destroy`,
     arguments: [obj(tx, positionNft)],
   })
 }

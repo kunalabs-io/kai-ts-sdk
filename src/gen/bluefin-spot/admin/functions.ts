@@ -4,13 +4,14 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
 
-export function init(tx: Transaction): TransactionResult {
+export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::init`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::init`,
     arguments: [],
   })
 }
@@ -28,9 +29,13 @@ export interface TranserAdminCapArgs {
  * - cap: The AdminCap, ensuring the caller is the current admin.
  * - account: The address of the new admin
  */
-export function transerAdminCap(tx: Transaction, args: TranserAdminCapArgs): TransactionResult {
+export function transerAdminCap(
+  tx: Transaction,
+  args: TranserAdminCapArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::transer_admin_cap`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::transer_admin_cap`,
     arguments: [
       obj(tx, args.protocolConfig),
       obj(tx, args.cap),
@@ -55,9 +60,10 @@ export interface TranserProtocolFeeCapArgs {
 export function transerProtocolFeeCap(
   tx: Transaction,
   args: TranserProtocolFeeCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::transer_protocol_fee_cap`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::transer_protocol_fee_cap`,
     arguments: [
       obj(tx, args.protocolConfig),
       obj(tx, args.cap),
@@ -92,9 +98,10 @@ export function claimProtocolFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClaimProtocolFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::claim_protocol_fee`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::claim_protocol_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.protocolFeeCap),
@@ -123,9 +130,10 @@ export interface RemoveRewardManagerArgs {
 export function removeRewardManager(
   tx: Transaction,
   args: RemoveRewardManagerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::remove_reward_manager`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::remove_reward_manager`,
     arguments: [
       obj(tx, args.adminCap),
       obj(tx, args.protocolConfig),
@@ -152,9 +160,10 @@ export function updatePoolPauseStatus(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdatePoolPauseStatusArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::update_pool_pause_status`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::update_pool_pause_status`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.adminCap),
@@ -178,9 +187,13 @@ export interface AddRewardManagerArgs {
  * - protocol_config: mutable Global Config object
  * - manager: The address of the new manager to be added
  */
-export function addRewardManager(tx: Transaction, args: AddRewardManagerArgs): TransactionResult {
+export function addRewardManager(
+  tx: Transaction,
+  args: AddRewardManagerArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::add_reward_manager`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::add_reward_manager`,
     arguments: [
       obj(tx, args.adminCap),
       obj(tx, args.protocolConfig),
@@ -216,9 +229,10 @@ export function initializePoolReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: InitializePoolRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::initialize_pool_reward`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::initialize_pool_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.protocolConfig),
@@ -257,9 +271,10 @@ export function updatePoolRewardEmission(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: UpdatePoolRewardEmissionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::update_pool_reward_emission`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::update_pool_reward_emission`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.protocolConfig),
@@ -291,9 +306,12 @@ export function addSecondsToRewardEmission(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: AddSecondsToRewardEmissionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::add_seconds_to_reward_emission`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::admin::add_seconds_to_reward_emission`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.protocolConfig),
@@ -319,9 +337,10 @@ export interface UpdateSupportedVersionArgs {
 export function updateSupportedVersion(
   tx: Transaction,
   args: UpdateSupportedVersionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::update_supported_version`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::update_supported_version`,
     arguments: [
       obj(tx, args.adminCap),
       obj(tx, args.protocolConfig),
@@ -347,9 +366,10 @@ export function updateProtocolFeeShare(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateProtocolFeeShareArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::update_protocol_fee_share`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::update_protocol_fee_share`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.adminCap),
@@ -377,9 +397,12 @@ export function increaseObservationCardinalityNext(
   tx: Transaction,
   typeArgs: [string, string],
   args: IncreaseObservationCardinalityNextArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::increase_observation_cardinality_next`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::admin::increase_observation_cardinality_next`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.adminCap),
@@ -408,9 +431,10 @@ export function setPoolManager(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetPoolManagerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::set_pool_manager`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::set_pool_manager`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.protocolConfig),
@@ -439,9 +463,10 @@ export function setPoolCreationFee(
   tx: Transaction,
   typeArg: string,
   args: SetPoolCreationFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::set_pool_creation_fee`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::set_pool_creation_fee`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.adminCap),
@@ -472,9 +497,10 @@ export function claimPoolCreationFee(
   tx: Transaction,
   typeArg: string,
   args: ClaimPoolCreationFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::claim_pool_creation_fee`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::claim_pool_creation_fee`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.protocolFeeCap),
@@ -500,9 +526,10 @@ export function addRewardReservesToPool(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: AddRewardReservesToPoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::add_reward_reserves_to_pool`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::add_reward_reserves_to_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.adminCap),
@@ -533,9 +560,10 @@ export function setPoolIconUrl(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetPoolIconUrlArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::admin::set_pool_icon_url`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::admin::set_pool_icon_url`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.adminCap),

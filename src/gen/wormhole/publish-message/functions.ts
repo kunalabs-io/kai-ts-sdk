@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -22,9 +23,13 @@ export interface PrepareMessageArgs {
  * requiring a reference to the Wormhole `State` object), so it is intended
  * to work for any package version.
  */
-export function prepareMessage(tx: Transaction, args: PrepareMessageArgs): TransactionResult {
+export function prepareMessage(
+  tx: Transaction,
+  args: PrepareMessageArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::publish_message::prepare_message`,
+    target: `${getPublishedAt('wormhole', options?.env)}::publish_message::prepare_message`,
     arguments: [
       obj(tx, args.emitterCap),
       pure(tx, args.nonce, `u32`),
@@ -57,9 +62,13 @@ export interface PublishMessageArgs {
  *
  * See `prepare_message` for more details.
  */
-export function publishMessage(tx: Transaction, args: PublishMessageArgs): TransactionResult {
+export function publishMessage(
+  tx: Transaction,
+  args: PublishMessageArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::publish_message::publish_message`,
+    target: `${getPublishedAt('wormhole', options?.env)}::publish_message::publish_message`,
     arguments: [
       obj(tx, args.wormholeState),
       obj(tx, args.messageFee),

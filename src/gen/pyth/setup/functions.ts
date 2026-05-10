@@ -4,13 +4,14 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { DataSource } from '../data-source/structs'
 
-export function init(tx: Transaction): TransactionResult {
+export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::setup::init`,
+    target: `${getPublishedAt('pyth', options?.env)}::setup::init`,
     arguments: [],
   })
 }
@@ -28,9 +29,13 @@ export interface InitAndShareStateArgs {
  * Only the owner of the `DeployerCap` can call this method. This
  * method destroys the capability and shares the `State` object.
  */
-export function initAndShareState(tx: Transaction, args: InitAndShareStateArgs): TransactionResult {
+export function initAndShareState(
+  tx: Transaction,
+  args: InitAndShareStateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::setup::init_and_share_state`,
+    target: `${getPublishedAt('pyth', options?.env)}::setup::init_and_share_state`,
     arguments: [
       obj(tx, args.deployer),
       obj(tx, args.upgradeCap),

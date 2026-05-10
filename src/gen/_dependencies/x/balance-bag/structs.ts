@@ -1,3 +1,12 @@
+/**
+ * In some cases, the app need to manage balances for different tokens in one place.
+ * This module is created for this purpose.
+ *
+ * It supports:
+ * 1. Put any type of balance into the bag
+ * 2. Retrieve, update the balances in the bag
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'

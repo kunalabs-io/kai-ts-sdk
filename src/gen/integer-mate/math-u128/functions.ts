@@ -1,4 +1,5 @@
 import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { pure } from '../../_framework/util'
 
@@ -7,9 +8,13 @@ export interface WrappingAddArgs {
   n2: bigint | TransactionArgument
 }
 
-export function wrappingAdd(tx: Transaction, args: WrappingAddArgs): TransactionResult {
+export function wrappingAdd(
+  tx: Transaction,
+  args: WrappingAddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::wrapping_add`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::wrapping_add`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -22,9 +27,13 @@ export interface OverflowingAddArgs {
   n2: bigint | TransactionArgument
 }
 
-export function overflowingAdd(tx: Transaction, args: OverflowingAddArgs): TransactionResult {
+export function overflowingAdd(
+  tx: Transaction,
+  args: OverflowingAddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::overflowing_add`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::overflowing_add`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -37,9 +46,13 @@ export interface WrappingSubArgs {
   n2: bigint | TransactionArgument
 }
 
-export function wrappingSub(tx: Transaction, args: WrappingSubArgs): TransactionResult {
+export function wrappingSub(
+  tx: Transaction,
+  args: WrappingSubArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::wrapping_sub`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::wrapping_sub`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -52,9 +65,13 @@ export interface OverflowingSubArgs {
   n2: bigint | TransactionArgument
 }
 
-export function overflowingSub(tx: Transaction, args: OverflowingSubArgs): TransactionResult {
+export function overflowingSub(
+  tx: Transaction,
+  args: OverflowingSubArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::overflowing_sub`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::overflowing_sub`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -67,9 +84,13 @@ export interface WrappingMulArgs {
   n2: bigint | TransactionArgument
 }
 
-export function wrappingMul(tx: Transaction, args: WrappingMulArgs): TransactionResult {
+export function wrappingMul(
+  tx: Transaction,
+  args: WrappingMulArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::wrapping_mul`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::wrapping_mul`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -82,9 +103,13 @@ export interface OverflowingMulArgs {
   n2: bigint | TransactionArgument
 }
 
-export function overflowingMul(tx: Transaction, args: OverflowingMulArgs): TransactionResult {
+export function overflowingMul(
+  tx: Transaction,
+  args: OverflowingMulArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::overflowing_mul`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::overflowing_mul`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -97,9 +122,13 @@ export interface FullMulArgs {
   n2: bigint | TransactionArgument
 }
 
-export function fullMul(tx: Transaction, args: FullMulArgs): TransactionResult {
+export function fullMul(
+  tx: Transaction,
+  args: FullMulArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::full_mul`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::full_mul`,
     arguments: [
       pure(tx, args.n1, `u128`),
       pure(tx, args.n2, `u128`),
@@ -107,30 +136,46 @@ export function fullMul(tx: Transaction, args: FullMulArgs): TransactionResult {
   })
 }
 
-export function hi(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function hi(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::hi`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::hi`,
     arguments: [pure(tx, n, `u128`)],
   })
 }
 
-export function lo(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function lo(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::lo`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::lo`,
     arguments: [pure(tx, n, `u128`)],
   })
 }
 
-export function hiU128(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function hiU128(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::hi_u128`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::hi_u128`,
     arguments: [pure(tx, n, `u128`)],
   })
 }
 
-export function loU128(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function loU128(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::lo_u128`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::lo_u128`,
     arguments: [pure(tx, n, `u128`)],
   })
 }
@@ -140,9 +185,13 @@ export interface FromLoHiArgs {
   hi: bigint | TransactionArgument
 }
 
-export function fromLoHi(tx: Transaction, args: FromLoHiArgs): TransactionResult {
+export function fromLoHi(
+  tx: Transaction,
+  args: FromLoHiArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::from_lo_hi`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::from_lo_hi`,
     arguments: [
       pure(tx, args.lo, `u64`),
       pure(tx, args.hi, `u64`),
@@ -156,9 +205,13 @@ export interface CheckedDivRoundArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function checkedDivRound(tx: Transaction, args: CheckedDivRoundArgs): TransactionResult {
+export function checkedDivRound(
+  tx: Transaction,
+  args: CheckedDivRoundArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::checked_div_round`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::checked_div_round`,
     arguments: [
       pure(tx, args.num, `u128`),
       pure(tx, args.denom, `u128`),
@@ -172,9 +225,13 @@ export interface MaxArgs {
   num2: bigint | TransactionArgument
 }
 
-export function max(tx: Transaction, args: MaxArgs): TransactionResult {
+export function max(
+  tx: Transaction,
+  args: MaxArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::max`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::max`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -187,9 +244,13 @@ export interface MinArgs {
   num2: bigint | TransactionArgument
 }
 
-export function min(tx: Transaction, args: MinArgs): TransactionResult {
+export function min(
+  tx: Transaction,
+  args: MinArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::min`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::min`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),
@@ -202,9 +263,13 @@ export interface AddCheckArgs {
   num2: bigint | TransactionArgument
 }
 
-export function addCheck(tx: Transaction, args: AddCheckArgs): TransactionResult {
+export function addCheck(
+  tx: Transaction,
+  args: AddCheckArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u128::add_check`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u128::add_check`,
     arguments: [
       pure(tx, args.num1, `u128`),
       pure(tx, args.num2, `u128`),

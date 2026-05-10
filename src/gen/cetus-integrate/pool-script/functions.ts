@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -22,9 +23,10 @@ export function createPool(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::create_pool`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::create_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -57,10 +59,11 @@ export function createPoolWithLiquidityWithAll(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolWithLiquidityWithAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('cetus-integrate')
+      getPublishedAt('cetus-integrate', options?.env)
     }::pool_script::create_pool_with_liquidity_with_all`,
     typeArguments: typeArgs,
     arguments: [
@@ -98,9 +101,12 @@ export function createPoolWithLiquidityOnlyA(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolWithLiquidityOnlyAArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::create_pool_with_liquidity_only_a`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::create_pool_with_liquidity_only_a`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -134,9 +140,12 @@ export function createPoolWithLiquidityOnlyB(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolWithLiquidityOnlyBArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::create_pool_with_liquidity_only_b`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::create_pool_with_liquidity_only_b`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -164,9 +173,10 @@ export function openPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::open_position`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::open_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -194,10 +204,11 @@ export function openPositionWithLiquidityWithAll(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionWithLiquidityWithAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('cetus-integrate')
+      getPublishedAt('cetus-integrate', options?.env)
     }::pool_script::open_position_with_liquidity_with_all`,
     typeArguments: typeArgs,
     arguments: [
@@ -229,10 +240,11 @@ export function openPositionWithLiquidityOnlyA(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionWithLiquidityOnlyAArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('cetus-integrate')
+      getPublishedAt('cetus-integrate', options?.env)
     }::pool_script::open_position_with_liquidity_only_a`,
     typeArguments: typeArgs,
     arguments: [
@@ -261,10 +273,11 @@ export function openPositionWithLiquidityOnlyB(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionWithLiquidityOnlyBArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('cetus-integrate')
+      getPublishedAt('cetus-integrate', options?.env)
     }::pool_script::open_position_with_liquidity_only_b`,
     typeArguments: typeArgs,
     arguments: [
@@ -295,9 +308,12 @@ export function addLiquidityWithAll(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityWithAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_with_all`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::add_liquidity_with_all`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -327,9 +343,10 @@ export function addLiquidityOnlyA(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityOnlyAArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_only_a`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::add_liquidity_only_a`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -357,9 +374,10 @@ export function addLiquidityOnlyB(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityOnlyBArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_only_b`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::add_liquidity_only_b`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -389,9 +407,12 @@ export function addLiquidityFixCoinWithAll(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityFixCoinWithAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_fix_coin_with_all`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::add_liquidity_fix_coin_with_all`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -420,9 +441,12 @@ export function addLiquidityFixCoinOnlyA(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityFixCoinOnlyAArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_fix_coin_only_a`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::add_liquidity_fix_coin_only_a`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -448,9 +472,12 @@ export function addLiquidityFixCoinOnlyB(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityFixCoinOnlyBArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::add_liquidity_fix_coin_only_b`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::add_liquidity_fix_coin_only_b`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -477,9 +504,10 @@ export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::remove_liquidity`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -506,9 +534,10 @@ export function closePosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClosePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::close_position`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::close_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -531,9 +560,10 @@ export function collectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::collect_fee`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -555,9 +585,10 @@ export function collectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::collect_reward`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -578,9 +609,10 @@ export function collectProtocolFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectProtocolFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::collect_protocol_fee`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::collect_protocol_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -604,9 +636,10 @@ export function swapA2b(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapA2bArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::swap_a2b`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::swap_a2b`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -636,9 +669,10 @@ export function swapB2a(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapB2aArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::swap_b2a`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::swap_b2a`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -669,9 +703,12 @@ export function swapA2bWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapA2bWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::swap_a2b_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::swap_a2b_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -703,9 +740,12 @@ export function swapB2aWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapB2aWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::swap_b2a_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::swap_b2a_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -731,9 +771,10 @@ export function updateFeeRate(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateFeeRateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::update_fee_rate`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::update_fee_rate`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -752,9 +793,10 @@ export function initializeRewarder(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: InitializeRewarderArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::initialize_rewarder`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::initialize_rewarder`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -775,9 +817,12 @@ export function updateRewarderEmission(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: UpdateRewarderEmissionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::update_rewarder_emission`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::pool_script::update_rewarder_emission`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -798,9 +843,10 @@ export function pausePool(
   tx: Transaction,
   typeArgs: [string, string],
   args: PausePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::pause_pool`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::pause_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -818,9 +864,10 @@ export function unpausePool(
   tx: Transaction,
   typeArgs: [string, string],
   args: UnpausePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::unpause_pool`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::unpause_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -839,9 +886,10 @@ export function updatePositionUrl(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdatePositionUrlArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::update_position_url`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::update_position_url`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -866,9 +914,10 @@ export function setDisplay(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetDisplayArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script::set_display`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script::set_display`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

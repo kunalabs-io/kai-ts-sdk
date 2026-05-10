@@ -15,14 +15,18 @@ if (!initialized) {
 
 // Re-export public API from _framework/env
 export {
+  cloneEnv,
   getActiveEnv,
   getActiveEnvName,
   getDependencyConfig,
+  getEnv,
   getOriginalId,
   getPackageConfig,
   getPublishedAt,
   getRegisteredEnvs,
   getTypeOrigin,
+  getTypeOriginAddresses,
+  getTypeOriginAddressesFor,
   setActiveEnv,
   setActiveEnvWithConfig,
 } from '../_framework/env'

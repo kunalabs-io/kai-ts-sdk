@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -13,9 +14,9 @@ import { obj, pure } from '../../_framework/util'
  *
  * Only `setup::init_and_share_state` requires `DeployerCap`.
  */
-export function init(tx: Transaction): TransactionResult {
+export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::setup::init`,
+    target: `${getPublishedAt('wormhole', options?.env)}::setup::init`,
     arguments: [],
   })
 }
@@ -37,9 +38,13 @@ export interface CompleteArgs {
  * Only the owner of the `DeployerCap` can call this method. This
  * method destroys the capability and shares the `State` object.
  */
-export function complete(tx: Transaction, args: CompleteArgs): TransactionResult {
+export function complete(
+  tx: Transaction,
+  args: CompleteArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::setup::complete`,
+    target: `${getPublishedAt('wormhole', options?.env)}::setup::complete`,
     arguments: [
       obj(tx, args.deployer),
       obj(tx, args.upgradeCap),

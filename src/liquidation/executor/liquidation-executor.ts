@@ -1,13 +1,14 @@
 import { Logger } from 'pino'
-import { Signer } from '@mysten/sui/cryptography'
 import { SuiClient } from '@mysten/sui/client'
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { ProtocolHandler, CetusProtocolHandler, BluefinProtocolHandler } from './handlers'
 import { PositionInfo } from '../position-monitor/utils'
+import { TransactionExecutor } from './transaction-executor'
+import { ExecutionOutcome } from './types'
 
 export interface LiquidationExecutor {
-  execute(info: PositionInfo): Promise<void>
+  execute(info: PositionInfo, executor: TransactionExecutor): Promise<ExecutionOutcome | null>
 }
 
 export abstract class BaseLiquidationExecutor implements LiquidationExecutor {
@@ -16,7 +17,6 @@ export abstract class BaseLiquidationExecutor implements LiquidationExecutor {
 
   constructor(
     protected readonly client: SuiClient,
-    protected readonly signer: Signer,
     protected logger: Logger
   ) {
     this.cetusHandler = new CetusProtocolHandler()
@@ -31,5 +31,8 @@ export abstract class BaseLiquidationExecutor implements LiquidationExecutor {
     throw new Error('Unknown protocol type')
   }
 
-  abstract execute(info: PositionInfo): Promise<void>
+  abstract execute(
+    info: PositionInfo,
+    executor: TransactionExecutor
+  ): Promise<ExecutionOutcome | null>
 }

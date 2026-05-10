@@ -607,6 +607,7 @@ export type WhitelistAddEventJSON = {
   $typeArgs: []
 } & WhitelistAddEventJSONField
 
+/** Emit this event when you add an address to the whitelist. */
 export class WhitelistAddEvent implements StructClass {
   __StructClass = true as const
 
@@ -806,6 +807,7 @@ export type WhitelistRemoveEventJSON = {
   $typeArgs: []
 } & WhitelistRemoveEventJSONField
 
+/** Emit this event when you remove an address from the whitelist. */
 export class WhitelistRemoveEvent implements StructClass {
   __StructClass = true as const
 
@@ -1007,6 +1009,7 @@ export type AllowAllEventJSON = {
   $typeArgs: []
 } & AllowAllEventJSONField
 
+/** Emit this event when you allow all addresses. */
 export class AllowAllEvent implements StructClass {
   __StructClass = true as const
 
@@ -1192,6 +1195,7 @@ export type RejectAllEventJSON = {
   $typeArgs: []
 } & RejectAllEventJSONField
 
+/** Emit this event when you reject all addresses. */
 export class RejectAllEvent implements StructClass {
   __StructClass = true as const
 
@@ -1382,6 +1386,7 @@ export type SwitchToWhitelistModeEventJSON = {
   $typeArgs: []
 } & SwitchToWhitelistModeEventJSONField
 
+/** Emit this event when you switch to whitelist mode. */
 export class SwitchToWhitelistModeEvent implements StructClass {
   __StructClass = true as const
 

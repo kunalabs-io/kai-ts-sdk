@@ -1,14 +1,14 @@
 import { BaseLiquidationExecutor } from './liquidation-executor'
-import {
-  SerialTransactionExecutor,
-  Transaction,
-  TransactionObjectInput,
-} from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
+import { TransactionExecutor, ExecutionResult } from './transaction-executor'
+import { ExecutionOutcome } from './types'
+import { CongestionError, InsufficientGasError, ExecutionFailureError } from './errors'
+import { bcs } from '@mysten/sui/bcs'
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { updatePriceFeeds } from '../pyth'
 import * as pyth from '../../gen/kai-leverage/pyth/functions'
-import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
+import { SUI_CLOCK_OBJECT_ID, toBase64 } from '@mysten/sui/utils'
 import {
   isDeleverageInfo,
   isLiquidationInfo,
@@ -19,86 +19,356 @@ import * as balance from '../../gen/sui/balance/functions'
 import * as coin from '../../gen/sui/coin/functions'
 import * as metrics from '../metrics'
 import { Logger } from 'pino'
-import { SuiClient } from '@mysten/sui/client'
-import { Signer } from '@mysten/sui/cryptography'
+import Decimal from 'decimal.js'
+import { SuiClient, SuiEvent, DryRunTransactionBlockResponse } from '@mysten/sui/client'
 import { PositionInfo } from '../position-monitor/utils'
+import { OracleService, OnChainPriceData } from '../../oracle'
+
+export interface DryRunResult {
+  suggestedGasPrice: bigint | null
+  computationCost: bigint | null
+  storageCost: bigint | null
+  dryRunGasPrice: bigint | null
+  /** Dry run events when the simulation succeeded, null when dry run failed or was unreliable. */
+  events: SuiEvent[] | null
+}
+
+interface PriceUpdateNeeded {
+  needsUpdate: boolean
+  reason?: 'stale_x' | 'stale_y' | 'stale_both' | 'price_divergence'
+}
+
+interface PreparedExecution {
+  tx: Transaction
+  priceInfo: TransactionObjectInput
+  streamingMarginLevel: Decimal
+  onChainMarginLevel: Decimal
+  priceUpdateIncluded: boolean
+  logger: Logger
+}
+
+const STALENESS_BUFFER_SEC = 10
+
+export interface FlashSwapExecutorOptions {
+  skipDryRun?: boolean
+}
 
 export class FlashSwapExecutor extends BaseLiquidationExecutor {
-  readonly PRICE_UPDATE_THRESHOLD_SEC = 30 // seconds
+  protected readonly oracleService: OracleService
+  protected readonly skipDryRun: boolean
 
-  executor: SerialTransactionExecutor
-
-  constructor(client: SuiClient, signer: Signer, logger: Logger) {
-    super(client, signer, logger)
+  constructor(
+    client: SuiClient,
+    logger: Logger,
+    oracleService: OracleService,
+    options?: FlashSwapExecutorOptions
+  ) {
+    super(client, logger)
     this.logger = this.logger.child({ task: 'flash_swap_executor' })
-    this.executor = new SerialTransactionExecutor({
-      client,
-      signer,
-    })
+    this.oracleService = oracleService
+    this.skipDryRun = options?.skipDryRun ?? false
   }
 
-  async execute(info: PositionInfo): Promise<void> {
-    const { position, config, marginLevel, priceFeedUpdateInfo } = info
+  /**
+   * Validates transaction success. Does NOT log - caller is responsible for logging.
+   * Throws on transaction failure but NOT on missing events (that's handled separately).
+   */
+  protected assertTxSuccess(result: DryRunTransactionBlockResponse, context: string): void {
+    if ('errors' in result && result.errors) {
+      throw new Error(`${context}: ${result.errors}`)
+    }
 
+    if (result.effects?.status?.status === 'failure') {
+      throw new Error(`${context}: ${result.effects?.status?.error}`)
+    }
+  }
+
+  /**
+   * Applies gas estimate from a dry run to the transaction.
+   * Scales computation cost by suggestedGasPrice/dryRunGasPrice so the budget
+   * covers execution at the congestion-elevated gas price. Storage cost is not
+   * scaled since it's independent of gas price.
+   */
+  protected applyGasEstimate(tx: Transaction, estimate: DryRunResult): void {
+    const MIN_GAS_BUDGET = 100_000_000n // 100M MIST = 0.1 SUI
+    const { suggestedGasPrice, computationCost, storageCost, dryRunGasPrice } = estimate
+
+    if (suggestedGasPrice) {
+      tx.setGasPrice(suggestedGasPrice)
+    }
+
+    if (computationCost && storageCost && dryRunGasPrice && dryRunGasPrice > 0n) {
+      const effectivePrice = suggestedGasPrice ?? dryRunGasPrice
+      const scaledComputation = (computationCost * effectivePrice) / dryRunGasPrice
+      const budget = (scaledComputation + storageCost) * 2n
+      tx.setGasBudget(budget > MIN_GAS_BUDGET ? budget : MIN_GAS_BUDGET)
+    } else {
+      tx.setGasBudget(MIN_GAS_BUDGET)
+    }
+  }
+
+  /**
+   * Validates execution success. Does NOT log - caller is responsible for logging.
+   * Throws on transaction failure.
+   */
+  protected assertExecutionSuccess(result: ExecutionResult, context: string): void {
+    const effects = bcs.TransactionEffects.fromBase64(result.effects)
+    const status = effects.V1?.status || effects.V2?.status
+
+    if (status?.Failed) {
+      const error = status.Failed.error
+      const executionError = error as Record<string, unknown>
+
+      if (error.$kind === 'ExecutionCancelledDueToSharedObjectCongestion') {
+        const congestedObjects =
+          error.ExecutionCancelledDueToSharedObjectCongestion.congestedObjects
+        throw new CongestionError(context, congestedObjects, result.digest, executionError)
+      }
+
+      if (error.$kind === 'InsufficientGas') {
+        throw new InsufficientGasError(context, result.digest, executionError)
+      }
+
+      throw new ExecutionFailureError(context, error.$kind, result.digest, executionError)
+    }
+  }
+
+  /**
+   * Performs a dry run of the transaction.
+   * Returns suggested gas price and budget on success, nulls on failure.
+   * Throws ExecutionFailureError for persistent dry-run failures (e.g. MoveAbort).
+   * Transient dry-run failures (congestion, gas) proceed to execution.
+   * RPC/network failures return null estimates and proceed to execution.
+   */
+  protected async performDryRun(
+    tx: Transaction,
+    executor: TransactionExecutor,
+    logger: Logger
+  ): Promise<DryRunResult> {
+    let txBytes: Uint8Array | undefined
+    try {
+      // Clone tx and set temp gas budget so the SDK skips its internal dry-run.
+      // The original tx is not modified — applyGasEstimate() handles that.
+      const dryRunTx = Transaction.from(tx)
+      dryRunTx.setGasBudget(50_000_000_000n)
+
+      txBytes = await executor.buildTransaction(dryRunTx)
+      const result = await this.client.dryRunTransactionBlock({
+        transactionBlock: txBytes,
+      })
+
+      if (result.effects?.status?.status === 'failure') {
+        const errorStr = result.effects.status.error ?? ''
+
+        const isTransientDryRunFailure =
+          errorStr.startsWith('ExecutionCancelledDueToSharedObjectCongestion') ||
+          errorStr.startsWith('InsufficientGas')
+
+        if (isTransientDryRunFailure) {
+          logger.warn(
+            { error: errorStr },
+            'Dry run indicates transient failure, proceeding with execution'
+          )
+        } else {
+          logger.warn(
+            { error: errorStr, serializedTx: txBytes ? toBase64(txBytes) : null },
+            'Dry run indicates persistent failure, aborting execution'
+          )
+          throw new ExecutionFailureError('Dry run', errorStr)
+        }
+      }
+
+      const gasUsed = result.effects?.gasUsed
+      const suggestedGasPrice = result.suggestedGasPrice ? BigInt(result.suggestedGasPrice) : null
+      const computationCost = gasUsed ? BigInt(gasUsed.computationCost) : null
+      const storageCost = gasUsed ? BigInt(gasUsed.storageCost) : null
+      const dryRunGasPrice = BigInt(result.input.gasData.price)
+
+      if (result.effects?.status?.status !== 'failure') {
+        logger.info(
+          {
+            suggestedGasPrice: suggestedGasPrice?.toString(),
+            computationCost: computationCost?.toString(),
+            storageCost: storageCost?.toString(),
+            dryRunGasPrice: dryRunGasPrice.toString(),
+          },
+          'Dry run successful'
+        )
+      }
+
+      return {
+        suggestedGasPrice,
+        computationCost,
+        storageCost,
+        dryRunGasPrice,
+        events: result.effects?.status?.status !== 'failure' ? result.events : null,
+      }
+    } catch (error) {
+      if (error instanceof ExecutionFailureError) {
+        throw error
+      }
+      logger.warn(
+        { err: error, serializedTx: txBytes ? toBase64(txBytes) : null },
+        'Dry run failed, proceeding with execution'
+      )
+      return {
+        suggestedGasPrice: null,
+        computationCost: null,
+        storageCost: null,
+        dryRunGasPrice: null,
+        events: null,
+      }
+    }
+  }
+
+  protected needsPriceUpdate(
+    onChainData: OnChainPriceData,
+    streamingBelowThreshold: boolean,
+    onChainAboveThreshold: boolean,
+    contractMaxAgeSec = 60
+  ): PriceUpdateNeeded {
+    const threshold = contractMaxAgeSec - STALENESS_BUFFER_SEC
+
+    const xStale = onChainData.stalenessXSec > threshold
+    const yStale = onChainData.stalenessYSec > threshold
+
+    if (xStale && yStale) {
+      return { needsUpdate: true, reason: 'stale_both' }
+    }
+    if (xStale) {
+      return { needsUpdate: true, reason: 'stale_x' }
+    }
+    if (yStale) {
+      return { needsUpdate: true, reason: 'stale_y' }
+    }
+
+    // Neither stale, but prices diverged:
+    // Streaming says position is underwater, on-chain says it's OK
+    if (streamingBelowThreshold && onChainAboveThreshold) {
+      this.logger.info(
+        { streamingBelowThreshold, onChainAboveThreshold },
+        'Price divergence: streaming shows underwater but on-chain shows OK'
+      )
+      return { needsUpdate: true, reason: 'price_divergence' }
+    }
+
+    return { needsUpdate: false }
+  }
+
+  protected async prepareExecution(
+    info: PositionInfo,
+    marginThreshold: Decimal
+  ): Promise<PreparedExecution | null> {
+    const { position, supplyPoolX, supplyPoolY } = info
+    const logger = this.logger.child({ positionId: position.id })
+
+    // Step 1: Quick check with streaming prices (fast filter)
+    const streamingMarginLevel = this.oracleService.calcMarginLevel(
+      position,
+      supplyPoolX,
+      supplyPoolY
+    )
+
+    if (streamingMarginLevel.gte(marginThreshold)) {
+      logger.info(
+        { streamingMarginLevel: streamingMarginLevel.toDP(6).toString() },
+        'Position OK based on streaming prices, skipping'
+      )
+      return null
+    }
+
+    // Step 2: Streaming says NOT OK - fetch data in PARALLEL
+    const [pythUpdateData, onChainData] = await Promise.all([
+      this.oracleService.getPriceFeedUpdateInfo([
+        position.configInfo.pioInfoX,
+        position.configInfo.pioInfoY,
+      ]),
+      this.oracleService.fetchFreshOnChainPrices(position.configInfo),
+    ])
+
+    // Step 3: Calculate margin level using ON-CHAIN prices (what contract will see)
+    const onChainMarginLevel = this.oracleService.calcMarginLevelFromOnChain(
+      position,
+      supplyPoolX,
+      supplyPoolY,
+      onChainData
+    )
+
+    // Step 4: Determine if we need to update prices
+    const priceUpdate = this.needsPriceUpdate(
+      onChainData,
+      streamingMarginLevel.lt(marginThreshold),
+      onChainMarginLevel.gte(marginThreshold),
+      60
+    )
+
+    // Step 5: If on-chain says OK and no price update needed, skip
+    if (onChainMarginLevel.gte(marginThreshold) && !priceUpdate.needsUpdate) {
+      logger.info(
+        {
+          streamingMarginLevel: streamingMarginLevel.toDP(6).toString(),
+          onChainMarginLevel: onChainMarginLevel.toDP(6).toString(),
+        },
+        'Position OK based on on-chain prices, skipping'
+      )
+      return null
+    }
+
+    // Step 6: Build transaction with price updates + Pyth references
     const tx = new Transaction()
 
-    const { arrivalTimeStalenessSecX, arrivalTimeStalenessSecY } =
-      await this.getPriceStaleness(position)
-
-    if (
-      arrivalTimeStalenessSecX > this.PRICE_UPDATE_THRESHOLD_SEC ||
-      arrivalTimeStalenessSecY > this.PRICE_UPDATE_THRESHOLD_SEC
-    ) {
-      updatePriceFeeds(tx, priceFeedUpdateInfo)
+    const priceUpdateIncluded = priceUpdate.needsUpdate
+    if (priceUpdateIncluded) {
+      logger.info(
+        {
+          stalenessX: onChainData.stalenessXSec,
+          stalenessY: onChainData.stalenessYSec,
+          reason: priceUpdate.reason,
+        },
+        'Including price feed updates in transaction'
+      )
+      updatePriceFeeds(tx, pythUpdateData)
     }
 
     const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
+    pyth.add(tx, { self: priceInfo, info: position.configInfo.pioInfoX.priceInfoObjectId })
+    pyth.add(tx, { self: priceInfo, info: position.configInfo.pioInfoY.priceInfoObjectId })
 
-    pyth.add(tx, {
-      self: priceInfo,
-      info: position.configInfo.pioInfoX.priceInfoObjectId,
-    })
-    pyth.add(tx, {
-      self: priceInfo,
-      info: position.configInfo.pioInfoY.priceInfoObjectId,
-    })
-
-    if (marginLevel.lt(config.liqMargin)) {
-      await this.liquidate(tx, position, priceInfo)
+    return {
+      tx,
+      priceInfo,
+      streamingMarginLevel,
+      onChainMarginLevel,
+      priceUpdateIncluded,
+      logger,
     }
   }
 
-  async getPriceStaleness(
-    position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
-  ): Promise<{
-    arrivalTimeStalenessSecX: number
-    arrivalTimeStalenessSecY: number
-  }> {
-    const [pioX, pioY] = await Promise.all([
-      position.configInfo.pioInfoX.fetchPioData(this.client),
-      position.configInfo.pioInfoY.fetchPioData(this.client),
-    ])
+  async execute(
+    info: PositionInfo,
+    executor: TransactionExecutor
+  ): Promise<ExecutionOutcome | null> {
+    const prepared = await this.prepareExecution(info, info.config.liqMargin)
+    if (!prepared) return null
 
-    const arrivalTimeX = new Date(Number(pioX.data.priceInfo.arrivalTime) * 1000)
-    const arrivalTimeY = new Date(Number(pioY.data.priceInfo.arrivalTime) * 1000)
-
-    const arrivalTimeStalenessSecX = (Date.now() - arrivalTimeX.getTime()) / 1000
-    const arrivalTimeStalenessSecY = (Date.now() - arrivalTimeY.getTime()) / 1000
-
-    return {
-      arrivalTimeStalenessSecX,
-      arrivalTimeStalenessSecY,
-    }
+    const { tx, priceInfo, onChainMarginLevel, logger } = prepared
+    logger.info(
+      { onChainMarginLevel: onChainMarginLevel.toDP(6).toString() },
+      'Proceeding with liquidation'
+    )
+    return this.liquidate(tx, info.position, priceInfo, executor, logger)
   }
 
   async liquidate(
     tx: Transaction,
     position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
-    priceInfo: TransactionObjectInput
-  ): Promise<void> {
+    priceInfo: TransactionObjectInput,
+    executor: TransactionExecutor,
+    logger: Logger
+  ): Promise<ExecutionOutcome | null> {
     const protocolHandler = this.getProtocolHandler(position)
 
-    this.logger.info(`Attempting to liquidate position`)
+    logger.info('Attempting to liquidate position')
 
     metrics.liquidatePositionAttemptCount?.add(1)
 
@@ -126,46 +396,50 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     protocolHandler.deleverageForLiquidation(tx, position, priceInfo)
 
     // liquidate
-    this.addLiquidateColXCalls(tx, position, priceInfo, di, this.signer.toSuiAddress())
+    this.addLiquidateColXCalls(tx, position, priceInfo, di, executor.sender)
 
-    this.addLiquidateColYCalls(tx, position, priceInfo, di, this.signer.toSuiAddress())
+    this.addLiquidateColYCalls(tx, position, priceInfo, di, executor.sender)
 
-    const res = await this.executor.executeTransaction(tx, {
+    // Dry run to set gas price and budget (unless skipped)
+    if (!this.skipDryRun) {
+      const dryRunResult = await this.performDryRun(tx, executor, logger)
+      this.applyGasEstimate(tx, dryRunResult)
+
+      // If dry run succeeded but shows no action events, skip execution to save gas
+      if (dryRunResult.events !== null) {
+        const hasActionEvents = dryRunResult.events.some(
+          e => isLiquidationInfo(e.type) || isDeleverageInfo(e.type)
+        )
+        if (!hasActionEvents) {
+          logger.info('Dry run shows no action events, skipping execution')
+          metrics.liquidationNoActionCount?.add(1)
+          return null
+        }
+      }
+    }
+
+    // Execute
+    const res = await executor.executeTransaction(tx, {
       showEvents: true,
-      showEffects: true,
     })
+    this.assertExecutionSuccess(res, 'Liquidation')
 
-    if (res.data.errors) {
-      this.logger.error(
-        { txDigest: res.digest, txErrors: res.data.errors },
-        'Liquidate transaction failed'
-      )
-      throw new Error(`Liquidate transaction failed: ${res.data.errors}`)
-    }
+    const events = res.data.events ?? []
+    const liquidated = events.some(e => isLiquidationInfo(e.type))
+    const deleveraged = events.some(e => isDeleverageInfo(e.type))
 
-    if (res.data.effects?.status?.status === 'failure') {
-      this.logger.error(
-        { txDigest: res.digest, txErrors: res.data.effects?.status?.error },
-        'Liquidate transaction failed'
-      )
-      throw new Error(`Liquidate transaction failed: ${res.data.effects?.status?.error}`)
-    }
-
-    const deleverageEvent = res.data.events?.find(e => isDeleverageInfo(e.type))
-    const liquidationEvent = res.data.events?.find(e => isLiquidationInfo(e.type))
-    if (!deleverageEvent && !liquidationEvent) {
-      // Transaction went through but deleverage or liquidation didn't fire.
-      this.logger.warn(
+    if (liquidated || deleveraged) {
+      logger.info({ txDigest: res.digest, liquidated, deleveraged }, 'Position processed')
+      if (liquidated) metrics.liquidatePositionSuccessCount?.add(1)
+    } else {
+      logger.info(
         { txDigest: res.digest },
-        `Deleverage or liquidation event not found in transaction result`
+        'Transaction succeeded but no action occurred - position no longer underwater'
       )
-
-      throw new Error(`Liquidation event not found in transaction result`)
+      metrics.liquidationNoActionCount?.add(1)
     }
 
-    this.logger.info({ txDigest: res.digest }, 'Liquidation transaction executed')
-
-    metrics.liquidatePositionSuccessCount?.add(1)
+    return { txDigest: res.digest, liquidated, deleveraged }
   }
 
   private addLiquidateColXCalls(
@@ -205,12 +479,6 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     // transfer the remaining reward X to the wallet
     balance.destroyZero(tx, position.Y.typeName, repayYBalance)
-    /*
-    tx.transferObjects(
-      [coin.fromBalance(tx, ta.Y, repayYBalance)],
-      adminSigner.toSuiAddress()
-    )
-    */
 
     const rewardXCoin = coin.fromBalance(tx, position.X.typeName, rewardX)
     tx.transferObjects([rewardXCoin], rewardRecipient)
@@ -250,12 +518,6 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     })
     KaiRouterUtil.bluefin.repayFlashSwap(tx, flashRepayY, receipt)
 
-    /*
-    tx.transferObjects(
-      [coin.fromBalance(tx, ta.X, repayXBalance)],
-      adminSigner.toSuiAddress()
-    )
-    */
     balance.destroyZero(tx, position.X.typeName, repayXBalance)
 
     const rewardYCoin = coin.fromBalance(tx, position.Y.typeName, rewardY)

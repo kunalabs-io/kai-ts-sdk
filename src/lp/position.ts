@@ -1,4 +1,5 @@
 import { PhantomTypeArgument, StructClass, TypeArgument } from '../gen/_framework/reified'
+import { EnvConfig } from '../gen/_framework/env'
 import {
   isReductionInfo,
   isRepayDebtInfo,
@@ -535,8 +536,10 @@ export class Position<
     X extends PhantomTypeArgument,
     Y extends PhantomTypeArgument,
     LP extends TypeArgument,
-  >(data: Position_<X, Y, LP>) {
-    const configInfo = POSITION_CONFIG_INFOS.find(p => p.configId === data.configId)
+  >(data: Position_<X, Y, LP>): Position<X, Y, LP, Position_<X, Y, LP>> {
+    const configInfo = POSITION_CONFIG_INFOS.find(p => p.configId === data.configId) as
+      | PositionConfigInfo<X, Y, LP>
+      | undefined
     if (!configInfo) {
       throw new Error(`No PositionConfigInfo found for configId ${data.configId}.`)
     }
@@ -554,7 +557,10 @@ export class Position<
    * @param type - The type of the position.
    * @returns A new Position instance.
    */
-  static fromBcs(bcs: Uint8Array, type: string) {
+  static fromBcs(
+    bcs: Uint8Array,
+    type: string
+  ): Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> {
     const configInfo = findConfigInfoForPositionBcs(bcs, type)
     if (!configInfo) {
       throw new Error(`No PositionConfigInfo found for type ${type}.`)
@@ -572,7 +578,9 @@ export class Position<
    * @param data - The SuiObjectData struct to create the Position instance from.
    * @returns A new Position instance.
    */
-  static fromSuiObjectData(data: SuiObjectData) {
+  static fromSuiObjectData(
+    data: SuiObjectData
+  ): Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> {
     let configInfo = undefined
     if (data.bcs && data.bcs.dataType === 'moveObject') {
       configInfo = findConfigInfoForPositionBcs(fromBase64(data.bcs.bcsBytes), data.bcs.type)
@@ -608,7 +616,10 @@ export class Position<
    * @param id - The ID of the Position.
    * @returns A Position instance.
    */
-  static async fetch(client: SuiClient, id: string) {
+  static async fetch(
+    client: SuiClient,
+    id: string
+  ): Promise<Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>> {
     const res = await client.getObject({
       id,
       options: {
@@ -699,7 +710,7 @@ export class Position<
    * @param currentTick - The current tick to check.
    * @returns True if the position is in range, false otherwise.
    */
-  inRange(currentTick: number) {
+  inRange(currentTick: number): boolean {
     const { tickA, tickB } = this.getRange()
 
     return currentTick >= tickA && currentTick < tickB
@@ -1170,7 +1181,7 @@ export class Position<
    * @param args - The arguments for the calculation.
    * @returns The position's deleverage prices (low and high).
    */
-  calcDeleveragePrices(args: CalcDeleveragePricesArgs<X, Y, LP>) {
+  calcDeleveragePrices(args: CalcDeleveragePricesArgs<X, Y, LP>): [Price<X, Y>, Price<X, Y>] {
     if (args.supplyPoolX.data.id !== this.configInfo.supplyPoolXInfo.id) {
       throw new Error('supply pool X id mismatch')
     }
@@ -1321,7 +1332,11 @@ export class Position<
    * @param args - The arguments for the calculation.
    * @returns The resulting amounts that are returned to the user.
    */
-  async fetchReduceAmountsDevInspect(client: SuiClient, factor: Decimal, positionCapId: string) {
+  async fetchReduceAmountsDevInspect(
+    client: SuiClient,
+    factor: Decimal,
+    positionCapId: string
+  ): Promise<{ gotX: Amount; gotY: Amount; gotDx: Amount; gotDy: Amount }> {
     const tx = new Transaction()
 
     // Set liquidation margin to 0 to avoid abort on margin below threshold in reduce
@@ -1549,7 +1564,7 @@ export class Position<
     }
 
     // repay debt externally if needed
-    let repayDebtRemainingX: TransactionArgument | undefined = undefined
+    let repayDebtRemainingX: TransactionObjectArgument | undefined = undefined
     let repaidDebtX: undefined | Amount = undefined
     if (reduceAmounts.repayDebtX > 0) {
       const repayDebtX = this.X.newAmount(
@@ -1893,7 +1908,7 @@ export class Position<
     }
   }
 
-  calcF(p: Price<PhantomTypeArgument, PhantomTypeArgument>) {
+  calcF(p: Price<PhantomTypeArgument, PhantomTypeArgument>): Decimal {
     const { pa, pb } = this.getRange()
 
     const sqrtP = p.numeric.sqrt()
@@ -1915,7 +1930,12 @@ export class Position<
   }
 
   /// all prices and amounts are numeric (not human)
-  calcXAndYSellAmounts(p: Decimal, f: Decimal, x: bigint, y: bigint) {
+  calcXAndYSellAmounts(
+    p: Decimal,
+    f: Decimal,
+    x: bigint,
+    y: bigint
+  ): { xSellAmt: Decimal; ySellAmt: Decimal } {
     const haveX = new Decimal(x.toString())
     const haveY = new Decimal(y.toString())
 
@@ -1956,7 +1976,7 @@ export class Position<
     f: Decimal,
     priceToX: Price<PhantomTypeArgument, PhantomTypeArgument>,
     priceToY: Price<PhantomTypeArgument, PhantomTypeArgument>
-  ) {
+  ): { sellForXAmt: bigint; sellForYAmt: bigint } {
     const px = priceToX.numeric
     const py = priceToY.numeric
 
@@ -2159,7 +2179,7 @@ export class Position<
    * @param sender - The sender of the transaction.
    * @returns The resulting transaction.
    */
-  async deposit(router: Router, args: DepositArgs<X, Y>, sender: string) {
+  async deposit(router: Router, args: DepositArgs<X, Y>, sender: string): Promise<Transaction> {
     let tx = new Transaction()
     tx.setSenderIfNotSet(sender)
 
@@ -2218,72 +2238,101 @@ export class Position<
    * Fetches the pending / unclaimed and stashed rewards available for the position by doing a dev inspect call
    *
    * @param client - The `SuiClient` instance.
+   * @param opts - Optional overrides. `rewardCoins` overrides the default `configInfo.rewardCoins`
    * @returns The intermediate result of rebalancing the position.
    */
   async devInspectLpUnclaimedRewards(
-    client: SuiClient
+    client: SuiClient,
+    opts?: { rewardCoins?: CoinInfo<PhantomTypeArgument>[]; env?: EnvConfig }
   ): Promise<DevInspectLpUnclaimedRewardsResult> {
     const ta = {
       X: this.X.typeName,
       Y: this.Y.typeName,
       LP: this.reified.typeArgs[2],
     }
+    const rewardCoins = opts?.rewardCoins ?? this.configInfo.rewardCoins
+    const env = opts?.env
 
     const tx = new Transaction()
 
-    const [receipt] = core.createRebalanceReceipt(tx, [ta.X, ta.Y, ta.LP], {
-      position: this.id,
-      config: this.configInfo.configId,
-    })
+    const [receipt] = core.createRebalanceReceipt(
+      tx,
+      [ta.X, ta.Y, ta.LP],
+      {
+        position: this.id,
+        config: this.configInfo.configId,
+      },
+      { env }
+    )
 
     let xFeeResult: TransactionArgument
     let yFeeResult: TransactionArgument
     const rewardResults: [CoinInfo<PhantomTypeArgument>, TransactionResult][] = []
 
     if (this.isCetus()) {
-      const [feeX, feeY] = cetus.rebalanceCollectFee(tx, [ta.X, ta.Y], {
-        position: this.id,
-        config: this.configInfo.configId,
-        receipt,
-        cetusPool: this.configInfo.poolObjectId,
-        cetusConfig: CETUS_GLOBAL_CONFIG_ID,
-      })
-      xFeeResult = feeX
-      yFeeResult = feeY
-
-      for (const rewardCoin of this.configInfo.rewardCoins) {
-        const reward = cetus.rebalanceCollectReward(tx, [ta.X, ta.Y, rewardCoin.typeName], {
+      const [feeX, feeY] = cetus.rebalanceCollectFee(
+        tx,
+        [ta.X, ta.Y],
+        {
           position: this.id,
           config: this.configInfo.configId,
           receipt,
           cetusPool: this.configInfo.poolObjectId,
           cetusConfig: CETUS_GLOBAL_CONFIG_ID,
-          cetusVault: CETUS_REWARDER_GLOBAL_VAULT,
-          clock: SUI_CLOCK_OBJECT_ID,
-        })
-        rewardResults.push([rewardCoin, reward])
-      }
-    } else if (this.isBluefin()) {
-      const [feeX, feeY] = bluefin.rebalanceCollectFee(tx, [ta.X, ta.Y], {
-        position: this.id,
-        config: this.configInfo.configId,
-        receipt,
-        bluefinPool: this.configInfo.poolObjectId,
-        bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
-        clock: SUI_CLOCK_OBJECT_ID,
-      })
+        },
+        { env }
+      )
       xFeeResult = feeX
       yFeeResult = feeY
 
-      for (const rewardCoin of this.configInfo.rewardCoins) {
-        const reward = bluefin.rebalanceCollectReward(tx, [ta.X, ta.Y, rewardCoin.typeName], {
+      for (const rewardCoin of rewardCoins) {
+        const reward = cetus.rebalanceCollectReward(
+          tx,
+          [ta.X, ta.Y, rewardCoin.typeName],
+          {
+            position: this.id,
+            config: this.configInfo.configId,
+            receipt,
+            cetusPool: this.configInfo.poolObjectId,
+            cetusConfig: CETUS_GLOBAL_CONFIG_ID,
+            cetusVault: CETUS_REWARDER_GLOBAL_VAULT,
+            clock: SUI_CLOCK_OBJECT_ID,
+          },
+          { env }
+        )
+        rewardResults.push([rewardCoin, reward])
+      }
+    } else if (this.isBluefin()) {
+      const [feeX, feeY] = bluefin.rebalanceCollectFee(
+        tx,
+        [ta.X, ta.Y],
+        {
           position: this.id,
           config: this.configInfo.configId,
           receipt,
           bluefinPool: this.configInfo.poolObjectId,
           bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
           clock: SUI_CLOCK_OBJECT_ID,
-        })
+        },
+        { env }
+      )
+      xFeeResult = feeX
+      yFeeResult = feeY
+
+      for (const rewardCoin of rewardCoins) {
+        const reward = bluefin.rebalanceCollectReward(
+          tx,
+          [ta.X, ta.Y, rewardCoin.typeName],
+          {
+            position: this.id,
+            config: this.configInfo.configId,
+            receipt,
+            bluefinPool: this.configInfo.poolObjectId,
+            bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+            clock: SUI_CLOCK_OBJECT_ID,
+          },
+          { env }
+        )
         rewardResults.push([rewardCoin, reward])
       }
     } else {
@@ -2391,7 +2440,7 @@ export class Position<
    * @param args - The arguments for the reward collection.
    * @returns the Balance<T> of the collected reward coin type T.
    */
-  ownerCollectReward(tx: Transaction, args: OwnerCollectRewardArgs) {
+  ownerCollectReward(tx: Transaction, args: OwnerCollectRewardArgs): TransactionResult {
     const ta = [this.X.typeName, this.Y.typeName, args.rewardType.typeName] as [
       string,
       string,
@@ -2434,7 +2483,7 @@ export class Position<
    * @param args - The arguments for the reward collection.
    * @returns the `Balance` of the collected reward coin type T.
    */
-  ownerTakeStashedReward(tx: Transaction, args: OwnerTakeStashedRewardArgs) {
+  ownerTakeStashedReward(tx: Transaction, args: OwnerTakeStashedRewardArgs): TransactionResult {
     return core.ownerTakeStashedRewards(
       tx,
       [this.X.typeName, this.Y.typeName, args.coinInfo.typeName, this.reified.typeArgs[2]],
@@ -2453,7 +2502,7 @@ export class Position<
    * @param tx - The transaction object.
    * @param args - The arguments for the deletion.
    */
-  deletePosition(tx: Transaction, args: DeletePositionArgs) {
+  deletePosition(tx: Transaction, args: DeletePositionArgs): void {
     if (this.isCetus()) {
       cetus.deletePosition(tx, [this.X.typeName, this.Y.typeName], {
         position: this.id,
@@ -2554,7 +2603,7 @@ export class Position<
     router: Router,
     args: ConvertRewardsAndTransferArgs,
     sender: string
-  ) {
+  ): Promise<Transaction> {
     const rewardResults = await this.devInspectLpUnclaimedRewards(client)
 
     let compoundThresholdCoins: Map<string, bigint> | undefined
@@ -2666,7 +2715,7 @@ export class Position<
     router: Router,
     args: WithdrawAllRewardsConvertAndTransferArgs,
     sender: string
-  ) {
+  ): Promise<Transaction> {
     let tx = new Transaction()
     const withdrawAllRewardsResult = this.withdrawAllRewards(tx, {
       positionCapId: args.positionCapId,
@@ -2707,7 +2756,7 @@ export class Position<
     router: Router,
     args: ReduceAndMaybeDeleteArgs,
     sender: string
-  ) {
+  ): Promise<Transaction> {
     const isCetusExploitedCheck = async () => {
       const position = this as unknown as Position<
         PhantomTypeArgument,
@@ -2770,7 +2819,7 @@ export class Position<
    * @param sender - The TX sender address which is used to receive any dust amounts from the conversion.
    * @returns the transaction object.
    */
-  async compound(client: SuiClient, args: CompoundArgs, sender: string) {
+  async compound(client: SuiClient, args: CompoundArgs, sender: string): Promise<Transaction> {
     const rewards = await this.devInspectLpUnclaimedRewards(client)
 
     const priceCache = new PriceCache(60)

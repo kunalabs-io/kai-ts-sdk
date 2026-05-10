@@ -4,12 +4,17 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
-export function castToU8(tx: Transaction, index: TransactionObjectInput): TransactionResult {
+export function castToU8(
+  tx: Transaction,
+  index: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::cast_to_u8`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::tick_bitmap::cast_to_u8`,
     arguments: [obj(tx, index)],
   })
 }
@@ -20,9 +25,13 @@ export interface FlipTickArgs {
   tickSpacing: number | TransactionArgument
 }
 
-export function flipTick(tx: Transaction, args: FlipTickArgs): TransactionResult {
+export function flipTick(
+  tx: Transaction,
+  args: FlipTickArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::flip_tick`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::tick_bitmap::flip_tick`,
     arguments: [
       obj(tx, args.bitmap),
       obj(tx, args.index),
@@ -41,9 +50,12 @@ export interface NextInitializedTickWithinOneWordArgs {
 export function nextInitializedTickWithinOneWord(
   tx: Transaction,
   args: NextInitializedTickWithinOneWordArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::next_initialized_tick_within_one_word`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::tick_bitmap::next_initialized_tick_within_one_word`,
     arguments: [
       obj(tx, args.bitmap),
       obj(tx, args.tick),
@@ -53,9 +65,13 @@ export function nextInitializedTickWithinOneWord(
   })
 }
 
-export function position(tx: Transaction, tick: TransactionObjectInput): TransactionResult {
+export function position(
+  tx: Transaction,
+  tick: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::position`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::tick_bitmap::position`,
     arguments: [obj(tx, tick)],
   })
 }
@@ -68,9 +84,10 @@ export interface GetMutableTickWordArgs {
 export function getMutableTickWord(
   tx: Transaction,
   args: GetMutableTickWordArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::get_mutable_tick_word`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::tick_bitmap::get_mutable_tick_word`,
     arguments: [
       obj(tx, args.bitmap),
       obj(tx, args.tick),
@@ -86,9 +103,10 @@ export interface GetImmutableTickWordArgs {
 export function getImmutableTickWord(
   tx: Transaction,
   args: GetImmutableTickWordArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::tick_bitmap::get_immutable_tick_word`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::tick_bitmap::get_immutable_tick_word`,
     arguments: [
       obj(tx, args.bitmap),
       obj(tx, args.tick),

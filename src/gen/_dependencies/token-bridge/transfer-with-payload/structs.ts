@@ -1,3 +1,15 @@
+/**
+ * This module implements serialization and deserialization for token transfer
+ * with an arbitrary payload. This message is a specific Wormhole message
+ * payload for Token Bridge.
+ *
+ * In order to redeem these types of transfers, one must have an `EmitterCap`
+ * and the specified `redeemer` must agree with this capability.
+ *
+ * See `transfer_tokens_with_payload` and `complete_transfer_with_payload`
+ * modules for more details.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -64,6 +76,13 @@ export type TransferWithPayloadJSON = {
   $typeArgs: []
 } & TransferWithPayloadJSONField
 
+/**
+ * Container that warehouses transfer information, including arbitrary
+ * payload.
+ *
+ * NOTE: This struct has `drop` because we do not want to require an
+ * integrator receiving transfer information to have to manually destroy.
+ */
 export class TransferWithPayload implements StructClass {
   __StructClass = true as const
 

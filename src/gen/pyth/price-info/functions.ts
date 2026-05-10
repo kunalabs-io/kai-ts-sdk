@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
@@ -15,9 +16,10 @@ import { ID } from '../../sui/object/structs'
 export function newPriceInfoRegistry(
   tx: Transaction,
   parentId: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::new_price_info_registry`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::new_price_info_registry`,
     arguments: [obj(tx, parentId)],
   })
 }
@@ -28,9 +30,13 @@ export interface AddArgs {
   id: string | TransactionArgument
 }
 
-export function add(tx: Transaction, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::add`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::add`,
     arguments: [
       obj(tx, args.parentId),
       obj(tx, args.priceIdentifier),
@@ -45,9 +51,13 @@ export interface GetIdBytesArgs {
 }
 
 /** Returns ID of price info object corresponding to price_identifier as a byte vector. */
-export function getIdBytes(tx: Transaction, args: GetIdBytesArgs): TransactionResult {
+export function getIdBytes(
+  tx: Transaction,
+  args: GetIdBytesArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_id_bytes`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_id_bytes`,
     arguments: [
       obj(tx, args.parentId),
       obj(tx, args.priceIdentifier),
@@ -61,9 +71,13 @@ export interface GetIdArgs {
 }
 
 /** Returns ID of price info object corresponding to price_identifier as an ID. */
-export function getId(tx: Transaction, args: GetIdArgs): TransactionResult {
+export function getId(
+  tx: Transaction,
+  args: GetIdArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_id`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_id`,
     arguments: [
       obj(tx, args.parentId),
       obj(tx, args.priceIdentifier),
@@ -76,9 +90,13 @@ export interface ContainsArgs {
   priceIdentifier: TransactionObjectInput
 }
 
-export function contains(tx: Transaction, args: ContainsArgs): TransactionResult {
+export function contains(
+  tx: Transaction,
+  args: ContainsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::contains`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::contains`,
     arguments: [
       obj(tx, args.parentId),
       obj(tx, args.priceIdentifier),
@@ -89,9 +107,10 @@ export function contains(tx: Transaction, args: ContainsArgs): TransactionResult
 export function getBalance(
   tx: Transaction,
   priceInfoObject: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_balance`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_balance`,
     arguments: [obj(tx, priceInfoObject)],
   })
 }
@@ -101,9 +120,13 @@ export interface DepositFeeCoinsArgs {
   feeCoins: TransactionObjectInput
 }
 
-export function depositFeeCoins(tx: Transaction, args: DepositFeeCoinsArgs): TransactionResult {
+export function depositFeeCoins(
+  tx: Transaction,
+  args: DepositFeeCoinsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::deposit_fee_coins`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::deposit_fee_coins`,
     arguments: [
       obj(tx, args.priceInfoObject),
       obj(tx, args.feeCoins),
@@ -114,9 +137,10 @@ export function depositFeeCoins(tx: Transaction, args: DepositFeeCoinsArgs): Tra
 export function newPriceInfoObject(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::new_price_info_object`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::new_price_info_object`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -127,9 +151,13 @@ export interface NewPriceInfoArgs {
   priceFeed: TransactionObjectInput
 }
 
-export function newPriceInfo(tx: Transaction, args: NewPriceInfoArgs): TransactionResult {
+export function newPriceInfo(
+  tx: Transaction,
+  args: NewPriceInfoArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::new_price_info`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::new_price_info`,
     arguments: [
       pure(tx, args.attestationTime, `u64`),
       pure(tx, args.arrivalTime, `u64`),
@@ -138,9 +166,13 @@ export function newPriceInfo(tx: Transaction, args: NewPriceInfoArgs): Transacti
   })
 }
 
-export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput): TransactionResult {
+export function uidToInner(
+  tx: Transaction,
+  priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::uid_to_inner`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::uid_to_inner`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -148,9 +180,12 @@ export function uidToInner(tx: Transaction, priceInfo: TransactionObjectInput): 
 export function getPriceInfoFromPriceInfoObject(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_price_info_from_price_info_object`,
+    target: `${
+      getPublishedAt('pyth', options?.env)
+    }::price_info::get_price_info_from_price_info_object`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -158,9 +193,10 @@ export function getPriceInfoFromPriceInfoObject(
 export function getPriceIdentifier(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_price_identifier`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_price_identifier`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -168,9 +204,10 @@ export function getPriceIdentifier(
 export function getPriceFeed(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_price_feed`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_price_feed`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -178,9 +215,10 @@ export function getPriceFeed(
 export function getAttestationTime(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_attestation_time`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_attestation_time`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -188,9 +226,10 @@ export function getAttestationTime(
 export function getArrivalTime(
   tx: Transaction,
   priceInfo: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::get_arrival_time`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::get_arrival_time`,
     arguments: [obj(tx, priceInfo)],
   })
 }
@@ -203,9 +242,10 @@ export interface UpdatePriceInfoObjectArgs {
 export function updatePriceInfoObject(
   tx: Transaction,
   args: UpdatePriceInfoObjectArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_info::update_price_info_object`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_info::update_price_info_object`,
     arguments: [
       obj(tx, args.priceInfoObject),
       obj(tx, args.priceInfo),

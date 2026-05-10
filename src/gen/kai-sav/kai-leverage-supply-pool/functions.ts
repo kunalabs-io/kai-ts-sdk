@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -11,9 +12,10 @@ export function new_(
   tx: Transaction,
   typeArgs: [string, string],
   supplyPool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::new`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::new`,
     typeArguments: typeArgs,
     arguments: [obj(tx, supplyPool)],
   })
@@ -23,9 +25,10 @@ export function assertVersion(
   tx: Transaction,
   typeArgs: [string, string],
   strategy: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::assert_version`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::assert_version`,
     typeArguments: typeArgs,
     arguments: [obj(tx, strategy)],
   })
@@ -36,9 +39,10 @@ export function adminCapId(
   tx: Transaction,
   typeArgs: [string, string],
   strategy: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::admin_cap_id`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::admin_cap_id`,
     typeArguments: typeArgs,
     arguments: [obj(tx, strategy)],
   })
@@ -53,9 +57,10 @@ export function assertAdmin(
   tx: Transaction,
   typeArgs: [string, string],
   args: AssertAdminArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::assert_admin`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::assert_admin`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -76,9 +81,10 @@ export function joinVault(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: JoinVaultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::join_vault`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::join_vault`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -101,9 +107,12 @@ export function removeFromVault(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RemoveFromVaultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::remove_from_vault`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::remove_from_vault`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -124,9 +133,10 @@ export function migrate(
   tx: Transaction,
   typeArgs: [string, string],
   args: MigrateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::migrate`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::migrate`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -151,9 +161,10 @@ export function rebalance(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::rebalance`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::rebalance`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -179,9 +190,12 @@ export function skimBaseProfits(
   tx: Transaction,
   typeArgs: [string, string],
   args: SkimBaseProfitsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::skim_base_profits`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::skim_base_profits`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -201,9 +215,12 @@ export function injectIncentives(
   tx: Transaction,
   typeArgs: [string, string],
   args: InjectIncentivesArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::inject_incentives`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::inject_incentives`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -225,9 +242,12 @@ export function collectAndHandOverProfit(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectAndHandOverProfitArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::collect_and_hand_over_profit`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::collect_and_hand_over_profit`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),
@@ -251,9 +271,10 @@ export function withdraw(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: WithdrawArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::kai_leverage_supply_pool::withdraw`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::kai_leverage_supply_pool::withdraw`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.strategy),

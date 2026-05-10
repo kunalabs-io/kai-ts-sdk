@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -22,9 +23,10 @@ export interface LoadNitroAttestationArgs {
 export function loadNitroAttestation(
   tx: Transaction,
   args: LoadNitroAttestationArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::load_nitro_attestation`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::load_nitro_attestation`,
     arguments: [
       pure(tx, args.attestation, `vector<u8>`),
       obj(tx, args.clock),
@@ -32,69 +34,106 @@ export function loadNitroAttestation(
   })
 }
 
-export function moduleId(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function moduleId(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::module_id`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::module_id`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function timestamp(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function timestamp(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::timestamp`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::timestamp`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function digest(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function digest(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::digest`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::digest`,
     arguments: [obj(tx, attestation)],
   })
 }
 
 /**
  * Returns a list of mapping PCREntry containg the index and the PCR bytes.
- * Currently AWS supports PCR0, PCR1, PCR2, PCR3, PCR4, PCR8.
+ * AWS supports PCR0-31. Required PCRs (index 0-4 & 8) are always included regardless of their
+ * value. Additional custom PCRs (index 5-7, 9-31) are also included if they are nonzeros.
  */
-export function pcrs(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function pcrs(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::pcrs`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::pcrs`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function publicKey(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function publicKey(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::public_key`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::public_key`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function userData(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function userData(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::user_data`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::user_data`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function nonce(tx: Transaction, attestation: TransactionObjectInput): TransactionResult {
+export function nonce(
+  tx: Transaction,
+  attestation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::nonce`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::nonce`,
     arguments: [obj(tx, attestation)],
   })
 }
 
-export function index(tx: Transaction, entry: TransactionObjectInput): TransactionResult {
+export function index(
+  tx: Transaction,
+  entry: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::index`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::index`,
     arguments: [obj(tx, entry)],
   })
 }
 
-export function value(tx: Transaction, entry: TransactionObjectInput): TransactionResult {
+export function value(
+  tx: Transaction,
+  entry: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::value`,
+    target: `${getPublishedAt('sui', options?.env)}::nitro_attestation::value`,
     arguments: [obj(tx, entry)],
   })
 }
@@ -108,9 +147,12 @@ export interface LoadNitroAttestationInternalArgs {
 export function loadNitroAttestationInternal(
   tx: Transaction,
   args: LoadNitroAttestationInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::nitro_attestation::load_nitro_attestation_internal`,
+    target: `${
+      getPublishedAt('sui', options?.env)
+    }::nitro_attestation::load_nitro_attestation_internal`,
     arguments: [
       pure(tx, args.attestation, `vector<u8>`),
       pure(tx, args.currentTimestamp, `u64`),

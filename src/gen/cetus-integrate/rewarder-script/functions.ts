@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Coin } from '../../sui/coin/structs'
@@ -19,9 +20,10 @@ export function depositReward(
   tx: Transaction,
   typeArg: string,
   args: DepositRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::deposit_reward`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::rewarder_script::deposit_reward`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),
@@ -44,9 +46,12 @@ export function emergentWithdraw(
   tx: Transaction,
   typeArg: string,
   args: EmergentWithdrawArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::emergent_withdraw`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::rewarder_script::emergent_withdraw`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),
@@ -69,9 +74,12 @@ export function emergentWithdrawAll(
   tx: Transaction,
   typeArg: string,
   args: EmergentWithdrawAllArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::rewarder_script::emergent_withdraw_all`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::rewarder_script::emergent_withdraw_all`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),

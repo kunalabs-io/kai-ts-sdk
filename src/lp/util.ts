@@ -25,7 +25,7 @@ export async function getAllWalletPositions(
   client: SuiClient,
   walletAddress: string,
   cursor?: string
-) {
+): Promise<GetAllWalletPositionsResponse> {
   const res = await client.getOwnedObjects({
     owner: walletAddress,
     filter: {
@@ -90,7 +90,7 @@ export async function findPositionCapForWalletPosition(
   client: SuiClient,
   positionId: string,
   walletAddress: string
-) {
+): Promise<PositionCap | null> {
   const normalizedPositionId = normalizeSuiObjectId(positionId)
 
   let hasNextPage = true

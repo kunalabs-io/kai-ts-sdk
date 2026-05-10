@@ -4,33 +4,42 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
-export function fromU64(tx: Transaction, status: bigint | TransactionArgument): TransactionResult {
+export function fromU64(
+  tx: Transaction,
+  status: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_status::from_u64`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_status::from_u64`,
     arguments: [pure(tx, status, `u64`)],
   })
 }
 
-export function getStatus(tx: Transaction, priceStatus: TransactionObjectInput): TransactionResult {
+export function getStatus(
+  tx: Transaction,
+  priceStatus: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_status::get_status`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_status::get_status`,
     arguments: [obj(tx, priceStatus)],
   })
 }
 
-export function newUnknown(tx: Transaction): TransactionResult {
+export function newUnknown(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_status::new_unknown`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_status::new_unknown`,
     arguments: [],
   })
 }
 
-export function newTrading(tx: Transaction): TransactionResult {
+export function newTrading(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::price_status::new_trading`,
+    target: `${getPublishedAt('pyth', options?.env)}::price_status::new_trading`,
     arguments: [],
   })
 }

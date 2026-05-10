@@ -4,14 +4,19 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, pure } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { ID } from '../../sui/object/structs'
 
-export function vaultAccessId(tx: Transaction, access: TransactionObjectInput): TransactionResult {
+export function vaultAccessId(
+  tx: Transaction,
+  access: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::vault_access_id`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::vault_access_id`,
     arguments: [obj(tx, access)],
   })
 }
@@ -25,9 +30,10 @@ export function newStrategyRemovalTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: NewStrategyRemovalTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::new_strategy_removal_ticket`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::new_strategy_removal_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.access),
@@ -45,9 +51,10 @@ export function withdrawTicketToWithdraw(
   tx: Transaction,
   typeArgs: [string, string],
   args: WithdrawTicketToWithdrawArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::withdraw_ticket_to_withdraw`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::withdraw_ticket_to_withdraw`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -64,9 +71,10 @@ export interface RebalanceAmountsGetArgs {
 export function rebalanceAmountsGet(
   tx: Transaction,
   args: RebalanceAmountsGetArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::rebalance_amounts_get`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::rebalance_amounts_get`,
     arguments: [
       obj(tx, args.amounts),
       obj(tx, args.access),
@@ -82,17 +90,22 @@ export function new_(
   tx: Transaction,
   typeArgs: [string, string],
   lpTreasury: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::new`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::new`,
     typeArguments: typeArgs,
     arguments: [obj(tx, lpTreasury)],
   })
 }
 
-export function assertUpgradeCap(tx: Transaction, cap: TransactionObjectInput): TransactionResult {
+export function assertUpgradeCap(
+  tx: Transaction,
+  cap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::assert_upgrade_cap`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::assert_upgrade_cap`,
     arguments: [obj(tx, cap)],
   })
 }
@@ -106,9 +119,10 @@ export function newWithUpgradeCap(
   tx: Transaction,
   typeArgs: [string, string],
   args: NewWithUpgradeCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::new_with_upgrade_cap`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::new_with_upgrade_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -121,9 +135,10 @@ export function assertVersion(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::assert_version`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::assert_version`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -134,9 +149,10 @@ export function freeBalance(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::free_balance`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::free_balance`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -147,9 +163,10 @@ export function tvlCap(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::tvl_cap`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::tvl_cap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -165,9 +182,10 @@ export function totalAvailableBalance(
   tx: Transaction,
   typeArgs: [string, string],
   args: TotalAvailableBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::total_available_balance`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::total_available_balance`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -181,9 +199,10 @@ export function totalYtSupply(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::total_yt_supply`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::total_yt_supply`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -200,9 +219,10 @@ export function setTvlCap(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetTvlCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_tvl_cap`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_tvl_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -223,9 +243,10 @@ export function setProfitUnlockDurationSec(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetProfitUnlockDurationSecArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_profit_unlock_duration_sec`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_profit_unlock_duration_sec`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -246,9 +267,10 @@ export function setPerformanceFeeBps(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetPerformanceFeeBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_performance_fee_bps`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_performance_fee_bps`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -269,9 +291,10 @@ export function withdrawPerformanceFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: WithdrawPerformanceFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::withdraw_performance_fee`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::withdraw_performance_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -292,9 +315,12 @@ export function pullUnlockedProfitsToFreeBalance(
   tx: Transaction,
   typeArgs: [string, string],
   args: PullUnlockedProfitsToFreeBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::pull_unlocked_profits_to_free_balance`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::vault::pull_unlocked_profits_to_free_balance`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -314,9 +340,10 @@ export function addStrategy(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddStrategyArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::add_strategy`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::add_strategy`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -337,9 +364,10 @@ export function setStrategyMaxBorrow(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetStrategyMaxBorrowArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_strategy_max_borrow`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_strategy_max_borrow`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -362,9 +390,12 @@ export function setStrategyTargetAllocWeightsBps(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetStrategyTargetAllocWeightsBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_strategy_target_alloc_weights_bps`,
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::vault::set_strategy_target_alloc_weights_bps`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -389,9 +420,10 @@ export function removeStrategy(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveStrategyArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::remove_strategy`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::remove_strategy`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -415,9 +447,10 @@ export function setWithdrawalsDisabled(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetWithdrawalsDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_withdrawals_disabled`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_withdrawals_disabled`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -432,9 +465,10 @@ export function withdrawalsDisabled(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::withdrawals_disabled`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::withdrawals_disabled`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -451,9 +485,10 @@ export function setRateLimiter(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SetRateLimiterArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_rate_limiter`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_rate_limiter`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -473,9 +508,10 @@ export function removeRateLimiter(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveRateLimiterArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::remove_rate_limiter`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::remove_rate_limiter`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -488,9 +524,10 @@ export function hasRateLimiter(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::has_rate_limiter`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::has_rate_limiter`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -500,9 +537,10 @@ export function rateLimiterMut(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::rate_limiter_mut`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::rate_limiter_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -520,9 +558,10 @@ export function setMaxInflowAndOutflowLimits(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetMaxInflowAndOutflowLimitsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::set_max_inflow_and_outflow_limits`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::set_max_inflow_and_outflow_limits`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -543,9 +582,10 @@ export function migrate(
   tx: Transaction,
   typeArgs: [string, string],
   args: MigrateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::migrate`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::migrate`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cap),
@@ -565,9 +605,10 @@ export function deposit(
   tx: Transaction,
   typeArgs: [string, string],
   args: DepositArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::deposit`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::deposit`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -581,9 +622,10 @@ export function createWithdrawTicket(
   tx: Transaction,
   typeArgs: [string, string],
   vault: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::create_withdraw_ticket`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::create_withdraw_ticket`,
     typeArguments: typeArgs,
     arguments: [obj(tx, vault)],
   })
@@ -609,9 +651,10 @@ export function withdraw(
   tx: Transaction,
   typeArgs: [string, string],
   args: WithdrawArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::withdraw`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::withdraw`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -631,9 +674,10 @@ export function redeemWithdrawTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: RedeemWithdrawTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::redeem_withdraw_ticket`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::redeem_withdraw_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -657,9 +701,10 @@ export function withdrawTAmt(
   tx: Transaction,
   typeArgs: [string, string],
   args: WithdrawTAmtArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::withdraw_t_amt`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::withdraw_t_amt`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -681,9 +726,10 @@ export function strategyWithdrawToTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: StrategyWithdrawToTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::strategy_withdraw_to_ticket`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::strategy_withdraw_to_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -715,9 +761,10 @@ export function calcRebalanceAmounts(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcRebalanceAmountsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::calc_rebalance_amounts`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::calc_rebalance_amounts`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -737,9 +784,10 @@ export function strategyRepay(
   tx: Transaction,
   typeArgs: [string, string],
   args: StrategyRepayArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::strategy_repay`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::strategy_repay`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -763,9 +811,10 @@ export function strategyBorrow(
   tx: Transaction,
   typeArgs: [string, string],
   args: StrategyBorrowArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::strategy_borrow`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::strategy_borrow`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),
@@ -786,9 +835,10 @@ export function strategyHandOverProfit(
   tx: Transaction,
   typeArgs: [string, string],
   args: StrategyHandOverProfitArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-sav')}::vault::strategy_hand_over_profit`,
+    target: `${getPublishedAt('kai-sav', options?.env)}::vault::strategy_hand_over_profit`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.vault),

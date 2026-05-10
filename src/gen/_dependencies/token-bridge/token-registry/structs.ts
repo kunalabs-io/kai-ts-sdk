@@ -1,3 +1,11 @@
+/**
+ * This module implements a custom type that keeps track of both native and
+ * wrapped assets via dynamic fields. These dynamic fields are keyed off using
+ * coin types. This registry lives in `State`.
+ *
+ * See `state` module for more details.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -68,6 +76,11 @@ export type TokenRegistryJSON = {
   $typeArgs: []
 } & TokenRegistryJSONField
 
+/**
+ * This container is used to store native and wrapped assets of coin type
+ * as dynamic fields under its `UID`. It also uses a mechanism to generate
+ * arbitrary token addresses for native assets.
+ */
 export class TokenRegistry implements StructClass {
   __StructClass = true as const
 
@@ -271,31 +284,39 @@ export function isVerifiedAsset(type: string): boolean {
   )
 }
 
-export interface VerifiedAssetFields<T0 extends PhantomTypeArgument> {
+export interface VerifiedAssetFields<CoinType extends PhantomTypeArgument> {
   isWrapped: ToField<'bool'>
   chain: ToField<'u16'>
   addr: ToField<ExternalAddress>
   coinDecimals: ToField<'u8'>
 }
 
-export type VerifiedAssetReified<T0 extends PhantomTypeArgument> = Reified<
-  VerifiedAsset<T0>,
-  VerifiedAssetFields<T0>
+export type VerifiedAssetReified<CoinType extends PhantomTypeArgument> = Reified<
+  VerifiedAsset<CoinType>,
+  VerifiedAssetFields<CoinType>
 >
 
-export type VerifiedAssetJSONField<T0 extends PhantomTypeArgument> = {
+export type VerifiedAssetJSONField<CoinType extends PhantomTypeArgument> = {
   isWrapped: boolean
   chain: number
   addr: ToJSON<ExternalAddress>
   coinDecimals: number
 }
 
-export type VerifiedAssetJSON<T0 extends PhantomTypeArgument> = {
+export type VerifiedAssetJSON<CoinType extends PhantomTypeArgument> = {
   $typeName: typeof VerifiedAsset.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & VerifiedAssetJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<CoinType>]
+} & VerifiedAssetJSONField<CoinType>
 
-export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClass {
+/**
+ * Container to provide convenient checking of whether an asset is wrapped
+ * or native. `VerifiedAsset` can only be created either by passing in a
+ * resource with `CoinType` or by verifying input token info against the
+ * canonical info that exists in `TokenRegistry`.
+ *
+ * NOTE: This container can be dropped after it was created.
+ */
+export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::token_registry::VerifiedAsset` = `${
@@ -305,8 +326,8 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof VerifiedAsset.$typeName = VerifiedAsset.$typeName
-  readonly $fullTypeName: `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<CoinType>}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinType>]
   readonly $isPhantom: typeof VerifiedAsset.$isPhantom = VerifiedAsset.$isPhantom
 
   readonly isWrapped: ToField<'bool'>
@@ -314,11 +335,14 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
   readonly addr: ToField<ExternalAddress>
   readonly coinDecimals: ToField<'u8'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: VerifiedAssetFields<T0>) {
+  private constructor(
+    typeArgs: [PhantomToTypeStr<CoinType>],
+    fields: VerifiedAssetFields<CoinType>,
+  ) {
     this.$fullTypeName = composeSuiType(
       VerifiedAsset.$typeName,
       ...typeArgs,
-    ) as `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<CoinType>}>`
     this.$typeArgs = typeArgs
 
     this.isWrapped = fields.isWrapped
@@ -327,32 +351,36 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     this.coinDecimals = fields.coinDecimals
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): VerifiedAssetReified<ToPhantomTypeArgument<T0>> {
+  static reified<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): VerifiedAssetReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = VerifiedAsset.bcs
     return {
       typeName: VerifiedAsset.$typeName,
       fullTypeName: composeSuiType(
         VerifiedAsset.$typeName,
-        ...[extractType(T0)],
+        ...[extractType(CoinType)],
       ) as `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
+        ToPhantomTypeArgument<CoinType>
       >}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
       isPhantom: VerifiedAsset.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => VerifiedAsset.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => VerifiedAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => VerifiedAsset.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [CoinType],
+      fromFields: (fields: Record<string, any>) => VerifiedAsset.fromFields(CoinType, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        VerifiedAsset.fromFieldsWithTypes(CoinType, item),
+      fromBcs: (data: Uint8Array) => VerifiedAsset.fromFields(CoinType, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => VerifiedAsset.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => VerifiedAsset.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => VerifiedAsset.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => VerifiedAsset.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => VerifiedAsset.fetch(client, T0, id),
-      new: (fields: VerifiedAssetFields<ToPhantomTypeArgument<T0>>) => {
-        return new VerifiedAsset([extractType(T0)], fields)
+      fromJSONField: (field: any) => VerifiedAsset.fromJSONField(CoinType, field),
+      fromJSON: (json: Record<string, any>) => VerifiedAsset.fromJSON(CoinType, json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        VerifiedAsset.fromSuiParsedData(CoinType, content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        VerifiedAsset.fromSuiObjectData(CoinType, content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        VerifiedAsset.fetch(client, CoinType, id),
+      new: (fields: VerifiedAssetFields<ToPhantomTypeArgument<CoinType>>) => {
+        return new VerifiedAsset([extractType(CoinType)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -362,10 +390,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     return VerifiedAsset.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<VerifiedAsset<ToPhantomTypeArgument<T0>>>> {
-    return phantom(VerifiedAsset.reified(T0))
+  static phantom<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): PhantomReified<ToTypeStr<VerifiedAsset<ToPhantomTypeArgument<CoinType>>>> {
+    return phantom(VerifiedAsset.reified(CoinType))
   }
 
   static get p(): typeof VerifiedAsset.phantom {
@@ -390,10 +418,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     return VerifiedAsset.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     fields: Record<string, any>,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     return VerifiedAsset.reified(typeArg).new({
       isWrapped: decodeFromFields('bool', fields.is_wrapped),
       chain: decodeFromFields('u16', fields.chain),
@@ -402,10 +430,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     item: FieldsWithTypes,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     if (!isVerifiedAsset(item.type)) {
       throw new Error('not a VerifiedAsset type')
     }
@@ -419,14 +447,14 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: Uint8Array,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     return VerifiedAsset.fromFields(typeArg, VerifiedAsset.bcs.parse(data))
   }
 
-  toJSONField(): VerifiedAssetJSONField<T0> {
+  toJSONField(): VerifiedAssetJSONField<CoinType> {
     return {
       isWrapped: this.isWrapped,
       chain: this.chain,
@@ -435,14 +463,14 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     }
   }
 
-  toJSON(): VerifiedAssetJSON<T0> {
+  toJSON(): VerifiedAssetJSON<CoinType> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     field: any,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     return VerifiedAsset.reified(typeArg).new({
       isWrapped: decodeFromJSONField('bool', field.isWrapped),
       chain: decodeFromJSONField('u16', field.chain),
@@ -451,10 +479,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     json: Record<string, any>,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     if (json.$typeName !== VerifiedAsset.$typeName) {
       throw new Error(
         `not a VerifiedAsset json object: expected '${VerifiedAsset.$typeName}' but got '${json.$typeName}'`,
@@ -469,10 +497,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     return VerifiedAsset.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     content: SuiParsedData,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -482,10 +510,10 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     return VerifiedAsset.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: SuiObjectData,
-  ): VerifiedAsset<ToPhantomTypeArgument<T0>> {
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isVerifiedAsset(data.bcs.type)) {
         throw new Error(`object at is not a VerifiedAsset object`)
@@ -517,11 +545,11 @@ export class VerifiedAsset<T0 extends PhantomTypeArgument> implements StructClas
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: CoinType,
     id: string,
-  ): Promise<VerifiedAsset<ToPhantomTypeArgument<T0>>> {
+  ): Promise<VerifiedAsset<ToPhantomTypeArgument<CoinType>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isVerifiedAsset(res.type)) {
       throw new Error(`object at id ${id} is not a VerifiedAsset object`)
@@ -556,22 +584,26 @@ export function isKey(type: string): boolean {
   )
 }
 
-export interface KeyFields<T0 extends PhantomTypeArgument> {
+export interface KeyFields<CoinType extends PhantomTypeArgument> {
   dummyField: ToField<'bool'>
 }
 
-export type KeyReified<T0 extends PhantomTypeArgument> = Reified<Key<T0>, KeyFields<T0>>
+export type KeyReified<CoinType extends PhantomTypeArgument> = Reified<
+  Key<CoinType>,
+  KeyFields<CoinType>
+>
 
-export type KeyJSONField<T0 extends PhantomTypeArgument> = {
+export type KeyJSONField<CoinType extends PhantomTypeArgument> = {
   dummyField: boolean
 }
 
-export type KeyJSON<T0 extends PhantomTypeArgument> = {
+export type KeyJSON<CoinType extends PhantomTypeArgument> = {
   $typeName: typeof Key.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & KeyJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<CoinType>]
+} & KeyJSONField<CoinType>
 
-export class Key<T0 extends PhantomTypeArgument> implements StructClass {
+/** Wrapper of coin type to act as dynamic field key. */
+export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::token_registry::Key` = `${
@@ -581,46 +613,46 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof Key.$typeName = Key.$typeName
-  readonly $fullTypeName: `${string}::token_registry::Key<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::token_registry::Key<${PhantomToTypeStr<CoinType>}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinType>]
   readonly $isPhantom: typeof Key.$isPhantom = Key.$isPhantom
 
   readonly dummyField: ToField<'bool'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: KeyFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<CoinType>], fields: KeyFields<CoinType>) {
     this.$fullTypeName = composeSuiType(
       Key.$typeName,
       ...typeArgs,
-    ) as `${string}::token_registry::Key<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::token_registry::Key<${PhantomToTypeStr<CoinType>}>`
     this.$typeArgs = typeArgs
 
     this.dummyField = fields.dummyField
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): KeyReified<ToPhantomTypeArgument<T0>> {
+  static reified<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): KeyReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = Key.bcs
     return {
       typeName: Key.$typeName,
       fullTypeName: composeSuiType(
         Key.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::token_registry::Key<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(CoinType)],
+      ) as `${string}::token_registry::Key<${PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>}>`,
+      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
       isPhantom: Key.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => Key.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Key.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Key.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [CoinType],
+      fromFields: (fields: Record<string, any>) => Key.fromFields(CoinType, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Key.fromFieldsWithTypes(CoinType, item),
+      fromBcs: (data: Uint8Array) => Key.fromFields(CoinType, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => Key.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => Key.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => Key.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Key.fetch(client, T0, id),
-      new: (fields: KeyFields<ToPhantomTypeArgument<T0>>) => {
-        return new Key([extractType(T0)], fields)
+      fromJSONField: (field: any) => Key.fromJSONField(CoinType, field),
+      fromJSON: (json: Record<string, any>) => Key.fromJSON(CoinType, json),
+      fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(CoinType, content),
+      fromSuiObjectData: (content: SuiObjectData) => Key.fromSuiObjectData(CoinType, content),
+      fetch: async (client: SupportedSuiClient, id: string) => Key.fetch(client, CoinType, id),
+      new: (fields: KeyFields<ToPhantomTypeArgument<CoinType>>) => {
+        return new Key([extractType(CoinType)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -630,10 +662,10 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     return Key.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<Key<ToPhantomTypeArgument<T0>>>> {
-    return phantom(Key.reified(T0))
+  static phantom<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): PhantomReified<ToTypeStr<Key<ToPhantomTypeArgument<CoinType>>>> {
+    return phantom(Key.reified(CoinType))
   }
 
   static get p(): typeof Key.phantom {
@@ -655,19 +687,19 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     return Key.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     fields: Record<string, any>,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     return Key.reified(typeArg).new({
       dummyField: decodeFromFields('bool', fields.dummy_field),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     item: FieldsWithTypes,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     if (!isKey(item.type)) {
       throw new Error('not a Key type')
     }
@@ -678,36 +710,36 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: Uint8Array,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     return Key.fromFields(typeArg, Key.bcs.parse(data))
   }
 
-  toJSONField(): KeyJSONField<T0> {
+  toJSONField(): KeyJSONField<CoinType> {
     return {
       dummyField: this.dummyField,
     }
   }
 
-  toJSON(): KeyJSON<T0> {
+  toJSON(): KeyJSON<CoinType> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     field: any,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     return Key.reified(typeArg).new({
       dummyField: decodeFromJSONField('bool', field.dummyField),
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     json: Record<string, any>,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     if (json.$typeName !== Key.$typeName) {
       throw new Error(
         `not a Key json object: expected '${Key.$typeName}' but got '${json.$typeName}'`,
@@ -722,10 +754,10 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     return Key.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     content: SuiParsedData,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -735,10 +767,10 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     return Key.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: SuiObjectData,
-  ): Key<ToPhantomTypeArgument<T0>> {
+  ): Key<ToPhantomTypeArgument<CoinType>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isKey(data.bcs.type)) {
         throw new Error(`object at is not a Key object`)
@@ -770,11 +802,11 @@ export class Key<T0 extends PhantomTypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: CoinType,
     id: string,
-  ): Promise<Key<ToPhantomTypeArgument<T0>>> {
+  ): Promise<Key<ToPhantomTypeArgument<CoinType>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isKey(res.type)) {
       throw new Error(`object at id ${id} is not a Key object`)
@@ -827,6 +859,11 @@ export type CoinTypeKeyJSON = {
   $typeArgs: []
 } & CoinTypeKeyJSONField
 
+/**
+ * This struct is not used for anything within the contract. It exists
+ * purely for someone with an RPC query to be able to fetch the type name
+ * of coin type as a string via `TokenRegistry`.
+ */
 export class CoinTypeKey implements StructClass {
   __StructClass = true as const
 

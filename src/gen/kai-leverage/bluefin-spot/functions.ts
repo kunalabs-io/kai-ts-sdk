@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
@@ -19,9 +20,12 @@ export function slippageToleranceAssertion(
   tx: Transaction,
   typeArgs: [string, string],
   args: SlippageToleranceAssertionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::slippage_tolerance_assertion`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::slippage_tolerance_assertion`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -43,9 +47,12 @@ export function calcDepositAmountsByLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcDepositAmountsByLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::calc_deposit_amounts_by_liquidity`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::calc_deposit_amounts_by_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -60,9 +67,10 @@ export function calcDepositAmountsByLiquidity(
 export function positionTickRange(
   tx: Transaction,
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::position_tick_range`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::position_tick_range`,
     arguments: [obj(tx, position)],
   })
 }
@@ -80,9 +88,10 @@ export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::remove_liquidity`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -110,9 +119,10 @@ export function createPositionTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::create_position_ticket`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::create_position_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.bluefinPool),
@@ -144,9 +154,12 @@ export function createPositionTicketV2(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionTicketV2Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::create_position_ticket_v2`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::create_position_ticket_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.bluefinPool),
@@ -174,9 +187,10 @@ export function borrowForPositionX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: BorrowForPositionXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::borrow_for_position_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::borrow_for_position_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -199,9 +213,10 @@ export function borrowForPositionY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: BorrowForPositionYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::borrow_for_position_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::borrow_for_position_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -226,9 +241,10 @@ export function createPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::create_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::create_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -260,9 +276,12 @@ export function createDeleverageTicket(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreateDeleverageTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::create_deleverage_ticket`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::create_deleverage_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -295,10 +314,11 @@ export function createDeleverageTicketForLiquidation(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreateDeleverageTicketForLiquidationArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::bluefin_spot::create_deleverage_ticket_for_liquidation`,
     typeArguments: typeArgs,
     arguments: [
@@ -333,9 +353,10 @@ export function deleverage(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::deleverage`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::deleverage`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -370,9 +391,12 @@ export function deleverageForLiquidation(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageForLiquidationArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::deleverage_for_liquidation`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::deleverage_for_liquidation`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -405,9 +429,10 @@ export function liquidateColX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: LiquidateColXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::liquidate_col_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::liquidate_col_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -439,9 +464,10 @@ export function liquidateColY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: LiquidateColYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::liquidate_col_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::liquidate_col_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -470,9 +496,10 @@ export function repayBadDebtX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayBadDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::repay_bad_debt_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::repay_bad_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -501,9 +528,10 @@ export function repayBadDebtY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayBadDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::repay_bad_debt_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::repay_bad_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -538,9 +566,10 @@ export function reduce(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: ReduceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::reduce`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::reduce`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -576,9 +605,10 @@ export function addLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::add_liquidity`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -609,9 +639,10 @@ export function repayDebtX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::repay_debt_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::repay_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -636,9 +667,10 @@ export function repayDebtY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RepayDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::repay_debt_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::repay_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -664,9 +696,10 @@ export function ownerCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: OwnerCollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::owner_collect_fee`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::owner_collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -693,9 +726,10 @@ export function ownerCollectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: OwnerCollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::owner_collect_reward`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::owner_collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -719,9 +753,12 @@ export function ownerTakeStashedRewards(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: OwnerTakeStashedRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::owner_take_stashed_rewards`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::owner_take_stashed_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -745,9 +782,10 @@ export function deletePosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: DeletePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::delete_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::delete_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -777,9 +815,10 @@ export function rebalanceCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceCollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::rebalance_collect_fee`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::rebalance_collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -809,9 +848,12 @@ export function rebalanceCollectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceCollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::rebalance_collect_reward`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::rebalance_collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -843,9 +885,12 @@ export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::rebalance_add_liquidity`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::bluefin_spot::rebalance_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -878,9 +923,10 @@ export function positionModel(
   tx: Transaction,
   typeArgs: [string, string],
   args: PositionModelArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::position_model`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::position_model`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -903,9 +949,10 @@ export function calcLiquidateColX(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcLiquidateColXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::calc_liquidate_col_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::calc_liquidate_col_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -930,9 +977,10 @@ export function calcLiquidateColY(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcLiquidateColYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::bluefin_spot::calc_liquidate_col_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::bluefin_spot::calc_liquidate_col_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

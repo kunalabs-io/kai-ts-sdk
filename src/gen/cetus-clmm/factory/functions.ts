@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -13,9 +14,9 @@ import { ID } from '../../sui/object/structs'
  * Initialize the factory
  * * `ctx` - Transaction context used to initialize the factory
  */
-export function init(tx: Transaction): TransactionResult {
+export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::init`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::init`,
     arguments: [],
   })
 }
@@ -24,9 +25,13 @@ export function init(tx: Transaction): TransactionResult {
  * Get the pool_id from the pool simple info
  * * `info` - The pool simple info
  */
-export function poolId(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function poolId(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::pool_id`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::pool_id`,
     arguments: [obj(tx, info)],
   })
 }
@@ -35,9 +40,13 @@ export function poolId(tx: Transaction, info: TransactionObjectInput): Transacti
  * Get the pool_key from the pool simple info
  * * `info` - The pool simple info
  */
-export function poolKey(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function poolKey(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::pool_key`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::pool_key`,
     arguments: [obj(tx, info)],
   })
 }
@@ -46,9 +55,13 @@ export function poolKey(tx: Transaction, info: TransactionObjectInput): Transact
  * Get the coin types from the pool simple info
  * * `info` - The pool simple info
  */
-export function coinTypes(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function coinTypes(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::coin_types`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::coin_types`,
     arguments: [obj(tx, info)],
   })
 }
@@ -57,9 +70,13 @@ export function coinTypes(tx: Transaction, info: TransactionObjectInput): Transa
  * Get the tick spacing from the pool simple info
  * * `info` - The pool simple info
  */
-export function tickSpacing(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function tickSpacing(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::tick_spacing`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::tick_spacing`,
     arguments: [obj(tx, info)],
   })
 }
@@ -68,9 +85,13 @@ export function tickSpacing(tx: Transaction, info: TransactionObjectInput): Tran
  * Get the pool index from the pools
  * * `pools` - The pools
  */
-export function index(tx: Transaction, pools: TransactionObjectInput): TransactionResult {
+export function index(
+  tx: Transaction,
+  pools: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::index`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::index`,
     arguments: [obj(tx, pools)],
   })
 }
@@ -85,9 +106,13 @@ export interface PoolSimpleInfoArgs {
  * * `pools` - The pools
  * * `pool_key` - The pool key
  */
-export function poolSimpleInfo(tx: Transaction, args: PoolSimpleInfoArgs): TransactionResult {
+export function poolSimpleInfo(
+  tx: Transaction,
+  args: PoolSimpleInfoArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::pool_simple_info`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::pool_simple_info`,
     arguments: [
       obj(tx, args.pools),
       pure(tx, args.poolKey, `${ID.$typeName}`),
@@ -104,9 +129,10 @@ export function inAllowedList(
   tx: Transaction,
   typeArg: string,
   pools: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::in_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::in_allowed_list`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
@@ -121,9 +147,10 @@ export function inDeniedList(
   tx: Transaction,
   typeArg: string,
   pools: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::in_denied_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::in_denied_list`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
@@ -144,9 +171,10 @@ export function isAllowedCoin(
   tx: Transaction,
   typeArg: string,
   args: IsAllowedCoinArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::is_allowed_coin`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::is_allowed_coin`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.pools),
@@ -171,9 +199,10 @@ export function isPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
   args: IsPermissionPairArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::is_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::is_permission_pair`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -198,9 +227,10 @@ export function permissionPairCap(
   tx: Transaction,
   typeArgs: [string, string],
   args: PermissionPairCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::permission_pair_cap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::permission_pair_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -223,9 +253,10 @@ export interface InitManagerAndWhitelistArgs {
 export function initManagerAndWhitelist(
   tx: Transaction,
   args: InitManagerAndWhitelistArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::init_manager_and_whitelist`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::init_manager_and_whitelist`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.pools),
@@ -248,9 +279,10 @@ export function addAllowedList(
   tx: Transaction,
   typeArg: string,
   args: AddAllowedListArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::add_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::add_allowed_list`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -274,9 +306,10 @@ export function removeAllowedList(
   tx: Transaction,
   typeArg: string,
   args: RemoveAllowedListArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::remove_allowed_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::remove_allowed_list`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -300,9 +333,10 @@ export function addDeniedList(
   tx: Transaction,
   typeArg: string,
   args: AddDeniedListArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::add_denied_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::add_denied_list`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -326,9 +360,10 @@ export function removeDeniedList(
   tx: Transaction,
   typeArg: string,
   args: RemoveDeniedListArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::remove_denied_list`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::remove_denied_list`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -354,9 +389,10 @@ export function addAllowedPairConfig(
   tx: Transaction,
   typeArg: string,
   args: AddAllowedPairConfigArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::add_allowed_pair_config`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::add_allowed_pair_config`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -383,9 +419,10 @@ export function removeAllowedPairConfig(
   tx: Transaction,
   typeArg: string,
   args: RemoveAllowedPairConfigArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::remove_allowed_pair_config`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::remove_allowed_pair_config`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -412,9 +449,10 @@ export function mintPoolCreationCap(
   tx: Transaction,
   typeArg: string,
   args: MintPoolCreationCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::mint_pool_creation_cap`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -439,9 +477,12 @@ export function mintPoolCreationCapByAdmin(
   tx: Transaction,
   typeArg: string,
   args: MintPoolCreationCapByAdminArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap_by_admin`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::factory::mint_pool_creation_cap_by_admin`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -469,9 +510,10 @@ export function registerPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
   args: RegisterPermissionPairArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::register_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::register_permission_pair`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -501,9 +543,10 @@ export function unregisterPermissionPair(
   tx: Transaction,
   typeArgs: [string, string],
   args: UnregisterPermissionPairArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::unregister_permission_pair`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::unregister_permission_pair`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -524,9 +567,12 @@ export function registerPermissionPairInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: RegisterPermissionPairInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::register_permission_pair_internal`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::factory::register_permission_pair_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -546,9 +592,12 @@ export function unregisterPermissionPairInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: UnregisterPermissionPairInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::unregister_permission_pair_internal`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::factory::unregister_permission_pair_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -562,9 +611,10 @@ export function addDeniedCoin(
   tx: Transaction,
   typeArg: string,
   pools: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::add_denied_coin`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::add_denied_coin`,
     typeArguments: [typeArg],
     arguments: [obj(tx, pools)],
   })
@@ -578,9 +628,12 @@ export interface MintPoolCreationCapInternalArgs {
 export function mintPoolCreationCapInternal(
   tx: Transaction,
   args: MintPoolCreationCapInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::mint_pool_creation_cap_internal`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::factory::mint_pool_creation_cap_internal`,
     arguments: [
       obj(tx, args.pools),
       obj(tx, args.coinType),
@@ -613,9 +666,10 @@ export function createPool(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::create_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -649,9 +703,10 @@ export function createPoolWithLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolWithLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_with_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::create_pool_with_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -712,9 +767,10 @@ export function createPoolV2_(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolV2_Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_v2_`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::create_pool_v2_`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -749,9 +805,10 @@ export function createPoolInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::create_pool_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::create_pool_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pools),
@@ -776,9 +833,13 @@ export interface FetchPoolsArgs {
  * * `start` - The start pool id
  * * `limit` - The max number of Pool to fetch
  */
-export function fetchPools(tx: Transaction, args: FetchPoolsArgs): TransactionResult {
+export function fetchPools(
+  tx: Transaction,
+  args: FetchPoolsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::fetch_pools`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::fetch_pools`,
     arguments: [
       obj(tx, args.pools),
       pure(tx, args.start, `vector<${ID.$typeName}>`),
@@ -802,9 +863,10 @@ export function newPoolKey(
   tx: Transaction,
   typeArgs: [string, string],
   tickSpacing: number | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::new_pool_key`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::new_pool_key`,
     typeArguments: typeArgs,
     arguments: [pure(tx, tickSpacing, `u32`)],
   })
@@ -815,9 +877,13 @@ export function newPoolKey(
  * * `CoinTypeA` - The type name of the first coin
  * * `CoinTypeB` - The type name of the second coin
  */
-export function isRightOrder(tx: Transaction, typeArgs: [string, string]): TransactionResult {
+export function isRightOrder(
+  tx: Transaction,
+  typeArgs: [string, string],
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::factory::is_right_order`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::is_right_order`,
     typeArguments: typeArgs,
     arguments: [],
   })

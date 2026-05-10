@@ -77,7 +77,13 @@ export interface SwapArguments {
   coinOutInfo: CoinInfo<PhantomTypeArgument>
 }
 
-export function swapSpotDirect(tx: Transaction, args: SwapArguments) {
+export function swapSpotDirect(
+  tx: Transaction,
+  args: SwapArguments
+): {
+  balanceInRemaining: TransactionArgument
+  balanceOut: TransactionArgument
+} {
   const step = findRouteStep(args.coinInInfo, args.coinOutInfo, ['bluefin'])
   if (!step) {
     throw new Error(
@@ -184,7 +190,7 @@ export function repayFlashSwap(
   tx: Transaction,
   repayBalance: TransactionObjectInput,
   receipt: FlashSwapReceipt
-) {
+): void {
   if (receipt.poolInfo.protocol !== 'bluefin') {
     throw new Error(
       `bluefinRepayFlashSwap: Only 'bluefin' protocol supported, but got '${receipt.poolInfo.protocol}'`

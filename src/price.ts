@@ -34,7 +34,7 @@ export class Price<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>
     X: CoinInfo<X>,
     Y: CoinInfo<Y>,
     value: Decimal | number | string
-  ) {
+  ): Price<X, Y> {
     const human = new Decimal(value)
     const numeric = human.mul(new Decimal(10).pow(Y.decimals - X.decimals))
 
@@ -53,7 +53,7 @@ export class Price<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>
     X: CoinInfo<X>,
     Y: CoinInfo<Y>,
     value: bigint | Decimal | number | string
-  ) {
+  ): Price<X, Y> {
     const numeric = new Decimal(value.toString())
     const human = numeric.mul(new Decimal(10).pow(X.decimals - Y.decimals))
 
@@ -65,7 +65,7 @@ export class Price<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>
    *
    * @returns The inverted price.
    */
-  inverted() {
+  inverted(): Price<Y, X> {
     return Price.fromHuman(this.Y, this.X, this.human.pow(-1))
   }
 }

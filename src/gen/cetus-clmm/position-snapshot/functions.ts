@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
@@ -20,9 +21,13 @@ export interface NewArgs {
  * * `ctx` - The transaction context
  * * Returns a new PositionLiquiditySnapshot
  */
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::new`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::new`,
     arguments: [
       pure(tx, args.currentSqrtPrice, `u128`),
       pure(tx, args.removePercent, `u64`),
@@ -38,9 +43,10 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
 export function removePercent(
   tx: Transaction,
   snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::remove_percent`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::remove_percent`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -53,9 +59,10 @@ export function removePercent(
 export function currentSqrtPrice(
   tx: Transaction,
   snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::current_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::current_sqrt_price`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -68,9 +75,10 @@ export function currentSqrtPrice(
 export function totalValueCut(
   tx: Transaction,
   snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::total_value_cut`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::total_value_cut`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -80,9 +88,13 @@ export function totalValueCut(
  * * `snapshot` - The PositionSnapshot
  * * Returns the value cut
  */
-export function valueCut(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function valueCut(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::value_cut`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::value_cut`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -92,9 +104,13 @@ export function valueCut(tx: Transaction, snapshot: TransactionObjectInput): Tra
  * * `snapshot` - The PositionSnapshot
  * * Returns the rewards
  */
-export function rewards(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function rewards(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::rewards`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -104,9 +120,13 @@ export function rewards(tx: Transaction, snapshot: TransactionObjectInput): Tran
  * * `snapshot` - The PositionSnapshot
  * * Returns
  */
-export function feeOwned(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function feeOwned(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::fee_owned`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::fee_owned`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -116,9 +136,13 @@ export function feeOwned(tx: Transaction, snapshot: TransactionObjectInput): Tra
  * * `snapshot` - The PositionSnapshot
  * * Returns the tick range
  */
-export function tickRange(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function tickRange(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::tick_range`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -128,9 +152,13 @@ export function tickRange(tx: Transaction, snapshot: TransactionObjectInput): Tr
  * * `snapshot` - The PositionSnapshot
  * * Returns the liquidity
  */
-export function liquidity(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function liquidity(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::liquidity`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -140,9 +168,13 @@ export function liquidity(tx: Transaction, snapshot: TransactionObjectInput): Tr
  * * `snapshot` - The PositionSnapshot
  * * Returns the position id
  */
-export function positionId(tx: Transaction, snapshot: TransactionObjectInput): TransactionResult {
+export function positionId(
+  tx: Transaction,
+  snapshot: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::position_id`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::position_id`,
     arguments: [obj(tx, snapshot)],
   })
 }
@@ -161,9 +193,12 @@ export interface CalculateRemoveLiquidityArgs {
 export function calculateRemoveLiquidity(
   tx: Transaction,
   args: CalculateRemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::calculate_remove_liquidity`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::position_snapshot::calculate_remove_liquidity`,
     arguments: [
       obj(tx, args.snapshot),
       obj(tx, args.positionInfo),
@@ -185,9 +220,13 @@ export interface AddArgs {
  * * `value_cut` - The value cut
  * * `position_info` - The position info
  */
-export function add(tx: Transaction, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::add`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::add`,
     arguments: [
       obj(tx, args.snapshot),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -208,9 +247,13 @@ export interface GetArgs {
  * * `position_id` - The position id
  * * Returns the PositionSnapshot
  */
-export function get(tx: Transaction, args: GetArgs): TransactionResult {
+export function get(
+  tx: Transaction,
+  args: GetArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::get`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::get`,
     arguments: [
       obj(tx, args.snapshot),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -229,9 +272,13 @@ export interface ContainsArgs {
  * * `position_id` - The position id
  * * Returns true if the PositionLiquiditySnapshot contains the PositionSnapshot for the position id, false otherwise
  */
-export function contains(tx: Transaction, args: ContainsArgs): TransactionResult {
+export function contains(
+  tx: Transaction,
+  args: ContainsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::contains`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::contains`,
     arguments: [
       obj(tx, args.snapshot),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -249,9 +296,13 @@ export interface RemoveArgs {
  * * `snapshot` - The PositionLiquiditySnapshot
  * * `position_id` - The position id
  */
-export function remove(tx: Transaction, args: RemoveArgs): TransactionResult {
+export function remove(
+  tx: Transaction,
+  args: RemoveArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::position_snapshot::remove`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::position_snapshot::remove`,
     arguments: [
       obj(tx, args.snapshot),
       pure(tx, args.positionId, `${ID.$typeName}`),

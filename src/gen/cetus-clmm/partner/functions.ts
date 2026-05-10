@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -12,9 +13,9 @@ import { String } from '../../std/string/structs'
  * Initialize the `Partners` object to store partner information
  * * `ctx` - The transaction context used to create the object
  */
-export function init(tx: Transaction): TransactionResult {
+export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::init`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::init`,
     arguments: [],
   })
 }
@@ -42,9 +43,13 @@ export interface CreatePartnerArgs {
  * * `clock` - The clock object
  * * `ctx` - The transaction context
  */
-export function createPartner(tx: Transaction, args: CreatePartnerArgs): TransactionResult {
+export function createPartner(
+  tx: Transaction,
+  args: CreatePartnerArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::create_partner`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::create_partner`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.partners),
@@ -63,9 +68,13 @@ export function createPartner(tx: Transaction, args: CreatePartnerArgs): Transac
  * * `partner` - The reference to the `Partner` object
  * * Returns the name of the partner
  */
-export function name(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+export function name(
+  tx: Transaction,
+  partner: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::name`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::name`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -75,9 +84,13 @@ export function name(tx: Transaction, partner: TransactionObjectInput): Transact
  * * `partner` - The reference to the `Partner` object
  * * Returns the reference fee rate for the partner
  */
-export function refFeeRate(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+export function refFeeRate(
+  tx: Transaction,
+  partner: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::ref_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::ref_fee_rate`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -87,9 +100,13 @@ export function refFeeRate(tx: Transaction, partner: TransactionObjectInput): Tr
  * * `partner` - The reference to the `Partner` object
  * * Returns the start time of the partner's validity period
  */
-export function startTime(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+export function startTime(
+  tx: Transaction,
+  partner: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::start_time`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::start_time`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -99,9 +116,13 @@ export function startTime(tx: Transaction, partner: TransactionObjectInput): Tra
  * * `partner` - The reference to the `Partner` object
  * * Returns the end time of the partner's validity period
  */
-export function endTime(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+export function endTime(
+  tx: Transaction,
+  partner: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::end_time`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::end_time`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -111,9 +132,13 @@ export function endTime(tx: Transaction, partner: TransactionObjectInput): Trans
  * * `partner` - The reference to the `Partner` object
  * * Returns the balances of the partner
  */
-export function balances(tx: Transaction, partner: TransactionObjectInput): TransactionResult {
+export function balances(
+  tx: Transaction,
+  partner: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::balances`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::balances`,
     arguments: [obj(tx, partner)],
   })
 }
@@ -129,9 +154,13 @@ export interface CurrentRefFeeRateArgs {
  * * `current_time` - The current time
  * * Returns the current reference fee rate for the partner
  */
-export function currentRefFeeRate(tx: Transaction, args: CurrentRefFeeRateArgs): TransactionResult {
+export function currentRefFeeRate(
+  tx: Transaction,
+  args: CurrentRefFeeRateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::current_ref_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::current_ref_fee_rate`,
     arguments: [
       obj(tx, args.partner),
       pure(tx, args.currentTime, `u64`),
@@ -152,9 +181,13 @@ export interface UpdateRefFeeRateArgs {
  * * `new_fee_rate` - The new reference fee rate for the partner
  * * `ctx` - The transaction context
  */
-export function updateRefFeeRate(tx: Transaction, args: UpdateRefFeeRateArgs): TransactionResult {
+export function updateRefFeeRate(
+  tx: Transaction,
+  args: UpdateRefFeeRateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::update_ref_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::update_ref_fee_rate`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.partner),
@@ -180,9 +213,13 @@ export interface UpdateTimeRangeArgs {
  * * `clock` - The clock object
  * * `ctx` - The transaction context
  */
-export function updateTimeRange(tx: Transaction, args: UpdateTimeRangeArgs): TransactionResult {
+export function updateTimeRange(
+  tx: Transaction,
+  args: UpdateTimeRangeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::update_time_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::update_time_range`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.partner),
@@ -208,9 +245,10 @@ export function receiveRefFee(
   tx: Transaction,
   typeArg: string,
   args: ReceiveRefFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::receive_ref_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::receive_ref_fee`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.partner),
@@ -234,9 +272,10 @@ export function receiveRefFeeInternal(
   tx: Transaction,
   typeArg: string,
   args: ReceiveRefFeeInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::receive_ref_fee_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::receive_ref_fee_internal`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.partner),
@@ -262,9 +301,10 @@ export function claimRefFee(
   tx: Transaction,
   typeArg: string,
   args: ClaimRefFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::partner::claim_ref_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::claim_ref_fee`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),

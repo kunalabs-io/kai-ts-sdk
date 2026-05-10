@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
@@ -18,9 +19,10 @@ export function fetchTicks(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchTicksArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_ticks`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::fetcher_script::fetch_ticks`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -40,9 +42,10 @@ export function fetchPositions(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchPositionsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_positions`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::fetcher_script::fetch_positions`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -58,9 +61,13 @@ export interface FetchPoolsArgs {
   a2: bigint | TransactionArgument
 }
 
-export function fetchPools(tx: Transaction, args: FetchPoolsArgs): TransactionResult {
+export function fetchPools(
+  tx: Transaction,
+  args: FetchPoolsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_pools`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::fetcher_script::fetch_pools`,
     arguments: [
       obj(tx, args.a0),
       pure(tx, args.a1, `vector<${ID.$typeName}>`),
@@ -80,9 +87,12 @@ export function calculateSwapResult(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalculateSwapResultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::calculate_swap_result`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::fetcher_script::calculate_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -104,9 +114,12 @@ export function fetchPositionRewards(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchPositionRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_rewards`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::fetcher_script::fetch_position_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -127,9 +140,12 @@ export function fetchPositionFees(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchPositionFeesArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_fees`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::fetcher_script::fetch_position_fees`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -150,9 +166,12 @@ export function fetchPositionPoints(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchPositionPointsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::fetcher_script::fetch_position_points`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::fetcher_script::fetch_position_points`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

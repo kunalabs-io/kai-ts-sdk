@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -18,9 +19,12 @@ export function calcMaxAddLiquidityAmounts(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalcMaxAddLiquidityAmountsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::calc_max_add_liquidity_amounts`,
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::cetus::calc_max_add_liquidity_amounts`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -48,9 +52,10 @@ export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::rebalance_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -84,9 +89,10 @@ export function ownerAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: OwnerAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::owner_add_liquidity`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::owner_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -107,9 +113,10 @@ export function swapPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::swap_pay_amount`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::swap_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -130,9 +137,10 @@ export function flashSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::flash_swap`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -159,9 +167,10 @@ export function repayFlashSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayFlashSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::repay_flash_swap`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::repay_flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -182,9 +191,10 @@ export function createRebalanceReceipt(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreateRebalanceReceiptArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::create_rebalance_receipt`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::cetus::create_rebalance_receipt`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -208,10 +218,11 @@ export function rebalanceCollectLpFeesForBatchSelling(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceCollectLpFeesForBatchSellingArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage-util')
+      getPublishedAt('kai-leverage-util', options?.env)
     }::cetus::rebalance_collect_lp_fees_for_batch_selling`,
     typeArguments: typeArgs,
     arguments: [
@@ -246,10 +257,11 @@ export function rebalanceCollectRewardForBatchSelling(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceCollectRewardForBatchSellingArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage-util')
+      getPublishedAt('kai-leverage-util', options?.env)
     }::cetus::rebalance_collect_reward_for_batch_selling`,
     typeArguments: typeArgs,
     arguments: [
@@ -278,9 +290,12 @@ export function rebalanceClaimBatchSwapToX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceClaimBatchSwapToXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_claim_batch_swap_to_x`,
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::cetus::rebalance_claim_batch_swap_to_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.receipt),
@@ -298,9 +313,12 @@ export function rebalanceClaimBatchSwapToY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: RebalanceClaimBatchSwapToYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_claim_batch_swap_to_y`,
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::cetus::rebalance_claim_batch_swap_to_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.receipt),
@@ -325,9 +343,12 @@ export function rebalanceFinalizeAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RebalanceFinalizeAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::cetus::rebalance_finalize_add_liquidity`,
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::cetus::rebalance_finalize_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

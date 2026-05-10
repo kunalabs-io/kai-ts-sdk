@@ -191,7 +191,7 @@ export function swapWithRoute(
   tx: Transaction,
   route: Array<RouteStep>,
   balanceIn: TransactionObjectInput
-) {
+): TransactionObjectArgument {
   let currentIn: TransactionObjectArgument = tx.object(balanceIn)
   for (const step of route) {
     switch (step.pool.protocol) {
@@ -226,7 +226,7 @@ export function swap(tx: Transaction, args: SwapArgs): TransactionObjectArgument
 export class KaiRouterAdapter implements Router {
   id = () => 'kai'
 
-  async initialize() {}
+  async initialize(): Promise<void> {}
 
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
     if (args.amountIn === 0n) {

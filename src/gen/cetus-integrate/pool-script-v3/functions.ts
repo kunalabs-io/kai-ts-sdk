@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
 
@@ -19,9 +20,10 @@ export function collectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script_v3::collect_fee`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script_v3::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -46,9 +48,10 @@ export function collectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_script_v3::collect_reward`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_script_v3::collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

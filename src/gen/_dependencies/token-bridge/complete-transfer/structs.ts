@@ -1,3 +1,33 @@
+/**
+ * This module implements two methods: `authorize_transfer` and
+ * `redeem_relayer_payout`, which are to be executed in a transaction block in
+ * this order.
+ *
+ * `authorize_transfer` allows a contract to complete a Token Bridge transfer,
+ * sending assets to the encoded recipient. The coin payout incentive in
+ * redeeming the transfer is packaged in a `RelayerReceipt`.
+ *
+ * `redeem_relayer_payout` unpacks the `RelayerReceipt` to release the coin
+ * containing the relayer fee amount.
+ *
+ * The purpose of splitting this transfer redemption into two steps is in case
+ * Token Bridge needs to be upgraded and there is a breaking change for this
+ * module, an integrator would not be left broken. It is discouraged to put
+ * `authorize_transfer` in an integrator's package logic. Otherwise, this
+ * integrator needs to be prepared to upgrade his contract to handle the latest
+ * version of `complete_transfer`.
+ *
+ * Instead, an integrator is encouraged to execute a transaction block, which
+ * executes `authorize_transfer` using the latest Token Bridge package ID and
+ * to implement `redeem_relayer_payout` in his contract to consume this receipt.
+ * This is similar to how an integrator with Wormhole is not meant to use
+ * `vaa::parse_and_verify` in his contract in case the `vaa` module needs to
+ * be upgraded due to a breaking change.
+ *
+ * See `transfer` module for serialization and deserialization of Wormhole
+ * message payload.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -60,6 +90,10 @@ export type TransferRedeemedJSON = {
   $typeArgs: []
 } & TransferRedeemedJSONField
 
+/**
+ * Event reflecting when a transfer via `complete_transfer` or
+ * `complete_transfer_with_payload` is successfully executed.
+ */
 export class TransferRedeemed implements StructClass {
   __StructClass = true as const
 
@@ -250,25 +284,33 @@ export function isRelayerReceipt(type: string): boolean {
   )
 }
 
-export interface RelayerReceiptFields<T0 extends PhantomTypeArgument> {
-  payout: ToField<Coin<T0>>
+export interface RelayerReceiptFields<CoinType extends PhantomTypeArgument> {
+  /** Coin of relayer fee payout. */
+  payout: ToField<Coin<CoinType>>
 }
 
-export type RelayerReceiptReified<T0 extends PhantomTypeArgument> = Reified<
-  RelayerReceipt<T0>,
-  RelayerReceiptFields<T0>
+export type RelayerReceiptReified<CoinType extends PhantomTypeArgument> = Reified<
+  RelayerReceipt<CoinType>,
+  RelayerReceiptFields<CoinType>
 >
 
-export type RelayerReceiptJSONField<T0 extends PhantomTypeArgument> = {
-  payout: ToJSON<Coin<T0>>
+export type RelayerReceiptJSONField<CoinType extends PhantomTypeArgument> = {
+  payout: ToJSON<Coin<CoinType>>
 }
 
-export type RelayerReceiptJSON<T0 extends PhantomTypeArgument> = {
+export type RelayerReceiptJSON<CoinType extends PhantomTypeArgument> = {
   $typeName: typeof RelayerReceipt.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & RelayerReceiptJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<CoinType>]
+} & RelayerReceiptJSONField<CoinType>
 
-export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructClass {
+/**
+ * This type is only generated from `authorize_transfer` and can only be
+ * redeemed using `redeem_relayer_payout`. Integrators running relayer
+ * contracts are expected to implement `redeem_relayer_payout` within their
+ * contracts and call `authorize_transfer` in a transaction block preceding
+ * the method that consumes this receipt.
+ */
+export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::complete_transfer::RelayerReceipt` = `${
@@ -278,48 +320,58 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof RelayerReceipt.$typeName = RelayerReceipt.$typeName
-  readonly $fullTypeName: `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<
+    CoinType
+  >}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinType>]
   readonly $isPhantom: typeof RelayerReceipt.$isPhantom = RelayerReceipt.$isPhantom
 
-  readonly payout: ToField<Coin<T0>>
+  /** Coin of relayer fee payout. */
+  readonly payout: ToField<Coin<CoinType>>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: RelayerReceiptFields<T0>) {
+  private constructor(
+    typeArgs: [PhantomToTypeStr<CoinType>],
+    fields: RelayerReceiptFields<CoinType>,
+  ) {
     this.$fullTypeName = composeSuiType(
       RelayerReceipt.$typeName,
       ...typeArgs,
-    ) as `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<CoinType>}>`
     this.$typeArgs = typeArgs
 
     this.payout = fields.payout
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): RelayerReceiptReified<ToPhantomTypeArgument<T0>> {
+  static reified<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): RelayerReceiptReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = RelayerReceipt.bcs
     return {
       typeName: RelayerReceipt.$typeName,
       fullTypeName: composeSuiType(
         RelayerReceipt.$typeName,
-        ...[extractType(T0)],
+        ...[extractType(CoinType)],
       ) as `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
+        ToPhantomTypeArgument<CoinType>
       >}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
       isPhantom: RelayerReceipt.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => RelayerReceipt.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => RelayerReceipt.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => RelayerReceipt.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [CoinType],
+      fromFields: (fields: Record<string, any>) => RelayerReceipt.fromFields(CoinType, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) =>
+        RelayerReceipt.fromFieldsWithTypes(CoinType, item),
+      fromBcs: (data: Uint8Array) => RelayerReceipt.fromFields(CoinType, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => RelayerReceipt.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => RelayerReceipt.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => RelayerReceipt.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => RelayerReceipt.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => RelayerReceipt.fetch(client, T0, id),
-      new: (fields: RelayerReceiptFields<ToPhantomTypeArgument<T0>>) => {
-        return new RelayerReceipt([extractType(T0)], fields)
+      fromJSONField: (field: any) => RelayerReceipt.fromJSONField(CoinType, field),
+      fromJSON: (json: Record<string, any>) => RelayerReceipt.fromJSON(CoinType, json),
+      fromSuiParsedData: (content: SuiParsedData) =>
+        RelayerReceipt.fromSuiParsedData(CoinType, content),
+      fromSuiObjectData: (content: SuiObjectData) =>
+        RelayerReceipt.fromSuiObjectData(CoinType, content),
+      fetch: async (client: SupportedSuiClient, id: string) =>
+        RelayerReceipt.fetch(client, CoinType, id),
+      new: (fields: RelayerReceiptFields<ToPhantomTypeArgument<CoinType>>) => {
+        return new RelayerReceipt([extractType(CoinType)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -329,10 +381,10 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     return RelayerReceipt.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<RelayerReceipt<ToPhantomTypeArgument<T0>>>> {
-    return phantom(RelayerReceipt.reified(T0))
+  static phantom<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    CoinType: CoinType,
+  ): PhantomReified<ToTypeStr<RelayerReceipt<ToPhantomTypeArgument<CoinType>>>> {
+    return phantom(RelayerReceipt.reified(CoinType))
   }
 
   static get p(): typeof RelayerReceipt.phantom {
@@ -354,19 +406,19 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     return RelayerReceipt.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     fields: Record<string, any>,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RelayerReceipt.reified(typeArg).new({
       payout: decodeFromFields(Coin.reified(typeArg), fields.payout),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     item: FieldsWithTypes,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (!isRelayerReceipt(item.type)) {
       throw new Error('not a RelayerReceipt type')
     }
@@ -377,36 +429,36 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: Uint8Array,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RelayerReceipt.fromFields(typeArg, RelayerReceipt.bcs.parse(data))
   }
 
-  toJSONField(): RelayerReceiptJSONField<T0> {
+  toJSONField(): RelayerReceiptJSONField<CoinType> {
     return {
       payout: this.payout.toJSONField(),
     }
   }
 
-  toJSON(): RelayerReceiptJSON<T0> {
+  toJSON(): RelayerReceiptJSON<CoinType> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     field: any,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     return RelayerReceipt.reified(typeArg).new({
       payout: decodeFromJSONField(Coin.reified(typeArg), field.payout),
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     json: Record<string, any>,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (json.$typeName !== RelayerReceipt.$typeName) {
       throw new Error(
         `not a RelayerReceipt json object: expected '${RelayerReceipt.$typeName}' but got '${json.$typeName}'`,
@@ -421,10 +473,10 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     return RelayerReceipt.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     content: SuiParsedData,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -434,10 +486,10 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     return RelayerReceipt.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
     data: SuiObjectData,
-  ): RelayerReceipt<ToPhantomTypeArgument<T0>> {
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRelayerReceipt(data.bcs.type)) {
         throw new Error(`object at is not a RelayerReceipt object`)
@@ -469,11 +521,11 @@ export class RelayerReceipt<T0 extends PhantomTypeArgument> implements StructCla
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: CoinType,
     id: string,
-  ): Promise<RelayerReceipt<ToPhantomTypeArgument<T0>>> {
+  ): Promise<RelayerReceipt<ToPhantomTypeArgument<CoinType>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isRelayerReceipt(res.type)) {
       throw new Error(`object at id ${id} is not a RelayerReceipt object`)

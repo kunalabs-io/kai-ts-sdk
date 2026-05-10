@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -14,9 +15,13 @@ import { ID } from '../../sui/object/structs'
  * * `otw` - The object type wrapper
  * * `ctx` - The transaction context
  */
-export function init(tx: Transaction, otw: TransactionObjectInput): TransactionResult {
+export function init(
+  tx: Transaction,
+  otw: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::init`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::init`,
     arguments: [obj(tx, otw)],
   })
 }
@@ -35,9 +40,10 @@ export interface MintProtocolFeeCollectCapArgs {
 export function mintProtocolFeeCollectCap(
   tx: Transaction,
   args: MintProtocolFeeCollectCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::mint_protocol_fee_collect_cap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::mint_protocol_fee_collect_cap`,
     arguments: [
       obj(tx, args.adminCap),
       pure(tx, args.addr, `address`),
@@ -67,9 +73,10 @@ export function new_(
   tx: Transaction,
   typeArgs: [string, string],
   args: NewArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::new`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::new`,
     typeArguments: typeArgs,
     arguments: [
       pure(tx, args.tickSpacing, `u32`),
@@ -109,9 +116,10 @@ export function setDisplay(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetDisplayArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::set_display`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::set_display`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -146,9 +154,10 @@ export function openPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: OpenPositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::open_position`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::open_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -180,9 +189,10 @@ export function addLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -217,9 +227,10 @@ export function addLiquidityFixCoin(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityFixCoinArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_fix_coin`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::add_liquidity_fix_coin`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -241,9 +252,10 @@ export function addLiquidityPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_pay_amount`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::add_liquidity_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -269,9 +281,10 @@ export function repayAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayAddLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::repay_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::repay_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -303,9 +316,10 @@ export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::remove_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -331,9 +345,10 @@ export function removeLiquidityWithSlippage(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityWithSlippageArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::remove_liquidity_with_slippage`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::remove_liquidity_with_slippage`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -365,9 +380,10 @@ export function closePosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClosePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::close_position`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::close_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -399,9 +415,10 @@ export function collectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::collect_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -435,9 +452,10 @@ export function collectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::collect_reward`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -470,9 +488,10 @@ export function calculateAndUpdateRewards(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalculateAndUpdateRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculate_and_update_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -502,9 +521,10 @@ export function calculateAndUpdateReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CalculateAndUpdateRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_reward`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculate_and_update_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -534,9 +554,10 @@ export function calculateAndUpdatePoints(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalculateAndUpdatePointsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_points`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculate_and_update_points`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -564,9 +585,10 @@ export function calculateAndUpdateFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalculateAndUpdateFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_and_update_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculate_and_update_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -591,9 +613,10 @@ export function getPositionAmounts(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionAmountsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_amounts`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_amounts`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -617,9 +640,10 @@ export function getPositionAmountsV2(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionAmountsV2Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_amounts_v2`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_amounts_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -654,9 +678,10 @@ export function flashSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -690,9 +715,10 @@ export function repayFlashSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayFlashSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_swap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::repay_flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -733,9 +759,10 @@ export function flashSwapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashSwapWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap_with_partner`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -772,9 +799,10 @@ export function repayFlashSwapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayFlashSwapWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_swap_with_partner`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::repay_flash_swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -803,9 +831,10 @@ export function collectProtocolFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectProtocolFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::collect_protocol_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -833,9 +862,10 @@ export function collectProtocolFeeWithCap(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectProtocolFeeWithCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee_with_cap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::collect_protocol_fee_with_cap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -861,9 +891,10 @@ export function initializeRewarder(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: InitializeRewarderArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::initialize_rewarder`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::initialize_rewarder`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -895,9 +926,10 @@ export function updateEmission(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: UpdateEmissionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_emission`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_emission`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -926,9 +958,10 @@ export function updatePositionUrl(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdatePositionUrlArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_position_url`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_position_url`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -955,9 +988,10 @@ export function updateFeeRate(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateFeeRateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_fee_rate`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_fee_rate`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -978,9 +1012,10 @@ export function updatePool(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdatePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_pool`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1008,9 +1043,10 @@ export function pause(
   tx: Transaction,
   typeArgs: [string, string],
   args: PauseArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::pause`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::pause`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1034,9 +1070,10 @@ export function unpause(
   tx: Transaction,
   typeArgs: [string, string],
   args: UnpauseArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::unpause`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::unpause`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1064,9 +1101,10 @@ export function flashLoan(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashLoanArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_loan`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1100,9 +1138,10 @@ export function flashLoanWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashLoanWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan_with_partner`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_loan_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1135,9 +1174,10 @@ export function repayFlashLoan(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayFlashLoanArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_loan`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::repay_flash_loan`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1171,9 +1211,10 @@ export function repayFlashLoanWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: RepayFlashLoanWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::repay_flash_loan_with_partner`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::repay_flash_loan_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1203,9 +1244,10 @@ export function initPositionSnapshot(
   tx: Transaction,
   typeArgs: [string, string],
   args: InitPositionSnapshotArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::init_position_snapshot`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::init_position_snapshot`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1224,9 +1266,10 @@ export function positionLiquiditySnapshot(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::position_liquidity_snapshot`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::position_liquidity_snapshot`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1247,9 +1290,10 @@ export function isAttackedPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: IsAttackedPositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_attacked_position`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_attacked_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1273,9 +1317,12 @@ export function getPositionSnapshotByPositionId(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionSnapshotByPositionIdArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_snapshot_by_position_id`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::get_position_snapshot_by_position_id`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1315,9 +1362,10 @@ export function applyLiquidityCut(
   tx: Transaction,
   typeArgs: [string, string],
   args: ApplyLiquidityCutArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::apply_liquidity_cut`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::apply_liquidity_cut`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1350,9 +1398,10 @@ export function governanceFundInjection(
   tx: Transaction,
   typeArgs: [string, string],
   args: GovernanceFundInjectionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::governance_fund_injection`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::governance_fund_injection`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1386,9 +1435,10 @@ export function governanceFundWithdrawal(
   tx: Transaction,
   typeArgs: [string, string],
   args: GovernanceFundWithdrawalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::governance_fund_withdrawal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::governance_fund_withdrawal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1419,9 +1469,12 @@ export function emergencyRemoveMaliciousPosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: EmergencyRemoveMaliciousPositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::emergency_remove_malicious_position`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::emergency_remove_malicious_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1457,9 +1510,10 @@ export function emergencyRestorePoolState(
   tx: Transaction,
   typeArgs: [string, string],
   args: EmergencyRestorePoolStateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::emergency_restore_pool_state`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::emergency_restore_pool_state`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -1493,9 +1547,10 @@ export interface GetAmountByLiquidityArgs {
 export function getAmountByLiquidity(
   tx: Transaction,
   args: GetAmountByLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_amount_by_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_amount_by_liquidity`,
     arguments: [
       obj(tx, args.tickLower),
       obj(tx, args.tickUpper),
@@ -1528,9 +1583,10 @@ export interface GetLiquidityFromAmountArgs {
 export function getLiquidityFromAmount(
   tx: Transaction,
   args: GetLiquidityFromAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_liquidity_from_amount`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_liquidity_from_amount`,
     arguments: [
       obj(tx, args.lowerIndex),
       obj(tx, args.upperIndex),
@@ -1559,9 +1615,10 @@ export function getFeeInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetFeeInTickRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_fee_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_fee_in_tick_range`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1588,9 +1645,10 @@ export function getRewardsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetRewardsInTickRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_rewards_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_rewards_in_tick_range`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1617,9 +1675,10 @@ export function getPointsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPointsInTickRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_points_in_tick_range`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_points_in_tick_range`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1646,9 +1705,12 @@ export function getFeeRewardsPointsInTickRange(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetFeeRewardsPointsInTickRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_fee_rewards_points_in_tick_range`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::get_fee_rewards_points_in_tick_range`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1675,9 +1737,10 @@ export function fetchTicks(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchTicksArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::fetch_ticks`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::fetch_ticks`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1704,9 +1767,10 @@ export function fetchPositions(
   tx: Transaction,
   typeArgs: [string, string],
   args: FetchPositionsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::fetch_positions`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::fetch_positions`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1736,9 +1800,10 @@ export function calculateSwapResult(
   tx: Transaction,
   typeArgs: [string, string],
   args: CalculateSwapResultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_swap_result`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculate_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -1758,9 +1823,10 @@ export function balances(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::balances`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::balances`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1775,9 +1841,10 @@ export function tickSpacing(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::tick_spacing`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::tick_spacing`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1792,9 +1859,10 @@ export function feeRate(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::fee_rate`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::fee_rate`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1809,9 +1877,10 @@ export function liquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1826,9 +1895,10 @@ export function currentSqrtPrice(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::current_sqrt_price`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::current_sqrt_price`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1843,9 +1913,10 @@ export function currentTickIndex(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::current_tick_index`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::current_tick_index`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1860,9 +1931,10 @@ export function feesGrowthGlobal(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::fees_growth_global`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::fees_growth_global`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1877,9 +1949,10 @@ export function protocolFee(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::protocol_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::protocol_fee`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1894,9 +1967,10 @@ export function tickManager(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::tick_manager`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::tick_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1911,9 +1985,10 @@ export function positionManager(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::position_manager`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::position_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1928,9 +2003,10 @@ export function rewarderManager(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::rewarder_manager`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::rewarder_manager`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1945,9 +2021,10 @@ export function isPause(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_pause`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_pause`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1962,9 +2039,10 @@ export function index(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::index`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::index`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -1979,9 +2057,10 @@ export function url(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::url`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::url`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2002,9 +2081,10 @@ export function borrowTick(
   tx: Transaction,
   typeArgs: [string, string],
   args: BorrowTickArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::borrow_tick`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::borrow_tick`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2028,9 +2108,10 @@ export function borrowPositionInfo(
   tx: Transaction,
   typeArgs: [string, string],
   args: BorrowPositionInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::borrow_position_info`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::borrow_position_info`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2048,9 +2129,10 @@ export function swapPayAmount(
   tx: Transaction,
   typeArgs: [string, string],
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::swap_pay_amount`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::swap_pay_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -2065,9 +2147,10 @@ export function refFeeAmount(
   tx: Transaction,
   typeArgs: [string, string],
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::ref_fee_amount`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::ref_fee_amount`,
     typeArguments: typeArgs,
     arguments: [obj(tx, receipt)],
   })
@@ -2088,9 +2171,10 @@ export function getPositionFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2114,9 +2198,10 @@ export function getPositionPoints(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionPointsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_points`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_points`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2140,9 +2225,10 @@ export function getPositionRewards(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetPositionRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_rewards`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2166,9 +2252,10 @@ export function getPositionReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: GetPositionRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::get_position_reward`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::get_position_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2192,9 +2279,10 @@ export function isPositionExist(
   tx: Transaction,
   typeArgs: [string, string],
   args: IsPositionExistArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_position_exist`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_position_exist`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2211,9 +2299,12 @@ export function isPositionExist(
 export function calculatedSwapResultAmountOut(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_amount_out`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculated_swap_result_amount_out`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2226,9 +2317,10 @@ export function calculatedSwapResultAmountOut(
 export function calculatedSwapResultIsExceed(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_is_exceed`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculated_swap_result_is_exceed`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2241,9 +2333,10 @@ export function calculatedSwapResultIsExceed(
 export function calculatedSwapResultAmountIn(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::calculated_swap_result_amount_in`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2256,9 +2349,12 @@ export function calculatedSwapResultAmountIn(
 export function calculatedSwapResultAfterSqrtPrice(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_after_sqrt_price`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculated_swap_result_after_sqrt_price`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2271,9 +2367,12 @@ export function calculatedSwapResultAfterSqrtPrice(
 export function calculatedSwapResultFeeAmount(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_fee_amount`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculated_swap_result_fee_amount`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2286,9 +2385,12 @@ export function calculatedSwapResultFeeAmount(
 export function calculateSwapResultStepResults(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculate_swap_result_step_results`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculate_swap_result_step_results`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2301,9 +2403,12 @@ export function calculateSwapResultStepResults(
 export function calculatedSwapResultStepsLength(
   tx: Transaction,
   calculatedSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_steps_length`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculated_swap_result_steps_length`,
     arguments: [obj(tx, calculatedSwapResult)],
   })
 }
@@ -2322,9 +2427,12 @@ export interface CalculatedSwapResultStepSwapResultArgs {
 export function calculatedSwapResultStepSwapResult(
   tx: Transaction,
   args: CalculatedSwapResultStepSwapResultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::calculated_swap_result_step_swap_result`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::calculated_swap_result_step_swap_result`,
     arguments: [
       obj(tx, args.calculatedSwapResult),
       pure(tx, args.index, `u64`),
@@ -2340,9 +2448,10 @@ export function calculatedSwapResultStepSwapResult(
 export function stepSwapResultAmountIn(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_amount_in`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::step_swap_result_amount_in`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2355,9 +2464,10 @@ export function stepSwapResultAmountIn(
 export function stepSwapResultAmountOut(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_amount_out`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::step_swap_result_amount_out`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2370,9 +2480,10 @@ export function stepSwapResultAmountOut(
 export function stepSwapResultFeeAmount(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_fee_amount`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::step_swap_result_fee_amount`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2385,9 +2496,12 @@ export function stepSwapResultFeeAmount(
 export function stepSwapResultCurrentSqrtPrice(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_current_sqrt_price`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::step_swap_result_current_sqrt_price`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2400,9 +2514,12 @@ export function stepSwapResultCurrentSqrtPrice(
 export function stepSwapResultTargetSqrtPrice(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_target_sqrt_price`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::step_swap_result_target_sqrt_price`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2415,9 +2532,12 @@ export function stepSwapResultTargetSqrtPrice(
 export function stepSwapResultCurrentLiquidity(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_current_liquidity`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::step_swap_result_current_liquidity`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2430,9 +2550,12 @@ export function stepSwapResultCurrentLiquidity(
 export function stepSwapResultRemainderAmount(
   tx: Transaction,
   stepSwapResult: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::step_swap_result_remainder_amount`,
+    target: `${
+      getPublishedAt('cetus-clmm', options?.env)
+    }::pool::step_swap_result_remainder_amount`,
     arguments: [obj(tx, stepSwapResult)],
   })
 }
@@ -2446,9 +2569,10 @@ export function isAllowSwap(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_swap`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_swap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2463,9 +2587,10 @@ export function isAllowAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2480,9 +2605,10 @@ export function isAllowRemoveLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_remove_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2497,9 +2623,10 @@ export function isAllowFlashLoan(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_flash_loan`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_flash_loan`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2514,9 +2641,10 @@ export function isAllowCollectFee(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_collect_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_collect_fee`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2531,9 +2659,10 @@ export function isAllowCollectReward(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::is_allow_collect_reward`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::is_allow_collect_reward`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2566,9 +2695,10 @@ export function setPoolStatus(
   tx: Transaction,
   typeArgs: [string, string],
   args: SetPoolStatusArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::set_pool_status`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::set_pool_status`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -2597,9 +2727,10 @@ export function addLiquidityInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddLiquidityInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::add_liquidity_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::add_liquidity_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2630,9 +2761,10 @@ export function flashSwapInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashSwapInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_swap_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_swap_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2671,9 +2803,10 @@ export function flashLoanInternal(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashLoanInternalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::flash_loan_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::flash_loan_internal`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -2711,9 +2844,10 @@ export function swapInPool(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapInPoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::swap_in_pool`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::swap_in_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2741,9 +2875,13 @@ export interface UpdateSwapResultArgs {
  * * `amount_out` - The amount out.
  * * `fee_amount` - The fee amount.
  */
-export function updateSwapResult(tx: Transaction, args: UpdateSwapResultArgs): TransactionResult {
+export function updateSwapResult(
+  tx: Transaction,
+  args: UpdateSwapResultArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_swap_result`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_swap_result`,
     arguments: [
       obj(tx, args.result),
       pure(tx, args.amountIn, `u64`),
@@ -2772,9 +2910,10 @@ export function updatePoolFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdatePoolFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_pool_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_pool_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2804,9 +2943,10 @@ export function updateFlashLoanFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateFlashLoanFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_flash_loan_fee`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_flash_loan_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2836,9 +2976,10 @@ export function updateFeeGrowth(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateFeeGrowthArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::update_fee_growth`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::update_fee_growth`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.pool),
@@ -2858,9 +2999,10 @@ export function collectProtocolFeeInternal(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::collect_protocol_fee_internal`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::collect_protocol_fee_internal`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2870,9 +3012,10 @@ export function markPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::mark_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::mark_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2882,9 +3025,10 @@ export function clearPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::clear_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::clear_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2894,9 +3038,10 @@ export function assertNoPendingAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::assert_no_pending_add_liquidity`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::assert_no_pending_add_liquidity`,
     typeArguments: typeArgs,
     arguments: [obj(tx, pool)],
   })
@@ -2916,9 +3061,10 @@ export interface CheckRemainerAmountSubArgs {
 export function checkRemainerAmountSub(
   tx: Transaction,
   args: CheckRemainerAmountSubArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::check_remainer_amount_sub`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::check_remainer_amount_sub`,
     arguments: [
       pure(tx, args.remainerAmount, `u64`),
       pure(tx, args.amount, `u64`),
@@ -2930,9 +3076,12 @@ export function checkRemainerAmountSub(
  * Get the default swap result
  * * Returns SwapResult
  */
-export function defaultSwapResult(tx: Transaction): TransactionResult {
+export function defaultSwapResult(
+  tx: Transaction,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::pool::default_swap_result`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::pool::default_swap_result`,
     arguments: [],
   })
 }

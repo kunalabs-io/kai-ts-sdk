@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Guardian } from '../guardian/structs'
@@ -19,9 +20,13 @@ export interface NewArgs {
 }
 
 /** Create new `State`. This is only executed using the `setup` module. */
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::new`,
     arguments: [
       obj(tx, args.upgradeCap),
       pure(tx, args.governanceChain, `u16`),
@@ -38,25 +43,32 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
  * Convenience method to get hard-coded Wormhole chain ID (recognized by
  * the Wormhole network).
  */
-export function chainId(tx: Transaction): TransactionResult {
+export function chainId(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::chain_id`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::chain_id`,
     arguments: [],
   })
 }
 
 /** Retrieve governance module name. */
-export function governanceModule(tx: Transaction): TransactionResult {
+export function governanceModule(
+  tx: Transaction,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::governance_module`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::governance_module`,
     arguments: [],
   })
 }
 
 /** Retrieve governance chain ID, which is governance's emitter chain ID. */
-export function governanceChain(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function governanceChain(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::governance_chain`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::governance_chain`,
     arguments: [obj(tx, self)],
   })
 }
@@ -65,9 +77,10 @@ export function governanceChain(tx: Transaction, self: TransactionObjectInput): 
 export function governanceContract(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::governance_contract`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::governance_contract`,
     arguments: [obj(tx, self)],
   })
 }
@@ -76,9 +89,13 @@ export function governanceContract(
  * Retrieve current Guardian set index. This value is important for
  * verifying VAA signatures and especially important for governance VAAs.
  */
-export function guardianSetIndex(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function guardianSetIndex(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::guardian_set_index`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::guardian_set_index`,
     arguments: [obj(tx, self)],
   })
 }
@@ -90,9 +107,10 @@ export function guardianSetIndex(tx: Transaction, self: TransactionObjectInput):
 export function guardianSetSecondsToLive(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::guardian_set_seconds_to_live`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::guardian_set_seconds_to_live`,
     arguments: [obj(tx, self)],
   })
 }
@@ -108,9 +126,13 @@ export interface GuardianSetAtArgs {
  *
  * See `wormhole::vaa` for more info.
  */
-export function guardianSetAt(tx: Transaction, args: GuardianSetAtArgs): TransactionResult {
+export function guardianSetAt(
+  tx: Transaction,
+  args: GuardianSetAtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::guardian_set_at`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::guardian_set_at`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.index, `u32`),
@@ -119,9 +141,13 @@ export function guardianSetAt(tx: Transaction, args: GuardianSetAtArgs): Transac
 }
 
 /** Retrieve current fee to send Wormhole message. */
-export function messageFee(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function messageFee(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::message_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::message_fee`,
     arguments: [obj(tx, self)],
   })
 }
@@ -133,9 +159,13 @@ export function messageFee(tx: Transaction, self: TransactionObjectInput): Trans
  * NOTE: This method allows caching the current version check so we avoid
  * multiple checks to dynamic fields.
  */
-export function assertLatestOnly(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function assertLatestOnly(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::assert_latest_only`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::assert_latest_only`,
     arguments: [obj(tx, self)],
   })
 }
@@ -154,9 +184,13 @@ export interface DepositFeeArgs {
  *
  * See `wormhole::publish_message` for more info.
  */
-export function depositFee(tx: Transaction, args: DepositFeeArgs): TransactionResult {
+export function depositFee(
+  tx: Transaction,
+  args: DepositFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::deposit_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::deposit_fee`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -177,9 +211,13 @@ export interface WithdrawFeeArgs {
  *
  * See `wormhole::transfer_fee` for more info.
  */
-export function withdrawFee(tx: Transaction, args: WithdrawFeeArgs): TransactionResult {
+export function withdrawFee(
+  tx: Transaction,
+  args: WithdrawFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::withdraw_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::withdraw_fee`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -201,9 +239,10 @@ export interface BorrowMutConsumedVaasArgs {
 export function borrowMutConsumedVaas(
   tx: Transaction,
   args: BorrowMutConsumedVaasArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::borrow_mut_consumed_vaas`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::borrow_mut_consumed_vaas`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -223,9 +262,12 @@ export function borrowMutConsumedVaas(
 export function borrowMutConsumedVaasUnchecked(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::borrow_mut_consumed_vaas_unchecked`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::state::borrow_mut_consumed_vaas_unchecked`,
     arguments: [obj(tx, self)],
   })
 }
@@ -246,9 +288,13 @@ export interface ExpireGuardianSetArgs {
  *
  * See `wormhole::update_guardian_set` for more info.
  */
-export function expireGuardianSet(tx: Transaction, args: ExpireGuardianSetArgs): TransactionResult {
+export function expireGuardianSet(
+  tx: Transaction,
+  args: ExpireGuardianSetArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::expire_guardian_set`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::expire_guardian_set`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -269,9 +315,13 @@ export interface AddNewGuardianSetArgs {
  *
  * See `wormhole::update_guardian_set` for more info.
  */
-export function addNewGuardianSet(tx: Transaction, args: AddNewGuardianSetArgs): TransactionResult {
+export function addNewGuardianSet(
+  tx: Transaction,
+  args: AddNewGuardianSetArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::add_new_guardian_set`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::add_new_guardian_set`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -291,9 +341,13 @@ export interface SetMessageFeeArgs {
  *
  * See `wormhole::set_fee` for more info.
  */
-export function setMessageFee(tx: Transaction, args: SetMessageFeeArgs): TransactionResult {
+export function setMessageFee(
+  tx: Transaction,
+  args: SetMessageFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::set_message_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::set_message_fee`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -307,9 +361,13 @@ export interface CurrentPackageArgs {
   self: TransactionObjectInput
 }
 
-export function currentPackage(tx: Transaction, args: CurrentPackageArgs): TransactionResult {
+export function currentPackage(
+  tx: Transaction,
+  args: CurrentPackageArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::current_package`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::current_package`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -330,9 +388,13 @@ export interface AuthorizeUpgradeArgs {
  * a stale build, the transaction will revert with `PackageUpgradeError`,
  * specifically `PackageIDDoesNotMatch`.
  */
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): TransactionResult {
+export function authorizeUpgrade(
+  tx: Transaction,
+  args: AuthorizeUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::authorize_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::authorize_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.packageDigest),
@@ -353,9 +415,13 @@ export interface CommitUpgradeArgs {
  * a stale build, the transaction will revert with `PackageUpgradeError`,
  * specifically `PackageIDDoesNotMatch`.
  */
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): TransactionResult {
+export function commitUpgrade(
+  tx: Transaction,
+  args: CommitUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::commit_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::commit_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.receipt),
@@ -367,9 +433,13 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): Transac
  * Method executed by the `migrate` module to roll access from one package
  * to another. This method will be called from the upgraded package.
  */
-export function migrateVersion(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function migrateVersion(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::migrate_version`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::migrate_version`,
     arguments: [obj(tx, self)],
   })
 }
@@ -388,9 +458,10 @@ export interface AssertAuthorizedDigestArgs {
 export function assertAuthorizedDigest(
   tx: Transaction,
   args: AssertAuthorizedDigestArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::assert_authorized_digest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::assert_authorized_digest`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -407,9 +478,13 @@ export function assertAuthorizedDigest(
  * NOTE: Please keep this method as public(friend) because we never want
  * to expose this method as a public method.
  */
-export function migrateV020(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function migrateV020(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::state::migrate__v__0_2_0`,
+    target: `${getPublishedAt('wormhole', options?.env)}::state::migrate__v__0_2_0`,
     arguments: [obj(tx, self)],
   })
 }

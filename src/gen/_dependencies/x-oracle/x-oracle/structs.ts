@@ -711,27 +711,27 @@ export function isXOraclePriceUpdateRequest(type: string): boolean {
   )
 }
 
-export interface XOraclePriceUpdateRequestFields<T0 extends PhantomTypeArgument> {
-  primaryPriceUpdateRequest: ToField<PriceUpdateRequest<T0>>
-  secondaryPriceUpdateRequest: ToField<PriceUpdateRequest<T0>>
+export interface XOraclePriceUpdateRequestFields<T extends PhantomTypeArgument> {
+  primaryPriceUpdateRequest: ToField<PriceUpdateRequest<T>>
+  secondaryPriceUpdateRequest: ToField<PriceUpdateRequest<T>>
 }
 
-export type XOraclePriceUpdateRequestReified<T0 extends PhantomTypeArgument> = Reified<
-  XOraclePriceUpdateRequest<T0>,
-  XOraclePriceUpdateRequestFields<T0>
+export type XOraclePriceUpdateRequestReified<T extends PhantomTypeArgument> = Reified<
+  XOraclePriceUpdateRequest<T>,
+  XOraclePriceUpdateRequestFields<T>
 >
 
-export type XOraclePriceUpdateRequestJSONField<T0 extends PhantomTypeArgument> = {
-  primaryPriceUpdateRequest: ToJSON<PriceUpdateRequest<T0>>
-  secondaryPriceUpdateRequest: ToJSON<PriceUpdateRequest<T0>>
+export type XOraclePriceUpdateRequestJSONField<T extends PhantomTypeArgument> = {
+  primaryPriceUpdateRequest: ToJSON<PriceUpdateRequest<T>>
+  secondaryPriceUpdateRequest: ToJSON<PriceUpdateRequest<T>>
 }
 
-export type XOraclePriceUpdateRequestJSON<T0 extends PhantomTypeArgument> = {
+export type XOraclePriceUpdateRequestJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof XOraclePriceUpdateRequest.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & XOraclePriceUpdateRequestJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & XOraclePriceUpdateRequestJSONField<T>
 
-export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implements StructClass {
+export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::x_oracle::XOraclePriceUpdateRequest` = `${
@@ -742,59 +742,56 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
 
   readonly $typeName: typeof XOraclePriceUpdateRequest.$typeName =
     XOraclePriceUpdateRequest.$typeName
-  readonly $fullTypeName: `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof XOraclePriceUpdateRequest.$isPhantom =
     XOraclePriceUpdateRequest.$isPhantom
 
-  readonly primaryPriceUpdateRequest: ToField<PriceUpdateRequest<T0>>
-  readonly secondaryPriceUpdateRequest: ToField<PriceUpdateRequest<T0>>
+  readonly primaryPriceUpdateRequest: ToField<PriceUpdateRequest<T>>
+  readonly secondaryPriceUpdateRequest: ToField<PriceUpdateRequest<T>>
 
-  private constructor(
-    typeArgs: [PhantomToTypeStr<T0>],
-    fields: XOraclePriceUpdateRequestFields<T0>,
-  ) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: XOraclePriceUpdateRequestFields<T>) {
     this.$fullTypeName = composeSuiType(
       XOraclePriceUpdateRequest.$typeName,
       ...typeArgs,
-    ) as `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.primaryPriceUpdateRequest = fields.primaryPriceUpdateRequest
     this.secondaryPriceUpdateRequest = fields.secondaryPriceUpdateRequest
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): XOraclePriceUpdateRequestReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): XOraclePriceUpdateRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = XOraclePriceUpdateRequest.bcs
     return {
       typeName: XOraclePriceUpdateRequest.$typeName,
       fullTypeName: composeSuiType(
         XOraclePriceUpdateRequest.$typeName,
-        ...[extractType(T0)],
+        ...[extractType(T)],
       ) as `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
+        ToPhantomTypeArgument<T>
       >}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: XOraclePriceUpdateRequest.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => XOraclePriceUpdateRequest.fromFields(T0, fields),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => XOraclePriceUpdateRequest.fromFields(T, fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        XOraclePriceUpdateRequest.fromFieldsWithTypes(T0, item),
+        XOraclePriceUpdateRequest.fromFieldsWithTypes(T, item),
       fromBcs: (data: Uint8Array) =>
-        XOraclePriceUpdateRequest.fromFields(T0, reifiedBcs.parse(data)),
+        XOraclePriceUpdateRequest.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => XOraclePriceUpdateRequest.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => XOraclePriceUpdateRequest.fromJSON(T0, json),
+      fromJSONField: (field: any) => XOraclePriceUpdateRequest.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => XOraclePriceUpdateRequest.fromJSON(T, json),
       fromSuiParsedData: (content: SuiParsedData) =>
-        XOraclePriceUpdateRequest.fromSuiParsedData(T0, content),
+        XOraclePriceUpdateRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
-        XOraclePriceUpdateRequest.fromSuiObjectData(T0, content),
+        XOraclePriceUpdateRequest.fromSuiObjectData(T, content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        XOraclePriceUpdateRequest.fetch(client, T0, id),
-      new: (fields: XOraclePriceUpdateRequestFields<ToPhantomTypeArgument<T0>>) => {
-        return new XOraclePriceUpdateRequest([extractType(T0)], fields)
+        XOraclePriceUpdateRequest.fetch(client, T, id),
+      new: (fields: XOraclePriceUpdateRequestFields<ToPhantomTypeArgument<T>>) => {
+        return new XOraclePriceUpdateRequest([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -804,10 +801,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     return XOraclePriceUpdateRequest.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>>>> {
-    return phantom(XOraclePriceUpdateRequest.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>>>> {
+    return phantom(XOraclePriceUpdateRequest.reified(T))
   }
 
   static get p(): typeof XOraclePriceUpdateRequest.phantom {
@@ -831,10 +828,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     return XOraclePriceUpdateRequest.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return XOraclePriceUpdateRequest.reified(typeArg).new({
       primaryPriceUpdateRequest: decodeFromFields(
         PriceUpdateRequest.reified(typeArg),
@@ -847,10 +844,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (!isXOraclePriceUpdateRequest(item.type)) {
       throw new Error('not a XOraclePriceUpdateRequest type')
     }
@@ -868,28 +865,28 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return XOraclePriceUpdateRequest.fromFields(typeArg, XOraclePriceUpdateRequest.bcs.parse(data))
   }
 
-  toJSONField(): XOraclePriceUpdateRequestJSONField<T0> {
+  toJSONField(): XOraclePriceUpdateRequestJSONField<T> {
     return {
       primaryPriceUpdateRequest: this.primaryPriceUpdateRequest.toJSONField(),
       secondaryPriceUpdateRequest: this.secondaryPriceUpdateRequest.toJSONField(),
     }
   }
 
-  toJSON(): XOraclePriceUpdateRequestJSON<T0> {
+  toJSON(): XOraclePriceUpdateRequestJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     return XOraclePriceUpdateRequest.reified(typeArg).new({
       primaryPriceUpdateRequest: decodeFromJSONField(
         PriceUpdateRequest.reified(typeArg),
@@ -902,10 +899,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== XOraclePriceUpdateRequest.$typeName) {
       throw new Error(
         `not a XOraclePriceUpdateRequest json object: expected '${XOraclePriceUpdateRequest.$typeName}' but got '${json.$typeName}'`,
@@ -920,10 +917,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     return XOraclePriceUpdateRequest.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -935,10 +932,10 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     return XOraclePriceUpdateRequest.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>> {
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isXOraclePriceUpdateRequest(data.bcs.type)) {
         throw new Error(`object at is not a XOraclePriceUpdateRequest object`)
@@ -970,11 +967,11 @@ export class XOraclePriceUpdateRequest<T0 extends PhantomTypeArgument> implement
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<XOraclePriceUpdateRequest<ToPhantomTypeArgument<T0>>> {
+  ): Promise<XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isXOraclePriceUpdateRequest(res.type)) {
       throw new Error(`object at id ${id} is not a XOraclePriceUpdateRequest object`)

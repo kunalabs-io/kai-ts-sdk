@@ -1,3 +1,8 @@
+/**
+ * This module implements serialization and deserialization for asset metadata,
+ * which is a specific Wormhole message payload for Token Bridge.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -32,10 +37,18 @@ export function isAssetMeta(type: string): boolean {
 }
 
 export interface AssetMetaFields {
+  /** Address of the token. */
   tokenAddress: ToField<ExternalAddress>
+  /** Chain ID of the token. */
   tokenChain: ToField<'u16'>
+  /** Number of decimals of the token. */
   nativeDecimals: ToField<'u8'>
+  /**
+   * Symbol of the token (UTF-8).
+   * TODO(csongor): maybe turn these into String32s?
+   */
   symbol: ToField<String>
+  /** Name of the token (UTF-8). */
   name: ToField<String>
 }
 
@@ -54,6 +67,10 @@ export type AssetMetaJSON = {
   $typeArgs: []
 } & AssetMetaJSONField
 
+/**
+ * Container that warehouses asset metadata information. This struct is
+ * used only by `attest_token` and `create_wrapped` modules.
+ */
 export class AssetMeta implements StructClass {
   __StructClass = true as const
 
@@ -68,10 +85,18 @@ export class AssetMeta implements StructClass {
   readonly $typeArgs: []
   readonly $isPhantom: typeof AssetMeta.$isPhantom = AssetMeta.$isPhantom
 
+  /** Address of the token. */
   readonly tokenAddress: ToField<ExternalAddress>
+  /** Chain ID of the token. */
   readonly tokenChain: ToField<'u16'>
+  /** Number of decimals of the token. */
   readonly nativeDecimals: ToField<'u8'>
+  /**
+   * Symbol of the token (UTF-8).
+   * TODO(csongor): maybe turn these into String32s?
+   */
   readonly symbol: ToField<String>
+  /** Name of the token (UTF-8). */
   readonly name: ToField<String>
 
   private constructor(typeArgs: [], fields: AssetMetaFields) {

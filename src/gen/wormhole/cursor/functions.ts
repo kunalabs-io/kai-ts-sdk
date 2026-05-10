@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, vector } from '../../_framework/util'
 
@@ -12,9 +13,10 @@ export function new_(
   tx: Transaction,
   typeArg: string,
   data: Array<GenericArg> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::new`,
     typeArguments: [typeArg],
     arguments: [vector(tx, `${typeArg}`, data)],
   })
@@ -25,9 +27,10 @@ export function data(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::data`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::data`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -41,9 +44,10 @@ export function isEmpty(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::is_empty`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::is_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -54,9 +58,10 @@ export function destroyEmpty(
   tx: Transaction,
   typeArg: string,
   cursor: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::destroy_empty`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::destroy_empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, cursor)],
   })
@@ -74,9 +79,10 @@ export function takeRest(
   tx: Transaction,
   typeArg: string,
   cursor: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::take_rest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::take_rest`,
     typeArguments: [typeArg],
     arguments: [obj(tx, cursor)],
   })
@@ -87,9 +93,10 @@ export function poke(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::cursor::poke`,
+    target: `${getPublishedAt('wormhole', options?.env)}::cursor::poke`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })

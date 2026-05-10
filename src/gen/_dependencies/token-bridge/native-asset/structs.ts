@@ -1,3 +1,13 @@
+/**
+ * This module implements a custom type that keeps track of info relating to
+ * assets (coin types) native to Sui. Token Bridge takes custody of these
+ * assets when someone invokes a token transfer outbound. Likewise, Token
+ * Bridge releases some of its balance from its custody of when someone redeems
+ * an inbound token transfer intended for Sui.
+ *
+ * See `token_registry` module for more details.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -41,29 +51,30 @@ export function isNativeAsset(type: string): boolean {
   )
 }
 
-export interface NativeAssetFields<T0 extends PhantomTypeArgument> {
-  custody: ToField<Balance<T0>>
+export interface NativeAssetFields<C extends PhantomTypeArgument> {
+  custody: ToField<Balance<C>>
   tokenAddress: ToField<ExternalAddress>
   decimals: ToField<'u8'>
 }
 
-export type NativeAssetReified<T0 extends PhantomTypeArgument> = Reified<
-  NativeAsset<T0>,
-  NativeAssetFields<T0>
+export type NativeAssetReified<C extends PhantomTypeArgument> = Reified<
+  NativeAsset<C>,
+  NativeAssetFields<C>
 >
 
-export type NativeAssetJSONField<T0 extends PhantomTypeArgument> = {
-  custody: ToJSON<Balance<T0>>
+export type NativeAssetJSONField<C extends PhantomTypeArgument> = {
+  custody: ToJSON<Balance<C>>
   tokenAddress: ToJSON<ExternalAddress>
   decimals: number
 }
 
-export type NativeAssetJSON<T0 extends PhantomTypeArgument> = {
+export type NativeAssetJSON<C extends PhantomTypeArgument> = {
   $typeName: typeof NativeAsset.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & NativeAssetJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<C>]
+} & NativeAssetJSONField<C>
 
-export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass {
+/** Container for storing canonical token address and custodied `Balance`. */
+export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::native_asset::NativeAsset` = `${
@@ -73,19 +84,19 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof NativeAsset.$typeName = NativeAsset.$typeName
-  readonly $fullTypeName: `${string}::native_asset::NativeAsset<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::native_asset::NativeAsset<${PhantomToTypeStr<C>}>`
+  readonly $typeArgs: [PhantomToTypeStr<C>]
   readonly $isPhantom: typeof NativeAsset.$isPhantom = NativeAsset.$isPhantom
 
-  readonly custody: ToField<Balance<T0>>
+  readonly custody: ToField<Balance<C>>
   readonly tokenAddress: ToField<ExternalAddress>
   readonly decimals: ToField<'u8'>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: NativeAssetFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<C>], fields: NativeAssetFields<C>) {
     this.$fullTypeName = composeSuiType(
       NativeAsset.$typeName,
       ...typeArgs,
-    ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<C>}>`
     this.$typeArgs = typeArgs
 
     this.custody = fields.custody
@@ -93,30 +104,30 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     this.decimals = fields.decimals
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): NativeAssetReified<ToPhantomTypeArgument<T0>> {
+  static reified<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): NativeAssetReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = NativeAsset.bcs
     return {
       typeName: NativeAsset.$typeName,
       fullTypeName: composeSuiType(
         NativeAsset.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(C)],
+      ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
+      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
       isPhantom: NativeAsset.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => NativeAsset.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => NativeAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => NativeAsset.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [C],
+      fromFields: (fields: Record<string, any>) => NativeAsset.fromFields(C, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => NativeAsset.fromFieldsWithTypes(C, item),
+      fromBcs: (data: Uint8Array) => NativeAsset.fromFields(C, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => NativeAsset.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => NativeAsset.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => NativeAsset.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => NativeAsset.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => NativeAsset.fetch(client, T0, id),
-      new: (fields: NativeAssetFields<ToPhantomTypeArgument<T0>>) => {
-        return new NativeAsset([extractType(T0)], fields)
+      fromJSONField: (field: any) => NativeAsset.fromJSONField(C, field),
+      fromJSON: (json: Record<string, any>) => NativeAsset.fromJSON(C, json),
+      fromSuiParsedData: (content: SuiParsedData) => NativeAsset.fromSuiParsedData(C, content),
+      fromSuiObjectData: (content: SuiObjectData) => NativeAsset.fromSuiObjectData(C, content),
+      fetch: async (client: SupportedSuiClient, id: string) => NativeAsset.fetch(client, C, id),
+      new: (fields: NativeAssetFields<ToPhantomTypeArgument<C>>) => {
+        return new NativeAsset([extractType(C)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -126,10 +137,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     return NativeAsset.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<NativeAsset<ToPhantomTypeArgument<T0>>>> {
-    return phantom(NativeAsset.reified(T0))
+  static phantom<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): PhantomReified<ToTypeStr<NativeAsset<ToPhantomTypeArgument<C>>>> {
+    return phantom(NativeAsset.reified(C))
   }
 
   static get p(): typeof NativeAsset.phantom {
@@ -153,10 +164,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     return NativeAsset.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     fields: Record<string, any>,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     return NativeAsset.reified(typeArg).new({
       custody: decodeFromFields(Balance.reified(typeArg), fields.custody),
       tokenAddress: decodeFromFields(ExternalAddress.reified(), fields.token_address),
@@ -164,10 +175,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     item: FieldsWithTypes,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     if (!isNativeAsset(item.type)) {
       throw new Error('not a NativeAsset type')
     }
@@ -180,14 +191,14 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: Uint8Array,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     return NativeAsset.fromFields(typeArg, NativeAsset.bcs.parse(data))
   }
 
-  toJSONField(): NativeAssetJSONField<T0> {
+  toJSONField(): NativeAssetJSONField<C> {
     return {
       custody: this.custody.toJSONField(),
       tokenAddress: this.tokenAddress.toJSONField(),
@@ -195,14 +206,14 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     }
   }
 
-  toJSON(): NativeAssetJSON<T0> {
+  toJSON(): NativeAssetJSON<C> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     field: any,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     return NativeAsset.reified(typeArg).new({
       custody: decodeFromJSONField(Balance.reified(typeArg), field.custody),
       tokenAddress: decodeFromJSONField(ExternalAddress.reified(), field.tokenAddress),
@@ -210,10 +221,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     json: Record<string, any>,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     if (json.$typeName !== NativeAsset.$typeName) {
       throw new Error(
         `not a NativeAsset json object: expected '${NativeAsset.$typeName}' but got '${json.$typeName}'`,
@@ -228,10 +239,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     return NativeAsset.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     content: SuiParsedData,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -241,10 +252,10 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     return NativeAsset.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: SuiObjectData,
-  ): NativeAsset<ToPhantomTypeArgument<T0>> {
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isNativeAsset(data.bcs.type)) {
         throw new Error(`object at is not a NativeAsset object`)
@@ -276,11 +287,11 @@ export class NativeAsset<T0 extends PhantomTypeArgument> implements StructClass 
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: C,
     id: string,
-  ): Promise<NativeAsset<ToPhantomTypeArgument<T0>>> {
+  ): Promise<NativeAsset<ToPhantomTypeArgument<C>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isNativeAsset(res.type)) {
       throw new Error(`object at id ${id} is not a NativeAsset object`)

@@ -1,3 +1,34 @@
+/**
+ * This module implements methods that create a specific coin type reflecting a
+ * wrapped (foreign) asset, whose metadata is encoded in a VAA sent from
+ * another network.
+ *
+ * Wrapped assets are created in two steps.
+ * 1. `prepare_registration`: This method creates a new `TreasuryCap` for a
+ * given coin type and wraps an encoded asset metadata VAA. We require a
+ * one-time witness (OTW) to throw an explicit error (even though it is
+ * redundant with what `create_currency` requires). This coin will
+ * be published using this method, meaning the `init` method in that
+ * untrusted package will have the asset's decimals hard-coded for its
+ * coin metadata. A `WrappedAssetSetup` object is transferred to the
+ * transaction sender.
+ * 2. `complete_registration`: This method destroys the `WrappedAssetSetup`
+ * object by unpacking its `TreasuryCap`, which will be warehoused in the
+ * `TokenRegistry`. The shared coin metadata object will be updated to
+ * reflect the contents of the encoded asset metadata payload.
+ *
+ * Wrapped asset metadata can also be updated with a new asset metadata VAA.
+ * By calling `update_attestation`, Token Bridge verifies that the specific
+ * coin type is registered and agrees with the encoded asset metadata's
+ * canonical token info. `ForeignInfo` and the coin's metadata will be updated
+ * based on the encoded asset metadata payload.
+ *
+ * See `state` and `wrapped_asset` modules for more details.
+ *
+ * References:
+ * https://examples.sui.io/basics/one-time-witness.html
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -43,36 +74,42 @@ export function isWrappedAssetSetup(type: string): boolean {
 }
 
 export interface WrappedAssetSetupFields<
-  T0 extends PhantomTypeArgument,
-  T1 extends PhantomTypeArgument,
+  CoinType extends PhantomTypeArgument,
+  Version extends PhantomTypeArgument,
 > {
   id: ToField<UID>
-  treasuryCap: ToField<TreasuryCap<T0>>
+  treasuryCap: ToField<TreasuryCap<CoinType>>
 }
 
 export type WrappedAssetSetupReified<
-  T0 extends PhantomTypeArgument,
-  T1 extends PhantomTypeArgument,
-> = Reified<WrappedAssetSetup<T0, T1>, WrappedAssetSetupFields<T0, T1>>
+  CoinType extends PhantomTypeArgument,
+  Version extends PhantomTypeArgument,
+> = Reified<WrappedAssetSetup<CoinType, Version>, WrappedAssetSetupFields<CoinType, Version>>
 
 export type WrappedAssetSetupJSONField<
-  T0 extends PhantomTypeArgument,
-  T1 extends PhantomTypeArgument,
+  CoinType extends PhantomTypeArgument,
+  Version extends PhantomTypeArgument,
 > = {
   id: string
-  treasuryCap: ToJSON<TreasuryCap<T0>>
+  treasuryCap: ToJSON<TreasuryCap<CoinType>>
 }
 
-export type WrappedAssetSetupJSON<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument> =
-  & {
-    $typeName: typeof WrappedAssetSetup.$typeName
-    $typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>]
-  }
-  & WrappedAssetSetupJSONField<T0, T1>
+export type WrappedAssetSetupJSON<
+  CoinType extends PhantomTypeArgument,
+  Version extends PhantomTypeArgument,
+> = {
+  $typeName: typeof WrappedAssetSetup.$typeName
+  $typeArgs: [PhantomToTypeStr<CoinType>, PhantomToTypeStr<Version>]
+} & WrappedAssetSetupJSONField<CoinType, Version>
 
-export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends PhantomTypeArgument>
-  implements StructClass
-{
+/**
+ * Container holding new coin type's `TreasuryCap` and encoded asset metadata
+ * VAA, which are required to complete this asset's registration.
+ */
+export class WrappedAssetSetup<
+  CoinType extends PhantomTypeArgument,
+  Version extends PhantomTypeArgument,
+> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::create_wrapped::WrappedAssetSetup` = `${
@@ -83,24 +120,24 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
 
   readonly $typeName: typeof WrappedAssetSetup.$typeName = WrappedAssetSetup.$typeName
   readonly $fullTypeName: `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<
-    T0
-  >}, ${PhantomToTypeStr<T1>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>]
+    CoinType
+  >}, ${PhantomToTypeStr<Version>}>`
+  readonly $typeArgs: [PhantomToTypeStr<CoinType>, PhantomToTypeStr<Version>]
   readonly $isPhantom: typeof WrappedAssetSetup.$isPhantom = WrappedAssetSetup.$isPhantom
 
   readonly id: ToField<UID>
-  readonly treasuryCap: ToField<TreasuryCap<T0>>
+  readonly treasuryCap: ToField<TreasuryCap<CoinType>>
 
   private constructor(
-    typeArgs: [PhantomToTypeStr<T0>, PhantomToTypeStr<T1>],
-    fields: WrappedAssetSetupFields<T0, T1>,
+    typeArgs: [PhantomToTypeStr<CoinType>, PhantomToTypeStr<Version>],
+    fields: WrappedAssetSetupFields<CoinType, Version>,
   ) {
     this.$fullTypeName = composeSuiType(
       WrappedAssetSetup.$typeName,
       ...typeArgs,
-    ) as `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<T0>}, ${PhantomToTypeStr<
-      T1
-    >}>`
+    ) as `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<
+      CoinType
+    >}, ${PhantomToTypeStr<Version>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -108,44 +145,50 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static reified<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
-  ): WrappedAssetSetupReified<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+    CoinType: CoinType,
+    Version: Version,
+  ): WrappedAssetSetupReified<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     const reifiedBcs = WrappedAssetSetup.bcs
     return {
       typeName: WrappedAssetSetup.$typeName,
       fullTypeName: composeSuiType(
         WrappedAssetSetup.$typeName,
-        ...[extractType(T0), extractType(T1)],
+        ...[extractType(CoinType), extractType(Version)],
       ) as `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<T1>>}>`,
-      typeArgs: [extractType(T0), extractType(T1)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T0>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<T1>>,
+        ToPhantomTypeArgument<CoinType>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Version>>}>`,
+      typeArgs: [extractType(CoinType), extractType(Version)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<Version>>,
       ],
       isPhantom: WrappedAssetSetup.$isPhantom,
-      reifiedTypeArgs: [T0, T1],
-      fromFields: (fields: Record<string, any>) => WrappedAssetSetup.fromFields([T0, T1], fields),
+      reifiedTypeArgs: [CoinType, Version],
+      fromFields: (fields: Record<string, any>) =>
+        WrappedAssetSetup.fromFields([CoinType, Version], fields),
       fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        WrappedAssetSetup.fromFieldsWithTypes([T0, T1], item),
-      fromBcs: (data: Uint8Array) => WrappedAssetSetup.fromFields([T0, T1], reifiedBcs.parse(data)),
+        WrappedAssetSetup.fromFieldsWithTypes([CoinType, Version], item),
+      fromBcs: (data: Uint8Array) =>
+        WrappedAssetSetup.fromFields([CoinType, Version], reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => WrappedAssetSetup.fromJSONField([T0, T1], field),
-      fromJSON: (json: Record<string, any>) => WrappedAssetSetup.fromJSON([T0, T1], json),
+      fromJSONField: (field: any) => WrappedAssetSetup.fromJSONField([CoinType, Version], field),
+      fromJSON: (json: Record<string, any>) =>
+        WrappedAssetSetup.fromJSON([CoinType, Version], json),
       fromSuiParsedData: (content: SuiParsedData) =>
-        WrappedAssetSetup.fromSuiParsedData([T0, T1], content),
+        WrappedAssetSetup.fromSuiParsedData([CoinType, Version], content),
       fromSuiObjectData: (content: SuiObjectData) =>
-        WrappedAssetSetup.fromSuiObjectData([T0, T1], content),
+        WrappedAssetSetup.fromSuiObjectData([CoinType, Version], content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        WrappedAssetSetup.fetch(client, [T0, T1], id),
+        WrappedAssetSetup.fetch(client, [CoinType, Version], id),
       new: (
-        fields: WrappedAssetSetupFields<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>,
+        fields: WrappedAssetSetupFields<
+          ToPhantomTypeArgument<CoinType>,
+          ToPhantomTypeArgument<Version>
+        >,
       ) => {
-        return new WrappedAssetSetup([extractType(T0), extractType(T1)], fields)
+        return new WrappedAssetSetup([extractType(CoinType), extractType(Version)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -156,15 +199,15 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static phantom<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
+    CoinType: CoinType,
+    Version: Version,
   ): PhantomReified<
-    ToTypeStr<WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>>
+    ToTypeStr<WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>>>
   > {
-    return phantom(WrappedAssetSetup.reified(T0, T1))
+    return phantom(WrappedAssetSetup.reified(CoinType, Version))
   }
 
   static get p(): typeof WrappedAssetSetup.phantom {
@@ -188,12 +231,12 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromFields<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     fields: Record<string, any>,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     return WrappedAssetSetup.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromFields(UID.reified(), fields.id),
       treasuryCap: decodeFromFields(TreasuryCap.reified(typeArgs[0]), fields.treasury_cap),
@@ -201,12 +244,12 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromFieldsWithTypes<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     item: FieldsWithTypes,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     if (!isWrappedAssetSetup(item.type)) {
       throw new Error('not a WrappedAssetSetup type')
     }
@@ -222,33 +265,33 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromBcs<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     data: Uint8Array,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     return WrappedAssetSetup.fromFields(typeArgs, WrappedAssetSetup.bcs.parse(data))
   }
 
-  toJSONField(): WrappedAssetSetupJSONField<T0, T1> {
+  toJSONField(): WrappedAssetSetupJSONField<CoinType, Version> {
     return {
       id: this.id,
       treasuryCap: this.treasuryCap.toJSONField(),
     }
   }
 
-  toJSON(): WrappedAssetSetupJSON<T0, T1> {
+  toJSON(): WrappedAssetSetupJSON<CoinType, Version> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     field: any,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     return WrappedAssetSetup.reified(typeArgs[0], typeArgs[1]).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       treasuryCap: decodeFromJSONField(TreasuryCap.reified(typeArgs[0]), field.treasuryCap),
@@ -256,12 +299,12 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromJSON<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     json: Record<string, any>,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     if (json.$typeName !== WrappedAssetSetup.$typeName) {
       throw new Error(
         `not a WrappedAssetSetup json object: expected '${WrappedAssetSetup.$typeName}' but got '${json.$typeName}'`,
@@ -277,12 +320,12 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromSuiParsedData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     content: SuiParsedData,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -293,12 +336,12 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static fromSuiObjectData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     data: SuiObjectData,
-  ): WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>> {
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWrappedAssetSetup(data.bcs.type)) {
         throw new Error(`object at is not a WrappedAssetSetup object`)
@@ -331,13 +374,13 @@ export class WrappedAssetSetup<T0 extends PhantomTypeArgument, T1 extends Phanto
   }
 
   static async fetch<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends PhantomReified<PhantomTypeArgument>,
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
   >(
     client: SupportedSuiClient,
-    typeArgs: [T0, T1],
+    typeArgs: [CoinType, Version],
     id: string,
-  ): Promise<WrappedAssetSetup<ToPhantomTypeArgument<T0>, ToPhantomTypeArgument<T1>>> {
+  ): Promise<WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isWrappedAssetSetup(res.type)) {
       throw new Error(`object at id ${id} is not a WrappedAssetSetup object`)

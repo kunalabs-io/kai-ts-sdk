@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
@@ -17,9 +18,13 @@ export interface NewArgs {
   baseUpdateFee: bigint | TransactionArgument
 }
 
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::new`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::new`,
     arguments: [
       obj(tx, args.upgradeCap),
       vector(tx, `${DataSource.$typeName}`, args.sources),
@@ -33,23 +38,32 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
 export function getStalePriceThresholdSecs(
   tx: Transaction,
   s: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::get_stale_price_threshold_secs`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::get_stale_price_threshold_secs`,
     arguments: [obj(tx, s)],
   })
 }
 
-export function getBaseUpdateFee(tx: Transaction, s: TransactionObjectInput): TransactionResult {
+export function getBaseUpdateFee(
+  tx: Transaction,
+  s: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::get_base_update_fee`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::get_base_update_fee`,
     arguments: [obj(tx, s)],
   })
 }
 
-export function getFeeRecipient(tx: Transaction, s: TransactionObjectInput): TransactionResult {
+export function getFeeRecipient(
+  tx: Transaction,
+  s: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::get_fee_recipient`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::get_fee_recipient`,
     arguments: [obj(tx, s)],
   })
 }
@@ -59,9 +73,13 @@ export interface IsValidDataSourceArgs {
   dataSource: TransactionObjectInput
 }
 
-export function isValidDataSource(tx: Transaction, args: IsValidDataSourceArgs): TransactionResult {
+export function isValidDataSource(
+  tx: Transaction,
+  args: IsValidDataSourceArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::is_valid_data_source`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::is_valid_data_source`,
     arguments: [
       obj(tx, args.s),
       obj(tx, args.dataSource),
@@ -77,9 +95,10 @@ export interface IsValidGovernanceDataSourceArgs {
 export function isValidGovernanceDataSource(
   tx: Transaction,
   args: IsValidGovernanceDataSourceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::is_valid_governance_data_source`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::is_valid_governance_data_source`,
     arguments: [
       obj(tx, args.s),
       obj(tx, args.source),
@@ -95,9 +114,10 @@ export interface PriceFeedObjectExistsArgs {
 export function priceFeedObjectExists(
   tx: Transaction,
   args: PriceFeedObjectExistsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::price_feed_object_exists`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::price_feed_object_exists`,
     arguments: [
       obj(tx, args.s),
       obj(tx, args.p),
@@ -109,9 +129,10 @@ export function priceFeedObjectExists(
 export function governanceDataSource(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::governance_data_source`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::governance_data_source`,
     arguments: [obj(tx, self)],
   })
 }
@@ -119,25 +140,33 @@ export function governanceDataSource(
 export function getLastExecutedGovernanceSequence(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::get_last_executed_governance_sequence`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::get_last_executed_governance_sequence`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Retrieve governance module name. */
-export function governanceModule(tx: Transaction): TransactionResult {
+export function governanceModule(
+  tx: Transaction,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::governance_module`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::governance_module`,
     arguments: [],
   })
 }
 
 /** Retrieve governance chain ID, which is governance's emitter chain ID. */
-export function governanceChain(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function governanceChain(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::governance_chain`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::governance_chain`,
     arguments: [obj(tx, self)],
   })
 }
@@ -146,9 +175,10 @@ export function governanceChain(tx: Transaction, self: TransactionObjectInput): 
 export function governanceContract(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::governance_contract`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::governance_contract`,
     arguments: [obj(tx, self)],
   })
 }
@@ -161,9 +191,10 @@ export interface GetPriceInfoObjectIdArgs {
 export function getPriceInfoObjectId(
   tx: Transaction,
   args: GetPriceInfoObjectIdArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::get_price_info_object_id`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::get_price_info_object_id`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.priceIdentifierBytes, `vector<u8>`),
@@ -178,9 +209,13 @@ export function getPriceInfoObjectId(
  * NOTE: This method allows caching the current version check so we avoid
  * multiple checks to dynamic fields.
  */
-export function assertLatestOnly(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function assertLatestOnly(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::assert_latest_only`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::assert_latest_only`,
     arguments: [obj(tx, self)],
   })
 }
@@ -191,9 +226,13 @@ export interface SetFeeRecipientArgs {
   addr: string | TransactionArgument
 }
 
-export function setFeeRecipient(tx: Transaction, args: SetFeeRecipientArgs): TransactionResult {
+export function setFeeRecipient(
+  tx: Transaction,
+  args: SetFeeRecipientArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_fee_recipient`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_fee_recipient`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -215,9 +254,10 @@ export interface BorrowMutConsumedVaasArgs {
 export function borrowMutConsumedVaas(
   tx: Transaction,
   args: BorrowMutConsumedVaasArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::borrow_mut_consumed_vaas`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::borrow_mut_consumed_vaas`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -237,9 +277,10 @@ export function borrowMutConsumedVaas(
 export function borrowMutConsumedVaasUnchecked(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::borrow_mut_consumed_vaas_unchecked`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::borrow_mut_consumed_vaas_unchecked`,
     arguments: [obj(tx, self)],
   })
 }
@@ -249,9 +290,13 @@ export interface CurrentPackageArgs {
   self: TransactionObjectInput
 }
 
-export function currentPackage(tx: Transaction, args: CurrentPackageArgs): TransactionResult {
+export function currentPackage(
+  tx: Transaction,
+  args: CurrentPackageArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::current_package`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::current_package`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -265,9 +310,13 @@ export interface SetDataSourcesArgs {
   newSources: Array<TransactionObjectInput> | TransactionArgument
 }
 
-export function setDataSources(tx: Transaction, args: SetDataSourcesArgs): TransactionResult {
+export function setDataSources(
+  tx: Transaction,
+  args: SetDataSourcesArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_data_sources`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_data_sources`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -286,9 +335,10 @@ export interface RegisterPriceInfoObjectArgs {
 export function registerPriceInfoObject(
   tx: Transaction,
   args: RegisterPriceInfoObjectArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::register_price_info_object`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::register_price_info_object`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -307,9 +357,10 @@ export interface SetGovernanceDataSourceArgs {
 export function setGovernanceDataSource(
   tx: Transaction,
   args: SetGovernanceDataSourceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_governance_data_source`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_governance_data_source`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -327,9 +378,10 @@ export interface SetLastExecutedGovernanceSequenceArgs {
 export function setLastExecutedGovernanceSequence(
   tx: Transaction,
   args: SetLastExecutedGovernanceSequenceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_last_executed_governance_sequence`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_last_executed_governance_sequence`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -346,9 +398,12 @@ export interface SetLastExecutedGovernanceSequenceUncheckedArgs {
 export function setLastExecutedGovernanceSequenceUnchecked(
   tx: Transaction,
   args: SetLastExecutedGovernanceSequenceUncheckedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_last_executed_governance_sequence_unchecked`,
+    target: `${
+      getPublishedAt('pyth', options?.env)
+    }::state::set_last_executed_governance_sequence_unchecked`,
     arguments: [
       obj(tx, args.s),
       pure(tx, args.sequence, `u64`),
@@ -362,9 +417,13 @@ export interface SetBaseUpdateFeeArgs {
   fee: bigint | TransactionArgument
 }
 
-export function setBaseUpdateFee(tx: Transaction, args: SetBaseUpdateFeeArgs): TransactionResult {
+export function setBaseUpdateFee(
+  tx: Transaction,
+  args: SetBaseUpdateFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_base_update_fee`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_base_update_fee`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -382,9 +441,10 @@ export interface SetStalePriceThresholdSecsArgs {
 export function setStalePriceThresholdSecs(
   tx: Transaction,
   args: SetStalePriceThresholdSecsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::set_stale_price_threshold_secs`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::set_stale_price_threshold_secs`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.s),
@@ -406,9 +466,13 @@ export interface AuthorizeUpgradeArgs {
  * a stale build, the transaction will revert with `PackageUpgradeError`,
  * specifically `PackageIDDoesNotMatch`.
  */
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): TransactionResult {
+export function authorizeUpgrade(
+  tx: Transaction,
+  args: AuthorizeUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::authorize_upgrade`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::authorize_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.packageDigest),
@@ -429,9 +493,13 @@ export interface CommitUpgradeArgs {
  * a stale build, the transaction will revert with `PackageUpgradeError`,
  * specifically `PackageIDDoesNotMatch`.
  */
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): TransactionResult {
+export function commitUpgrade(
+  tx: Transaction,
+  args: CommitUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::commit_upgrade`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::commit_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.receipt),
@@ -443,9 +511,13 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): Transac
  * Method executed by the `migrate` module to roll access from one package
  * to another. This method will be called from the upgraded package.
  */
-export function migrateVersion(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function migrateVersion(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::migrate_version`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::migrate_version`,
     arguments: [obj(tx, self)],
   })
 }
@@ -464,9 +536,10 @@ export interface AssertAuthorizedDigestArgs {
 export function assertAuthorizedDigest(
   tx: Transaction,
   args: AssertAuthorizedDigestArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::assert_authorized_digest`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::assert_authorized_digest`,
     arguments: [
       obj(tx, args.latestOnly),
       obj(tx, args.self),
@@ -475,9 +548,13 @@ export function assertAuthorizedDigest(
   })
 }
 
-export function migrateV011(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function migrateV011(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::state::migrate__v__0_1_1`,
+    target: `${getPublishedAt('pyth', options?.env)}::state::migrate__v__0_1_1`,
     arguments: [obj(tx, self)],
   })
 }

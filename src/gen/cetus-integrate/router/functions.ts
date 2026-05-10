@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -24,9 +25,10 @@ export function swap(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::swap`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.globalConfig),
@@ -61,9 +63,10 @@ export function swapAbBc(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapAbBcArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::swap_ab_bc`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::swap_ab_bc`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -99,9 +102,10 @@ export function swapAbCb(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapAbCbArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::swap_ab_cb`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::swap_ab_cb`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -137,9 +141,10 @@ export function swapBaBc(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapBaBcArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::swap_ba_bc`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::swap_ba_bc`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -175,9 +180,10 @@ export function swapBaCb(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapBaCbArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::swap_ba_cb`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::swap_ba_cb`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -208,9 +214,12 @@ export function calculateRouterSwapResult(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: CalculateRouterSwapResultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::calculate_router_swap_result`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router::calculate_router_swap_result`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -232,9 +241,10 @@ export function checkCoinThreshold(
   tx: Transaction,
   typeArg: string,
   args: CheckCoinThresholdArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router::check_coin_threshold`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::router::check_coin_threshold`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),

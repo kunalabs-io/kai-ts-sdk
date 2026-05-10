@@ -26,7 +26,7 @@ export class CetusAggregatorAdapter implements Router {
     return 'cetus-aggregator'
   }
 
-  async initialize() {}
+  async initialize(): Promise<void> {}
 
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
     if (args.inInfo.typeName === args.outInfo.typeName) {

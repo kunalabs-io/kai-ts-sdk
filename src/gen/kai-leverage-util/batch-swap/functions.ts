@@ -4,12 +4,17 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
 
-export function newBatchSwap(tx: Transaction, typeArgs: [string, string]): TransactionResult {
+export function newBatchSwap(
+  tx: Transaction,
+  typeArgs: [string, string],
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::new_batch_swap`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::new_batch_swap`,
     typeArguments: typeArgs,
     arguments: [],
   })
@@ -24,9 +29,10 @@ export function deposit(
   tx: Transaction,
   typeArgs: [string, string],
   args: DepositArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::deposit`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::deposit`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.batchSwap),
@@ -39,9 +45,10 @@ export function startSwap(
   tx: Transaction,
   typeArgs: [string, string],
   batchSwap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::start_swap`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::start_swap`,
     typeArguments: typeArgs,
     arguments: [obj(tx, batchSwap)],
   })
@@ -56,9 +63,10 @@ export function completeSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: CompleteSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::complete_swap`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::complete_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.batchSwap),
@@ -76,9 +84,10 @@ export function claim(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClaimArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::claim`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::claim`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.batchSwap),
@@ -96,9 +105,10 @@ export function claimIfMatches(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClaimIfMatchesArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::claim_if_matches`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::claim_if_matches`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.batchSwap),
@@ -111,9 +121,10 @@ export function destroyZero(
   tx: Transaction,
   typeArgs: [string, string],
   batchSwap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::batch_swap::destroy_zero`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::batch_swap::destroy_zero`,
     typeArguments: typeArgs,
     arguments: [obj(tx, batchSwap)],
   })

@@ -1,3 +1,8 @@
+/**
+ * This module implements handling a governance VAA to enact registering a
+ * foreign Token Bridge for a particular chain ID.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'

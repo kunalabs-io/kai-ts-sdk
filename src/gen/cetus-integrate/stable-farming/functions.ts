@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
 
@@ -20,9 +21,10 @@ export function collectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::stable_farming::collect_fee`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::stable_farming::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -49,9 +51,12 @@ export function collectClmmReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectClmmRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::stable_farming::collect_clmm_reward`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::stable_farming::collect_clmm_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

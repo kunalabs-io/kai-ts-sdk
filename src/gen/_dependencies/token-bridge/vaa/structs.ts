@@ -1,3 +1,16 @@
+/**
+ * This module builds on Wormhole's `vaa::parse_and_verify` method by adding
+ * emitter verification and replay protection.
+ *
+ * Token Bridge only cares about other Token Bridge messages, so the emitter
+ * address must be a registered Token Bridge emitter according to the VAA's
+ * emitter chain ID.
+ *
+ * Token Bridge does not allow replaying any of its VAAs, so its hash is stored
+ * in its `State`. If the encoded VAA passes through `parse_and_verify` again,
+ * it will abort.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -35,9 +48,16 @@ export function isTokenBridgeMessage(type: string): boolean {
 }
 
 export interface TokenBridgeMessageFields {
+  /** Wormhole chain ID from which network the message originated from. */
   emitterChain: ToField<'u16'>
+  /**
+   * Address of Token Bridge (standardized to 32 bytes) that produced
+   * this message.
+   */
   emitterAddress: ToField<ExternalAddress>
+  /** Sequence number of Token Bridge's Wormhole message. */
   sequence: ToField<'u64'>
+  /** Token Bridge payload. */
   payload: ToField<Vector<'u8'>>
 }
 
@@ -55,6 +75,11 @@ export type TokenBridgeMessageJSON = {
   $typeArgs: []
 } & TokenBridgeMessageJSONField
 
+/**
+ * This type represents VAA data whose emitter is a registered Token Bridge
+ * emitter. This message is also representative of a VAA that cannot be
+ * replayed.
+ */
 export class TokenBridgeMessage implements StructClass {
   __StructClass = true as const
 
@@ -69,9 +94,16 @@ export class TokenBridgeMessage implements StructClass {
   readonly $typeArgs: []
   readonly $isPhantom: typeof TokenBridgeMessage.$isPhantom = TokenBridgeMessage.$isPhantom
 
+  /** Wormhole chain ID from which network the message originated from. */
   readonly emitterChain: ToField<'u16'>
+  /**
+   * Address of Token Bridge (standardized to 32 bytes) that produced
+   * this message.
+   */
   readonly emitterAddress: ToField<ExternalAddress>
+  /** Sequence number of Token Bridge's Wormhole message. */
   readonly sequence: ToField<'u64'>
+  /** Token Bridge payload. */
   readonly payload: ToField<Vector<'u8'>>
 
   private constructor(typeArgs: [], fields: TokenBridgeMessageFields) {

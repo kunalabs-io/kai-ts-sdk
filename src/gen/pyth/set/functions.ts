@@ -4,13 +4,18 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj } from '../../_framework/util'
 
 /** Create a new Set. */
-export function new_(tx: Transaction, typeArg: string): TransactionResult {
+export function new_(
+  tx: Transaction,
+  typeArg: string,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::set::new`,
+    target: `${getPublishedAt('pyth', options?.env)}::set::new`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -25,9 +30,14 @@ export interface AddArgs {
  * Add a new element to the set.
  * Aborts if the element already exists
  */
-export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  typeArg: string,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::set::add`,
+    target: `${getPublishedAt('pyth', options?.env)}::set::add`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.set),
@@ -42,9 +52,14 @@ export interface ContainsArgs {
 }
 
 /** Returns true iff `set` contains an entry for `key`. */
-export function contains(tx: Transaction, typeArg: string, args: ContainsArgs): TransactionResult {
+export function contains(
+  tx: Transaction,
+  typeArg: string,
+  args: ContainsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::set::contains`,
+    target: `${getPublishedAt('pyth', options?.env)}::set::contains`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.set),
@@ -58,9 +73,10 @@ export function empty(
   tx: Transaction,
   typeArg: string,
   set: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::set::empty`,
+    target: `${getPublishedAt('pyth', options?.env)}::set::empty`,
     typeArguments: [typeArg],
     arguments: [obj(tx, set)],
   })

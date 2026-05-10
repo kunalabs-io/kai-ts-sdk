@@ -39,27 +39,27 @@ export function isOwnership(type: string): boolean {
   )
 }
 
-export interface OwnershipFields<T0 extends PhantomTypeArgument> {
+export interface OwnershipFields<T extends PhantomTypeArgument> {
   id: ToField<UID>
   of: ToField<ID>
 }
 
-export type OwnershipReified<T0 extends PhantomTypeArgument> = Reified<
-  Ownership<T0>,
-  OwnershipFields<T0>
+export type OwnershipReified<T extends PhantomTypeArgument> = Reified<
+  Ownership<T>,
+  OwnershipFields<T>
 >
 
-export type OwnershipJSONField<T0 extends PhantomTypeArgument> = {
+export type OwnershipJSONField<T extends PhantomTypeArgument> = {
   id: string
   of: string
 }
 
-export type OwnershipJSON<T0 extends PhantomTypeArgument> = {
+export type OwnershipJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof Ownership.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & OwnershipJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & OwnershipJSONField<T>
 
-export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
+export class Ownership<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::ownership::Ownership` = `${
@@ -69,48 +69,48 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof Ownership.$typeName = Ownership.$typeName
-  readonly $fullTypeName: `${string}::ownership::Ownership<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::ownership::Ownership<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof Ownership.$isPhantom = Ownership.$isPhantom
 
   readonly id: ToField<UID>
   readonly of: ToField<ID>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: OwnershipFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: OwnershipFields<T>) {
     this.$fullTypeName = composeSuiType(
       Ownership.$typeName,
       ...typeArgs,
-    ) as `${string}::ownership::Ownership<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::ownership::Ownership<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
     this.of = fields.of
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): OwnershipReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): OwnershipReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = Ownership.bcs
     return {
       typeName: Ownership.$typeName,
       fullTypeName: composeSuiType(
         Ownership.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::ownership::Ownership<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)],
+      ) as `${string}::ownership::Ownership<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: Ownership.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => Ownership.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => Ownership.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => Ownership.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => Ownership.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => Ownership.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => Ownership.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => Ownership.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => Ownership.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => Ownership.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => Ownership.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Ownership.fetch(client, T0, id),
-      new: (fields: OwnershipFields<ToPhantomTypeArgument<T0>>) => {
-        return new Ownership([extractType(T0)], fields)
+      fromJSONField: (field: any) => Ownership.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => Ownership.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => Ownership.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => Ownership.fromSuiObjectData(T, content),
+      fetch: async (client: SupportedSuiClient, id: string) => Ownership.fetch(client, T, id),
+      new: (fields: OwnershipFields<ToPhantomTypeArgument<T>>) => {
+        return new Ownership([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -120,10 +120,10 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     return Ownership.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<Ownership<ToPhantomTypeArgument<T0>>>> {
-    return phantom(Ownership.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<Ownership<ToPhantomTypeArgument<T>>>> {
+    return phantom(Ownership.reified(T))
   }
 
   static get p(): typeof Ownership.phantom {
@@ -146,20 +146,20 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     return Ownership.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     return Ownership.reified(typeArg).new({
       id: decodeFromFields(UID.reified(), fields.id),
       of: decodeFromFields(ID.reified(), fields.of),
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     if (!isOwnership(item.type)) {
       throw new Error('not a Ownership type')
     }
@@ -171,38 +171,38 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     return Ownership.fromFields(typeArg, Ownership.bcs.parse(data))
   }
 
-  toJSONField(): OwnershipJSONField<T0> {
+  toJSONField(): OwnershipJSONField<T> {
     return {
       id: this.id,
       of: this.of,
     }
   }
 
-  toJSON(): OwnershipJSON<T0> {
+  toJSON(): OwnershipJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     return Ownership.reified(typeArg).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       of: decodeFromJSONField(ID.reified(), field.of),
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== Ownership.$typeName) {
       throw new Error(
         `not a Ownership json object: expected '${Ownership.$typeName}' but got '${json.$typeName}'`,
@@ -217,10 +217,10 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     return Ownership.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -230,10 +230,10 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     return Ownership.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): Ownership<ToPhantomTypeArgument<T0>> {
+  ): Ownership<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnership(data.bcs.type)) {
         throw new Error(`object at is not a Ownership object`)
@@ -265,11 +265,11 @@ export class Ownership<T0 extends PhantomTypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<Ownership<ToPhantomTypeArgument<T0>>> {
+  ): Promise<Ownership<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isOwnership(res.type)) {
       throw new Error(`object at id ${id} is not a Ownership object`)

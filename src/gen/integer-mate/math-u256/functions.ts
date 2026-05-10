@@ -1,4 +1,5 @@
 import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { pure } from '../../_framework/util'
 
@@ -7,9 +8,13 @@ export interface DivModArgs {
   denom: bigint | TransactionArgument
 }
 
-export function divMod(tx: Transaction, args: DivModArgs): TransactionResult {
+export function divMod(
+  tx: Transaction,
+  args: DivModArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::div_mod`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::div_mod`,
     arguments: [
       pure(tx, args.num, `u256`),
       pure(tx, args.denom, `u256`),
@@ -17,23 +22,35 @@ export function divMod(tx: Transaction, args: DivModArgs): TransactionResult {
   })
 }
 
-export function shlw(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function shlw(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::shlw`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::shlw`,
     arguments: [pure(tx, n, `u256`)],
   })
 }
 
-export function shrw(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function shrw(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::shrw`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::shrw`,
     arguments: [pure(tx, n, `u256`)],
   })
 }
 
-export function checkedShlw(tx: Transaction, n: bigint | TransactionArgument): TransactionResult {
+export function checkedShlw(
+  tx: Transaction,
+  n: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::checked_shlw`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::checked_shlw`,
     arguments: [pure(tx, n, `u256`)],
   })
 }
@@ -44,9 +61,13 @@ export interface DivRoundArgs {
   roundUp: boolean | TransactionArgument
 }
 
-export function divRound(tx: Transaction, args: DivRoundArgs): TransactionResult {
+export function divRound(
+  tx: Transaction,
+  args: DivRoundArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::div_round`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::div_round`,
     arguments: [
       pure(tx, args.num, `u256`),
       pure(tx, args.denom, `u256`),
@@ -60,9 +81,13 @@ export interface AddCheckArgs {
   num2: bigint | TransactionArgument
 }
 
-export function addCheck(tx: Transaction, args: AddCheckArgs): TransactionResult {
+export function addCheck(
+  tx: Transaction,
+  args: AddCheckArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('integer-mate')}::math_u256::add_check`,
+    target: `${getPublishedAt('integer-mate', options?.env)}::math_u256::add_check`,
     arguments: [
       pure(tx, args.num1, `u256`),
       pure(tx, args.num2, `u256`),

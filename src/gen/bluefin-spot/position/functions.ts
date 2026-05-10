@@ -4,42 +4,63 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
 import { ID } from '../../sui/object/structs'
 
-export function init(tx: Transaction, otw: TransactionObjectInput): TransactionResult {
+export function init(
+  tx: Transaction,
+  otw: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::init`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::init`,
     arguments: [obj(tx, otw)],
   })
 }
 
-export function lowerTick(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function lowerTick(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::lower_tick`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::lower_tick`,
     arguments: [obj(tx, position)],
   })
 }
 
-export function upperTick(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function upperTick(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::upper_tick`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::upper_tick`,
     arguments: [obj(tx, position)],
   })
 }
 
-export function liquidity(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function liquidity(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::liquidity`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::liquidity`,
     arguments: [obj(tx, position)],
   })
 }
 
-export function poolId(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function poolId(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::pool_id`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::pool_id`,
     arguments: [obj(tx, position)],
   })
 }
@@ -47,9 +68,10 @@ export function poolId(tx: Transaction, position: TransactionObjectInput): Trans
 export function getAccruedFee(
   tx: Transaction,
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::get_accrued_fee`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::get_accrued_fee`,
     arguments: [obj(tx, position)],
   })
 }
@@ -59,9 +81,13 @@ export interface CoinsOwedRewardArgs {
   index: bigint | TransactionArgument
 }
 
-export function coinsOwedReward(tx: Transaction, args: CoinsOwedRewardArgs): TransactionResult {
+export function coinsOwedReward(
+  tx: Transaction,
+  args: CoinsOwedRewardArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::coins_owed_reward`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::coins_owed_reward`,
     arguments: [
       obj(tx, args.position),
       pure(tx, args.index, `u64`),
@@ -69,9 +95,13 @@ export function coinsOwedReward(tx: Transaction, args: CoinsOwedRewardArgs): Tra
   })
 }
 
-export function isEmpty(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function isEmpty(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::is_empty`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::is_empty`,
     arguments: [obj(tx, position)],
   })
 }
@@ -79,9 +109,10 @@ export function isEmpty(tx: Transaction, position: TransactionObjectInput): Tran
 export function rewardInfosLength(
   tx: Transaction,
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::reward_infos_length`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::reward_infos_length`,
     arguments: [obj(tx, position)],
   })
 }
@@ -98,9 +129,13 @@ export interface NewArgs {
   feeRate: bigint | TransactionArgument
 }
 
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::new`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::new`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.poolName, `${String.$typeName}`),
@@ -115,9 +150,13 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
   })
 }
 
-export function del(tx: Transaction, position: TransactionObjectInput): TransactionResult {
+export function del(
+  tx: Transaction,
+  position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::del`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::del`,
     arguments: [obj(tx, position)],
   })
 }
@@ -129,9 +168,13 @@ export interface SetFeeAmountsArgs {
 }
 
 /** Sets the fees for provided position to the provided amounts */
-export function setFeeAmounts(tx: Transaction, args: SetFeeAmountsArgs): TransactionResult {
+export function setFeeAmounts(
+  tx: Transaction,
+  args: SetFeeAmountsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::set_fee_amounts`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::set_fee_amounts`,
     arguments: [
       obj(tx, args.position),
       pure(tx, args.feeA, `u64`),
@@ -149,9 +192,10 @@ export interface DecreaseRewardAmountArgs {
 export function decreaseRewardAmount(
   tx: Transaction,
   args: DecreaseRewardAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::decrease_reward_amount`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::decrease_reward_amount`,
     arguments: [
       obj(tx, args.position),
       pure(tx, args.index, `u64`),
@@ -168,9 +212,13 @@ export interface UpdateArgs {
   rewardGrowthsInside: Array<bigint | TransactionArgument> | TransactionArgument
 }
 
-export function update(tx: Transaction, args: UpdateArgs): TransactionResult {
+export function update(
+  tx: Transaction,
+  args: UpdateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::update`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::update`,
     arguments: [
       obj(tx, args.position),
       obj(tx, args.liquidityDelta),
@@ -184,9 +232,10 @@ export function update(tx: Transaction, args: UpdateArgs): TransactionResult {
 export function addRewardInfo(
   tx: Transaction,
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::add_reward_info`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::add_reward_info`,
     arguments: [obj(tx, position)],
   })
 }
@@ -194,9 +243,10 @@ export function addRewardInfo(
 export function createPositionName(
   tx: Transaction,
   poolName: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::create_position_name`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::create_position_name`,
     arguments: [pure(tx, poolName, `${String.$typeName}`)],
   })
 }
@@ -204,9 +254,12 @@ export function createPositionName(
 export function createPositionDescription(
   tx: Transaction,
   poolName: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::create_position_description`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::position::create_position_description`,
     arguments: [pure(tx, poolName, `${String.$typeName}`)],
   })
 }
@@ -216,9 +269,13 @@ export interface UpdateRewardInfosArgs {
   rewardGrowthsInside: Array<bigint | TransactionArgument> | TransactionArgument
 }
 
-export function updateRewardInfos(tx: Transaction, args: UpdateRewardInfosArgs): TransactionResult {
+export function updateRewardInfos(
+  tx: Transaction,
+  args: UpdateRewardInfosArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::update_reward_infos`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::update_reward_infos`,
     arguments: [
       obj(tx, args.position),
       pure(tx, args.rewardGrowthsInside, `vector<u128>`),
@@ -234,9 +291,10 @@ export interface GetMutableRewardInfoArgs {
 export function getMutableRewardInfo(
   tx: Transaction,
   args: GetMutableRewardInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::position::get_mutable_reward_info`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::position::get_mutable_reward_info`,
     arguments: [
       obj(tx, args.position),
       pure(tx, args.index, `u64`),

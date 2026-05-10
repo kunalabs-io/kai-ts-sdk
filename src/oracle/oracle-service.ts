@@ -1,0 +1,808 @@
+import { PriceFeed, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
+import { normalizeSuiAddress } from '@mysten/sui/utils'
+import { SuiClient } from '@mysten/sui/client'
+import Decimal from 'decimal.js'
+import { Logger } from 'pino'
+import { Counter, Gauge, Meter } from '@opentelemetry/api'
+import { POSITION_CONFIG_INFOS, PositionConfigInfo } from '../lp/config'
+import { Position } from '../lp/position'
+import { SupplyPool } from '../lp/supply-pool'
+import { Price } from '../price'
+import { Amount } from '../amount'
+import { CoinInfo, USDC } from '../coin-info'
+import { PhantomTypeArgument, TypeArgument } from '../gen/_framework/reified'
+import { State } from '../gen/pyth/state/structs'
+import { PYTH_STATE_ID } from '../liquidation/pyth'
+import { PriceFeedUpdateInfo } from '../liquidation/position-monitor/utils'
+import { PriceFeedInfo, PriceInfoObject, pythPrice } from '../pyth'
+
+// ============================================================================
+// Types (merged from types.ts)
+// ============================================================================
+
+export interface OracleServiceConfig {
+  /** Sui client for on-chain queries */
+  client: SuiClient
+  /** Logger for warnings and debug info */
+  logger: Logger
+  /** Pyth Hermes endpoint URL. Default: https://hermes.pyth.network */
+  pythHermesUrl?: string
+  /** Price fetch mode. Default: 'streaming' */
+  mode?: 'streaming' | 'polling'
+  /** Polling interval in milliseconds (polling mode only). Default: 1000 */
+  pollingIntervalMs?: number
+  /** On-chain staleness check interval in milliseconds. Default: 10000 */
+  onChainPollIntervalMs?: number
+  /** Max allowed price staleness in seconds. Default: 60. Throws if price older. */
+  maxPriceStalenessSec?: number
+  /** OpenTelemetry Meter for Prometheus metrics. Optional - metrics disabled if not provided. */
+  meter?: Meter
+}
+
+export interface OracleMetrics {
+  /** Whether WebSocket is connected (streaming mode) */
+  websocketConnected: boolean
+  /** Total price updates received */
+  priceUpdateCount: number
+  /** Per-feed staleness in seconds */
+  feedStaleness: Map<string, number>
+  /** Per-feed on-chain staleness in seconds */
+  onChainStaleness: Map<string, number>
+  /** Number of times on-chain update was triggered */
+  updateTriggeredCount: number
+  /** Whether service is healthy */
+  healthy: boolean
+}
+
+interface CachedOnChainPriceData {
+  /** Arrival time of the price on-chain in seconds */
+  arrivalTimeSec: number
+  /** When this data was fetched */
+  fetchedAtMs: number
+}
+
+/**
+ * Result of fetching fresh on-chain PIO data
+ */
+export interface OnChainPriceData {
+  pioX: PriceInfoObject<PhantomTypeArgument>
+  pioY: PriceInfoObject<PhantomTypeArgument>
+  stalenessXSec: number
+  stalenessYSec: number
+  price: Price<PhantomTypeArgument, PhantomTypeArgument>
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const DEFAULT_PYTH_HERMES_URL = 'https://hermes.pyth.network'
+const DEFAULT_POLLING_INTERVAL_MS = 1000
+const DEFAULT_ON_CHAIN_POLL_INTERVAL_MS = 10000
+const DEFAULT_MAX_PRICE_STALENESS_SEC = 60
+const HEALTH_CHECK_MAX_STALE_MS = 30000 // 30 seconds
+const HEALTH_CHECK_INTERVAL_MS = 30000 // 30 seconds
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Extracts price from a Pyth price feed as a Decimal USD value
+ */
+function getPriceUsdFromFeed(feed: PriceFeed): Decimal {
+  const price = feed.getPriceUnchecked()
+  return new Decimal(price.price).mul(new Decimal(10).pow(price.expo))
+}
+
+/**
+ * Converts two Pyth price feeds to a Price<X, Y> object
+ */
+function priceFromPythFeeds<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+  feedX: PriceFeed,
+  infoX: CoinInfo<X>,
+  feedY: PriceFeed,
+  infoY: CoinInfo<Y>
+): Price<X, Y> {
+  const priceX = getPriceUsdFromFeed(feedX) // USD / X
+  const priceY = getPriceUsdFromFeed(feedY) // USD / Y
+  return Price.fromHuman(infoX, infoY, priceX.div(priceY))
+}
+
+// ============================================================================
+// Prometheus Metrics
+// ============================================================================
+
+interface OraclePrometheusMetrics {
+  websocketConnected: Gauge
+  priceUpdateCount: Counter
+  priceAgeSec: Gauge
+  onChainStalenessSec: Gauge
+  updateTriggeredCount: Counter
+  health: Gauge
+}
+
+function createOracleMetrics(meter: Meter): OraclePrometheusMetrics {
+  return {
+    websocketConnected: meter.createGauge('oracle_websocket_connected', {
+      description: 'Whether WebSocket is connected to Pyth',
+    }),
+    priceUpdateCount: meter.createCounter('oracle_price_update_count', {
+      description: 'Total price updates received',
+    }),
+    priceAgeSec: meter.createGauge('oracle_price_age_sec', {
+      description: 'Age of price feed in seconds',
+    }),
+    onChainStalenessSec: meter.createGauge('oracle_on_chain_staleness_sec', {
+      description: 'On-chain staleness in seconds',
+    }),
+    updateTriggeredCount: meter.createCounter('oracle_update_triggered_count', {
+      description: 'Number of times on-chain update was triggered',
+    }),
+    health: meter.createGauge('oracle_health', {
+      description: 'Whether oracle service is healthy (1=healthy, 0=unhealthy)',
+    }),
+  }
+}
+
+// ============================================================================
+// OracleService
+// ============================================================================
+
+/**
+ * OracleService provides centralized price management for the liquidation system.
+ *
+ * Features:
+ * - Streams prices via WebSocket from Pyth (with polling fallback)
+ * - Provides fresh margin level calculation at execution time
+ * - Tracks on-chain price staleness for update decisions
+ * - Uses Pyth as single source for both margin and asset value calculations
+ * - Per-feed staleness checking (only update feeds that are actually stale)
+ * - Stale price protection (throws if prices are too old)
+ * - Internal health monitoring with Prometheus metrics
+ *
+ * @example
+ * ```typescript
+ * const oracleService = new OracleService({
+ *   client: suiClient,
+ *   logger: logger,
+ *   mode: 'streaming',
+ * })
+ * await oracleService.start()
+ *
+ * // Get fresh price for a position (throws if stale)
+ * const price = oracleService.getPrice(position.configInfo)
+ *
+ * // Calculate margin level with fresh prices (throws if stale)
+ * const marginLevel = oracleService.calcMarginLevel(position, supplyPoolX, supplyPoolY)
+ *
+ * // Get price update data for feeds
+ * const updateInfo = await oracleService.getPriceFeedUpdateInfo([
+ *   position.configInfo.pioInfoX,
+ *   position.configInfo.pioInfoY,
+ * ])
+ * ```
+ */
+export class OracleService {
+  private readonly config: Required<Omit<OracleServiceConfig, 'meter'>> & { meter?: Meter }
+  private readonly logger: Logger
+  private readonly pythConnection: SuiPriceServiceConnection
+  private readonly feedIds: string[]
+  private readonly feedIdToPioMap: Map<string, string>
+  private readonly coinTypeToFeedId: Map<string, string> = new Map()
+
+  // Price state
+  private priceFeeds: Map<string, PriceFeed> = new Map()
+  private lastUpdateTime: Map<string, number> = new Map()
+
+  // On-chain staleness tracking
+  private onChainData: Map<string, CachedOnChainPriceData> = new Map()
+  private pythBaseUpdateFee: bigint = 0n
+
+  // Service state
+  private mode: 'streaming' | 'polling'
+  private running = false
+  private pollingInterval: ReturnType<typeof setInterval> | null = null
+  private onChainPollInterval: ReturnType<typeof setInterval> | null = null
+  private healthCheckInterval: ReturnType<typeof setInterval> | null = null
+  private priceUpdateCount = 0
+  private updateTriggeredCount = 0
+
+  // Prometheus metrics
+  private prometheusMetrics?: OraclePrometheusMetrics
+
+  constructor(config: OracleServiceConfig) {
+    this.logger = config.logger.child({ task: 'oracle_service' })
+
+    this.config = {
+      client: config.client,
+      logger: config.logger,
+      pythHermesUrl: config.pythHermesUrl ?? DEFAULT_PYTH_HERMES_URL,
+      mode: config.mode ?? 'streaming',
+      pollingIntervalMs: config.pollingIntervalMs ?? DEFAULT_POLLING_INTERVAL_MS,
+      onChainPollIntervalMs: config.onChainPollIntervalMs ?? DEFAULT_ON_CHAIN_POLL_INTERVAL_MS,
+      maxPriceStalenessSec: config.maxPriceStalenessSec ?? DEFAULT_MAX_PRICE_STALENESS_SEC,
+      meter: config.meter,
+    }
+
+    this.mode = this.config.mode
+
+    // Create Pyth connection internally
+    this.pythConnection = new SuiPriceServiceConnection(this.config.pythHermesUrl, {
+      priceFeedRequestConfig: { binary: true },
+    })
+
+    // Collect all unique feed IDs from position configs
+    const { feedIds, feedIdToPioMap } = this.collectFeedInfo()
+    this.feedIds = feedIds
+    this.feedIdToPioMap = feedIdToPioMap
+
+    // Initialize Prometheus metrics if meter provided
+    if (this.config.meter) {
+      this.prometheusMetrics = createOracleMetrics(this.config.meter)
+    }
+  }
+
+  /**
+   * Collects all unique price feed IDs and their corresponding PriceInfoObject IDs
+   * from the position configuration. Also builds coinInfo lookup by feed ID.
+   */
+  private collectFeedInfo(): { feedIds: string[]; feedIdToPioMap: Map<string, string> } {
+    const feedIdSet = new Set<string>()
+    const feedIdToPioMap = new Map<string, string>()
+
+    for (const config of POSITION_CONFIG_INFOS) {
+      const feedIdX = normalizeSuiAddress(config.pioInfoX.priceFeedId)
+      const feedIdY = normalizeSuiAddress(config.pioInfoY.priceFeedId)
+
+      feedIdSet.add(feedIdX)
+      feedIdSet.add(feedIdY)
+
+      feedIdToPioMap.set(feedIdX, config.pioInfoX.priceInfoObjectId)
+      feedIdToPioMap.set(feedIdY, config.pioInfoY.priceInfoObjectId)
+
+      // Build coin type -> feed ID lookup (supports multiple coins sharing one feed)
+      this.coinTypeToFeedId.set(config.X.typeName, feedIdX)
+      this.coinTypeToFeedId.set(config.Y.typeName, feedIdY)
+    }
+
+    return {
+      feedIds: Array.from(feedIdSet),
+      feedIdToPioMap,
+    }
+  }
+
+  /**
+   * Starts the oracle service.
+   * Begins streaming/polling prices and tracking on-chain staleness.
+   */
+  async start(): Promise<void> {
+    if (this.running) {
+      return
+    }
+
+    this.running = true
+
+    // Fetch initial prices and base update fee
+    await Promise.all([this.fetchInitialPrices(), this.fetchPythBaseUpdateFee()])
+
+    // Start price streaming/polling
+    if (this.mode === 'streaming') {
+      await this.startStreaming()
+    } else {
+      this.startPolling()
+    }
+
+    // Start on-chain staleness tracking
+    this.startOnChainPolling()
+
+    // Start internal health monitoring
+    this.startHealthMonitoring()
+
+    this.logger.info({ mode: this.mode, feedCount: this.feedIds.length }, 'OracleService started')
+  }
+
+  /**
+   * Stops the oracle service and cleans up resources.
+   */
+  stop(): void {
+    this.running = false
+
+    // Stop polling if active
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval)
+      this.pollingInterval = null
+    }
+
+    if (this.onChainPollInterval) {
+      clearInterval(this.onChainPollInterval)
+      this.onChainPollInterval = null
+    }
+
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval)
+      this.healthCheckInterval = null
+    }
+
+    // Close WebSocket connection
+    this.pythConnection.closeWebSocket()
+
+    this.logger.info('OracleService stopped')
+  }
+
+  /**
+   * Fetches initial prices from Pyth before starting streaming/polling.
+   */
+  private async fetchInitialPrices(): Promise<void> {
+    const feeds = await this.pythConnection.getLatestPriceFeeds(this.feedIds)
+
+    if (!feeds) {
+      throw new Error('Failed to fetch initial price feeds from Pyth')
+    }
+
+    const now = Date.now()
+    for (const feed of feeds) {
+      const normalizedId = normalizeSuiAddress(feed.id)
+      this.priceFeeds.set(normalizedId, feed)
+      this.lastUpdateTime.set(normalizedId, now)
+    }
+  }
+
+  /**
+   * Fetches the Pyth base update fee from on-chain state.
+   */
+  private async fetchPythBaseUpdateFee(): Promise<void> {
+    const pythStateRes = await this.config.client.getObject({
+      id: PYTH_STATE_ID,
+      options: { showBcs: true },
+    })
+
+    if (pythStateRes.error || !pythStateRes.data) {
+      throw new Error(`Failed to get Pyth state: ${pythStateRes.error}`)
+    }
+
+    this.pythBaseUpdateFee = State.fromSuiObjectData(pythStateRes.data).baseUpdateFee
+  }
+
+  /**
+   * Starts WebSocket streaming for price updates.
+   */
+  private async startStreaming(): Promise<void> {
+    await this.pythConnection.subscribePriceFeedUpdates(this.feedIds, priceFeed => {
+      const normalizedId = normalizeSuiAddress(priceFeed.id)
+      this.priceFeeds.set(normalizedId, priceFeed)
+      this.lastUpdateTime.set(normalizedId, Date.now())
+      this.priceUpdateCount++
+      this.prometheusMetrics?.priceUpdateCount.add(1)
+    })
+  }
+
+  /**
+   * Starts periodic polling for price updates.
+   */
+  private startPolling(): void {
+    this.pollingInterval = setInterval(async () => {
+      try {
+        const feeds = await this.pythConnection.getLatestPriceFeeds(this.feedIds)
+
+        if (feeds) {
+          const now = Date.now()
+          for (const feed of feeds) {
+            const normalizedId = normalizeSuiAddress(feed.id)
+            this.priceFeeds.set(normalizedId, feed)
+            this.lastUpdateTime.set(normalizedId, now)
+            this.priceUpdateCount++
+            this.prometheusMetrics?.priceUpdateCount.add(1)
+          }
+        }
+      } catch (error) {
+        this.logger.warn({ err: error }, 'Failed to poll price feeds')
+      }
+    }, this.config.pollingIntervalMs)
+  }
+
+  /**
+   * Starts periodic polling for on-chain staleness data.
+   */
+  private startOnChainPolling(): void {
+    // Initial fetch
+    void this.fetchOnChainData()
+
+    this.onChainPollInterval = setInterval(async () => {
+      await this.fetchOnChainData()
+    }, this.config.onChainPollIntervalMs)
+  }
+
+  /**
+   * Starts internal health monitoring with Prometheus metrics.
+   */
+  private startHealthMonitoring(): void {
+    this.healthCheckInterval = setInterval(() => {
+      const healthy = this.isHealthy()
+      this.prometheusMetrics?.health.record(healthy ? 1 : 0)
+
+      if (!healthy) {
+        this.logger.warn('OracleService health check failed - prices may be stale')
+      }
+
+      // Update per-feed staleness metrics
+      const now = Date.now()
+      for (const feedId of this.feedIds) {
+        const lastUpdate = this.lastUpdateTime.get(feedId)
+        const ageMs = lastUpdate ? now - lastUpdate : Infinity
+        const ageSec = ageMs === Infinity ? -1 : ageMs / 1000
+        this.prometheusMetrics?.priceAgeSec.record(ageSec, { feedId })
+
+        try {
+          const onChainAge = this.getOnChainStaleness(feedId)
+          this.prometheusMetrics?.onChainStalenessSec.record(onChainAge, { feedId })
+        } catch {
+          // Skip if no on-chain data yet
+        }
+      }
+
+      this.prometheusMetrics?.websocketConnected.record(
+        this.mode === 'streaming' && this.running ? 1 : 0
+      )
+    }, HEALTH_CHECK_INTERVAL_MS)
+  }
+
+  /**
+   * Fetches on-chain arrival times for all tracked price feeds.
+   */
+  private async fetchOnChainData(): Promise<void> {
+    try {
+      const pioIds = Array.from(this.feedIdToPioMap.values())
+      const uniquePioIds = [...new Set(pioIds)]
+
+      const objects = await this.config.client.multiGetObjects({
+        ids: uniquePioIds,
+        options: { showContent: true },
+      })
+
+      const now = Date.now()
+
+      for (let i = 0; i < uniquePioIds.length; i++) {
+        const obj = objects[i]
+        if (!obj.data?.content || obj.data.content.dataType !== 'moveObject') {
+          continue
+        }
+
+        const fields = obj.data.content.fields as {
+          price_info?: {
+            fields?: {
+              arrival_time?: string
+            }
+          }
+        }
+
+        const arrivalTime = fields?.price_info?.fields?.arrival_time
+        if (arrivalTime) {
+          // Find which feed ID(s) map to this PIO
+          for (const [feedId, pioId] of this.feedIdToPioMap.entries()) {
+            if (pioId === uniquePioIds[i]) {
+              this.onChainData.set(feedId, {
+                arrivalTimeSec: Number(arrivalTime),
+                fetchedAtMs: now,
+              })
+            }
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.warn({ err: error }, 'Failed to fetch on-chain price data')
+    }
+  }
+
+  /**
+   * Switches between streaming and polling modes.
+   * Useful for incident response when WebSocket has issues.
+   */
+  async switchMode(mode: 'streaming' | 'polling'): Promise<void> {
+    if (mode === this.mode) {
+      return
+    }
+
+    // Stop current mode
+    if (this.mode === 'streaming') {
+      this.pythConnection.closeWebSocket()
+    } else {
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval)
+        this.pollingInterval = null
+      }
+    }
+
+    // Start new mode
+    this.mode = mode
+    if (mode === 'streaming') {
+      await this.startStreaming()
+    } else {
+      this.startPolling()
+    }
+
+    this.logger.info({ mode }, 'OracleService switched mode')
+  }
+
+  /**
+   * Validates that a price feed is fresh enough for use.
+   * Throws if the price is stale.
+   */
+  private assertPriceFresh(feedId: string): void {
+    const normalizedId = normalizeSuiAddress(feedId)
+    const lastUpdate = this.lastUpdateTime.get(normalizedId)
+
+    if (!lastUpdate) {
+      throw new Error(`No price data available for feed ${feedId}`)
+    }
+
+    const ageMs = Date.now() - lastUpdate
+    const ageSec = ageMs / 1000
+
+    if (ageSec > this.config.maxPriceStalenessSec) {
+      throw new Error(
+        `Price feed ${feedId} is stale: ${ageSec.toFixed(1)}s old, max allowed ${this.config.maxPriceStalenessSec}s`
+      )
+    }
+  }
+
+  /**
+   * Gets the cached price feed for a given feed ID.
+   * Throws if the feed is not available.
+   */
+  getPriceFeed(feedId: string): PriceFeed {
+    const normalizedId = normalizeSuiAddress(feedId)
+    const feed = this.priceFeeds.get(normalizedId)
+    if (!feed) {
+      throw new Error(`Price feed not found for ${feedId}`)
+    }
+    return feed
+  }
+
+  /**
+   * Gets the pool price (X/Y) for a position config using cached Pyth feeds.
+   * Throws if either price feed is stale.
+   */
+  getPrice<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    configInfo: PositionConfigInfo<X, Y, TypeArgument>
+  ): Price<X, Y> {
+    const feedIdX = normalizeSuiAddress(configInfo.pioInfoX.priceFeedId)
+    const feedIdY = normalizeSuiAddress(configInfo.pioInfoY.priceFeedId)
+
+    // Validate freshness before returning
+    this.assertPriceFresh(feedIdX)
+    this.assertPriceFresh(feedIdY)
+
+    const feedX = this.priceFeeds.get(feedIdX)
+    const feedY = this.priceFeeds.get(feedIdY)
+
+    if (!feedX) {
+      throw new Error(`Price feed X not found for config ${configInfo.name}`)
+    }
+    if (!feedY) {
+      throw new Error(`Price feed Y not found for config ${configInfo.name}`)
+    }
+
+    return priceFromPythFeeds(feedX, configInfo.X, feedY, configInfo.Y)
+  }
+
+  /**
+   * Gets the USD price for a coin using cached Pyth feeds.
+   * Throws if the price feed is stale.
+   * Returns the price in USD as a Decimal.
+   */
+  getAssetPriceUsd<T extends PhantomTypeArgument>(coinInfo: CoinInfo<T>): Decimal {
+    const feedId = this.coinTypeToFeedId.get(coinInfo.typeName)
+    if (!feedId) {
+      throw new Error(`No Pyth feed found for coin ${coinInfo.typeName}`)
+    }
+
+    this.assertPriceFresh(feedId)
+
+    const feed = this.priceFeeds.get(feedId)
+    if (!feed) {
+      throw new Error(`Price feed data not available for ${feedId}`)
+    }
+
+    return getPriceUsdFromFeed(feed)
+  }
+
+  /**
+   * Calculates the margin level for a position using fresh prices.
+   * This should be called at execution time for the most accurate result.
+   * Throws if prices are stale.
+   */
+  calcMarginLevel<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    position: Position<X, Y, TypeArgument>,
+    supplyPoolX: SupplyPool<X, PhantomTypeArgument>,
+    supplyPoolY: SupplyPool<Y, PhantomTypeArgument>
+  ): Decimal {
+    // getPrice already validates freshness
+    const currentPrice = this.getPrice(position.configInfo)
+
+    return position.calcMarginLevel({
+      currentPrice,
+      supplyPoolX,
+      supplyPoolY,
+      timestampMs: Date.now(),
+    })
+  }
+
+  /**
+   * Calculates the asset value of a position in USD using fresh Pyth prices.
+   * Throws if prices are stale.
+   *
+   * Note: Uses oracle (Pyth) price as the X/Y exchange rate, not the pool (CLMM) price.
+   * The pool price determines the true asset ratio in a concentrated liquidity position,
+   * but we use oracle price for simplicity.
+   */
+  calcAssetValueUsd<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    position: Position<X, Y, TypeArgument>
+  ): Decimal {
+    const poolPrice = this.getPrice(position.configInfo)
+    const xPriceUsd = this.getAssetPriceUsd(position.X)
+    const yPriceUsd = this.getAssetPriceUsd(position.Y)
+
+    const xPriceT = Price.fromHuman(position.X, USDC, xPriceUsd)
+    const yPriceT = Price.fromHuman(position.Y, USDC, yPriceUsd)
+
+    const assetValue = position.calcAssetValue({
+      poolPrice,
+      xPriceT,
+      yPriceT,
+    })
+
+    return Amount.fromInt(assetValue, USDC.decimals).toDecimal()
+  }
+
+  /**
+   * Gets price feed update info for the specified feeds.
+   * Async because it fetches update data from Pyth.
+   *
+   * @param feeds - PriceFeedInfo objects to get update data for
+   * @returns Price feed update info for building transactions
+   */
+  async getPriceFeedUpdateInfo(
+    feeds: PriceFeedInfo<PhantomTypeArgument>[]
+  ): Promise<PriceFeedUpdateInfo> {
+    if (feeds.length === 0) {
+      throw new Error('No feeds to update')
+    }
+
+    const feedIds = feeds.map(f => normalizeSuiAddress(f.priceFeedId))
+    const priceInfoObjectIds = feeds.map(f => f.priceInfoObjectId)
+
+    const priceFeeds: PriceFeed[] = []
+    for (const feedId of feedIds) {
+      const feed = this.priceFeeds.get(feedId)
+      if (!feed) {
+        throw new Error(`Price feed not found for ${feedId}`)
+      }
+      priceFeeds.push(feed)
+    }
+
+    const priceFeedsUpdateData = await this.pythConnection.getPriceFeedsUpdateData(feedIds)
+
+    return {
+      feedIds,
+      priceInfoObjectIds,
+      priceFeeds,
+      priceFeedsUpdateData,
+      baseUpdateFee: this.pythBaseUpdateFee,
+    }
+  }
+
+  /**
+   * Fetches fresh on-chain PIO data for a position config.
+   * This bypasses the cached on-chain data and fetches directly from RPC.
+   */
+  async fetchFreshOnChainPrices<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    configInfo: PositionConfigInfo<X, Y, TypeArgument>
+  ): Promise<OnChainPriceData> {
+    const [pioX, pioY] = await Promise.all([
+      configInfo.pioInfoX.fetchPioData(this.config.client),
+      configInfo.pioInfoY.fetchPioData(this.config.client),
+    ])
+
+    const nowSec = Math.floor(Date.now() / 1000)
+    const stalenessXSec = nowSec - Number(pioX.data.priceInfo.priceFeed.price.timestamp)
+    const stalenessYSec = nowSec - Number(pioY.data.priceInfo.priceFeed.price.timestamp)
+
+    const price = pythPrice(pioX, pioY)
+
+    return {
+      pioX: pioX as PriceInfoObject<PhantomTypeArgument>,
+      pioY: pioY as PriceInfoObject<PhantomTypeArgument>,
+      stalenessXSec,
+      stalenessYSec,
+      price: price as Price<PhantomTypeArgument, PhantomTypeArgument>,
+    }
+  }
+
+  /**
+   * Calculates margin level using on-chain PIO data (not streaming prices).
+   */
+  calcMarginLevelFromOnChain<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    position: Position<X, Y, TypeArgument>,
+    supplyPoolX: SupplyPool<X, PhantomTypeArgument>,
+    supplyPoolY: SupplyPool<Y, PhantomTypeArgument>,
+    onChainData: OnChainPriceData
+  ): Decimal {
+    return position.calcMarginLevel({
+      currentPrice: onChainData.price as Price<X, Y>,
+      supplyPoolX,
+      supplyPoolY,
+      timestampMs: Date.now(),
+    })
+  }
+
+  /**
+   * Gets the on-chain staleness (in seconds) for a specific feed.
+   * Returns how long ago the price was updated on-chain.
+   * Throws if no on-chain data is available.
+   */
+  getOnChainStaleness(feedId: string): number {
+    const normalizedId = normalizeSuiAddress(feedId)
+    const data = this.onChainData.get(normalizedId)
+
+    if (!data) {
+      throw new Error(
+        `No on-chain data available for feed ${feedId}. Has fetchOnChainData() completed?`
+      )
+    }
+
+    const nowSec = Math.floor(Date.now() / 1000)
+    return nowSec - data.arrivalTimeSec
+  }
+
+  /**
+   * Checks if the oracle service is healthy.
+   * Returns false if any price feed hasn't updated in 30 seconds.
+   */
+  isHealthy(): boolean {
+    if (!this.running) {
+      return false
+    }
+
+    const now = Date.now()
+
+    for (const feedId of this.feedIds) {
+      const lastUpdate = this.lastUpdateTime.get(feedId)
+      if (!lastUpdate || now - lastUpdate > HEALTH_CHECK_MAX_STALE_MS) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * Gets metrics about the oracle service state.
+   */
+  getMetrics(): OracleMetrics {
+    const feedStaleness = new Map<string, number>()
+    const onChainStaleness = new Map<string, number>()
+    const now = Date.now()
+
+    for (const feedId of this.feedIds) {
+      const lastUpdate = this.lastUpdateTime.get(feedId)
+      feedStaleness.set(feedId, lastUpdate ? (now - lastUpdate) / 1000 : Infinity)
+
+      try {
+        const onChainStale = this.getOnChainStaleness(feedId)
+        onChainStaleness.set(feedId, onChainStale)
+      } catch {
+        onChainStaleness.set(feedId, Infinity)
+      }
+    }
+
+    return {
+      websocketConnected: this.mode === 'streaming' && this.running,
+      priceUpdateCount: this.priceUpdateCount,
+      feedStaleness,
+      onChainStaleness,
+      updateTriggeredCount: this.updateTriggeredCount,
+      healthy: this.isHealthy(),
+    }
+  }
+}

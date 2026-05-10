@@ -1,9 +1,4 @@
-import {
-  Transaction,
-  TransactionArgument,
-  TransactionObjectInput,
-  TransactionResult,
-} from '@mysten/sui/transactions'
+import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/sui/transactions'
 import { ProtocolHandler } from './protocol-handler'
 import { Position } from '../../../lp/position'
 import { TypeArgument, PhantomTypeArgument } from '../../../gen/_framework/reified'
@@ -16,7 +11,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     tx: Transaction,
     position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
     priceInfo: TransactionObjectInput
-  ) {
+  ): void {
     cetus.deleverageForLiquidation(
       tx,
       [

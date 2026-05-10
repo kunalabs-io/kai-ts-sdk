@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -15,9 +16,13 @@ export interface NewArgs {
 }
 
 /** Create new `GuardianSignature`. */
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::new`,
     arguments: [
       obj(tx, args.r),
       obj(tx, args.s),
@@ -28,41 +33,61 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
 }
 
 /** 32-byte signature parameter R. */
-export function r(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function r(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::r`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::r`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** 32-byte signature parameter S. */
-export function s(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function s(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::s`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::s`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Signature recovery ID. */
-export function recoveryId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function recoveryId(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::recovery_id`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::recovery_id`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Guardian index. */
-export function index(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function index(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::index`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::index`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Guardian index as u64. */
-export function indexAsU64(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function indexAsU64(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::index_as_u64`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::index_as_u64`,
     arguments: [obj(tx, self)],
   })
 }
@@ -71,9 +96,13 @@ export function indexAsU64(tx: Transaction, self: TransactionObjectInput): Trans
  * Serialize elliptic curve paramters as `vector<u8>` of length == 65 to be
  * consumed by `ecdsa_k1` for public key recovery.
  */
-export function toRsv(tx: Transaction, gs: TransactionObjectInput): TransactionResult {
+export function toRsv(
+  tx: Transaction,
+  gs: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_signature::to_rsv`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_signature::to_rsv`,
     arguments: [obj(tx, gs)],
   })
 }

@@ -4,15 +4,17 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 export function authorizeGovernance(
   tx: Transaction,
   wormholeState: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::set_fee::authorize_governance`,
+    target: `${getPublishedAt('wormhole', options?.env)}::set_fee::authorize_governance`,
     arguments: [obj(tx, wormholeState)],
   })
 }
@@ -31,9 +33,13 @@ export interface SetFeeArgs {
  * NOTE: This method is guarded by a minimum build version check. This
  * method could break backward compatibility on an upgrade.
  */
-export function setFee(tx: Transaction, args: SetFeeArgs): TransactionResult {
+export function setFee(
+  tx: Transaction,
+  args: SetFeeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::set_fee::set_fee`,
+    target: `${getPublishedAt('wormhole', options?.env)}::set_fee::set_fee`,
     arguments: [
       obj(tx, args.wormholeState),
       obj(tx, args.receipt),
@@ -44,9 +50,10 @@ export function setFee(tx: Transaction, args: SetFeeArgs): TransactionResult {
 export function deserialize(
   tx: Transaction,
   payload: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::set_fee::deserialize`,
+    target: `${getPublishedAt('wormhole', options?.env)}::set_fee::deserialize`,
     arguments: [pure(tx, payload, `vector<u8>`)],
   })
 }

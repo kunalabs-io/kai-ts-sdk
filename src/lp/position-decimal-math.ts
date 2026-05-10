@@ -144,7 +144,7 @@ export class PositionDecimalMath {
     this.DY = args.DY
   }
 
-  static forNewPosition(args: PositionDecimalMathForNewPositionArgs) {
+  static forNewPosition(args: PositionDecimalMathForNewPositionArgs): PositionDecimalMath {
     const pa = new Decimal(tickIndexToSqrtPriceX64(args.tickA).toString())
       .pow(2)
       .div((1n << 128n).toString())
@@ -172,7 +172,7 @@ export class PositionDecimalMath {
     })
   }
 
-  static fromPositionModel(args: PositionModel) {
+  static fromPositionModel(args: PositionModel): PositionDecimalMath {
     const pa = new Decimal(((args.sqrtPaX64 ** 2n) >> 128n).toString())
     const pb = new Decimal(((args.sqrtPbX64 ** 2n) >> 128n).toString())
 
@@ -201,21 +201,21 @@ export class PositionDecimalMath {
     return L.mul(sqrtP.sub(sqrtPa))
   }
 
-  static calcLiqFromAmountX(pa: Decimal, pb: Decimal, p: Decimal, amountX: Decimal) {
+  static calcLiqFromAmountX(pa: Decimal, pb: Decimal, p: Decimal, amountX: Decimal): Decimal {
     const sqrtP = Decimal.max(Decimal.min(p, pb), pa).sqrt()
     const sqrtPb = pb.sqrt()
 
     return amountX.mul(sqrtP.mul(sqrtPb)).div(sqrtPb.sub(sqrtP))
   }
 
-  static calcLiqFromAmountY(pa: Decimal, pb: Decimal, p: Decimal, amountY: Decimal) {
+  static calcLiqFromAmountY(pa: Decimal, pb: Decimal, p: Decimal, amountY: Decimal): Decimal {
     const sqrtP = Decimal.max(Decimal.min(p, pb), pa).sqrt()
     const sqrtPa = pa.sqrt()
 
     return amountY.div(sqrtP.sub(sqrtPa))
   }
 
-  X(p: Decimal) {
+  X(p: Decimal): Decimal {
     return PositionDecimalMath.X(this.pa, this.pb, p, this.L)
   }
 
@@ -243,7 +243,7 @@ export class PositionDecimalMath {
     return this.A(p).div(D)
   }
 
-  leverage(p: Decimal) {
+  leverage(p: Decimal): Decimal {
     const A = this.A(p)
     const D = this.D(p)
     const E = A.minus(D)

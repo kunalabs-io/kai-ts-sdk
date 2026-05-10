@@ -1,3 +1,15 @@
+/**
+ * This module implements serialization and deserialization for token transfer
+ * with an optional relayer fee. This message is a specific Wormhole message
+ * payload for Token Bridge.
+ *
+ * When this transfer is redeemed, the relayer fee will be subtracted from the
+ * transfer amount. If the transaction sender is the same address of the
+ * recipient, the recipient will collect the full amount.
+ *
+ * See `transfer_tokens` and `complete_transfer` modules for more details.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -56,6 +68,10 @@ export type TransferJSON = {
   $typeArgs: []
 } & TransferJSONField
 
+/**
+ * Container that warehouses transfer information. This struct is used only
+ * by `transfer_tokens` and `complete_transfer` modules.
+ */
 export class Transfer implements StructClass {
   __StructClass = true as const
 

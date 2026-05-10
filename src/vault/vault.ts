@@ -110,7 +110,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     ticket: TransactionObjectInput,
     weights: VaultTargetWeightsItem[],
     vaultCap: TransactionObjectInput
-  ) {
+  ): void {
     removeStrategy(tx, [this.T.typeName, this.YT.typeName], {
       cap: vaultCap,
       vault: this.id,
@@ -125,7 +125,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     tx: Transaction,
     weights: VaultTargetWeightsItem[],
     vaultCap?: TransactionObjectInput
-  ) {
+  ): void {
     if (!vaultCap) {
       vaultCap = this.capId
     }
@@ -138,7 +138,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     })
   }
 
-  setTvlCap(tx: Transaction, tvlCapAmount: Amount | null, vaultCap?: TransactionObjectInput) {
+  setTvlCap(tx: Transaction, tvlCapAmount: Amount | null, vaultCap?: TransactionObjectInput): void {
     if (tvlCapAmount !== null && tvlCapAmount?.decimals !== this.T.decimals) {
       throw new Error('invalid amount: decimals mismatch')
     }
@@ -193,7 +193,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
    * @param walletAddress - The address of the wallet depositing the underlying asset.
    * @param amount - The amount of the underlying asset to deposit.
    */
-  async depositFromWallet(tx: Transaction, walletAddress: string, amount: Amount) {
+  async depositFromWallet(tx: Transaction, walletAddress: string, amount: Amount): Promise<void> {
     if (amount.decimals !== this.T.decimals) {
       throw new Error('invalid amount: decimals mismatch')
     }
@@ -255,7 +255,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     tAmt: Amount,
     balance: TransactionObjectInput,
     strategies: WithdrawableStrategy[]
-  ) {
+  ): TransactionResult {
     const ticket = withdrawTAmt(tx, [this.T.typeName, this.YT.typeName], {
       vault: this.id,
       tAmt: tAmt.int,
@@ -287,7 +287,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     walletAddress: string,
     amount: Amount,
     strategies: WithdrawableStrategy[]
-  ) {
+  ): Promise<void> {
     if (amount.decimals !== this.YT.decimals) {
       throw new Error('invalid amount: decimals mismatch')
     }
@@ -322,7 +322,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     walletAddress: string,
     amount: Amount,
     strategies: WithdrawableStrategy[]
-  ) {
+  ): Promise<void> {
     if (amount.decimals !== this.T.decimals) {
       throw new Error('invalid amount: decimals mismatch')
     }
@@ -373,7 +373,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     tx: Transaction,
     walletAddress: string,
     strategies: WithdrawableStrategy[]
-  ) {
+  ): Promise<void> {
     const ytBalance = await client.getBalance({ owner: walletAddress, coinType: this.YT.typeName })
     await this.withdrawToWalletYT(
       tx,

@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -14,9 +15,13 @@ export interface MuldivArgs {
 }
 
 /** Multiply and divide u64 values. */
-export function muldiv(tx: Transaction, args: MuldivArgs): TransactionResult {
+export function muldiv(
+  tx: Transaction,
+  args: MuldivArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::muldiv`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::muldiv`,
     arguments: [
       pure(tx, args.a, `u64`),
       pure(tx, args.b, `u64`),
@@ -32,9 +37,13 @@ export interface MuldivRoundUpArgs {
 }
 
 /** Multiply and divide with rounding up. */
-export function muldivRoundUp(tx: Transaction, args: MuldivRoundUpArgs): TransactionResult {
+export function muldivRoundUp(
+  tx: Transaction,
+  args: MuldivRoundUpArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::muldiv_round_up`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::muldiv_round_up`,
     arguments: [
       pure(tx, args.a, `u64`),
       pure(tx, args.b, `u64`),
@@ -50,9 +59,13 @@ export interface MuldivU128Args {
 }
 
 /** Multiply and divide u128 values. */
-export function muldivU128(tx: Transaction, args: MuldivU128Args): TransactionResult {
+export function muldivU128(
+  tx: Transaction,
+  args: MuldivU128Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::muldiv_u128`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::muldiv_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -68,9 +81,13 @@ export interface MuldivRoundUpU128Args {
 }
 
 /** Multiply and divide u128 values with rounding up. */
-export function muldivRoundUpU128(tx: Transaction, args: MuldivRoundUpU128Args): TransactionResult {
+export function muldivRoundUpU128(
+  tx: Transaction,
+  args: MuldivRoundUpU128Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::muldiv_round_up_u128`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::muldiv_round_up_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -89,9 +106,12 @@ export interface SaturatingMuldivRoundUpU128Args {
 export function saturatingMuldivRoundUpU128(
   tx: Transaction,
   args: SaturatingMuldivRoundUpU128Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::saturating_muldiv_round_up_u128`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::util::saturating_muldiv_round_up_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -109,9 +129,10 @@ export interface DivideAndRoundUpU128Args {
 export function divideAndRoundUpU128(
   tx: Transaction,
   args: DivideAndRoundUpU128Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::divide_and_round_up_u128`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::divide_and_round_up_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -128,9 +149,10 @@ export interface DivideAndRoundUpU256Args {
 export function divideAndRoundUpU256(
   tx: Transaction,
   args: DivideAndRoundUpU256Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::divide_and_round_up_u256`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::divide_and_round_up_u256`,
     arguments: [
       pure(tx, args.a, `u256`),
       pure(tx, args.b, `u256`),
@@ -144,9 +166,13 @@ export interface AbsDiffArgs {
 }
 
 /** Calculate absolute difference between two numbers. */
-export function absDiff(tx: Transaction, args: AbsDiffArgs): TransactionResult {
+export function absDiff(
+  tx: Transaction,
+  args: AbsDiffArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::abs_diff`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::abs_diff`,
     arguments: [
       pure(tx, args.a, `u64`),
       pure(tx, args.b, `u64`),
@@ -160,9 +186,13 @@ export interface MinU128Args {
 }
 
 /** Get minimum of two 128-bit values. */
-export function minU128(tx: Transaction, args: MinU128Args): TransactionResult {
+export function minU128(
+  tx: Transaction,
+  args: MinU128Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::min_u128`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::min_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -176,9 +206,13 @@ export interface MaxU128Args {
 }
 
 /** Get maximum of two 128-bit values. */
-export function maxU128(tx: Transaction, args: MaxU128Args): TransactionResult {
+export function maxU128(
+  tx: Transaction,
+  args: MaxU128Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::max_u128`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::max_u128`,
     arguments: [
       pure(tx, args.a, `u128`),
       pure(tx, args.b, `u128`),
@@ -192,9 +226,13 @@ export interface MinU256Args {
 }
 
 /** Get minimum of two 256-bit values. */
-export function minU256(tx: Transaction, args: MinU256Args): TransactionResult {
+export function minU256(
+  tx: Transaction,
+  args: MinU256Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::min_u256`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::min_u256`,
     arguments: [
       pure(tx, args.a, `u256`),
       pure(tx, args.b, `u256`),
@@ -208,9 +246,13 @@ export interface MaxU256Args {
 }
 
 /** Get maximum of two 256-bit values. */
-export function maxU256(tx: Transaction, args: MaxU256Args): TransactionResult {
+export function maxU256(
+  tx: Transaction,
+  args: MaxU256Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::max_u256`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::max_u256`,
     arguments: [
       pure(tx, args.a, `u256`),
       pure(tx, args.b, `u256`),
@@ -219,25 +261,37 @@ export function maxU256(tx: Transaction, args: MaxU256Args): TransactionResult {
 }
 
 /** Calculate base-2 logarithm of a 256-bit value. */
-export function log2U256(tx: Transaction, x: bigint | TransactionArgument): TransactionResult {
+export function log2U256(
+  tx: Transaction,
+  x: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::log2_u256`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::log2_u256`,
     arguments: [pure(tx, x, `u256`)],
   })
 }
 
 /** Calculate square root of a 256-bit value. */
-export function sqrtU256(tx: Transaction, x: bigint | TransactionArgument): TransactionResult {
+export function sqrtU256(
+  tx: Transaction,
+  x: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::sqrt_u256`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::sqrt_u256`,
     arguments: [pure(tx, x, `u256`)],
   })
 }
 
 /** Get current clock timestamp in seconds. */
-export function timestampSec(tx: Transaction, clock: TransactionObjectInput): TransactionResult {
+export function timestampSec(
+  tx: Transaction,
+  clock: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::util::timestamp_sec`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::util::timestamp_sec`,
     arguments: [obj(tx, clock)],
   })
 }

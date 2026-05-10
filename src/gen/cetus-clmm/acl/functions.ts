@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -12,9 +13,9 @@ import { obj, pure } from '../../_framework/util'
  * * `ctx` - Transaction context used to create the LinkedTable
  * Returns an empty ACL with no members or permissions
  */
-export function new_(tx: Transaction): TransactionResult {
+export function new_(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::new`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::new`,
     arguments: [],
   })
 }
@@ -32,9 +33,13 @@ export interface HasRoleArgs {
  * * `role` - The role to check for
  * Returns true if the member has the role, false otherwise
  */
-export function hasRole(tx: Transaction, args: HasRoleArgs): TransactionResult {
+export function hasRole(
+  tx: Transaction,
+  args: HasRoleArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::has_role`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::has_role`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.member, `address`),
@@ -55,9 +60,13 @@ export interface SetRolesArgs {
  * * `member` - The address of the member to set roles for
  * * `permissions` - Permissions for the member, represented as a `u128` with each bit representing the presence of (or lack of) each role
  */
-export function setRoles(tx: Transaction, args: SetRolesArgs): TransactionResult {
+export function setRoles(
+  tx: Transaction,
+  args: SetRolesArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::set_roles`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::set_roles`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.member, `address`),
@@ -78,9 +87,13 @@ export interface AddRoleArgs {
  * * `member` - The address of the member to add the role to
  * * `role` - The role to add
  */
-export function addRole(tx: Transaction, args: AddRoleArgs): TransactionResult {
+export function addRole(
+  tx: Transaction,
+  args: AddRoleArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::add_role`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::add_role`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.member, `address`),
@@ -101,9 +114,13 @@ export interface RemoveRoleArgs {
  * * `member` - The address of the member to remove the role from
  * * `role` - The role to remove
  */
-export function removeRole(tx: Transaction, args: RemoveRoleArgs): TransactionResult {
+export function removeRole(
+  tx: Transaction,
+  args: RemoveRoleArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::remove_role`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::remove_role`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.member, `address`),
@@ -122,9 +139,13 @@ export interface RemoveMemberArgs {
  * * `acl` - The ACL instance to update
  * * `member` - The address of the member to remove
  */
-export function removeMember(tx: Transaction, args: RemoveMemberArgs): TransactionResult {
+export function removeMember(
+  tx: Transaction,
+  args: RemoveMemberArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::remove_member`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::remove_member`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.member, `address`),
@@ -137,9 +158,13 @@ export function removeMember(tx: Transaction, args: RemoveMemberArgs): Transacti
  * * `acl` - The ACL instance to get members from
  * Returns a vector of all members in the ACL
  */
-export function getMembers(tx: Transaction, acl: TransactionObjectInput): TransactionResult {
+export function getMembers(
+  tx: Transaction,
+  acl: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::get_members`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::get_members`,
     arguments: [obj(tx, acl)],
   })
 }
@@ -155,9 +180,13 @@ export interface GetPermissionArgs {
  * * `address` - The address of the member to get permission for
  * Returns the permission of the member
  */
-export function getPermission(tx: Transaction, args: GetPermissionArgs): TransactionResult {
+export function getPermission(
+  tx: Transaction,
+  args: GetPermissionArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-clmm')}::acl::get_permission`,
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::acl::get_permission`,
     arguments: [
       obj(tx, args.acl),
       pure(tx, args.address, `address`),

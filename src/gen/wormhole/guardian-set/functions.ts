@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure, vector } from '../../_framework/util'
 import { Guardian } from '../guardian/structs'
@@ -14,9 +15,13 @@ export interface NewArgs {
 }
 
 /** Create new `GuardianSet`. */
-export function new_(tx: Transaction, args: NewArgs): TransactionResult {
+export function new_(
+  tx: Transaction,
+  args: NewArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::new`,
     arguments: [
       pure(tx, args.index, `u32`),
       vector(tx, `${Guardian.$typeName}`, args.guardians),
@@ -25,9 +30,13 @@ export function new_(tx: Transaction, args: NewArgs): TransactionResult {
 }
 
 /** Retrieve the Guardian set index. */
-export function index(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function index(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::index`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::index`,
     arguments: [obj(tx, self)],
   })
 }
@@ -36,17 +45,25 @@ export function index(tx: Transaction, self: TransactionObjectInput): Transactio
  * Retrieve the Guardian set index as `u64` (for convenience when used to
  * compare to indices for iterations, which are natively `u64`).
  */
-export function indexAsU64(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function indexAsU64(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::index_as_u64`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::index_as_u64`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Retrieve list of Guardians. */
-export function guardians(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function guardians(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::guardians`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::guardians`,
     arguments: [obj(tx, self)],
   })
 }
@@ -57,9 +74,13 @@ export interface GuardianAtArgs {
 }
 
 /** Retrieve specific Guardian by index (in the array representing the set). */
-export function guardianAt(tx: Transaction, args: GuardianAtArgs): TransactionResult {
+export function guardianAt(
+  tx: Transaction,
+  args: GuardianAtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::guardian_at`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::guardian_at`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.index, `u64`),
@@ -71,9 +92,10 @@ export function guardianAt(tx: Transaction, args: GuardianAtArgs): TransactionRe
 export function expirationTimestampMs(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::expiration_timestamp_ms`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::expiration_timestamp_ms`,
     arguments: [obj(tx, self)],
   })
 }
@@ -87,9 +109,13 @@ export interface IsActiveArgs {
  * Retrieve whether this Guardian set is still active by checking the
  * current time.
  */
-export function isActive(tx: Transaction, args: IsActiveArgs): TransactionResult {
+export function isActive(
+  tx: Transaction,
+  args: IsActiveArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::is_active`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::is_active`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.clock),
@@ -98,17 +124,25 @@ export function isActive(tx: Transaction, args: IsActiveArgs): TransactionResult
 }
 
 /** Retrieve how many guardians exist in the Guardian set. */
-export function numGuardians(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function numGuardians(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::num_guardians`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::num_guardians`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Returns the minimum number of signatures required for a VAA to be valid. */
-export function quorum(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function quorum(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::quorum`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::quorum`,
     arguments: [obj(tx, self)],
   })
 }
@@ -126,9 +160,13 @@ export interface SetExpirationArgs {
  * NOTE: `time_to_live` is in units of seconds while `Clock` uses
  * milliseconds.
  */
-export function setExpiration(tx: Transaction, args: SetExpirationArgs): TransactionResult {
+export function setExpiration(
+  tx: Transaction,
+  args: SetExpirationArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian_set::set_expiration`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian_set::set_expiration`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.secondsToLive, `u32`),

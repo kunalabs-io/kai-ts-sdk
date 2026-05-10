@@ -1,3 +1,8 @@
+/**
+ * This module implements the mechanism to publish the Token Bridge contract
+ * and initialize `State` as a shared object.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -45,6 +50,11 @@ export type DeployerCapJSON = {
   $typeArgs: []
 } & DeployerCapJSONField
 
+/**
+ * Capability created at `init`, which will be destroyed once
+ * `init_and_share_state` is called. This ensures only the deployer can
+ * create the shared `State`.
+ */
 export class DeployerCap implements StructClass {
   __StructClass = true as const
 

@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -18,9 +19,13 @@ export interface AuthorizeUpgradeArgs {
  * because a contract upgrade is only relevant to one particular network
  * (in this case Sui), whose build digest is encoded in this message.
  */
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): TransactionResult {
+export function authorizeUpgrade(
+  tx: Transaction,
+  args: AuthorizeUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::authorize_upgrade`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::authorize_upgrade`,
     arguments: [
       obj(tx, args.pythState),
       obj(tx, args.receipt),
@@ -31,9 +36,10 @@ export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): T
 export function takeUpgradeDigest(
   tx: Transaction,
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::take_upgrade_digest`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::take_upgrade_digest`,
     arguments: [obj(tx, receipt)],
   })
 }
@@ -48,9 +54,13 @@ export interface CommitUpgradeArgs {
  * method invokes `state::commit_upgrade` which interacts with
  * `sui::package`.
  */
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): TransactionResult {
+export function commitUpgrade(
+  tx: Transaction,
+  args: CommitUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::commit_upgrade`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::commit_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.receipt),
@@ -67,9 +77,10 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): Transac
 export function takeDigest(
   tx: Transaction,
   governancePayload: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::take_digest`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::take_digest`,
     arguments: [pure(tx, governancePayload, `vector<u8>`)],
   })
 }
@@ -82,9 +93,10 @@ export interface HandleUpgradeContractArgs {
 export function handleUpgradeContract(
   tx: Transaction,
   args: HandleUpgradeContractArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::handle_upgrade_contract`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::handle_upgrade_contract`,
     arguments: [
       obj(tx, args.pythState),
       obj(tx, args.digest),
@@ -95,9 +107,10 @@ export function handleUpgradeContract(
 export function deserialize(
   tx: Transaction,
   payload: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('pyth')}::contract_upgrade::deserialize`,
+    target: `${getPublishedAt('pyth', options?.env)}::contract_upgrade::deserialize`,
     arguments: [pure(tx, payload, `vector<u8>`)],
   })
 }

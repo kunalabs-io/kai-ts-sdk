@@ -1,3 +1,12 @@
+/**
+ * This module implements two custom types relating to Token Bridge wrapped
+ * assets. These assets have been attested from foreign networks, whose
+ * metadata is stored in `ForeignInfo`. The Token Bridge contract is the
+ * only authority that can mint and burn these assets via `Supply`.
+ *
+ * See `create_wrapped` and 'token_registry' modules for more details.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -43,31 +52,32 @@ export function isForeignInfo(type: string): boolean {
   )
 }
 
-export interface ForeignInfoFields<T0 extends PhantomTypeArgument> {
+export interface ForeignInfoFields<C extends PhantomTypeArgument> {
   tokenChain: ToField<'u16'>
   tokenAddress: ToField<ExternalAddress>
   nativeDecimals: ToField<'u8'>
   symbol: ToField<String>
 }
 
-export type ForeignInfoReified<T0 extends PhantomTypeArgument> = Reified<
-  ForeignInfo<T0>,
-  ForeignInfoFields<T0>
+export type ForeignInfoReified<C extends PhantomTypeArgument> = Reified<
+  ForeignInfo<C>,
+  ForeignInfoFields<C>
 >
 
-export type ForeignInfoJSONField<T0 extends PhantomTypeArgument> = {
+export type ForeignInfoJSONField<C extends PhantomTypeArgument> = {
   tokenChain: number
   tokenAddress: ToJSON<ExternalAddress>
   nativeDecimals: number
   symbol: string
 }
 
-export type ForeignInfoJSON<T0 extends PhantomTypeArgument> = {
+export type ForeignInfoJSON<C extends PhantomTypeArgument> = {
   $typeName: typeof ForeignInfo.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & ForeignInfoJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<C>]
+} & ForeignInfoJSONField<C>
 
-export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass {
+/** Container storing foreign asset info. */
+export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::wrapped_asset::ForeignInfo` = `${
@@ -77,8 +87,8 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof ForeignInfo.$typeName = ForeignInfo.$typeName
-  readonly $fullTypeName: `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<C>}>`
+  readonly $typeArgs: [PhantomToTypeStr<C>]
   readonly $isPhantom: typeof ForeignInfo.$isPhantom = ForeignInfo.$isPhantom
 
   readonly tokenChain: ToField<'u16'>
@@ -86,11 +96,11 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
   readonly nativeDecimals: ToField<'u8'>
   readonly symbol: ToField<String>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: ForeignInfoFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<C>], fields: ForeignInfoFields<C>) {
     this.$fullTypeName = composeSuiType(
       ForeignInfo.$typeName,
       ...typeArgs,
-    ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<C>}>`
     this.$typeArgs = typeArgs
 
     this.tokenChain = fields.tokenChain
@@ -99,30 +109,30 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     this.symbol = fields.symbol
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): ForeignInfoReified<ToPhantomTypeArgument<T0>> {
+  static reified<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): ForeignInfoReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = ForeignInfo.bcs
     return {
       typeName: ForeignInfo.$typeName,
       fullTypeName: composeSuiType(
         ForeignInfo.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(C)],
+      ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
+      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
       isPhantom: ForeignInfo.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => ForeignInfo.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => ForeignInfo.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => ForeignInfo.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [C],
+      fromFields: (fields: Record<string, any>) => ForeignInfo.fromFields(C, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => ForeignInfo.fromFieldsWithTypes(C, item),
+      fromBcs: (data: Uint8Array) => ForeignInfo.fromFields(C, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => ForeignInfo.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => ForeignInfo.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => ForeignInfo.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => ForeignInfo.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => ForeignInfo.fetch(client, T0, id),
-      new: (fields: ForeignInfoFields<ToPhantomTypeArgument<T0>>) => {
-        return new ForeignInfo([extractType(T0)], fields)
+      fromJSONField: (field: any) => ForeignInfo.fromJSONField(C, field),
+      fromJSON: (json: Record<string, any>) => ForeignInfo.fromJSON(C, json),
+      fromSuiParsedData: (content: SuiParsedData) => ForeignInfo.fromSuiParsedData(C, content),
+      fromSuiObjectData: (content: SuiObjectData) => ForeignInfo.fromSuiObjectData(C, content),
+      fetch: async (client: SupportedSuiClient, id: string) => ForeignInfo.fetch(client, C, id),
+      new: (fields: ForeignInfoFields<ToPhantomTypeArgument<C>>) => {
+        return new ForeignInfo([extractType(C)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -132,10 +142,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     return ForeignInfo.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<ForeignInfo<ToPhantomTypeArgument<T0>>>> {
-    return phantom(ForeignInfo.reified(T0))
+  static phantom<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): PhantomReified<ToTypeStr<ForeignInfo<ToPhantomTypeArgument<C>>>> {
+    return phantom(ForeignInfo.reified(C))
   }
 
   static get p(): typeof ForeignInfo.phantom {
@@ -160,10 +170,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     return ForeignInfo.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     fields: Record<string, any>,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     return ForeignInfo.reified(typeArg).new({
       tokenChain: decodeFromFields('u16', fields.token_chain),
       tokenAddress: decodeFromFields(ExternalAddress.reified(), fields.token_address),
@@ -172,10 +182,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     item: FieldsWithTypes,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     if (!isForeignInfo(item.type)) {
       throw new Error('not a ForeignInfo type')
     }
@@ -189,14 +199,14 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: Uint8Array,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     return ForeignInfo.fromFields(typeArg, ForeignInfo.bcs.parse(data))
   }
 
-  toJSONField(): ForeignInfoJSONField<T0> {
+  toJSONField(): ForeignInfoJSONField<C> {
     return {
       tokenChain: this.tokenChain,
       tokenAddress: this.tokenAddress.toJSONField(),
@@ -205,14 +215,14 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     }
   }
 
-  toJSON(): ForeignInfoJSON<T0> {
+  toJSON(): ForeignInfoJSON<C> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     field: any,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     return ForeignInfo.reified(typeArg).new({
       tokenChain: decodeFromJSONField('u16', field.tokenChain),
       tokenAddress: decodeFromJSONField(ExternalAddress.reified(), field.tokenAddress),
@@ -221,10 +231,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     json: Record<string, any>,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     if (json.$typeName !== ForeignInfo.$typeName) {
       throw new Error(
         `not a ForeignInfo json object: expected '${ForeignInfo.$typeName}' but got '${json.$typeName}'`,
@@ -239,10 +249,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     return ForeignInfo.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     content: SuiParsedData,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -252,10 +262,10 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     return ForeignInfo.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: SuiObjectData,
-  ): ForeignInfo<ToPhantomTypeArgument<T0>> {
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isForeignInfo(data.bcs.type)) {
         throw new Error(`object at is not a ForeignInfo object`)
@@ -287,11 +297,11 @@ export class ForeignInfo<T0 extends PhantomTypeArgument> implements StructClass 
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: C,
     id: string,
-  ): Promise<ForeignInfo<ToPhantomTypeArgument<T0>>> {
+  ): Promise<ForeignInfo<ToPhantomTypeArgument<C>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isForeignInfo(res.type)) {
       throw new Error(`object at id ${id} is not a ForeignInfo object`)
@@ -327,31 +337,35 @@ export function isWrappedAsset(type: string): boolean {
   )
 }
 
-export interface WrappedAssetFields<T0 extends PhantomTypeArgument> {
-  info: ToField<ForeignInfo<T0>>
-  treasuryCap: ToField<TreasuryCap<T0>>
+export interface WrappedAssetFields<C extends PhantomTypeArgument> {
+  info: ToField<ForeignInfo<C>>
+  treasuryCap: ToField<TreasuryCap<C>>
   decimals: ToField<'u8'>
   upgradeCap: ToField<UpgradeCap>
 }
 
-export type WrappedAssetReified<T0 extends PhantomTypeArgument> = Reified<
-  WrappedAsset<T0>,
-  WrappedAssetFields<T0>
+export type WrappedAssetReified<C extends PhantomTypeArgument> = Reified<
+  WrappedAsset<C>,
+  WrappedAssetFields<C>
 >
 
-export type WrappedAssetJSONField<T0 extends PhantomTypeArgument> = {
-  info: ToJSON<ForeignInfo<T0>>
-  treasuryCap: ToJSON<TreasuryCap<T0>>
+export type WrappedAssetJSONField<C extends PhantomTypeArgument> = {
+  info: ToJSON<ForeignInfo<C>>
+  treasuryCap: ToJSON<TreasuryCap<C>>
   decimals: number
   upgradeCap: ToJSON<UpgradeCap>
 }
 
-export type WrappedAssetJSON<T0 extends PhantomTypeArgument> = {
+export type WrappedAssetJSON<C extends PhantomTypeArgument> = {
   $typeName: typeof WrappedAsset.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & WrappedAssetJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<C>]
+} & WrappedAssetJSONField<C>
 
-export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass {
+/**
+ * Container managing `ForeignInfo` and `TreasuryCap` for a wrapped asset
+ * coin type.
+ */
+export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::wrapped_asset::WrappedAsset` = `${
@@ -361,20 +375,20 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof WrappedAsset.$typeName = WrappedAsset.$typeName
-  readonly $fullTypeName: `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<C>}>`
+  readonly $typeArgs: [PhantomToTypeStr<C>]
   readonly $isPhantom: typeof WrappedAsset.$isPhantom = WrappedAsset.$isPhantom
 
-  readonly info: ToField<ForeignInfo<T0>>
-  readonly treasuryCap: ToField<TreasuryCap<T0>>
+  readonly info: ToField<ForeignInfo<C>>
+  readonly treasuryCap: ToField<TreasuryCap<C>>
   readonly decimals: ToField<'u8'>
   readonly upgradeCap: ToField<UpgradeCap>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: WrappedAssetFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<C>], fields: WrappedAssetFields<C>) {
     this.$fullTypeName = composeSuiType(
       WrappedAsset.$typeName,
       ...typeArgs,
-    ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<C>}>`
     this.$typeArgs = typeArgs
 
     this.info = fields.info
@@ -383,30 +397,30 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     this.upgradeCap = fields.upgradeCap
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): WrappedAssetReified<ToPhantomTypeArgument<T0>> {
+  static reified<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): WrappedAssetReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = WrappedAsset.bcs
     return {
       typeName: WrappedAsset.$typeName,
       fullTypeName: composeSuiType(
         WrappedAsset.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(C)],
+      ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
+      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
       isPhantom: WrappedAsset.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => WrappedAsset.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => WrappedAsset.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => WrappedAsset.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [C],
+      fromFields: (fields: Record<string, any>) => WrappedAsset.fromFields(C, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WrappedAsset.fromFieldsWithTypes(C, item),
+      fromBcs: (data: Uint8Array) => WrappedAsset.fromFields(C, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => WrappedAsset.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => WrappedAsset.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => WrappedAsset.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => WrappedAsset.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => WrappedAsset.fetch(client, T0, id),
-      new: (fields: WrappedAssetFields<ToPhantomTypeArgument<T0>>) => {
-        return new WrappedAsset([extractType(T0)], fields)
+      fromJSONField: (field: any) => WrappedAsset.fromJSONField(C, field),
+      fromJSON: (json: Record<string, any>) => WrappedAsset.fromJSON(C, json),
+      fromSuiParsedData: (content: SuiParsedData) => WrappedAsset.fromSuiParsedData(C, content),
+      fromSuiObjectData: (content: SuiObjectData) => WrappedAsset.fromSuiObjectData(C, content),
+      fetch: async (client: SupportedSuiClient, id: string) => WrappedAsset.fetch(client, C, id),
+      new: (fields: WrappedAssetFields<ToPhantomTypeArgument<C>>) => {
+        return new WrappedAsset([extractType(C)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -416,10 +430,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     return WrappedAsset.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<WrappedAsset<ToPhantomTypeArgument<T0>>>> {
-    return phantom(WrappedAsset.reified(T0))
+  static phantom<C extends PhantomReified<PhantomTypeArgument>>(
+    C: C,
+  ): PhantomReified<ToTypeStr<WrappedAsset<ToPhantomTypeArgument<C>>>> {
+    return phantom(WrappedAsset.reified(C))
   }
 
   static get p(): typeof WrappedAsset.phantom {
@@ -444,10 +458,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     return WrappedAsset.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     fields: Record<string, any>,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     return WrappedAsset.reified(typeArg).new({
       info: decodeFromFields(ForeignInfo.reified(typeArg), fields.info),
       treasuryCap: decodeFromFields(TreasuryCap.reified(typeArg), fields.treasury_cap),
@@ -456,10 +470,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     item: FieldsWithTypes,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     if (!isWrappedAsset(item.type)) {
       throw new Error('not a WrappedAsset type')
     }
@@ -476,14 +490,14 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: Uint8Array,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     return WrappedAsset.fromFields(typeArg, WrappedAsset.bcs.parse(data))
   }
 
-  toJSONField(): WrappedAssetJSONField<T0> {
+  toJSONField(): WrappedAssetJSONField<C> {
     return {
       info: this.info.toJSONField(),
       treasuryCap: this.treasuryCap.toJSONField(),
@@ -492,14 +506,14 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     }
   }
 
-  toJSON(): WrappedAssetJSON<T0> {
+  toJSON(): WrappedAssetJSON<C> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     field: any,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     return WrappedAsset.reified(typeArg).new({
       info: decodeFromJSONField(ForeignInfo.reified(typeArg), field.info),
       treasuryCap: decodeFromJSONField(TreasuryCap.reified(typeArg), field.treasuryCap),
@@ -508,10 +522,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     json: Record<string, any>,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     if (json.$typeName !== WrappedAsset.$typeName) {
       throw new Error(
         `not a WrappedAsset json object: expected '${WrappedAsset.$typeName}' but got '${json.$typeName}'`,
@@ -526,10 +540,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     return WrappedAsset.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     content: SuiParsedData,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -539,10 +553,10 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     return WrappedAsset.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
     data: SuiObjectData,
-  ): WrappedAsset<ToPhantomTypeArgument<T0>> {
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWrappedAsset(data.bcs.type)) {
         throw new Error(`object at is not a WrappedAsset object`)
@@ -574,11 +588,11 @@ export class WrappedAsset<T0 extends PhantomTypeArgument> implements StructClass
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: C,
     id: string,
-  ): Promise<WrappedAsset<ToPhantomTypeArgument<T0>>> {
+  ): Promise<WrappedAsset<ToPhantomTypeArgument<C>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isWrappedAsset(res.type)) {
       throw new Error(`object at id ${id} is not a WrappedAsset object`)

@@ -74,7 +74,10 @@ export class KaiLeverageSupplyPoolStrategyInfo<
   }
 }
 
-export const SUPPLY_POOL_STRATEGY_INFOS = {
+export const SUPPLY_POOL_STRATEGY_INFOS: Record<
+  string,
+  KaiLeverageSupplyPoolStrategyInfo<PhantomTypeArgument, PhantomTypeArgument, PhantomTypeArgument>
+> = {
   paused_USDC: new KaiLeverageSupplyPoolStrategyInfo({
     name: 'Kai Leverage USDC Supply Pool Strategy',
     id: '0x5ac0bf02e51822853e18687745c56c3aa69c328e6a7a6b421e1db1c22ee0e854',

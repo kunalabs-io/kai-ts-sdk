@@ -1,3 +1,11 @@
+/**
+ * This module implements dynamic field keys as empty structs. These keys are
+ * used to determine the latest version for this build. If the current version
+ * is not this build's, then paths through the `state` module will abort.
+ *
+ * See `token_bridge::state` and `wormhole::package_utils` for more info.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -45,6 +53,7 @@ export type V__0_2_0JSON = {
   $typeArgs: []
 } & V__0_2_0JSONField
 
+/** First published package on Sui mainnet. */
 export class V__0_2_0 implements StructClass {
   __StructClass = true as const
 

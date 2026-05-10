@@ -4,28 +4,29 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, pure } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { ID } from '../../sui/object/structs'
 
-export function aDeleverage(tx: Transaction): TransactionResult {
+export function aDeleverage(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::a_deleverage`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::a_deleverage`,
     arguments: [],
   })
 }
 
-export function aRebalance(tx: Transaction): TransactionResult {
+export function aRebalance(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::a_rebalance`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::a_rebalance`,
     arguments: [],
   })
 }
 
-export function aRepayBadDebt(tx: Transaction): TransactionResult {
+export function aRepayBadDebt(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::a_repay_bad_debt`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::a_repay_bad_debt`,
     arguments: [],
   })
 }
@@ -44,9 +45,12 @@ export function positionConstructor(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: PositionConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_constructor`,
     typeArguments: typeArgs,
     arguments: [
       pure(tx, args.configId, `${ID.$typeName}`),
@@ -64,9 +68,12 @@ export function positionDeconstructor(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_deconstructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_deconstructor`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -76,9 +83,12 @@ export function positionShareObject(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_share_object`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_share_object`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -89,9 +99,12 @@ export function positionConfigId(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_config_id`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_config_id`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -102,9 +115,10 @@ export function lpPosition(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::lp_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::lp_position`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -115,9 +129,10 @@ export function colX(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::col_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::col_x`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -128,9 +143,10 @@ export function colY(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::col_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::col_y`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -141,9 +157,12 @@ export function positionDebtBag(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_debt_bag`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_debt_bag`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -153,9 +172,10 @@ export function ticketActive(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ticket_active`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ticket_active`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -170,9 +190,12 @@ export function setTicketActive(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SetTicketActiveArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_ticket_active`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_ticket_active`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -185,9 +208,10 @@ export function lpPositionMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::lp_position_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::lp_position_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -197,9 +221,10 @@ export function colXMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::col_x_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::col_x_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -209,9 +234,10 @@ export function colYMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::col_y_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::col_y_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -221,9 +247,12 @@ export function positionDebtBagMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_debt_bag_mut`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_debt_bag_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -233,9 +262,10 @@ export function collectedFees(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::collected_fees`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::collected_fees`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -245,9 +275,12 @@ export function collectedFeesMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::collected_fees_mut`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::collected_fees_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -257,9 +290,12 @@ export function ownerRewardStash(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::owner_reward_stash`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::owner_reward_stash`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -269,9 +305,12 @@ export function ownerRewardStashMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::owner_reward_stash_mut`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::owner_reward_stash_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -280,9 +319,12 @@ export function ownerRewardStashMut(
 export function positionCapConstructor(
   tx: Transaction,
   positionId: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_cap_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_cap_constructor`,
     arguments: [pure(tx, positionId, `${ID.$typeName}`)],
   })
 }
@@ -290,16 +332,23 @@ export function positionCapConstructor(
 export function positionCapDeconstructor(
   tx: Transaction,
   cap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_cap_deconstructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_cap_deconstructor`,
     arguments: [obj(tx, cap)],
   })
 }
 
-export function pcPositionId(tx: Transaction, cap: TransactionObjectInput): TransactionResult {
+export function pcPositionId(
+  tx: Transaction,
+  cap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::pc_position_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::pc_position_id`,
     arguments: [obj(tx, cap)],
   })
 }
@@ -308,17 +357,24 @@ export function pcPositionId(tx: Transaction, cap: TransactionObjectInput): Tran
 export function createEmptyConfig(
   tx: Transaction,
   poolObjectId: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::create_empty_config`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::create_empty_config`,
     arguments: [pure(tx, poolObjectId, `${ID.$typeName}`)],
   })
 }
 
 /** Get the pool object ID from position config. */
-export function poolObjectId(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function poolObjectId(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::pool_object_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::pool_object_id`,
     arguments: [obj(tx, config)],
   })
 }
@@ -327,16 +383,23 @@ export function poolObjectId(tx: Transaction, config: TransactionObjectInput): T
 export function allowNewPositions(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::allow_new_positions`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::allow_new_positions`,
     arguments: [obj(tx, config)],
   })
 }
 
-export function lendFacilCap(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function lendFacilCap(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::lend_facil_cap`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::lend_facil_cap`,
     arguments: [obj(tx, config)],
   })
 }
@@ -345,9 +408,12 @@ export function lendFacilCap(tx: Transaction, config: TransactionObjectInput): T
 export function minLiqStartPriceDeltaBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::min_liq_start_price_delta_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::min_liq_start_price_delta_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -356,17 +422,24 @@ export function minLiqStartPriceDeltaBps(
 export function minInitMarginBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::min_init_margin_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::min_init_margin_bps`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get allowed oracles bag. */
-export function allowedOracles(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function allowedOracles(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::allowed_oracles`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::allowed_oracles`,
     arguments: [obj(tx, config)],
   })
 }
@@ -375,9 +448,12 @@ export function allowedOracles(tx: Transaction, config: TransactionObjectInput):
 export function deleverageMarginBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::deleverage_margin_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::deleverage_margin_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -386,17 +462,24 @@ export function deleverageMarginBps(
 export function baseDeleverageFactorBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::base_deleverage_factor_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::base_deleverage_factor_bps`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get liquidation margin threshold in basis points. */
-export function liqMarginBps(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function liqMarginBps(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::liq_margin_bps`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::liq_margin_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -405,41 +488,60 @@ export function liqMarginBps(tx: Transaction, config: TransactionObjectInput): T
 export function baseLiqFactorBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::base_liq_factor_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::base_liq_factor_bps`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get liquidation bonus in basis points. */
-export function liqBonusBps(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function liqBonusBps(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::liq_bonus_bps`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::liq_bonus_bps`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get maximum allowed liquidity per position. */
-export function maxPositionL(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function maxPositionL(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::max_position_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::max_position_l`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get maximum global liquidity limit. */
-export function maxGlobalL(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function maxGlobalL(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::max_global_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::max_global_l`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get current total global liquidity. */
-export function currentGlobalL(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function currentGlobalL(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::current_global_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::current_global_l`,
     arguments: [obj(tx, config)],
   })
 }
@@ -448,17 +550,24 @@ export function currentGlobalL(tx: Transaction, config: TransactionObjectInput):
 export function rebalanceFeeBps(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rebalance_fee_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rebalance_fee_bps`,
     arguments: [obj(tx, config)],
   })
 }
 
 /** Get liquidation fee in basis points. */
-export function liqFeeBps(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function liqFeeBps(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::liq_fee_bps`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::liq_fee_bps`,
     arguments: [obj(tx, config)],
   })
 }
@@ -467,9 +576,12 @@ export function liqFeeBps(tx: Transaction, config: TransactionObjectInput): Tran
 export function positionCreationFeeSui(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::position_creation_fee_sui`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_creation_fee_sui`,
     arguments: [obj(tx, config)],
   })
 }
@@ -482,9 +594,12 @@ export interface IncreaseCurrentGlobalLArgs {
 export function increaseCurrentGlobalL(
   tx: Transaction,
   args: IncreaseCurrentGlobalLArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_current_global_l`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::increase_current_global_l`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.deltaL, `u128`),
@@ -500,9 +615,12 @@ export interface DecreaseCurrentGlobalLArgs {
 export function decreaseCurrentGlobalL(
   tx: Transaction,
   args: DecreaseCurrentGlobalLArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::decrease_current_global_l`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::decrease_current_global_l`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.deltaL, `u128`),
@@ -519,9 +637,12 @@ export interface SetAllowNewPositionsArgs {
 export function setAllowNewPositions(
   tx: Transaction,
   args: SetAllowNewPositionsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_allow_new_positions`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_allow_new_positions`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `bool`),
@@ -538,10 +659,11 @@ export interface SetMinLiqStartPriceDeltaBpsArgs {
 export function setMinLiqStartPriceDeltaBps(
   tx: Transaction,
   args: SetMinLiqStartPriceDeltaBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::set_min_liq_start_price_delta_bps`,
     arguments: [
       obj(tx, args.config),
@@ -559,9 +681,12 @@ export interface SetMinInitMarginBpsArgs {
 export function setMinInitMarginBps(
   tx: Transaction,
   args: SetMinInitMarginBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_min_init_margin_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_min_init_margin_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -573,9 +698,12 @@ export function setMinInitMarginBps(
 export function configAddEmptyPythConfig(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::config_add_empty_pyth_config`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::config_add_empty_pyth_config`,
     arguments: [obj(tx, config)],
   })
 }
@@ -589,9 +717,12 @@ export interface SetPythConfigMaxAgeSecsArgs {
 export function setPythConfigMaxAgeSecs(
   tx: Transaction,
   args: SetPythConfigMaxAgeSecsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_pyth_config_max_age_secs`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_pyth_config_max_age_secs`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.maxAgeSecs, `u64`),
@@ -609,9 +740,12 @@ export interface PythConfigAllowPioArgs {
 export function pythConfigAllowPio(
   tx: Transaction,
   args: PythConfigAllowPioArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::pyth_config_allow_pio`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::pyth_config_allow_pio`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.coinType),
@@ -629,9 +763,12 @@ export interface PythConfigDisallowPioArgs {
 export function pythConfigDisallowPio(
   tx: Transaction,
   args: PythConfigDisallowPioArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::pyth_config_disallow_pio`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::pyth_config_disallow_pio`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.coinType),
@@ -648,9 +785,12 @@ export interface SetDeleverageMarginBpsArgs {
 export function setDeleverageMarginBps(
   tx: Transaction,
   args: SetDeleverageMarginBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_deleverage_margin_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_deleverage_margin_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -667,9 +807,12 @@ export interface SetBaseDeleverageFactorBpsArgs {
 export function setBaseDeleverageFactorBps(
   tx: Transaction,
   args: SetBaseDeleverageFactorBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_base_deleverage_factor_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_base_deleverage_factor_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -683,9 +826,15 @@ export interface SetLiqMarginBpsArgs {
 }
 
 /** Set liquidation margin threshold in basis points. */
-export function setLiqMarginBps(tx: Transaction, args: SetLiqMarginBpsArgs): TransactionResult {
+export function setLiqMarginBps(
+  tx: Transaction,
+  args: SetLiqMarginBpsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_liq_margin_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_liq_margin_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -702,9 +851,12 @@ export interface SetBaseLiqFactorBpsArgs {
 export function setBaseLiqFactorBps(
   tx: Transaction,
   args: SetBaseLiqFactorBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_base_liq_factor_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_base_liq_factor_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -718,9 +870,15 @@ export interface SetLiqBonusBpsArgs {
 }
 
 /** Set liquidation bonus in basis points. */
-export function setLiqBonusBps(tx: Transaction, args: SetLiqBonusBpsArgs): TransactionResult {
+export function setLiqBonusBps(
+  tx: Transaction,
+  args: SetLiqBonusBpsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_liq_bonus_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_liq_bonus_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -734,9 +892,15 @@ export interface SetMaxPositionLArgs {
 }
 
 /** Set maximum liquidity allowed per position. */
-export function setMaxPositionL(tx: Transaction, args: SetMaxPositionLArgs): TransactionResult {
+export function setMaxPositionL(
+  tx: Transaction,
+  args: SetMaxPositionLArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_max_position_l`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_max_position_l`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u128`),
@@ -750,9 +914,13 @@ export interface SetMaxGlobalLArgs {
 }
 
 /** Set maximum global liquidity limit across all positions. */
-export function setMaxGlobalL(tx: Transaction, args: SetMaxGlobalLArgs): TransactionResult {
+export function setMaxGlobalL(
+  tx: Transaction,
+  args: SetMaxGlobalLArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_max_global_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::set_max_global_l`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u128`),
@@ -769,9 +937,12 @@ export interface SetRebalanceFeeBpsArgs {
 export function setRebalanceFeeBps(
   tx: Transaction,
   args: SetRebalanceFeeBpsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_rebalance_fee_bps`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_rebalance_fee_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -785,9 +956,13 @@ export interface SetLiqFeeBpsArgs {
 }
 
 /** Set liquidation fee in basis points. */
-export function setLiqFeeBps(tx: Transaction, args: SetLiqFeeBpsArgs): TransactionResult {
+export function setLiqFeeBps(
+  tx: Transaction,
+  args: SetLiqFeeBpsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_liq_fee_bps`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::set_liq_fee_bps`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u16`),
@@ -804,9 +979,12 @@ export interface SetPositionCreationFeeSuiArgs {
 export function setPositionCreationFeeSui(
   tx: Transaction,
   args: SetPositionCreationFeeSuiArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_position_creation_fee_sui`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_position_creation_fee_sui`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.value, `u64`),
@@ -824,9 +1002,12 @@ export function upsertConfigExtension(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpsertConfigExtensionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::upsert_config_extension`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::upsert_config_extension`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -846,9 +1027,12 @@ export function addConfigExtension(
   tx: Transaction,
   typeArgs: [string, string],
   args: AddConfigExtensionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_config_extension`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::add_config_extension`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -867,9 +1051,12 @@ export function hasConfigExtension(
   tx: Transaction,
   typeArg: string,
   args: HasConfigExtensionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::has_config_extension`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::has_config_extension`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -887,9 +1074,12 @@ export function borrowConfigExtension(
   tx: Transaction,
   typeArgs: [string, string],
   args: BorrowConfigExtensionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrow_config_extension`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::borrow_config_extension`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -908,10 +1098,11 @@ export function getConfigExtensionOrDefault(
   tx: Transaction,
   typeArgs: [string, string],
   args: GetConfigExtensionOrDefaultArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::get_config_extension_or_default`,
     typeArguments: typeArgs,
     arguments: [
@@ -931,9 +1122,12 @@ export function configExtensionMut(
   tx: Transaction,
   typeArgs: [string, string],
   args: ConfigExtensionMutArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::config_extension_mut`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::config_extension_mut`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.config),
@@ -951,9 +1145,12 @@ export interface SetLiquidationDisabledArgs {
 export function setLiquidationDisabled(
   tx: Transaction,
   args: SetLiquidationDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_liquidation_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_liquidation_disabled`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.disabled, `bool`),
@@ -965,9 +1162,12 @@ export function setLiquidationDisabled(
 export function liquidationDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::liquidation_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::liquidation_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -981,9 +1181,12 @@ export interface SetReductionDisabledArgs {
 export function setReductionDisabled(
   tx: Transaction,
   args: SetReductionDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_reduction_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_reduction_disabled`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.disabled, `bool`),
@@ -995,9 +1198,12 @@ export function setReductionDisabled(
 export function reductionDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::reduction_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::reduction_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1011,9 +1217,12 @@ export interface SetAddLiquidityDisabledArgs {
 export function setAddLiquidityDisabled(
   tx: Transaction,
   args: SetAddLiquidityDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_add_liquidity_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_add_liquidity_disabled`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.disabled, `bool`),
@@ -1025,9 +1234,12 @@ export function setAddLiquidityDisabled(
 export function addLiquidityDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_liquidity_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::add_liquidity_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1041,9 +1253,12 @@ export interface SetOwnerCollectFeeDisabledArgs {
 export function setOwnerCollectFeeDisabled(
   tx: Transaction,
   args: SetOwnerCollectFeeDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_owner_collect_fee_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_owner_collect_fee_disabled`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.disabled, `bool`),
@@ -1055,9 +1270,12 @@ export function setOwnerCollectFeeDisabled(
 export function ownerCollectFeeDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::owner_collect_fee_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::owner_collect_fee_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1071,10 +1289,11 @@ export interface SetOwnerCollectRewardDisabledArgs {
 export function setOwnerCollectRewardDisabled(
   tx: Transaction,
   args: SetOwnerCollectRewardDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::set_owner_collect_reward_disabled`,
     arguments: [
       obj(tx, args.config),
@@ -1087,9 +1306,12 @@ export function setOwnerCollectRewardDisabled(
 export function ownerCollectRewardDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::owner_collect_reward_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::owner_collect_reward_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1103,9 +1325,12 @@ export interface SetDeletePositionDisabledArgs {
 export function setDeletePositionDisabled(
   tx: Transaction,
   args: SetDeletePositionDisabledArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_delete_position_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_delete_position_disabled`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.disabled, `bool`),
@@ -1117,9 +1342,12 @@ export function setDeletePositionDisabled(
 export function deletePositionDisabled(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::delete_position_disabled`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::delete_position_disabled`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1134,9 +1362,12 @@ export function addCreateWithdrawLimiter(
   tx: Transaction,
   typeArg: string,
   args: AddCreateWithdrawLimiterArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_create_withdraw_limiter`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::add_create_withdraw_limiter`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.config),
@@ -1148,9 +1379,12 @@ export function addCreateWithdrawLimiter(
 export function hasCreateWithdrawLimiter(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::has_create_withdraw_limiter`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::has_create_withdraw_limiter`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1158,9 +1392,12 @@ export function hasCreateWithdrawLimiter(
 export function borrowCreateWithdrawLimiter(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrow_create_withdraw_limiter`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::borrow_create_withdraw_limiter`,
     arguments: [obj(tx, config)],
   })
 }
@@ -1168,10 +1405,11 @@ export function borrowCreateWithdrawLimiter(
 export function borrowCreateWithdrawLimiterMut(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::borrow_create_withdraw_limiter_mut`,
     arguments: [obj(tx, config)],
   })
@@ -1187,10 +1425,11 @@ export interface SetMaxCreateWithdrawNetInflowAndOutflowLimitsArgs {
 export function setMaxCreateWithdrawNetInflowAndOutflowLimits(
   tx: Transaction,
   args: SetMaxCreateWithdrawNetInflowAndOutflowLimitsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::set_max_create_withdraw_net_inflow_and_outflow_limits`,
     arguments: [
       obj(tx, args.config),
@@ -1210,9 +1449,12 @@ export interface DeleverageTicketConstructorArgs {
 export function deleverageTicketConstructor(
   tx: Transaction,
   args: DeleverageTicketConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::deleverage_ticket_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::deleverage_ticket_constructor`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.canRepayX, `bool`),
@@ -1222,30 +1464,46 @@ export function deleverageTicketConstructor(
   })
 }
 
-export function dtPositionId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function dtPositionId(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dt_position_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dt_position_id`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function dtCanRepayX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function dtCanRepayX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dt_can_repay_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dt_can_repay_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function dtCanRepayY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function dtCanRepayY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dt_can_repay_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dt_can_repay_y`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function dtInfo(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function dtInfo(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dt_info`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dt_info`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1260,10 +1518,11 @@ export function reductionRepaymentTicketConstructor(
   tx: Transaction,
   typeArgs: [string, string],
   args: ReductionRepaymentTicketConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::reduction_repayment_ticket_constructor`,
     typeArguments: typeArgs,
     arguments: [
@@ -1278,9 +1537,10 @@ export function rrtSx(
   tx: Transaction,
   typeArgs: [string, string],
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rrt_sx`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rrt_sx`,
     typeArguments: typeArgs,
     arguments: [obj(tx, self)],
   })
@@ -1290,9 +1550,10 @@ export function rrtSy(
   tx: Transaction,
   typeArgs: [string, string],
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rrt_sy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rrt_sy`,
     typeArguments: typeArgs,
     arguments: [obj(tx, self)],
   })
@@ -1302,17 +1563,22 @@ export function rrtInfo(
   tx: Transaction,
   typeArgs: [string, string],
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rrt_info`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rrt_info`,
     typeArguments: typeArgs,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrPositionId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrPositionId(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_position_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_position_id`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1325,9 +1591,12 @@ export interface IncreaseCollectedAmmFeeXArgs {
 export function increaseCollectedAmmFeeX(
   tx: Transaction,
   args: IncreaseCollectedAmmFeeXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_collected_amm_fee_x`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::increase_collected_amm_fee_x`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.delta, `u64`),
@@ -1343,9 +1612,12 @@ export interface IncreaseCollectedAmmFeeYArgs {
 export function increaseCollectedAmmFeeY(
   tx: Transaction,
   args: IncreaseCollectedAmmFeeYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_collected_amm_fee_y`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::increase_collected_amm_fee_y`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.delta, `u64`),
@@ -1356,9 +1628,12 @@ export function increaseCollectedAmmFeeY(
 export function collectedAmmRewardsMut(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::collected_amm_rewards_mut`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::collected_amm_rewards_mut`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1368,9 +1643,13 @@ export interface IncreaseDeltaLArgs {
   delta: bigint | TransactionArgument
 }
 
-export function increaseDeltaL(tx: Transaction, args: IncreaseDeltaLArgs): TransactionResult {
+export function increaseDeltaL(
+  tx: Transaction,
+  args: IncreaseDeltaLArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::increase_delta_l`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.delta, `u128`),
@@ -1383,9 +1662,13 @@ export interface IncreaseDeltaXArgs {
   delta: bigint | TransactionArgument
 }
 
-export function increaseDeltaX(tx: Transaction, args: IncreaseDeltaXArgs): TransactionResult {
+export function increaseDeltaX(
+  tx: Transaction,
+  args: IncreaseDeltaXArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::increase_delta_x`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.delta, `u64`),
@@ -1398,9 +1681,13 @@ export interface IncreaseDeltaYArgs {
   delta: bigint | TransactionArgument
 }
 
-export function increaseDeltaY(tx: Transaction, args: IncreaseDeltaYArgs): TransactionResult {
+export function increaseDeltaY(
+  tx: Transaction,
+  args: IncreaseDeltaYArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::increase_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::increase_delta_y`,
     arguments: [
       obj(tx, args.self),
       pure(tx, args.delta, `u64`),
@@ -1411,9 +1698,12 @@ export function increaseDeltaY(tx: Transaction, args: IncreaseDeltaYArgs): Trans
 export function rrCollectedAmmFeeX(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_collected_amm_fee_x`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rr_collected_amm_fee_x`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1421,9 +1711,12 @@ export function rrCollectedAmmFeeX(
 export function rrCollectedAmmFeeY(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_collected_amm_fee_y`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rr_collected_amm_fee_y`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1431,79 +1724,122 @@ export function rrCollectedAmmFeeY(
 export function rrCollectedAmmRewards(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_collected_amm_rewards`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rr_collected_amm_rewards`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrFeesTaken(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrFeesTaken(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_fees_taken`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_fees_taken`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrTakenCx(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrTakenCx(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_taken_cx`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_taken_cx`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrTakenCy(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrTakenCy(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_taken_cy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_taken_cy`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrDeltaL(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrDeltaL(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_delta_l`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrDeltaX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrDeltaX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_delta_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrDeltaY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrDeltaY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_delta_y`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrXRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrXRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_x_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_x_repaid`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrYRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrYRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_y_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_y_repaid`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrAddedCx(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrAddedCx(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_added_cx`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_added_cx`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function rrAddedCy(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function rrAddedCy(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_added_cy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::rr_added_cy`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1511,9 +1847,12 @@ export function rrAddedCy(tx: Transaction, self: TransactionObjectInput): Transa
 export function rrStashedAmmRewards(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rr_stashed_amm_rewards`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rr_stashed_amm_rewards`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1536,9 +1875,12 @@ export function newCreatePositionTicket(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: NewCreatePositionTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::new_create_position_ticket`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::new_create_position_ticket`,
     typeArguments: typeArgs,
     arguments: [
       pure(tx, args.configId, `${ID.$typeName}`),
@@ -1560,9 +1902,12 @@ export function destroyCreatePositionTicket(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::destroy_create_position_ticket`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::destroy_create_position_ticket`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1572,9 +1917,10 @@ export function cptConfigId(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::cpt_config_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::cpt_config_id`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1584,9 +1930,10 @@ export function dx(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dx`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dx`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1596,9 +1943,10 @@ export function dy(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::dy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::dy`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1608,9 +1956,10 @@ export function borrowedX(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrowed_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::borrowed_x`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1620,9 +1969,10 @@ export function borrowedXMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrowed_x_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::borrowed_x_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1632,9 +1982,10 @@ export function borrowedY(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrowed_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::borrowed_y`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1644,9 +1995,10 @@ export function borrowedYMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::borrowed_y_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::borrowed_y_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1656,9 +2008,10 @@ export function deltaL(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::delta_l`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1668,9 +2021,10 @@ export function principalX(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::principal_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::principal_x`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1680,9 +2034,10 @@ export function principalY(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::principal_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::principal_y`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1692,9 +2047,10 @@ export function cptDebtBag(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::cpt_debt_bag`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::cpt_debt_bag`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1704,9 +2060,10 @@ export function cptDebtBagMut(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::cpt_debt_bag_mut`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::cpt_debt_bag_mut`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1716,9 +2073,10 @@ export function cptTickA(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::cpt_tick_a`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::cpt_tick_a`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1728,9 +2086,10 @@ export function cptTickB(
   tx: Transaction,
   typeArgs: [string, string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::cpt_tick_b`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::cpt_tick_b`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -1744,10 +2103,11 @@ export interface ShareDeletedPositionCollectedFeesArgs {
 export function shareDeletedPositionCollectedFees(
   tx: Transaction,
   args: ShareDeletedPositionCollectedFeesArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::share_deleted_position_collected_fees`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -1774,9 +2134,12 @@ export interface EmitPositionCreationInfoArgs {
 export function emitPositionCreationInfo(
   tx: Transaction,
   args: EmitPositionCreationInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_position_creation_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_position_creation_info`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.configId, `${ID.$typeName}`),
@@ -1809,9 +2172,12 @@ export interface DeleverageInfoConstructorArgs {
 export function deleverageInfoConstructor(
   tx: Transaction,
   args: DeleverageInfoConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::deleverage_info_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::deleverage_info_constructor`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       obj(tx, args.model),
@@ -1831,9 +2197,13 @@ export interface SetDeltaLArgs {
   deltaL: bigint | TransactionArgument
 }
 
-export function setDeltaL(tx: Transaction, args: SetDeltaLArgs): TransactionResult {
+export function setDeltaL(
+  tx: Transaction,
+  args: SetDeltaLArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::set_delta_l`,
     arguments: [
       obj(tx, args.info),
       pure(tx, args.deltaL, `u128`),
@@ -1846,9 +2216,13 @@ export interface SetDeltaXArgs {
   deltaX: bigint | TransactionArgument
 }
 
-export function setDeltaX(tx: Transaction, args: SetDeltaXArgs): TransactionResult {
+export function setDeltaX(
+  tx: Transaction,
+  args: SetDeltaXArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::set_delta_x`,
     arguments: [
       obj(tx, args.info),
       pure(tx, args.deltaX, `u64`),
@@ -1861,9 +2235,13 @@ export interface SetDeltaYArgs {
   deltaY: bigint | TransactionArgument
 }
 
-export function setDeltaY(tx: Transaction, args: SetDeltaYArgs): TransactionResult {
+export function setDeltaY(
+  tx: Transaction,
+  args: SetDeltaYArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::set_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::set_delta_y`,
     arguments: [
       obj(tx, args.info),
       pure(tx, args.deltaY, `u64`),
@@ -1871,16 +2249,24 @@ export function setDeltaY(tx: Transaction, args: SetDeltaYArgs): TransactionResu
   })
 }
 
-export function diPositionId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diPositionId(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_position_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_position_id`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diModel(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diModel(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_model`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_model`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1888,9 +2274,12 @@ export function diModel(tx: Transaction, self: TransactionObjectInput): Transact
 export function diOraclePriceX128(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_oracle_price_x128`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::di_oracle_price_x128`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1898,44 +2287,67 @@ export function diOraclePriceX128(
 export function diSqrtPoolPriceX64(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_sqrt_pool_price_x64`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::di_sqrt_pool_price_x64`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diDeltaL(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diDeltaL(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_delta_l`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diDeltaX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diDeltaX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_delta_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diDeltaY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diDeltaY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_delta_y`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diXRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diXRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_x_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_x_repaid`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function diYRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function diYRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::di_y_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::di_y_repaid`,
     arguments: [obj(tx, self)],
   })
 }
@@ -1955,9 +2367,12 @@ export interface EmitLiquidationInfoArgs {
 export function emitLiquidationInfo(
   tx: Transaction,
   args: EmitLiquidationInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_liquidation_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_liquidation_info`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       obj(tx, args.model),
@@ -1989,9 +2404,12 @@ export interface ReductionInfoConstructorArgs {
 export function reductionInfoConstructor(
   tx: Transaction,
   args: ReductionInfoConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::reduction_info_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::reduction_info_constructor`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       obj(tx, args.model),
@@ -2008,16 +2426,24 @@ export function reductionInfoConstructor(
   })
 }
 
-export function riPositionId(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riPositionId(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_position_id`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_position_id`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riModel(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riModel(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_model`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_model`,
     arguments: [obj(tx, self)],
   })
 }
@@ -2025,9 +2451,12 @@ export function riModel(tx: Transaction, self: TransactionObjectInput): Transact
 export function riOraclePriceX128(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_oracle_price_x128`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::ri_oracle_price_x128`,
     arguments: [obj(tx, self)],
   })
 }
@@ -2035,58 +2464,89 @@ export function riOraclePriceX128(
 export function riSqrtPoolPriceX64(
   tx: Transaction,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_sqrt_pool_price_x64`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::ri_sqrt_pool_price_x64`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riDeltaL(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riDeltaL(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_delta_l`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riDeltaX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riDeltaX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_delta_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riDeltaY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riDeltaY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_delta_y`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riWithdrawnX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riWithdrawnX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_withdrawn_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_withdrawn_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riWithdrawnY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riWithdrawnY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_withdrawn_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_withdrawn_y`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riXRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riXRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_x_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_x_repaid`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function riYRepaid(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function riYRepaid(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ri_y_repaid`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ri_y_repaid`,
     arguments: [obj(tx, self)],
   })
 }
@@ -2102,9 +2562,12 @@ export interface AddLiquidityInfoConstructorArgs {
 export function addLiquidityInfoConstructor(
   tx: Transaction,
   args: AddLiquidityInfoConstructorArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_liquidity_info_constructor`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::add_liquidity_info_constructor`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.sqrtPoolPriceX64, `u128`),
@@ -2115,30 +2578,46 @@ export function addLiquidityInfoConstructor(
   })
 }
 
-export function aliEmit(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function aliEmit(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ali_emit`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ali_emit`,
     arguments: [obj(tx, info)],
   })
 }
 
-export function aliDeltaL(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function aliDeltaL(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ali_delta_l`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ali_delta_l`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function aliDeltaX(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function aliDeltaX(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ali_delta_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ali_delta_x`,
     arguments: [obj(tx, self)],
   })
 }
 
-export function aliDeltaY(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function aliDeltaY(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::ali_delta_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::ali_delta_y`,
     arguments: [obj(tx, self)],
   })
 }
@@ -2154,9 +2633,12 @@ export interface EmitOwnerCollectFeeInfoArgs {
 export function emitOwnerCollectFeeInfo(
   tx: Transaction,
   args: EmitOwnerCollectFeeInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_owner_collect_fee_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_owner_collect_fee_info`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.collectedXAmt, `u64`),
@@ -2177,9 +2659,12 @@ export function emitOwnerCollectRewardInfo(
   tx: Transaction,
   typeArg: string,
   args: EmitOwnerCollectRewardInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_owner_collect_reward_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_owner_collect_reward_info`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -2197,9 +2682,12 @@ export interface EmitDeletePositionInfoArgs {
 export function emitDeletePositionInfo(
   tx: Transaction,
   args: EmitDeletePositionInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_delete_position_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_delete_position_info`,
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
       pure(tx, args.capId, `${ID.$typeName}`),
@@ -2217,9 +2705,12 @@ export function emitBadDebtRepaid(
   tx: Transaction,
   typeArg: string,
   args: EmitBadDebtRepaidArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::emit_bad_debt_repaid`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::emit_bad_debt_repaid`,
     typeArguments: [typeArg],
     arguments: [
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -2232,9 +2723,12 @@ export function emitBadDebtRepaid(
 export function checkConfigVersion(
   tx: Transaction,
   config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::check_config_version`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::check_config_version`,
     arguments: [obj(tx, config)],
   })
 }
@@ -2243,9 +2737,12 @@ export function checkPositionVersion(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::check_position_version`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::check_position_version`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -2260,9 +2757,10 @@ export function checkVersions(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CheckVersionsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::check_versions`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::check_versions`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2272,9 +2770,13 @@ export function checkVersions(
 }
 
 /** Migrate position configuration to current module version. */
-export function migrateConfig(tx: Transaction, config: TransactionObjectInput): TransactionResult {
+export function migrateConfig(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::migrate_config`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::migrate_config`,
     arguments: [obj(tx, config)],
   })
 }
@@ -2284,9 +2786,10 @@ export function migratePosition(
   tx: Transaction,
   typeArgs: [string, string, string],
   position: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::migrate_position`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::migrate_position`,
     typeArguments: typeArgs,
     arguments: [obj(tx, position)],
   })
@@ -2297,9 +2800,15 @@ export interface ValidatePriceInfoArgs {
   priceInfo: TransactionObjectInput
 }
 
-export function validatePriceInfo(tx: Transaction, args: ValidatePriceInfoArgs): TransactionResult {
+export function validatePriceInfo(
+  tx: Transaction,
+  args: ValidatePriceInfoArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::validate_price_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::validate_price_info`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.priceInfo),
@@ -2312,9 +2821,15 @@ export interface ValidateDebtInfoArgs {
   debtInfo: TransactionObjectInput
 }
 
-export function validateDebtInfo(tx: Transaction, args: ValidateDebtInfoArgs): TransactionResult {
+export function validateDebtInfo(
+  tx: Transaction,
+  args: ValidateDebtInfoArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::validate_debt_info`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::validate_debt_info`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.debtInfo),
@@ -2327,9 +2842,13 @@ export interface CalcBorrowAmtArgs {
   needForPosition: bigint | TransactionArgument
 }
 
-export function calcBorrowAmt(tx: Transaction, args: CalcBorrowAmtArgs): TransactionResult {
+export function calcBorrowAmt(
+  tx: Transaction,
+  args: CalcBorrowAmtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::calc_borrow_amt`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::calc_borrow_amt`,
     arguments: [
       pure(tx, args.principal, `u64`),
       pure(tx, args.needForPosition, `u64`),
@@ -2346,9 +2865,12 @@ export interface PriceDeviationIsAcceptableArgs {
 export function priceDeviationIsAcceptable(
   tx: Transaction,
   args: PriceDeviationIsAcceptableArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::price_deviation_is_acceptable`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::price_deviation_is_acceptable`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.p0OracleEmaX128, `u256`),
@@ -2364,9 +2886,15 @@ export interface LiqMarginIsValidArgs {
   p0MaxX128: bigint | TransactionArgument
 }
 
-export function liqMarginIsValid(tx: Transaction, args: LiqMarginIsValidArgs): TransactionResult {
+export function liqMarginIsValid(
+  tx: Transaction,
+  args: LiqMarginIsValidArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::liq_margin_is_valid`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::liq_margin_is_valid`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.model),
@@ -2383,9 +2911,15 @@ export interface InitMarginIsValidArgs {
   p0MaxX128: bigint | TransactionArgument
 }
 
-export function initMarginIsValid(tx: Transaction, args: InitMarginIsValidArgs): TransactionResult {
+export function initMarginIsValid(
+  tx: Transaction,
+  args: InitMarginIsValidArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::init_margin_is_valid`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::init_margin_is_valid`,
     arguments: [
       obj(tx, args.config),
       obj(tx, args.model),
@@ -2405,10 +2939,11 @@ export function getAmountEmaUsdValue6Decimals(
   tx: Transaction,
   typeArg: string,
   args: GetAmountEmaUsdValue6DecimalsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::get_amount_ema_usd_value_6_decimals`,
     typeArguments: [typeArg],
     arguments: [
@@ -2429,10 +2964,11 @@ export function getBalanceEmaUsdValue6Decimals(
   tx: Transaction,
   typeArg: string,
   args: GetBalanceEmaUsdValue6DecimalsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::get_balance_ema_usd_value_6_decimals`,
     typeArguments: [typeArg],
     arguments: [
@@ -2456,9 +2992,12 @@ export function deleverageTicketRepayX(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageTicketRepayXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::deleverage_ticket_repay_x`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::deleverage_ticket_repay_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2483,9 +3022,12 @@ export function deleverageTicketRepayY(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: DeleverageTicketRepayYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::deleverage_ticket_repay_y`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::deleverage_ticket_repay_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2514,9 +3056,12 @@ export function destroyDeleverageTicket(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: DestroyDeleverageTicketArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::destroy_deleverage_ticket`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::destroy_deleverage_ticket`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2533,9 +3078,12 @@ export interface CalcLiqFeeFromRewardArgs {
 export function calcLiqFeeFromReward(
   tx: Transaction,
   args: CalcLiqFeeFromRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::calc_liq_fee_from_reward`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::calc_liq_fee_from_reward`,
     arguments: [
       obj(tx, args.config),
       pure(tx, args.rewardAmt, `u64`),
@@ -2554,10 +3102,11 @@ export function reductionTicketCalcRepayAmtX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: ReductionTicketCalcRepayAmtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::reduction_ticket_calc_repay_amt_x`,
     typeArguments: typeArgs,
     arguments: [
@@ -2579,10 +3128,11 @@ export function reductionTicketCalcRepayAmtY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: ReductionTicketCalcRepayAmtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('kai-leverage')
+      getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::reduction_ticket_calc_repay_amt_y`,
     typeArguments: typeArgs,
     arguments: [
@@ -2605,9 +3155,12 @@ export function reductionTicketRepayX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: ReductionTicketRepayXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::reduction_ticket_repay_x`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::reduction_ticket_repay_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -2630,9 +3183,12 @@ export function reductionTicketRepayY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: ReductionTicketRepayYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::reduction_ticket_repay_y`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::reduction_ticket_repay_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.ticket),
@@ -2648,9 +3204,12 @@ export function destroyReductionTicket(
   tx: Transaction,
   typeArgs: [string, string],
   ticket: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::destroy_reduction_ticket`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::destroy_reduction_ticket`,
     typeArguments: typeArgs,
     arguments: [obj(tx, ticket)],
   })
@@ -2667,9 +3226,10 @@ export function addCollateralX(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: AddCollateralXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_collateral_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::add_collateral_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2690,9 +3250,10 @@ export function addCollateralY(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: AddCollateralYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_collateral_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::add_collateral_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2715,9 +3276,10 @@ export function repayDebtX(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: RepayDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::repay_debt_x`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::repay_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2742,9 +3304,10 @@ export function repayDebtY(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: RepayDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::repay_debt_y`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::repay_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2767,9 +3330,12 @@ export function ownerTakeStashedRewards(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: OwnerTakeStashedRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::owner_take_stashed_rewards`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::owner_take_stashed_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2789,9 +3355,12 @@ export function createRebalanceReceipt(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CreateRebalanceReceiptArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::create_rebalance_receipt`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::create_rebalance_receipt`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2809,9 +3378,12 @@ export function addAmountToMap(
   tx: Transaction,
   typeArg: string,
   args: AddAmountToMapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::add_amount_to_map`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::add_amount_to_map`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.map),
@@ -2831,9 +3403,12 @@ export function takeRebalanceFee(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: TakeRebalanceFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::take_rebalance_fee`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::take_rebalance_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2857,9 +3432,12 @@ export function rebalanceRepayDebtX(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: RebalanceRepayDebtXArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rebalance_repay_debt_x`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rebalance_repay_debt_x`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2884,9 +3462,12 @@ export function rebalanceRepayDebtY(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: RebalanceRepayDebtYArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rebalance_repay_debt_y`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rebalance_repay_debt_y`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2909,9 +3490,12 @@ export function rebalanceStashRewards(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: RebalanceStashRewardsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::rebalance_stash_rewards`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::rebalance_stash_rewards`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2931,9 +3515,12 @@ export function consumeRebalanceReceipt(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: ConsumeRebalanceReceiptArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::consume_rebalance_receipt`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::consume_rebalance_receipt`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2952,9 +3539,12 @@ export function collectProtocolFees(
   tx: Transaction,
   typeArgs: [string, string, string, string],
   args: CollectProtocolFeesArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::collect_protocol_fees`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::collect_protocol_fees`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -2967,9 +3557,12 @@ export function collectProtocolFees(
 export function collectDeletedPositionFees(
   tx: Transaction,
   fees: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::position_core_clmm::collect_deleted_position_fees`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::collect_deleted_position_fees`,
     arguments: [obj(tx, fees)],
   })
 }

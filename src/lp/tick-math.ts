@@ -169,7 +169,7 @@ function tickIndexToSqrtPriceNegative(tickIndex: number) {
   return ratio
 }
 
-export function priceToSqrtPriceX64(price: Decimal, decimalsA: number, decimalsB: number) {
+export function priceToSqrtPriceX64(price: Decimal, decimalsA: number, decimalsB: number): bigint {
   return toX64(price.mul(Decimal.pow(10, decimalsB - decimalsA)).sqrt())
 }
 
@@ -183,7 +183,7 @@ export function sqrtPriceX64ToPrice(
     .mul(Decimal.pow(10, decimalsA - decimalsB))
 }
 
-export function tickIndexToSqrtPriceX64(tickIndex: number) {
+export function tickIndexToSqrtPriceX64(tickIndex: number): bigint {
   if (tickIndex > 0) {
     return tickIndexToSqrtPricePositive(tickIndex)
   }
@@ -253,11 +253,11 @@ export function getInitializableTickIndex(tickIndex: number, tickSpacing: number
   return tickIndex - (tickIndex % tickSpacing)
 }
 
-export function getNextInitializableTickIndex(tickIndex: number, tickSpacing: number) {
+export function getNextInitializableTickIndex(tickIndex: number, tickSpacing: number): number {
   return getInitializableTickIndex(tickIndex, tickSpacing) + tickSpacing
 }
 
-export function getPrevInitializableTickIndex(tickIndex: number, tickSpacing: number) {
+export function getPrevInitializableTickIndex(tickIndex: number, tickSpacing: number): number {
   return getInitializableTickIndex(tickIndex, tickSpacing) - tickSpacing
 }
 

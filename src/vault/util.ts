@@ -60,7 +60,11 @@ export function calcTotalAvailableBalance(
  * @param vaultData - Vault data
  * @returns Vault stats
  */
-export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>) {
+export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>): {
+  tvl: Amount
+  apy: number
+  apr: number
+} {
   const vault = findVaultInfoById(vaultData.id)
   if (!vault) {
     throw new Error(`VaultInfo not found for Vault id: ${vaultData.id}`)
@@ -116,7 +120,14 @@ export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeA
  * @param client - SuiClient
  * @returns All vault stats
  */
-export async function getAllVaultStats(client: SuiClient) {
+export async function getAllVaultStats(client: SuiClient): Promise<
+  Array<{
+    vaultInfo: VaultInfo<PhantomTypeArgument, PhantomTypeArgument>
+    tvl: Amount
+    apy: number
+    apr: number
+  }>
+> {
   const vaultInfos = Object.values(VAULTS)
   const vaultDatas = await getVaultDataBatch(
     client,
@@ -252,7 +263,10 @@ export async function getWalletVaultInfo(
  * @param ids - Vault ids
  * @returns Vault data
  */
-export async function getVaultDataBatch(client: SuiClient, ids: string[]) {
+export async function getVaultDataBatch(
+  client: SuiClient,
+  ids: string[]
+): Promise<Vault<PhantomTypeArgument, PhantomTypeArgument>[]> {
   const res = await client.multiGetObjects({
     ids,
     options: {

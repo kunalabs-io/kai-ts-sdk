@@ -4,18 +4,24 @@ import { compressSuiType } from './gen/_framework/util'
 import { LRUCache } from 'lru-cache'
 import { normalizeStructTag } from '@mysten/sui/utils'
 import { AfRouterAdapter } from './router'
+import { CetusAggregatorAdapter } from './router/cetus'
+import { AggregatorClient as CetusAggregatorClient } from '@cetusprotocol/aggregator-sdk'
+import Decimal from 'decimal.js'
 import { Price } from './price'
 import { CoinInfo } from './coin-info'
+
+const SEVK_PRICES_API = 'https://lp-pro-api.7k.ag/price'
 
 export interface PriceCacheEntry {
   price: Price<PhantomTypeArgument, PhantomTypeArgument>
 }
 
-export type PriceProvider = 'af' | '7k'
+export type PriceProvider = 'af' | 'cetus' | '7k'
 
 export class PriceCache {
   private cache: LRUCache<string, PriceCacheEntry>
-  private afRouter = new AfRouterAdapter()
+  private _afRouter?: AfRouterAdapter
+  private _cetusRouter?: CetusAggregatorAdapter
   private pending: Map<string, Promise<Price<PhantomTypeArgument, PhantomTypeArgument>>>
 
   constructor(
@@ -28,6 +34,17 @@ export class PriceCache {
       ttlAutopurge: true,
     })
     this.pending = new Map()
+  }
+
+  private get afRouter(): AfRouterAdapter {
+    if (!this._afRouter) this._afRouter = new AfRouterAdapter()
+    return this._afRouter
+  }
+
+  private get cetusRouter(): CetusAggregatorAdapter {
+    if (!this._cetusRouter)
+      this._cetusRouter = new CetusAggregatorAdapter(new CetusAggregatorClient({}))
+    return this._cetusRouter
   }
 
   async get<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
@@ -100,6 +117,8 @@ export class PriceCache {
   ): Promise<Price<X, Y>> {
     if (this.priceProvider === 'af') {
       return this.getPriceAf(x, y)
+    } else if (this.priceProvider === 'cetus') {
+      return this.getPriceCetus(x, y)
     } else if (this.priceProvider === '7k') {
       return this.getPrice7k(x, y)
     } else {
@@ -115,24 +134,42 @@ export class PriceCache {
     return this.afRouter.getPrice({ X: x, Y: y, amountIn, xToY: false })
   }
 
+  private async getPriceCetus<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
+    x: CoinInfo<X>,
+    y: CoinInfo<Y>
+  ): Promise<Price<X, Y>> {
+    const amountIn = 10n ** BigInt(y.decimals) * 100n
+    return this.cetusRouter.getPrice({ X: x, Y: y, amountIn, xToY: false })
+  }
+
   private async getPrice7k<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
     x: CoinInfo<X>,
     y: CoinInfo<Y>
   ): Promise<Price<X, Y>> {
     const typeX = normalizeStructTag(x.typeName)
     const typeY = normalizeStructTag(y.typeName)
+    const timestamp = Math.floor(Date.now() / 1000).toString()
 
-    const response = await fetch(`https://prices.7k.ag/price?ids=${typeX}&vsCoin=${typeY}`)
-    const prices = (await response.json()) as Record<
-      string,
-      { price: number | null; lastUpdated: number }
-    >
+    const response = await fetch(`${SEVK_PRICES_API}/prices/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timestamp, token_ids: [typeX, typeY] }),
+    })
 
-    const price = prices?.[typeX]?.price
-    if (!price) {
-      throw new Error(`error fetching price for X: "${x.typeName}" Y: "${y.typeName}"`)
+    if (!response.ok) {
+      throw new Error(`7k price API returned status ${response.status}`)
     }
 
-    return Price.fromHuman(x, y, price)
+    const results = (await response.json()) as { token_id: string; price: number }[]
+    const priceMap = new Map(results.map(r => [r.token_id, r.price]))
+
+    const priceX = priceMap.get(typeX)
+    const priceY = priceMap.get(typeY)
+
+    if (priceX == null || priceY == null) {
+      throw new Error(`7k price not found for X: "${x.typeName}" or Y: "${y.typeName}"`)
+    }
+
+    return Price.fromHuman(x, y, new Decimal(priceX).div(priceY))
   }
 }

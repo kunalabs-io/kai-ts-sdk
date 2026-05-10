@@ -4,13 +4,18 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 /** Returns the type of the provided generic as string */
-export function getTypeString(tx: Transaction, typeArg: string): TransactionResult {
+export function getTypeString(
+  tx: Transaction,
+  typeArg: string,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::get_type_string`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::get_type_string`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -26,9 +31,10 @@ export function transferCoin(
   tx: Transaction,
   typeArg: string,
   args: TransferCoinArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::transfer_coin`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::transfer_coin`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.coin),
@@ -47,9 +53,10 @@ export function transferBalance(
   tx: Transaction,
   typeArg: string,
   args: TransferBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::transfer_balance`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::transfer_balance`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.balance),
@@ -62,9 +69,10 @@ export function transferBalance(
 export function timestampSeconds(
   tx: Transaction,
   clock: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::timestamp_seconds`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::timestamp_seconds`,
     arguments: [obj(tx, clock)],
   })
 }
@@ -80,9 +88,10 @@ export function depositBalance(
   tx: Transaction,
   typeArg: string,
   args: DepositBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::deposit_balance`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::deposit_balance`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a),
@@ -102,9 +111,10 @@ export function withdrawBalance(
   tx: Transaction,
   typeArg: string,
   args: WithdrawBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::withdraw_balance`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::withdraw_balance`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.balance),
@@ -117,9 +127,10 @@ export function withdrawBalance(
 export function u128ToString(
   tx: Transaction,
   num: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::u128_to_string`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::u128_to_string`,
     arguments: [pure(tx, num, `u128`)],
   })
 }
@@ -129,9 +140,13 @@ export interface AddDeltaArgs {
   delta: TransactionObjectInput
 }
 
-export function addDelta(tx: Transaction, args: AddDeltaArgs): TransactionResult {
+export function addDelta(
+  tx: Transaction,
+  args: AddDeltaArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::add_delta`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::add_delta`,
     arguments: [
       pure(tx, args.currentLiquidity, `u128`),
       obj(tx, args.delta),
@@ -144,9 +159,13 @@ export interface OverflowAddArgs {
   num2: bigint | TransactionArgument
 }
 
-export function overflowAdd(tx: Transaction, args: OverflowAddArgs): TransactionResult {
+export function overflowAdd(
+  tx: Transaction,
+  args: OverflowAddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::utils::overflow_add`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::utils::overflow_add`,
     arguments: [
       pure(tx, args.num1, `u256`),
       pure(tx, args.num2, `u256`),

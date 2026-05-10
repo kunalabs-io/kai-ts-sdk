@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, option, pure } from '../../_framework/util'
 import { Url } from '../../sui/url/structs'
@@ -13,9 +14,10 @@ export function valueX64(
   tx: Transaction,
   typeArg: string,
   share: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::value_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::value_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, share)],
   })
@@ -26,9 +28,10 @@ export function supplyX64(
   tx: Transaction,
   typeArg: string,
   registry: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::supply_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::supply_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })
@@ -39,9 +42,10 @@ export function liabilityValueX64(
   tx: Transaction,
   typeArg: string,
   registry: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::liability_value_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::liability_value_x64`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })
@@ -52,9 +56,10 @@ export function borrowRegistry(
   tx: Transaction,
   typeArg: string,
   treasury: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::borrow_registry`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::borrow_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
@@ -65,9 +70,10 @@ export function borrowMutRegistry(
   tx: Transaction,
   typeArg: string,
   treasury: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::borrow_mut_registry`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::borrow_mut_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
@@ -78,18 +84,24 @@ export function borrowTreasuryCap(
   tx: Transaction,
   typeArg: string,
   treasury: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::borrow_treasury_cap`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::borrow_treasury_cap`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasury)],
   })
 }
 
 /** Create a new empty debt registry. */
-export function createRegistry(tx: Transaction, typeArg: string, t: GenericArg): TransactionResult {
+export function createRegistry(
+  tx: Transaction,
+  typeArg: string,
+  t: GenericArg,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::create_registry`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::create_registry`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, t)],
   })
@@ -100,9 +112,10 @@ export function createRegistryWithCap(
   tx: Transaction,
   typeArg: string,
   treasuryCap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::create_registry_with_cap`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::create_registry_with_cap`,
     typeArguments: [typeArg],
     arguments: [obj(tx, treasuryCap)],
   })
@@ -122,9 +135,10 @@ export function createTreasury(
   tx: Transaction,
   typeArg: string,
   args: CreateTreasuryArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::create_treasury`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::create_treasury`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -138,9 +152,13 @@ export function createTreasury(
 }
 
 /** Create a zero debt share balance. */
-export function zero(tx: Transaction, typeArg: string): TransactionResult {
+export function zero(
+  tx: Transaction,
+  typeArg: string,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::zero`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::zero`,
     typeArguments: [typeArg],
     arguments: [],
   })
@@ -159,9 +177,12 @@ export function increaseLiabilityAndIssueX64(
   tx: Transaction,
   typeArg: string,
   args: IncreaseLiabilityAndIssueX64Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::increase_liability_and_issue_x64`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::debt::increase_liability_and_issue_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -180,9 +201,10 @@ export function increaseLiabilityAndIssue(
   tx: Transaction,
   typeArg: string,
   args: IncreaseLiabilityAndIssueArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::increase_liability_and_issue`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::increase_liability_and_issue`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -201,9 +223,10 @@ export function increaseLiabilityX64(
   tx: Transaction,
   typeArg: string,
   args: IncreaseLiabilityX64Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::increase_liability_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::increase_liability_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -222,9 +245,10 @@ export function increaseLiability(
   tx: Transaction,
   typeArg: string,
   args: IncreaseLiabilityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::increase_liability`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::increase_liability`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -243,9 +267,10 @@ export function decreaseLiabilityX64(
   tx: Transaction,
   typeArg: string,
   args: DecreaseLiabilityX64Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::decrease_liability_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::decrease_liability_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -264,9 +289,10 @@ export function decreaseLiability(
   tx: Transaction,
   typeArg: string,
   args: DecreaseLiabilityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::decrease_liability`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::decrease_liability`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -289,9 +315,10 @@ export function calcRepayX64(
   tx: Transaction,
   typeArg: string,
   args: CalcRepayX64Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::calc_repay_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::calc_repay_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -310,9 +337,14 @@ export interface RepayX64Args {
  * Returns the value repaid (the amount the liability was reduced by).
  * The returned value is in Q64.64 format.
  */
-export function repayX64(tx: Transaction, typeArg: string, args: RepayX64Args): TransactionResult {
+export function repayX64(
+  tx: Transaction,
+  typeArg: string,
+  args: RepayX64Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::repay_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::repay_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -335,9 +367,10 @@ export function calcRepayLossy(
   tx: Transaction,
   typeArg: string,
   args: CalcRepayLossyArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::calc_repay_lossy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::calc_repay_lossy`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -362,9 +395,10 @@ export function repayLossy(
   tx: Transaction,
   typeArg: string,
   args: RepayLossyArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::repay_lossy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::repay_lossy`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -391,9 +425,10 @@ export function calcRepayForAmountX64(
   tx: Transaction,
   typeArg: string,
   args: CalcRepayForAmountX64Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::calc_repay_for_amount_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::calc_repay_for_amount_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -417,9 +452,10 @@ export function calcRepayForAmount(
   tx: Transaction,
   typeArg: string,
   args: CalcRepayForAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::calc_repay_for_amount`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::calc_repay_for_amount`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -445,9 +481,10 @@ export function calcBalanceRepayForAmount(
   tx: Transaction,
   typeArg: string,
   args: CalcBalanceRepayForAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::calc_balance_repay_for_amount`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::calc_balance_repay_for_amount`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.registry),
@@ -470,9 +507,10 @@ export function intoBalanceLossy(
   tx: Transaction,
   typeArg: string,
   args: IntoBalanceLossyArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::into_balance_lossy`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::into_balance_lossy`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.share),
@@ -494,9 +532,10 @@ export function intoBalance(
   tx: Transaction,
   typeArg: string,
   args: IntoBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::into_balance`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::into_balance`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.share),
@@ -515,9 +554,10 @@ export function fromBalance(
   tx: Transaction,
   typeArg: string,
   args: FromBalanceArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::from_balance`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::from_balance`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.treasury),
@@ -532,9 +572,14 @@ export interface SplitX64Args {
 }
 
 /** Split a `DebtShareBalance` and take a sub balance from it. Input amount is in Q64.64 format. */
-export function splitX64(tx: Transaction, typeArg: string, args: SplitX64Args): TransactionResult {
+export function splitX64(
+  tx: Transaction,
+  typeArg: string,
+  args: SplitX64Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::split_x64`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::split_x64`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.shares),
@@ -549,9 +594,14 @@ export interface SplitArgs {
 }
 
 /** Split a `DebtShareBalance` and take a sub balance from it. */
-export function split(tx: Transaction, typeArg: string, args: SplitArgs): TransactionResult {
+export function split(
+  tx: Transaction,
+  typeArg: string,
+  args: SplitArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::split`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::split`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.shares),
@@ -565,9 +615,10 @@ export function withdrawAll(
   tx: Transaction,
   typeArg: string,
   shares: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::withdraw_all`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::withdraw_all`,
     typeArguments: [typeArg],
     arguments: [obj(tx, shares)],
   })
@@ -579,9 +630,14 @@ export interface JoinArgs {
 }
 
 /** Join two `DebtShareBalance`s. The second balance is consumed. */
-export function join(tx: Transaction, typeArg: string, args: JoinArgs): TransactionResult {
+export function join(
+  tx: Transaction,
+  typeArg: string,
+  args: JoinArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::join`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::join`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -595,9 +651,10 @@ export function destroyZero(
   tx: Transaction,
   typeArg: string,
   shares: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::destroy_zero`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::destroy_zero`,
     typeArguments: [typeArg],
     arguments: [obj(tx, shares)],
   })
@@ -608,9 +665,10 @@ export function destroyEmptyRegistry(
   tx: Transaction,
   typeArg: string,
   registry: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt::destroy_empty_registry`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt::destroy_empty_registry`,
     typeArguments: [typeArg],
     arguments: [obj(tx, registry)],
   })

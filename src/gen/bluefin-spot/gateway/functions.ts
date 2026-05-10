@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -27,9 +28,10 @@ export function createPool(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::create_pool`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::create_pool`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -69,9 +71,10 @@ export function createPoolV2(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CreatePoolV2Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::create_pool_v2`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::create_pool_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -108,9 +111,10 @@ export function provideLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: ProvideLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::provide_liquidity`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::provide_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -143,9 +147,12 @@ export function provideLiquidityWithFixedAmount(
   tx: Transaction,
   typeArgs: [string, string],
   args: ProvideLiquidityWithFixedAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::provide_liquidity_with_fixed_amount`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::gateway::provide_liquidity_with_fixed_amount`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -177,9 +184,10 @@ export function removeLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
   args: RemoveLiquidityArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::remove_liquidity`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::remove_liquidity`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -206,9 +214,10 @@ export function closePosition(
   tx: Transaction,
   typeArgs: [string, string],
   args: ClosePositionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::close_position`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::close_position`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -238,9 +247,10 @@ export function swapAssets(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapAssetsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::swap_assets`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::swap_assets`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -275,9 +285,10 @@ export function flashSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: FlashSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::flash_swap`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::flash_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -306,9 +317,10 @@ export function collectFee(
   tx: Transaction,
   typeArgs: [string, string],
   args: CollectFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::collect_fee`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::collect_fee`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -334,9 +346,10 @@ export function collectReward(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: CollectRewardArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::collect_reward`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::collect_reward`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),
@@ -366,9 +379,10 @@ export function routeSwap(
   tx: Transaction,
   typeArgs: [string, string],
   args: RouteSwapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::gateway::route_swap`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::gateway::route_swap`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.clock),

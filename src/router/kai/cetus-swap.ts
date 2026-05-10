@@ -76,7 +76,13 @@ export interface SwapArguments {
   coinOutInfo: CoinInfo<PhantomTypeArgument>
 }
 
-export function swapSpotDirect(tx: Transaction, args: SwapArguments) {
+export function swapSpotDirect(
+  tx: Transaction,
+  args: SwapArguments
+): {
+  coinInRemaining: TransactionArgument
+  coinOut: TransactionArgument
+} {
   const step = findRouteStep(args.coinInInfo, args.coinOutInfo, ['cetus'])
   if (!step) {
     throw new Error(
@@ -179,7 +185,7 @@ export function repayFlashSwap(
   tx: Transaction,
   repayBalance: TransactionObjectInput,
   receipt: FlashSwapReceipt
-) {
+): void {
   if (receipt.poolInfo.protocol !== 'cetus') {
     throw new Error(
       `cetusRepayFlashSwap: Only 'cetus' protocol supported, but got '${receipt.poolInfo.protocol}'`

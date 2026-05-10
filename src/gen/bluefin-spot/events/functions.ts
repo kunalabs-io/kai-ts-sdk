@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -29,9 +30,10 @@ export interface EmitPoolCreatedEventArgs {
 export function emitPoolCreatedEvent(
   tx: Transaction,
   args: EmitPoolCreatedEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_created_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_pool_created_event`,
     arguments: [
       pure(tx, args.id, `${ID.$typeName}`),
       pure(tx, args.coinA, `${String.$typeName}`),
@@ -71,9 +73,12 @@ export interface EmitLiquidityProvidedEventArgs {
 export function emitLiquidityProvidedEvent(
   tx: Transaction,
   args: EmitLiquidityProvidedEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_liquidity_provided_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_liquidity_provided_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -113,9 +118,10 @@ export interface EmitLiquidityRemovedEventArgs {
 export function emitLiquidityRemovedEvent(
   tx: Transaction,
   args: EmitLiquidityRemovedEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_liquidity_removed_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_liquidity_removed_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -152,9 +158,13 @@ export interface EmitSwapEventArgs {
   sequenceNumber: bigint | TransactionArgument
 }
 
-export function emitSwapEvent(tx: Transaction, args: EmitSwapEventArgs): TransactionResult {
+export function emitSwapEvent(
+  tx: Transaction,
+  args: EmitSwapEventArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_swap_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_swap_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.a2B, `bool`),
@@ -192,9 +202,10 @@ export interface EmitFlashSwapEventArgs {
 export function emitFlashSwapEvent(
   tx: Transaction,
   args: EmitFlashSwapEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_flash_swap_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_flash_swap_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.a2B, `bool`),
@@ -215,9 +226,12 @@ export function emitFlashSwapEvent(
 export function emitAdminCapTransferEvent(
   tx: Transaction,
   owner: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_admin_cap_transfer_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_admin_cap_transfer_event`,
     arguments: [pure(tx, owner, `address`)],
   })
 }
@@ -225,9 +239,12 @@ export function emitAdminCapTransferEvent(
 export function emitProtocolFeeCapTransferEvent(
   tx: Transaction,
   owner: string | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_protocol_fee_cap_transfer_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_protocol_fee_cap_transfer_event`,
     arguments: [pure(tx, owner, `address`)],
   })
 }
@@ -246,9 +263,10 @@ export interface EmitProtocolFeeCollectedArgs {
 export function emitProtocolFeeCollected(
   tx: Transaction,
   args: EmitProtocolFeeCollectedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_protocol_fee_collected`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_protocol_fee_collected`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.sender, `address`),
@@ -275,9 +293,10 @@ export interface EmitUserFeeCollectedArgs {
 export function emitUserFeeCollected(
   tx: Transaction,
   args: EmitUserFeeCollectedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_user_fee_collected`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_user_fee_collected`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -303,9 +322,10 @@ export interface EmitUserRewardCollectedArgs {
 export function emitUserRewardCollected(
   tx: Transaction,
   args: EmitUserRewardCollectedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_user_reward_collected`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_user_reward_collected`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -328,9 +348,10 @@ export interface EmitPositionOpenEventArgs {
 export function emitPositionOpenEvent(
   tx: Transaction,
   args: EmitPositionOpenEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_position_open_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_position_open_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -350,9 +371,10 @@ export interface EmitPositionCloseEventArgs {
 export function emitPositionCloseEvent(
   tx: Transaction,
   args: EmitPositionCloseEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_position_close_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_position_close_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.positionId, `${ID.$typeName}`),
@@ -377,9 +399,12 @@ export interface EmitUpdatePoolRewardEmissionEventArgs {
 export function emitUpdatePoolRewardEmissionEvent(
   tx: Transaction,
   args: EmitUpdatePoolRewardEmissionEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_update_pool_reward_emission_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_update_pool_reward_emission_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.rewardCoinSymbol, `${String.$typeName}`),
@@ -402,9 +427,12 @@ export interface EmitSupportedVersionUpdateEventArgs {
 export function emitSupportedVersionUpdateEvent(
   tx: Transaction,
   args: EmitSupportedVersionUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_supported_version_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_supported_version_update_event`,
     arguments: [
       pure(tx, args.oldVersion, `u64`),
       pure(tx, args.newVersion, `u64`),
@@ -422,9 +450,10 @@ export interface EmitTickUpdateEventArgs {
 export function emitTickUpdateEvent(
   tx: Transaction,
   args: EmitTickUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_tick_update_event`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::events::emit_tick_update_event`,
     arguments: [
       pure(tx, args.pool, `${ID.$typeName}`),
       obj(tx, args.index),
@@ -442,9 +471,12 @@ export interface EmitRewardManagerUpdateEventArgs {
 export function emitRewardManagerUpdateEvent(
   tx: Transaction,
   args: EmitRewardManagerUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_reward_manager_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_reward_manager_update_event`,
     arguments: [
       pure(tx, args.manager, `address`),
       pure(tx, args.isActive, `bool`),
@@ -462,9 +494,12 @@ export interface EmitProtocolFeeShareUpdatedEventArgs {
 export function emitProtocolFeeShareUpdatedEvent(
   tx: Transaction,
   args: EmitProtocolFeeShareUpdatedEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_protocol_fee_share_updated_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_protocol_fee_share_updated_event`,
     arguments: [
       pure(tx, args.pool, `${ID.$typeName}`),
       pure(tx, args.previousProtocolFeeShare, `u64`),
@@ -483,9 +518,12 @@ export interface EmitPoolPauseStatusUpdateEventArgs {
 export function emitPoolPauseStatusUpdateEvent(
   tx: Transaction,
   args: EmitPoolPauseStatusUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_pause_status_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_pause_status_update_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.status, `bool`),
@@ -504,9 +542,12 @@ export interface EmitObservationCardinalityUpdatedEventArgs {
 export function emitObservationCardinalityUpdatedEvent(
   tx: Transaction,
   args: EmitObservationCardinalityUpdatedEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_observation_cardinality_updated_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_observation_cardinality_updated_event`,
     arguments: [
       pure(tx, args.pool, `${ID.$typeName}`),
       pure(tx, args.previousObservationCardinality, `u64`),
@@ -525,9 +566,12 @@ export interface EmitPoolManagerUpdateEventArgs {
 export function emitPoolManagerUpdateEvent(
   tx: Transaction,
   args: EmitPoolManagerUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_manager_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_manager_update_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.newManager, `address`),
@@ -545,9 +589,12 @@ export interface EmitPoolCreationFeeUpdateEventArgs {
 export function emitPoolCreationFeeUpdateEvent(
   tx: Transaction,
   args: EmitPoolCreationFeeUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_creation_fee_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_creation_fee_update_event`,
     arguments: [
       pure(tx, args.coinType, `${String.$typeName}`),
       pure(tx, args.previousFeeAmount, `u64`),
@@ -567,9 +614,12 @@ export interface EmitPoolCreationFeePaidEventArgs {
 export function emitPoolCreationFeePaidEvent(
   tx: Transaction,
   args: EmitPoolCreationFeePaidEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_creation_fee_paid_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_creation_fee_paid_event`,
     arguments: [
       pure(tx, args.pool, `${ID.$typeName}`),
       pure(tx, args.creator, `address`),
@@ -591,9 +641,12 @@ export interface EmitPoolCreationFeeClaimedArgs {
 export function emitPoolCreationFeeClaimed(
   tx: Transaction,
   args: EmitPoolCreationFeeClaimedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_creation_fee_claimed`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_creation_fee_claimed`,
     arguments: [
       pure(tx, args.coinType, `${String.$typeName}`),
       pure(tx, args.amount, `u64`),
@@ -615,9 +668,12 @@ export interface EmitRewardReservesIncreasedArgs {
 export function emitRewardReservesIncreased(
   tx: Transaction,
   args: EmitRewardReservesIncreasedArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_reward_reserves_increased`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_reward_reserves_increased`,
     arguments: [
       pure(tx, args.pool, `${ID.$typeName}`),
       pure(tx, args.rewardCoinType, `${String.$typeName}`),
@@ -637,9 +693,12 @@ export interface EmitPoolIconUrlUpdateEventArgs {
 export function emitPoolIconUrlUpdateEvent(
   tx: Transaction,
   args: EmitPoolIconUrlUpdateEventArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::events::emit_pool_icon_url_update_event`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::events::emit_pool_icon_url_update_event`,
     arguments: [
       pure(tx, args.poolId, `${ID.$typeName}`),
       pure(tx, args.iconUrl, `${String.$typeName}`),

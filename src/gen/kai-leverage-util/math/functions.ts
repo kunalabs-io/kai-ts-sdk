@@ -1,4 +1,5 @@
 import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { pure } from '../../_framework/util'
 
@@ -7,9 +8,13 @@ export interface SaturatingSubU64Args {
   y: bigint | TransactionArgument
 }
 
-export function saturatingSubU64(tx: Transaction, args: SaturatingSubU64Args): TransactionResult {
+export function saturatingSubU64(
+  tx: Transaction,
+  args: SaturatingSubU64Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage-util')}::math::saturating_sub_u64`,
+    target: `${getPublishedAt('kai-leverage-util', options?.env)}::math::saturating_sub_u64`,
     arguments: [
       pure(tx, args.x, `u64`),
       pure(tx, args.y, `u64`),

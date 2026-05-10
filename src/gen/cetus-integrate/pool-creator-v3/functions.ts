@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -26,9 +27,10 @@ export function createPoolV3(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolV3Args,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::pool_creator_v3::create_pool_v3`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::pool_creator_v3::create_pool_v3`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -65,10 +67,11 @@ export function createPoolV3WithCreationCap(
   tx: Transaction,
   typeArgs: [string, string],
   args: CreatePoolV3WithCreationCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${
-      getPublishedAt('cetus-integrate')
+      getPublishedAt('cetus-integrate', options?.env)
     }::pool_creator_v3::create_pool_v3_with_creation_cap`,
     typeArguments: typeArgs,
     arguments: [

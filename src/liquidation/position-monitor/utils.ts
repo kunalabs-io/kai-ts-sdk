@@ -9,10 +9,9 @@ import { PYTH_STATE_ID } from '../pyth'
 import { State } from '../../gen/pyth/state/structs'
 import { SuiClient } from '@mysten/sui/client'
 import { Decimal } from 'decimal.js'
-import { Logger } from 'pino'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
 import { Amount } from '../../amount'
-import * as metrics from '../metrics'
+import { OracleService } from '../../oracle'
 
 export interface PriceFeedUpdateInfo {
   feedIds: string[]
@@ -27,7 +26,18 @@ export interface PositionInfo {
   config: PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
   marginLevel: Decimal
   assetValue: Decimal | undefined
-  priceFeedUpdateInfo: PriceFeedUpdateInfo
+  supplyPoolX: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>
+  supplyPoolY: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>
+}
+
+export interface FilterResult {
+  positionsToProcess: Map<string, PositionInfo>
+  liquidateSkippedLowAssetValueIds: Set<string>
+  deleverageSkippedLowAssetValueIds: Set<string>
+  nothingToDeleverageIds: Set<string>
+  skipListIds: Set<string>
+  liquidateAddedIds: Set<string>
+  deleverageAddedIds: Set<string>
 }
 
 interface CalcPositionMarginLevelParams {
@@ -103,20 +113,23 @@ export async function getPriceFeedUpdateInfo(
 
 export function filterByLiquidationAndDeleverageNeeded(
   positionInfos: PositionInfo[],
-  logger: Logger,
   includeDeleveragePositions: boolean = false,
   minAssetValue: number = 0.01,
   positionSkipList: string[] = []
-): Map<string, PositionInfo> {
+): FilterResult {
   const positionsToProcess = new Map<string, PositionInfo>()
-  let liquidateSkippedCount = 0
-  let deleverageSkippedCount = 0
+  const liquidateSkippedLowAssetValueIds = new Set<string>()
+  const deleverageSkippedLowAssetValueIds = new Set<string>()
+  const nothingToDeleverageIds = new Set<string>()
+  const skipListIds = new Set<string>()
+  const liquidateAddedIds = new Set<string>()
+  const deleverageAddedIds = new Set<string>()
 
   for (const info of positionInfos) {
     const { position, config, marginLevel, assetValue } = info
 
     if (positionSkipList.includes(position.id)) {
-      logger.info(`Position ${position.id} is in skip list, skipping`)
+      skipListIds.add(position.id)
       continue
     }
 
@@ -126,17 +139,12 @@ export function filterByLiquidationAndDeleverageNeeded(
 
     if (marginLevel.lt(config.liqMargin)) {
       if (assetValue?.lt(minAssetValue)) {
-        logger.info(
-          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping liquidation`
-        )
-        liquidateSkippedCount++
+        liquidateSkippedLowAssetValueIds.add(position.id)
         continue
       }
 
       positionsToProcess.set(position.id, info)
-      logger.info(
-        `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below liquidation margin ${config.liqMargin.toDP(6).toString()}, adding to positions to process`
-      )
+      liquidateAddedIds.add(position.id)
       continue
     }
 
@@ -148,31 +156,29 @@ export function filterByLiquidationAndDeleverageNeeded(
           (position.colY.int > 0n && position.debtSharesY === 0n))
 
       if (hasNothingToDeleverage) {
-        logger.info(
-          `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()} and above liquidation margin ${config.liqMargin.toDP(6).toString()}, but there's nothing to deleverage`
-        )
+        nothingToDeleverageIds.add(position.id)
         continue
       }
 
       if (assetValue?.lt(minAssetValue)) {
-        logger.info(
-          `Position ${position.id} asset value ${assetValue?.toDP(6).toString()} is below minimum asset value ${minAssetValue}, skipping deleverage`
-        )
-        deleverageSkippedCount++
+        deleverageSkippedLowAssetValueIds.add(position.id)
         continue
       }
 
       positionsToProcess.set(position.id, info)
-      logger.info(
-        `Position ${position.id} margin level ${marginLevel.toDP(6).toString()} is below deleverage margin ${config.deleverageMargin.toDP(6).toString()}, adding to positions to process`
-      )
+      deleverageAddedIds.add(position.id)
     }
   }
 
-  metrics.liquidatePositionSkippedLowAssetValueCount?.record(liquidateSkippedCount)
-  metrics.deleveragePositionSkippedLowAssetValueCount?.record(deleverageSkippedCount)
-
-  return positionsToProcess
+  return {
+    positionsToProcess,
+    liquidateSkippedLowAssetValueIds,
+    deleverageSkippedLowAssetValueIds,
+    nothingToDeleverageIds,
+    skipListIds,
+    liquidateAddedIds,
+    deleverageAddedIds,
+  }
 }
 
 export function fisherYatesShuffle<T>(array: T[]): T[] {
@@ -197,7 +203,7 @@ export function priceFromPythFeedPrice<
     feed: PriceFeed
     info: CoinInfo<Y>
   }
-) {
+): Price<X, Y> {
   const getPrice = (feed: PriceFeed) => {
     const price = feed.getPriceUnchecked()
     return new Decimal(price.price).mul(new Decimal(10).pow(price.expo))
@@ -214,7 +220,7 @@ export function calcPositionMarginLevel({
   supplyPoolX,
   supplyPoolY,
   allPriceFeeds,
-}: CalcPositionMarginLevelParams) {
+}: CalcPositionMarginLevelParams): Decimal {
   const feedX = allPriceFeeds.find(
     pf => normalizeSuiAddress(pf.id) === position.configInfo.pioInfoX.priceFeedId
   )
@@ -249,7 +255,7 @@ export function calcPositionAssetValue(
     x: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
     y: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined
   }
-) {
+): Decimal | undefined {
   const feedX = allPriceFeeds.find(
     pf => normalizeSuiAddress(pf.id) === position.configInfo.pioInfoX.priceFeedId
   )
@@ -279,4 +285,26 @@ export function calcPositionAssetValue(
   })
 
   return Amount.fromInt(positionAssetValue, assetValueCoin.decimals).toDecimal()
+}
+
+/**
+ * Calculates position margin level using OracleService for fresh prices.
+ */
+export function calcPositionMarginLevelWithOracle(
+  position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
+  supplyPoolX: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>,
+  supplyPoolY: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>,
+  oracleService: OracleService
+): Decimal {
+  return oracleService.calcMarginLevel(position, supplyPoolX, supplyPoolY)
+}
+
+/**
+ * Calculates position asset value in USD using OracleService for fresh prices.
+ */
+export function calcPositionAssetValueWithOracle(
+  position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
+  oracleService: OracleService
+): Decimal {
+  return oracleService.calcAssetValueUsd(position)
 }

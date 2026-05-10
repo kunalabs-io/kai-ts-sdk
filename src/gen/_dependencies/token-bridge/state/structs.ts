@@ -1,3 +1,11 @@
+/**
+ * This module implements the global state variables for Token Bridge as a
+ * shared object. The `State` object is used to perform anything that requires
+ * access to data that defines the Token Bridge contract. Examples of which are
+ * accessing registered assets and verifying `VAA` intended for Token Bridge by
+ * checking the emitter against its own registered emitters.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -52,6 +60,10 @@ export type LatestOnlyJSON = {
   $typeArgs: []
 } & LatestOnlyJSONField
 
+/**
+ * Capability reflecting that the current build version is used to invoke
+ * state methods.
+ */
 export class LatestOnly implements StructClass {
   __StructClass = true as const
 
@@ -223,12 +235,19 @@ export function isState(type: string): boolean {
 
 export interface StateFields {
   id: ToField<UID>
+  /** Governance chain ID. */
   governanceChain: ToField<'u16'>
+  /** Governance contract address. */
   governanceContract: ToField<ExternalAddress>
+  /** Set of consumed VAA hashes. */
   consumedVaas: ToField<ConsumedVAAs>
+  /** Emitter capability required to publish Wormhole messages. */
   emitterCap: ToField<EmitterCap>
+  /** Registry for foreign Token Bridge contracts. */
   emitterRegistry: ToField<Table<'u16', ToPhantom<ExternalAddress>>>
+  /** Registry for native and wrapped assets. */
   tokenRegistry: ToField<TokenRegistry>
+  /** Upgrade capability. */
   upgradeCap: ToField<UpgradeCap>
 }
 
@@ -250,6 +269,7 @@ export type StateJSON = {
   $typeArgs: []
 } & StateJSONField
 
+/** Container for all state variables for Token Bridge. */
 export class State implements StructClass {
   __StructClass = true as const
 
@@ -265,12 +285,19 @@ export class State implements StructClass {
   readonly $isPhantom: typeof State.$isPhantom = State.$isPhantom
 
   readonly id: ToField<UID>
+  /** Governance chain ID. */
   readonly governanceChain: ToField<'u16'>
+  /** Governance contract address. */
   readonly governanceContract: ToField<ExternalAddress>
+  /** Set of consumed VAA hashes. */
   readonly consumedVaas: ToField<ConsumedVAAs>
+  /** Emitter capability required to publish Wormhole messages. */
   readonly emitterCap: ToField<EmitterCap>
+  /** Registry for foreign Token Bridge contracts. */
   readonly emitterRegistry: ToField<Table<'u16', ToPhantom<ExternalAddress>>>
+  /** Registry for native and wrapped assets. */
   readonly tokenRegistry: ToField<TokenRegistry>
+  /** Upgrade capability. */
   readonly upgradeCap: ToField<UpgradeCap>
 
   private constructor(typeArgs: [], fields: StateFields) {

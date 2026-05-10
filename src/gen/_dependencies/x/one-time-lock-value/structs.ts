@@ -1,3 +1,11 @@
+/**
+ * ********
+ * This module is used to store a value that could
+ * only be accessed after a certain epoch, and may expire after a certain epoch.
+ * And, the value could be consume only once.
+ * *********
+ */
+
 import { bcs, BcsType } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -42,31 +50,31 @@ export function isOneTimeLockValue(type: string): boolean {
   )
 }
 
-export interface OneTimeLockValueFields<T0 extends TypeArgument> {
+export interface OneTimeLockValueFields<T extends TypeArgument> {
   id: ToField<UID>
-  value: ToField<T0>
+  value: ToField<T>
   lockUntilEpoch: ToField<'u64'>
   validBeforeEpoch: ToField<'u64'>
 }
 
-export type OneTimeLockValueReified<T0 extends TypeArgument> = Reified<
-  OneTimeLockValue<T0>,
-  OneTimeLockValueFields<T0>
+export type OneTimeLockValueReified<T extends TypeArgument> = Reified<
+  OneTimeLockValue<T>,
+  OneTimeLockValueFields<T>
 >
 
-export type OneTimeLockValueJSONField<T0 extends TypeArgument> = {
+export type OneTimeLockValueJSONField<T extends TypeArgument> = {
   id: string
-  value: ToJSON<T0>
+  value: ToJSON<T>
   lockUntilEpoch: string
   validBeforeEpoch: string
 }
 
-export type OneTimeLockValueJSON<T0 extends TypeArgument> = {
+export type OneTimeLockValueJSON<T extends TypeArgument> = {
   $typeName: typeof OneTimeLockValue.$typeName
-  $typeArgs: [ToTypeStr<T0>]
-} & OneTimeLockValueJSONField<T0>
+  $typeArgs: [ToTypeStr<T>]
+} & OneTimeLockValueJSONField<T>
 
-export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
+export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::one_time_lock_value::OneTimeLockValue` = `${
@@ -76,20 +84,20 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
   static readonly $isPhantom = [false] as const
 
   readonly $typeName: typeof OneTimeLockValue.$typeName = OneTimeLockValue.$typeName
-  readonly $fullTypeName: `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<T0>}>`
-  readonly $typeArgs: [ToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<T>}>`
+  readonly $typeArgs: [ToTypeStr<T>]
   readonly $isPhantom: typeof OneTimeLockValue.$isPhantom = OneTimeLockValue.$isPhantom
 
   readonly id: ToField<UID>
-  readonly value: ToField<T0>
+  readonly value: ToField<T>
   readonly lockUntilEpoch: ToField<'u64'>
   readonly validBeforeEpoch: ToField<'u64'>
 
-  private constructor(typeArgs: [ToTypeStr<T0>], fields: OneTimeLockValueFields<T0>) {
+  private constructor(typeArgs: [ToTypeStr<T>], fields: OneTimeLockValueFields<T>) {
     this.$fullTypeName = composeSuiType(
       OneTimeLockValue.$typeName,
       ...typeArgs,
-    ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<T0>}>`
+    ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -98,34 +106,31 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     this.validBeforeEpoch = fields.validBeforeEpoch
   }
 
-  static reified<T0 extends Reified<TypeArgument, any>>(
-    T0: T0,
-  ): OneTimeLockValueReified<ToTypeArgument<T0>> {
-    const reifiedBcs = OneTimeLockValue.bcs(toBcs(T0))
+  static reified<T extends Reified<TypeArgument, any>>(
+    T: T,
+  ): OneTimeLockValueReified<ToTypeArgument<T>> {
+    const reifiedBcs = OneTimeLockValue.bcs(toBcs(T))
     return {
       typeName: OneTimeLockValue.$typeName,
       fullTypeName: composeSuiType(
         OneTimeLockValue.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<ToTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [ToTypeStr<ToTypeArgument<T0>>],
+        ...[extractType(T)],
+      ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<ToTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
       isPhantom: OneTimeLockValue.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => OneTimeLockValue.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        OneTimeLockValue.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => OneTimeLockValue.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => OneTimeLockValue.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => OneTimeLockValue.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => OneTimeLockValue.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => OneTimeLockValue.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => OneTimeLockValue.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        OneTimeLockValue.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        OneTimeLockValue.fromSuiObjectData(T0, content),
+      fromJSONField: (field: any) => OneTimeLockValue.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => OneTimeLockValue.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => OneTimeLockValue.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => OneTimeLockValue.fromSuiObjectData(T, content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        OneTimeLockValue.fetch(client, T0, id),
-      new: (fields: OneTimeLockValueFields<ToTypeArgument<T0>>) => {
-        return new OneTimeLockValue([extractType(T0)], fields)
+        OneTimeLockValue.fetch(client, T, id),
+      new: (fields: OneTimeLockValueFields<ToTypeArgument<T>>) => {
+        return new OneTimeLockValue([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -135,10 +140,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     return OneTimeLockValue.reified
   }
 
-  static phantom<T0 extends Reified<TypeArgument, any>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<OneTimeLockValue<ToTypeArgument<T0>>>> {
-    return phantom(OneTimeLockValue.reified(T0))
+  static phantom<T extends Reified<TypeArgument, any>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<OneTimeLockValue<ToTypeArgument<T>>>> {
+    return phantom(OneTimeLockValue.reified(T))
   }
 
   static get p(): typeof OneTimeLockValue.phantom {
@@ -146,10 +151,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
   }
 
   private static instantiateBcs() {
-    return <T0 extends BcsType<any>>(T0: T0) =>
-      bcs.struct(`OneTimeLockValue<${T0.name}>`, {
+    return <T extends BcsType<any>>(T: T) =>
+      bcs.struct(`OneTimeLockValue<${T.name}>`, {
         id: UID.bcs,
-        value: T0,
+        value: T,
         lock_until_epoch: bcs.u64(),
         valid_before_epoch: bcs.u64(),
       })
@@ -164,10 +169,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     return OneTimeLockValue.cachedBcs
   }
 
-  static fromFields<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromFields<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     return OneTimeLockValue.reified(typeArg).new({
       id: decodeFromFields(UID.reified(), fields.id),
       value: decodeFromFields(typeArg, fields.value),
@@ -176,10 +181,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     })
   }
 
-  static fromFieldsWithTypes<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     if (!isOneTimeLockValue(item.type)) {
       throw new Error('not a OneTimeLockValue type')
     }
@@ -193,31 +198,31 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromBcs<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     data: Uint8Array,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     const typeArgs = [typeArg]
     return OneTimeLockValue.fromFields(typeArg, OneTimeLockValue.bcs(toBcs(typeArg)).parse(data))
   }
 
-  toJSONField(): OneTimeLockValueJSONField<T0> {
+  toJSONField(): OneTimeLockValueJSONField<T> {
     return {
       id: this.id,
-      value: fieldToJSON<T0>(`${this.$typeArgs[0]}`, this.value),
+      value: fieldToJSON<T>(`${this.$typeArgs[0]}`, this.value),
       lockUntilEpoch: this.lockUntilEpoch.toString(),
       validBeforeEpoch: this.validBeforeEpoch.toString(),
     }
   }
 
-  toJSON(): OneTimeLockValueJSON<T0> {
+  toJSON(): OneTimeLockValueJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromJSONField<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     field: any,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     return OneTimeLockValue.reified(typeArg).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       value: decodeFromJSONField(typeArg, field.value),
@@ -226,10 +231,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     })
   }
 
-  static fromJSON<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromJSON<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     if (json.$typeName !== OneTimeLockValue.$typeName) {
       throw new Error(
         `not a OneTimeLockValue json object: expected '${OneTimeLockValue.$typeName}' but got '${json.$typeName}'`,
@@ -244,10 +249,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     return OneTimeLockValue.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -257,10 +262,10 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     return OneTimeLockValue.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends Reified<TypeArgument, any>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): OneTimeLockValue<ToTypeArgument<T0>> {
+  ): OneTimeLockValue<ToTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOneTimeLockValue(data.bcs.type)) {
         throw new Error(`object at is not a OneTimeLockValue object`)
@@ -292,11 +297,11 @@ export class OneTimeLockValue<T0 extends TypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends Reified<TypeArgument, any>>(
+  static async fetch<T extends Reified<TypeArgument, any>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<OneTimeLockValue<ToTypeArgument<T0>>> {
+  ): Promise<OneTimeLockValue<ToTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isOneTimeLockValue(res.type)) {
       throw new Error(`object at id ${id} is not a OneTimeLockValue object`)

@@ -1,3 +1,13 @@
+/**
+ * This module implements a public method intended to be called after an
+ * upgrade has been committed. The purpose is to add one-off migration logic
+ * that would alter Token Bridge `State`.
+ *
+ * Included in migration is the ability to ensure that breaking changes for
+ * any of Token Bridge's methods by enforcing the current build version as
+ * their required minimum version.
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -46,6 +56,7 @@ export type MigrateCompleteJSON = {
   $typeArgs: []
 } & MigrateCompleteJSONField
 
+/** Event reflecting when `migrate` is successfully executed. */
 export class MigrateComplete implements StructClass {
   __StructClass = true as const
 

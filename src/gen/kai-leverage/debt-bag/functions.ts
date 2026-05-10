@@ -4,13 +4,14 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 /** Create an empty `DebtBag`. */
-export function empty(tx: Transaction): TransactionResult {
+export function empty(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::empty`,
     arguments: [],
   })
 }
@@ -20,9 +21,13 @@ export interface GetAssetIdxOptArgs {
   assetType: TransactionObjectInput
 }
 
-export function getAssetIdxOpt(tx: Transaction, args: GetAssetIdxOptArgs): TransactionResult {
+export function getAssetIdxOpt(
+  tx: Transaction,
+  args: GetAssetIdxOptArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_asset_idx_opt`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::get_asset_idx_opt`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.assetType),
@@ -35,9 +40,13 @@ export interface GetShareIdxOptArgs {
   shareType: TransactionObjectInput
 }
 
-export function getShareIdxOpt(tx: Transaction, args: GetShareIdxOptArgs): TransactionResult {
+export function getShareIdxOpt(
+  tx: Transaction,
+  args: GetShareIdxOptArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_share_idx_opt`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::get_share_idx_opt`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.shareType),
@@ -50,9 +59,13 @@ export interface GetShareIdxArgs {
   shareType: TransactionObjectInput
 }
 
-export function getShareIdx(tx: Transaction, args: GetShareIdxArgs): TransactionResult {
+export function getShareIdx(
+  tx: Transaction,
+  args: GetShareIdxArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_share_idx`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::get_share_idx`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.shareType),
@@ -60,9 +73,13 @@ export function getShareIdx(tx: Transaction, args: GetShareIdxArgs): Transaction
   })
 }
 
-export function key(tx: Transaction, info: TransactionObjectInput): TransactionResult {
+export function key(
+  tx: Transaction,
+  info: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::key`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::key`,
     arguments: [obj(tx, info)],
   })
 }
@@ -82,9 +99,14 @@ export interface AddArgs {
  * - Maintains synchronized state between `infos` vector and `bag` storage
  * - Aborts with `EAssetShareTypeMismatch` if share type conflicts with existing asset
  */
-export function add(tx: Transaction, typeArgs: [string, string], args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::add`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::add`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.self),
@@ -99,9 +121,14 @@ export interface TakeAmtArgs {
 }
 
 /** Take `amount` of shares of type `ST` from the bag. Returns zero if `amount` is 0. */
-export function takeAmt(tx: Transaction, typeArg: string, args: TakeAmtArgs): TransactionResult {
+export function takeAmt(
+  tx: Transaction,
+  typeArg: string,
+  args: TakeAmtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::take_amt`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::take_amt`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -115,9 +142,10 @@ export function takeAll(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::take_all`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::take_all`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -128,9 +156,12 @@ export function getShareAmountByAssetType(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_share_amount_by_asset_type`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::debt_bag::get_share_amount_by_asset_type`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -141,9 +172,12 @@ export function getShareAmountByShareType(
   tx: Transaction,
   typeArg: string,
   debtBag: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_share_amount_by_share_type`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::debt_bag::get_share_amount_by_share_type`,
     typeArguments: [typeArg],
     arguments: [obj(tx, debtBag)],
   })
@@ -154,9 +188,10 @@ export function getShareTypeForAsset(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::get_share_type_for_asset`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::get_share_type_for_asset`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -173,42 +208,61 @@ export function shareTypeMatchesAssetIfAnyExists(
   tx: Transaction,
   typeArgs: [string, string],
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::share_type_matches_asset_if_any_exists`,
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::debt_bag::share_type_matches_asset_if_any_exists`,
     typeArguments: typeArgs,
     arguments: [obj(tx, self)],
   })
 }
 
 /** True if the bag contains no entries. */
-export function isEmpty(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function isEmpty(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::is_empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::is_empty`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Destroy an empty bag and its inner storage. */
-export function destroyEmpty(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function destroyEmpty(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::destroy_empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::destroy_empty`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** @deprecated Renamed to `length` for consistency. */
-export function size(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function size(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::size`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::size`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Number of different asset/share entries in the bag. */
-export function length(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function length(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::debt_bag::length`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::debt_bag::length`,
     arguments: [obj(tx, self)],
   })
 }

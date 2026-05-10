@@ -4,19 +4,28 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj } from '../../_framework/util'
 
-export function mateToLib(tx: Transaction, num: TransactionObjectInput): TransactionResult {
+export function mateToLib(
+  tx: Transaction,
+  num: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::mate_to_lib`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::mate_to_lib`,
     arguments: [obj(tx, num)],
   })
 }
 
-export function libToMate(tx: Transaction, num: TransactionObjectInput): TransactionResult {
+export function libToMate(
+  tx: Transaction,
+  num: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::lib_to_mate`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::lib_to_mate`,
     arguments: [obj(tx, num)],
   })
 }
@@ -26,9 +35,13 @@ export interface SubArgs {
   b: TransactionObjectInput
 }
 
-export function sub(tx: Transaction, args: SubArgs): TransactionResult {
+export function sub(
+  tx: Transaction,
+  args: SubArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::sub`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::sub`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -41,9 +54,13 @@ export interface AddArgs {
   b: TransactionObjectInput
 }
 
-export function add(tx: Transaction, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::add`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::add`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -56,9 +73,13 @@ export interface EqArgs {
   b: TransactionObjectInput
 }
 
-export function eq(tx: Transaction, args: EqArgs): TransactionResult {
+export function eq(
+  tx: Transaction,
+  args: EqArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::eq`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::eq`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -71,9 +92,13 @@ export interface LtArgs {
   b: TransactionObjectInput
 }
 
-export function lt(tx: Transaction, args: LtArgs): TransactionResult {
+export function lt(
+  tx: Transaction,
+  args: LtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::lt`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::lt`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -86,9 +111,13 @@ export interface GtArgs {
   b: TransactionObjectInput
 }
 
-export function gt(tx: Transaction, args: GtArgs): TransactionResult {
+export function gt(
+  tx: Transaction,
+  args: GtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::gt`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::gt`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -101,9 +130,13 @@ export interface LteArgs {
   b: TransactionObjectInput
 }
 
-export function lte(tx: Transaction, args: LteArgs): TransactionResult {
+export function lte(
+  tx: Transaction,
+  args: LteArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::lte`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::lte`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -116,9 +149,13 @@ export interface GteArgs {
   b: TransactionObjectInput
 }
 
-export function gte(tx: Transaction, args: GteArgs): TransactionResult {
+export function gte(
+  tx: Transaction,
+  args: GteArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::gte`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::gte`,
     arguments: [
       obj(tx, args.a),
       obj(tx, args.b),
@@ -126,9 +163,13 @@ export function gte(tx: Transaction, args: GteArgs): TransactionResult {
   })
 }
 
-export function isNeg(tx: Transaction, num: TransactionObjectInput): TransactionResult {
+export function isNeg(
+  tx: Transaction,
+  num: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::i32H::is_neg`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::i32H::is_neg`,
     arguments: [obj(tx, num)],
   })
 }

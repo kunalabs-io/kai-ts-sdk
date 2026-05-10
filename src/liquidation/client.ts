@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type, TArray, TString } from '@sinclair/typebox'
 
 export const LIQUIDATION_BACKEND_CLIENT_BASE_URL = 'https://api.kai.finance'
 
@@ -25,7 +25,9 @@ export class LiqudationBackendClient {
   }
 }
 
-export const PositionsGetExistingPositionsIdsResponseSchema = Type.Array(Type.String())
+export const PositionsGetExistingPositionsIdsResponseSchema: TArray<TString> = Type.Array(
+  Type.String()
+)
 
 export type PositionsGetExistingPositionsIdsResponseType = Static<
   typeof PositionsGetExistingPositionsIdsResponseSchema

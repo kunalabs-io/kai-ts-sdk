@@ -4,21 +4,26 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 /** Create an empty `BalanceBag`. */
-export function empty(tx: Transaction): TransactionResult {
+export function empty(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::empty`,
     arguments: [],
   })
 }
 
 /** Get a read-only map of amounts per coin type. */
-export function amounts(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function amounts(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::amounts`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::amounts`,
     arguments: [obj(tx, self)],
   })
 }
@@ -29,9 +34,14 @@ export interface AddArgs {
 }
 
 /** Add a `Balance<T>` to the bag, joining with existing balance if present. */
-export function add(tx: Transaction, typeArg: string, args: AddArgs): TransactionResult {
+export function add(
+  tx: Transaction,
+  typeArg: string,
+  args: AddArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::add`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::add`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -45,9 +55,10 @@ export function takeAll(
   tx: Transaction,
   typeArg: string,
   self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::take_all`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::take_all`,
     typeArguments: [typeArg],
     arguments: [obj(tx, self)],
   })
@@ -63,9 +74,10 @@ export function takeAmount(
   tx: Transaction,
   typeArg: string,
   args: TakeAmountArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::take_amount`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::take_amount`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.self),
@@ -75,17 +87,25 @@ export function takeAmount(
 }
 
 /** True if the bag contains no balances. */
-export function isEmpty(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function isEmpty(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::is_empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::is_empty`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Destroy an empty bag. */
-export function destroyEmpty(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function destroyEmpty(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('kai-leverage')}::balance_bag::destroy_empty`,
+    target: `${getPublishedAt('kai-leverage', options?.env)}::balance_bag::destroy_empty`,
     arguments: [obj(tx, self)],
   })
 }

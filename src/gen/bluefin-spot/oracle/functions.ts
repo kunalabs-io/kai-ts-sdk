@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -11,17 +12,21 @@ import { obj, pure } from '../../_framework/util'
 export function initializeManager(
   tx: Transaction,
   timestamp: bigint | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::initialize_manager`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::initialize_manager`,
     arguments: [pure(tx, timestamp, `u64`)],
   })
 }
 
 /** Creates a new observation */
-export function defaultObservation(tx: Transaction): TransactionResult {
+export function defaultObservation(
+  tx: Transaction,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::default_observation`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::default_observation`,
     arguments: [],
   })
 }
@@ -34,9 +39,13 @@ export interface ObserveSingleArgs {
   liquidity: bigint | TransactionArgument
 }
 
-export function observeSingle(tx: Transaction, args: ObserveSingleArgs): TransactionResult {
+export function observeSingle(
+  tx: Transaction,
+  args: ObserveSingleArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::observe_single`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::observe_single`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.timestamp, `u64`),
@@ -54,9 +63,13 @@ export interface TransformArgs {
   liquidity: bigint | TransactionArgument
 }
 
-export function transform(tx: Transaction, args: TransformArgs): TransactionResult {
+export function transform(
+  tx: Transaction,
+  args: TransformArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::transform`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::transform`,
     arguments: [
       obj(tx, args.observation),
       pure(tx, args.timestamp, `u64`),
@@ -76,9 +89,10 @@ export interface GetSurroundingObservationsArgs {
 export function getSurroundingObservations(
   tx: Transaction,
   args: GetSurroundingObservationsArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::get_surrounding_observations`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::get_surrounding_observations`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.target, `u64`),
@@ -93,9 +107,13 @@ export interface BinarySearchArgs {
   timestamp: bigint | TransactionArgument
 }
 
-export function binarySearch(tx: Transaction, args: BinarySearchArgs): TransactionResult {
+export function binarySearch(
+  tx: Transaction,
+  args: BinarySearchArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::binary_search`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::binary_search`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.timestamp, `u64`),
@@ -110,9 +128,13 @@ export interface UpdateArgs {
   target: bigint | TransactionArgument
 }
 
-export function update(tx: Transaction, args: UpdateArgs): TransactionResult {
+export function update(
+  tx: Transaction,
+  args: UpdateArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::update`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::update`,
     arguments: [
       obj(tx, args.manager),
       obj(tx, args.currentTickIndex),
@@ -127,9 +149,13 @@ export interface GrowArgs {
   newCardinality: bigint | TransactionArgument
 }
 
-export function grow(tx: Transaction, args: GrowArgs): TransactionResult {
+export function grow(
+  tx: Transaction,
+  args: GrowArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::grow`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::grow`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.newCardinality, `u64`),
@@ -140,9 +166,10 @@ export function grow(tx: Transaction, args: GrowArgs): TransactionResult {
 export function observationIndex(
   tx: Transaction,
   manager: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::observation_index`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::observation_index`,
     arguments: [obj(tx, manager)],
   })
 }
@@ -150,9 +177,10 @@ export function observationIndex(
 export function observationCardinality(
   tx: Transaction,
   manager: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::observation_cardinality`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::observation_cardinality`,
     arguments: [obj(tx, manager)],
   })
 }
@@ -160,9 +188,10 @@ export function observationCardinality(
 export function observationCardinalityNext(
   tx: Transaction,
   manager: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::observation_cardinality_next`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::observation_cardinality_next`,
     arguments: [obj(tx, manager)],
   })
 }
@@ -170,16 +199,21 @@ export function observationCardinalityNext(
 export function observationsLength(
   tx: Transaction,
   manager: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::observations_length`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::observations_length`,
     arguments: [obj(tx, manager)],
   })
 }
 
-export function timestamp(tx: Transaction, observation: TransactionObjectInput): TransactionResult {
+export function timestamp(
+  tx: Transaction,
+  observation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::timestamp`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::timestamp`,
     arguments: [obj(tx, observation)],
   })
 }
@@ -187,9 +221,10 @@ export function timestamp(tx: Transaction, observation: TransactionObjectInput):
 export function tickCumulative(
   tx: Transaction,
   observation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::tick_cumulative`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::tick_cumulative`,
     arguments: [obj(tx, observation)],
   })
 }
@@ -197,9 +232,12 @@ export function tickCumulative(
 export function secondsPerLiquidityCumulative(
   tx: Transaction,
   observation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::seconds_per_liquidity_cumulative`,
+    target: `${
+      getPublishedAt('bluefin-spot', options?.env)
+    }::oracle::seconds_per_liquidity_cumulative`,
     arguments: [obj(tx, observation)],
   })
 }
@@ -207,9 +245,10 @@ export function secondsPerLiquidityCumulative(
 export function initialized(
   tx: Transaction,
   observation: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::initialized`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::initialized`,
     arguments: [obj(tx, observation)],
   })
 }
@@ -220,9 +259,13 @@ export interface GetObservationArgs {
 }
 
 /** Gets the observation at provided index. If index out of bound, creates one */
-export function getObservation(tx: Transaction, args: GetObservationArgs): TransactionResult {
+export function getObservation(
+  tx: Transaction,
+  args: GetObservationArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('bluefin-spot')}::oracle::get_observation`,
+    target: `${getPublishedAt('bluefin-spot', options?.env)}::oracle::get_observation`,
     arguments: [
       obj(tx, args.manager),
       pure(tx, args.index, `u64`),

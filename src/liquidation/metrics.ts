@@ -12,8 +12,13 @@ export let workerLiquidateOrDeleverageCallAttemptsCount: Counter | undefined
 export let workerLiquidateOrDeleverageCallFailuresCount: Counter | undefined
 export let liquidatePositionAttemptCount: Counter | undefined
 export let liquidatePositionSuccessCount: Counter | undefined
+export let liquidationNoActionCount: Counter | undefined
 export let liquidatePositionSkippedLowAssetValueCount: Gauge | undefined
 export let deleveragePositionSkippedLowAssetValueCount: Gauge | undefined
+export let retryPositionsCount: Gauge | undefined
+export let positionCacheRefreshCount: Counter | undefined
+export let supplyPoolCacheRefreshCount: Counter | undefined
+export let positionsSkippedMissingRegistryCount: Gauge | undefined
 
 const IO_LATENCY_BUCKETS_MS = [10, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 2000, 3000, 5000]
 
@@ -47,7 +52,7 @@ function createGauge(meter: Meter, name: string, description: string) {
  * Registers all metrics using the provided Meter.
  * Call this function once at startup with your Meter instance.
  */
-export function registerAll(meter: Meter) {
+export function registerAll(meter: Meter): void {
   monitorPollRunCount = createCounter(
     meter,
     'monitor_poll_run_count',
@@ -108,6 +113,11 @@ export function registerAll(meter: Meter) {
     'liquidate_position_success_count',
     'Number of successful liquidation transactions'
   )
+  liquidationNoActionCount = createCounter(
+    meter,
+    'liquidation_no_action_count',
+    'Number of liquidation attempts where position no longer needed action'
+  )
   liquidatePositionSkippedLowAssetValueCount = createGauge(
     meter,
     'liquidate_position_skipped_low_asset_value_count',
@@ -117,5 +127,25 @@ export function registerAll(meter: Meter) {
     meter,
     'deleverage_position_skipped_low_asset_value_count',
     'Number of deleverage positions skipped due to asset value below minimum threshold in current poll cycle'
+  )
+  retryPositionsCount = createGauge(
+    meter,
+    'retry_positions_count',
+    'Number of positions currently in retry backoff state'
+  )
+  positionCacheRefreshCount = createCounter(
+    meter,
+    'position_cache_refresh_count',
+    'Number of position cache refreshes'
+  )
+  supplyPoolCacheRefreshCount = createCounter(
+    meter,
+    'supply_pool_cache_refresh_count',
+    'Number of supply pool / config cache refreshes'
+  )
+  positionsSkippedMissingRegistryCount = createGauge(
+    meter,
+    'positions_skipped_missing_registry_count',
+    'Number of positions skipped because config or supply pool is not in registry'
   )
 }

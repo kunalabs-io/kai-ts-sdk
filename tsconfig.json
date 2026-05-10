@@ -2,15 +2,14 @@
   "extends": "./tsconfig.shared.json",
   "compilerOptions": {
     "outDir": "dist/",
+    "rootDir": "src",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "isolatedModules": true,
-    "rootDir": "src",
-    "baseUrl": "src",
-    "declarationMap": true
+    "isolatedDeclarations": true,
+    "baseUrl": "src"
   },
   "include": [
     "src/**/*"

@@ -8,6 +8,7 @@ import {
   isPosition,
   Position as Position_,
   PositionConfig as PositionConfig_,
+  PositionConfigReified,
   PositionReified,
 } from '../gen/kai-leverage/position-core-clmm/structs'
 import { SupplyPool, SupplyPoolInfo, SUPPLY_POOL_INFOS } from './supply-pool'
@@ -148,7 +149,7 @@ export class PositionConfigInfo<
   Y extends PhantomTypeArgument,
   LP extends TypeArgument,
 > {
-  readonly configReified = PositionConfig_.r
+  readonly configReified: PositionConfigReified = PositionConfig_.r
 
   readonly name: string
   readonly configId: string
@@ -190,7 +191,7 @@ export class PositionConfigInfo<
    * @param data - The BCS data
    * @returns `Position`
    */
-  positionFromBcs(data: Uint8Array) {
+  positionFromBcs(data: Uint8Array): Position<X, Y, LP> {
     const positionData = this.positionReified.fromBcs(data)
     return new Position({
       configInfo: this,
@@ -204,7 +205,7 @@ export class PositionConfigInfo<
    * @param data - The BCS data
    * @returns `PositionConfig`
    */
-  configFromBcs(data: Uint8Array) {
+  configFromBcs(data: Uint8Array): PositionConfig<X, Y, LP> {
     return new PositionConfig({
       info: this,
       data: PositionConfig_.fromBcs(data),
@@ -217,7 +218,7 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `PositionConfig`
    */
-  fetchConfigData(client: SuiClient) {
+  fetchConfigData(client: SuiClient): Promise<PositionConfig_> {
     return PositionConfig_.r.fetch(client, this.configId)
   }
 
@@ -227,7 +228,7 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `PositionConfig`
    */
-  async fetchConfig(client: SuiClient) {
+  async fetchConfig(client: SuiClient): Promise<PositionConfig<X, Y, LP>> {
     return new PositionConfig({
       info: this,
       data: await PositionConfig_.r.fetch(client, this.configId),
@@ -240,7 +241,7 @@ export class PositionConfigInfo<
    * @param data - The BCS data
    * @returns `ClmmPool`
    */
-  poolFromBcs(data: Uint8Array) {
+  poolFromBcs(data: Uint8Array): ClmmPool<StructClass, unknown, X, Y> {
     const poolData = this.poolReified.fromBcs(data)
     return new ClmmPool({
       reified: this.poolReified,
@@ -256,7 +257,7 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `ClmmPool`
    */
-  async fetchPool(client: SuiClient) {
+  async fetchPool(client: SuiClient): Promise<ClmmPool<StructClass, unknown, X, Y>> {
     const poolData = await this.poolReified.fetch(client, this.poolObjectId)
     return new ClmmPool({
       reified: this.poolReified,
@@ -293,7 +294,7 @@ export class PositionConfigInfo<
    * @param args - The arguments
    * @returns `boolean`
    */
-  canBorrowX(args: CanBorrowX<X>) {
+  canBorrowX(args: CanBorrowX<X>): boolean {
     if (args.supplyPoolX.data.id !== this.supplyPoolXInfo.id) {
       throw new Error('supply pool X id mismatch')
     }
@@ -331,9 +332,13 @@ export class PositionConfigInfo<
    * @param args - The arguments
    * @returns `boolean`
    */
-  canBorrowY(args: CanBorrowY<Y>) {
+  canBorrowY(args: CanBorrowY<Y>): boolean {
     if (args.supplyPoolY.data.id !== this.supplyPoolYInfo.id) {
       throw new Error('supply pool Y id mismatch')
+    }
+
+    if (args.borrowAmount === 0n) {
+      return true
     }
     const facilInfo = args.supplyPoolY.getFacilInfo(this.lendFacilCap)
 
@@ -417,7 +422,9 @@ export class PositionConfig<
    * @param data - The BCS data
    * @returns `PositionConfig`
    */
-  static fromData(data: PositionConfig_) {
+  static fromData(
+    data: PositionConfig_
+  ): PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
     const info = POSITION_CONFIG_INFOS.find(info => info.configId === data.id)
     if (!info) {
       return undefined
@@ -432,7 +439,9 @@ export class PositionConfig<
    * @param data - The BCS data
    * @returns `PositionConfig`
    */
-  static fromBcs(data: Uint8Array) {
+  static fromBcs(
+    data: Uint8Array
+  ): PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
     return PositionConfig.fromData(PositionConfig_.fromBcs(data))
   }
 
@@ -442,7 +451,9 @@ export class PositionConfig<
    * @param data -  The SuiObjectData struct to create the PositionConfig instance from.
    * @returns `PositionConfig`
    */
-  static fromSuiObjectData(data: SuiObjectData) {
+  static fromSuiObjectData(
+    data: SuiObjectData
+  ): PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
     return PositionConfig.fromData(PositionConfig_.fromSuiObjectData(data))
   }
 
@@ -549,7 +560,7 @@ export class PositionConfig<
    * @param walletAddress - The sender
    * @returns `TransactionResult` of the created `PositionCap`
    */
-  createPosition(tx: Transaction, args: CreatePositionArgs) {
+  createPosition(tx: Transaction, args: CreatePositionArgs): TransactionResult {
     const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
     pyth.add(tx, {
       self: priceInfo,
@@ -700,7 +711,7 @@ export class PositionConfig<
     tx: Transaction,
     args: CreatePositionFromWalletArgs,
     walletAddress: string
-  ) {
+  ): void {
     tx.setSenderIfNotSet(walletAddress)
 
     let balanceUX
@@ -1304,7 +1315,10 @@ export const POSITION_CONFIG_INFOS: Array<
  * @param type - The position type
  * @returns `PositionConfigInfo`
  */
-export function findConfigInfoForPositionBcs(bcs: Uint8Array, type: string) {
+export function findConfigInfoForPositionBcs(
+  bcs: Uint8Array,
+  type: string
+): PositionConfigInfo<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
   if (!isPosition(type)) {
     throw new Error(`${type} is not a Position type`)
   }
@@ -1322,7 +1336,10 @@ export function findConfigInfoForPositionBcs(bcs: Uint8Array, type: string) {
   return POSITION_CONFIG_INFOS.find(info => normalizeSuiObjectId(info.configId) === configId)
 }
 
-export const ALL_POSITION_CONFIG_INFOS = POSITION_CONFIG_INFOS.reduce((acc, info) => {
+export const ALL_POSITION_CONFIG_INFOS: Map<
+  string,
+  PositionConfigInfo<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
+> = POSITION_CONFIG_INFOS.reduce((acc, info) => {
   acc.set(normalizeSuiObjectId(info.configId), info)
   return acc
 }, new Map<string, PositionConfigInfo<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>>())

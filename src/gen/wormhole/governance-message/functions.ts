@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
@@ -23,9 +24,12 @@ export function authorizeVerifyGlobal(
   tx: Transaction,
   typeArg: string,
   args: AuthorizeVerifyGlobalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::authorize_verify_global`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::governance_message::authorize_verify_global`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -53,9 +57,12 @@ export function authorizeVerifyLocal(
   tx: Transaction,
   typeArg: string,
   args: AuthorizeVerifyLocalArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::authorize_verify_local`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::governance_message::authorize_verify_local`,
     typeArguments: [typeArg],
     arguments: [
       generic(tx, `${typeArg}`, args.witness),
@@ -71,9 +78,10 @@ export function sequence(
   tx: Transaction,
   typeArg: string,
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::sequence`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::sequence`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
@@ -92,9 +100,10 @@ export function takePayload(
   tx: Transaction,
   typeArg: string,
   args: TakePayloadArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::take_payload`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::take_payload`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.consumed),
@@ -108,9 +117,10 @@ export function payload(
   tx: Transaction,
   typeArg: string,
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::payload`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::payload`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
@@ -121,9 +131,10 @@ export function destroy(
   tx: Transaction,
   typeArg: string,
   receipt: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::destroy`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::destroy`,
     typeArguments: [typeArg],
     arguments: [obj(tx, receipt)],
   })
@@ -143,9 +154,10 @@ export function verifyVaa(
   tx: Transaction,
   typeArg: string,
   args: VerifyVaaArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::verify_vaa`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::verify_vaa`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.wormholeState),
@@ -158,9 +170,10 @@ export function verifyVaa(
 export function deserialize(
   tx: Transaction,
   buf: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::governance_message::deserialize`,
+    target: `${getPublishedAt('wormhole', options?.env)}::governance_message::deserialize`,
     arguments: [pure(tx, buf, `vector<u8>`)],
   })
 }

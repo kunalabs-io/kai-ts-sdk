@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, obj, pure } from '../../_framework/util'
 
@@ -11,17 +12,25 @@ import { generic, GenericArg, obj, pure } from '../../_framework/util'
  * Retrieve current package ID, which should be the only one that anyone is
  * allowed to interact with.
  */
-export function currentPackage(tx: Transaction, id: TransactionObjectInput): TransactionResult {
+export function currentPackage(
+  tx: Transaction,
+  id: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::current_package`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::current_package`,
     arguments: [obj(tx, id)],
   })
 }
 
 /** Retrieve the build digest reflecting the current build. */
-export function currentDigest(tx: Transaction, id: TransactionObjectInput): TransactionResult {
+export function currentDigest(
+  tx: Transaction,
+  id: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::current_digest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::current_digest`,
     arguments: [obj(tx, id)],
   })
 }
@@ -30,9 +39,13 @@ export function currentDigest(tx: Transaction, id: TransactionObjectInput): Tran
  * Retrieve the upgraded package ID, which was taken from `UpgradeCap`
  * during `commit_upgrade`.
  */
-export function committedPackage(tx: Transaction, id: TransactionObjectInput): TransactionResult {
+export function committedPackage(
+  tx: Transaction,
+  id: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::committed_package`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::committed_package`,
     arguments: [obj(tx, id)],
   })
 }
@@ -41,9 +54,13 @@ export function committedPackage(tx: Transaction, id: TransactionObjectInput): T
  * Retrieve the build digest of the latest upgrade, which was the same
  * digest used when `authorize_upgrade` is called.
  */
-export function authorizedDigest(tx: Transaction, id: TransactionObjectInput): TransactionResult {
+export function authorizedDigest(
+  tx: Transaction,
+  id: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::authorized_digest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::authorized_digest`,
     arguments: [obj(tx, id)],
   })
 }
@@ -63,9 +80,12 @@ export function assertPackageUpgradeCap(
   tx: Transaction,
   typeArg: string,
   args: AssertPackageUpgradeCapArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::assert_package_upgrade_cap`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::package_utils::assert_package_upgrade_cap`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.cap),
@@ -88,9 +108,10 @@ export function assertVersion(
   tx: Transaction,
   typeArg: string,
   args: AssertVersionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::assert_version`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::assert_version`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.id),
@@ -103,9 +124,10 @@ export function typeOfVersion(
   tx: Transaction,
   typeArg: string,
   version: GenericArg,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::type_of_version`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::type_of_version`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, version)],
   })
@@ -125,9 +147,10 @@ export function initPackageInfo(
   tx: Transaction,
   typeArg: string,
   args: InitPackageInfoArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::init_package_info`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::init_package_info`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.id),
@@ -155,9 +178,10 @@ export function migrateVersion(
   tx: Transaction,
   typeArgs: [string, string],
   args: MigrateVersionArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::migrate_version`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::migrate_version`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.id),
@@ -179,9 +203,13 @@ export interface AuthorizeUpgradeArgs {
  *
  * NOTE: This digest will be copied over when `migrate_version` is called.
  */
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): TransactionResult {
+export function authorizeUpgrade(
+  tx: Transaction,
+  args: AuthorizeUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::authorize_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::authorize_upgrade`,
     arguments: [
       obj(tx, args.id),
       obj(tx, args.upgradeCap),
@@ -204,9 +232,13 @@ export interface CommitUpgradeArgs {
  * NOTE: This package ID (second return value) will be copied over when
  * `migrate_version` is called.
  */
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): TransactionResult {
+export function commitUpgrade(
+  tx: Transaction,
+  args: CommitUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::commit_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::commit_upgrade`,
     arguments: [
       obj(tx, args.id),
       obj(tx, args.upgradeCap),
@@ -223,9 +255,10 @@ export interface SetCommitedPackageArgs {
 export function setCommitedPackage(
   tx: Transaction,
   args: SetCommitedPackageArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::set_commited_package`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::set_commited_package`,
     arguments: [
       obj(tx, args.id),
       obj(tx, args.upgradeCap),
@@ -241,9 +274,10 @@ export interface SetAuthorizedDigestArgs {
 export function setAuthorizedDigest(
   tx: Transaction,
   args: SetAuthorizedDigestArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::set_authorized_digest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::set_authorized_digest`,
     arguments: [
       obj(tx, args.id),
       obj(tx, args.digest),
@@ -254,9 +288,12 @@ export function setAuthorizedDigest(
 export function updatePackageInfoFromPending(
   tx: Transaction,
   id: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::update_package_info_from_pending`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::package_utils::update_package_info_from_pending`,
     arguments: [obj(tx, id)],
   })
 }
@@ -275,9 +312,10 @@ export function updateVersionType(
   tx: Transaction,
   typeArgs: [string, string],
   args: UpdateVersionTypeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::package_utils::update_version_type`,
+    target: `${getPublishedAt('wormhole', options?.env)}::package_utils::update_version_type`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.id),

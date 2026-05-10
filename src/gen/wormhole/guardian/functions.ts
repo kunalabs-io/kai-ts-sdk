@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -11,25 +12,34 @@ import { obj, pure } from '../../_framework/util'
 export function new_(
   tx: Transaction,
   pubkey: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian::new`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian::new`,
     arguments: [pure(tx, pubkey, `vector<u8>`)],
   })
 }
 
 /** Retrieve underlying 20-byte public key. */
-export function pubkey(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function pubkey(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian::pubkey`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian::pubkey`,
     arguments: [obj(tx, self)],
   })
 }
 
 /** Retrieve underlying 20-byte public key as `vector<u8>`. */
-export function asBytes(tx: Transaction, self: TransactionObjectInput): TransactionResult {
+export function asBytes(
+  tx: Transaction,
+  self: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian::as_bytes`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian::as_bytes`,
     arguments: [obj(tx, self)],
   })
 }
@@ -45,9 +55,13 @@ export interface VerifyArgs {
  * that exists for this Guardian with an elliptic curve signature and raw
  * message that was signed.
  */
-export function verify(tx: Transaction, args: VerifyArgs): TransactionResult {
+export function verify(
+  tx: Transaction,
+  args: VerifyArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian::verify`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian::verify`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.signature),
@@ -62,9 +76,13 @@ export interface EcrecoverArgs {
 }
 
 /** Same as 'ecrecover' in EVM. */
-export function ecrecover(tx: Transaction, args: EcrecoverArgs): TransactionResult {
+export function ecrecover(
+  tx: Transaction,
+  args: EcrecoverArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::guardian::ecrecover`,
+    target: `${getPublishedAt('wormhole', options?.env)}::guardian::ecrecover`,
     arguments: [
       pure(tx, args.message, `vector<u8>`),
       pure(tx, args.sig, `vector<u8>`),

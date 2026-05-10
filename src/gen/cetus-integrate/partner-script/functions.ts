@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 import { String } from '../../std/string/structs'
@@ -19,9 +20,13 @@ export interface CreatePartnerArgs {
   a7: TransactionObjectInput
 }
 
-export function createPartner(tx: Transaction, args: CreatePartnerArgs): TransactionResult {
+export function createPartner(
+  tx: Transaction,
+  args: CreatePartnerArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::partner_script::create_partner`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::partner_script::create_partner`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -44,9 +49,12 @@ export interface UpdatePartnerRefFeeRateArgs {
 export function updatePartnerRefFeeRate(
   tx: Transaction,
   args: UpdatePartnerRefFeeRateArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::partner_script::update_partner_ref_fee_rate`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::partner_script::update_partner_ref_fee_rate`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -66,9 +74,12 @@ export interface UpdatePartnerTimeRangeArgs {
 export function updatePartnerTimeRange(
   tx: Transaction,
   args: UpdatePartnerTimeRangeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::partner_script::update_partner_time_range`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::partner_script::update_partner_time_range`,
     arguments: [
       obj(tx, args.a0),
       obj(tx, args.a1),
@@ -89,9 +100,10 @@ export function claimRefFee(
   tx: Transaction,
   typeArg: string,
   args: ClaimRefFeeArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::partner_script::claim_ref_fee`,
+    target: `${getPublishedAt('cetus-integrate', options?.env)}::partner_script::claim_ref_fee`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.a0),

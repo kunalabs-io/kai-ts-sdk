@@ -1,3 +1,13 @@
+/**
+ * This module implements a container that stores the token transfer amount
+ * encoded in a Token Bridge message. These amounts are capped at 8 decimals.
+ * This means that any amount of a coin whose metadata defines its decimals
+ * as some value greater than 8, the encoded amount will be normalized to
+ * eight decimals (which will lead to some residual amount after the transfer).
+ * For inbound transfers, this amount will be denormalized (scaled by the same
+ * decimal difference).
+ */
+
 import { bcs } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -47,6 +57,7 @@ export type NormalizedAmountJSON = {
   $typeArgs: []
 } & NormalizedAmountJSONField
 
+/** Container holding the value decoded from a Token Bridge transfer. */
 export class NormalizedAmount implements StructClass {
   __StructClass = true as const
 

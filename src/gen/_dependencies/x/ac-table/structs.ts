@@ -1,3 +1,9 @@
+/**
+ * Access controlled table
+ * Ownership is required to write or destory
+ * Read is open to anyone
+ */
+
 import { bcs, BcsType } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -47,46 +53,46 @@ export function isAcTable(type: string): boolean {
 }
 
 export interface AcTableFields<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > {
   id: ToField<UID>
-  table: ToField<Table<ToPhantom<T1>, T2>>
-  keys: ToField<Option<VecSet<T1>>>
+  table: ToField<Table<ToPhantom<K>, V>>
+  keys: ToField<Option<VecSet<K>>>
   withKeys: ToField<'bool'>
 }
 
 export type AcTableReified<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
-> = Reified<AcTable<T0, T1, T2>, AcTableFields<T0, T1, T2>>
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
+> = Reified<AcTable<T, K, V>, AcTableFields<T, K, V>>
 
 export type AcTableJSONField<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > = {
   id: string
-  table: ToJSON<Table<ToPhantom<T1>, T2>>
-  keys: ToJSON<VecSet<T1>> | null
+  table: ToJSON<Table<ToPhantom<K>, V>>
+  keys: ToJSON<VecSet<K>> | null
   withKeys: boolean
 }
 
 export type AcTableJSON<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > = {
   $typeName: typeof AcTable.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>]
-} & AcTableJSONField<T0, T1, T2>
+  $typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>]
+} & AcTableJSONField<T, K, V>
 
 export class AcTable<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > implements StructClass {
   __StructClass = true as const
 
@@ -97,27 +103,27 @@ export class AcTable<
   static readonly $isPhantom = [true, false, true] as const
 
   readonly $typeName: typeof AcTable.$typeName = AcTable.$typeName
-  readonly $fullTypeName: `${string}::ac_table::AcTable<${PhantomToTypeStr<T0>}, ${ToTypeStr<
-    T1
-  >}, ${PhantomToTypeStr<T2>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>]
+  readonly $fullTypeName: `${string}::ac_table::AcTable<${PhantomToTypeStr<T>}, ${ToTypeStr<
+    K
+  >}, ${PhantomToTypeStr<V>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>]
   readonly $isPhantom: typeof AcTable.$isPhantom = AcTable.$isPhantom
 
   readonly id: ToField<UID>
-  readonly table: ToField<Table<ToPhantom<T1>, T2>>
-  readonly keys: ToField<Option<VecSet<T1>>>
+  readonly table: ToField<Table<ToPhantom<K>, V>>
+  readonly keys: ToField<Option<VecSet<K>>>
   readonly withKeys: ToField<'bool'>
 
   private constructor(
-    typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>],
-    fields: AcTableFields<T0, T1, T2>,
+    typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>],
+    fields: AcTableFields<T, K, V>,
   ) {
     this.$fullTypeName = composeSuiType(
       AcTable.$typeName,
       ...typeArgs,
-    ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<T0>}, ${ToTypeStr<
-      T1
-    >}, ${PhantomToTypeStr<T2>}>`
+    ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<T>}, ${ToTypeStr<K>}, ${PhantomToTypeStr<
+      V
+    >}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -127,51 +133,47 @@ export class AcTable<
   }
 
   static reified<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
-    T2: T2,
-  ): AcTableReified<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
-    const reifiedBcs = AcTable.bcs(toBcs(T1))
+    T: T,
+    K: K,
+    V: V,
+  ): AcTableReified<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    const reifiedBcs = AcTable.bcs(toBcs(K))
     return {
       typeName: AcTable.$typeName,
       fullTypeName: composeSuiType(
         AcTable.$typeName,
-        ...[extractType(T0), extractType(T1), extractType(T2)],
-      ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
-      >}, ${ToTypeStr<ToTypeArgument<T1>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<T2>>}>`,
-      typeArgs: [extractType(T0), extractType(T1), extractType(T2)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T0>>,
-        ToTypeStr<ToTypeArgument<T1>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<T2>>,
+        ...[extractType(T), extractType(K), extractType(V)],
+      ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}, ${ToTypeStr<
+        ToTypeArgument<K>
+      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<V>>}>`,
+      typeArgs: [extractType(T), extractType(K), extractType(V)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+        ToTypeStr<ToTypeArgument<K>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<V>>,
       ],
       isPhantom: AcTable.$isPhantom,
-      reifiedTypeArgs: [T0, T1, T2],
-      fromFields: (fields: Record<string, any>) => AcTable.fromFields([T0, T1, T2], fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        AcTable.fromFieldsWithTypes([T0, T1, T2], item),
-      fromBcs: (data: Uint8Array) => AcTable.fromFields([T0, T1, T2], reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T, K, V],
+      fromFields: (fields: Record<string, any>) => AcTable.fromFields([T, K, V], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AcTable.fromFieldsWithTypes([T, K, V], item),
+      fromBcs: (data: Uint8Array) => AcTable.fromFields([T, K, V], reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => AcTable.fromJSONField([T0, T1, T2], field),
-      fromJSON: (json: Record<string, any>) => AcTable.fromJSON([T0, T1, T2], json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        AcTable.fromSuiParsedData([T0, T1, T2], content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        AcTable.fromSuiObjectData([T0, T1, T2], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        AcTable.fetch(client, [T0, T1, T2], id),
+      fromJSONField: (field: any) => AcTable.fromJSONField([T, K, V], field),
+      fromJSON: (json: Record<string, any>) => AcTable.fromJSON([T, K, V], json),
+      fromSuiParsedData: (content: SuiParsedData) => AcTable.fromSuiParsedData([T, K, V], content),
+      fromSuiObjectData: (content: SuiObjectData) => AcTable.fromSuiObjectData([T, K, V], content),
+      fetch: async (client: SupportedSuiClient, id: string) => AcTable.fetch(client, [T, K, V], id),
       new: (
         fields: AcTableFields<
-          ToPhantomTypeArgument<T0>,
-          ToTypeArgument<T1>,
-          ToPhantomTypeArgument<T2>
+          ToPhantomTypeArgument<T>,
+          ToTypeArgument<K>,
+          ToPhantomTypeArgument<V>
         >,
       ) => {
-        return new AcTable([extractType(T0), extractType(T1), extractType(T2)], fields)
+        return new AcTable([extractType(T), extractType(K), extractType(V)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -182,17 +184,17 @@ export class AcTable<
   }
 
   static phantom<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
-    T2: T2,
+    T: T,
+    K: K,
+    V: V,
   ): PhantomReified<
-    ToTypeStr<AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>>>
+    ToTypeStr<AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>>>
   > {
-    return phantom(AcTable.reified(T0, T1, T2))
+    return phantom(AcTable.reified(T, K, V))
   }
 
   static get p(): typeof AcTable.phantom {
@@ -200,11 +202,11 @@ export class AcTable<
   }
 
   private static instantiateBcs() {
-    return <T1 extends BcsType<any>>(T1: T1) =>
-      bcs.struct(`AcTable<${T1.name}>`, {
+    return <K extends BcsType<any>>(K: K) =>
+      bcs.struct(`AcTable<${K.name}>`, {
         id: UID.bcs,
         table: Table.bcs,
-        keys: Option.bcs(VecSet.bcs(T1)),
+        keys: Option.bcs(VecSet.bcs(K)),
         with_keys: bcs.bool(),
       })
   }
@@ -219,13 +221,13 @@ export class AcTable<
   }
 
   static fromFields<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     fields: Record<string, any>,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return AcTable.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromFields(UID.reified(), fields.id),
       table: decodeFromFields(Table.reified(phantom(typeArgs[1]), typeArgs[2]), fields.table),
@@ -235,13 +237,13 @@ export class AcTable<
   }
 
   static fromFieldsWithTypes<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     item: FieldsWithTypes,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (!isAcTable(item.type)) {
       throw new Error('not a AcTable type')
     }
@@ -262,21 +264,21 @@ export class AcTable<
   }
 
   static fromBcs<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     data: Uint8Array,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return AcTable.fromFields(typeArgs, AcTable.bcs(toBcs(typeArgs[1])).parse(data))
   }
 
-  toJSONField(): AcTableJSONField<T0, T1, T2> {
+  toJSONField(): AcTableJSONField<T, K, V> {
     return {
       id: this.id,
       table: this.table.toJSONField(),
-      keys: fieldToJSON<Option<VecSet<T1>>>(
+      keys: fieldToJSON<Option<VecSet<K>>>(
         `${Option.$typeName}<${VecSet.$typeName}<${this.$typeArgs[1]}>>`,
         this.keys,
       ),
@@ -284,18 +286,18 @@ export class AcTable<
     }
   }
 
-  toJSON(): AcTableJSON<T0, T1, T2> {
+  toJSON(): AcTableJSON<T, K, V> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     field: any,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return AcTable.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       table: decodeFromJSONField(Table.reified(phantom(typeArgs[1]), typeArgs[2]), field.table),
@@ -305,13 +307,13 @@ export class AcTable<
   }
 
   static fromJSON<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     json: Record<string, any>,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (json.$typeName !== AcTable.$typeName) {
       throw new Error(
         `not a AcTable json object: expected '${AcTable.$typeName}' but got '${json.$typeName}'`,
@@ -327,13 +329,13 @@ export class AcTable<
   }
 
   static fromSuiParsedData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     content: SuiParsedData,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -344,13 +346,13 @@ export class AcTable<
   }
 
   static fromSuiObjectData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     data: SuiObjectData,
-  ): AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAcTable(data.bcs.type)) {
         throw new Error(`object at is not a AcTable object`)
@@ -383,14 +385,14 @@ export class AcTable<
   }
 
   static async fetch<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
     client: SupportedSuiClient,
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     id: string,
-  ): Promise<AcTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>>> {
+  ): Promise<AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isAcTable(res.type)) {
       throw new Error(`object at id ${id} is not a AcTable object`)
@@ -609,27 +611,27 @@ export function isAcTableCap(type: string): boolean {
   )
 }
 
-export interface AcTableCapFields<T0 extends PhantomTypeArgument> {
+export interface AcTableCapFields<T extends PhantomTypeArgument> {
   id: ToField<UID>
   ownership: ToField<Ownership<ToPhantom<AcTableOwnership>>>
 }
 
-export type AcTableCapReified<T0 extends PhantomTypeArgument> = Reified<
-  AcTableCap<T0>,
-  AcTableCapFields<T0>
+export type AcTableCapReified<T extends PhantomTypeArgument> = Reified<
+  AcTableCap<T>,
+  AcTableCapFields<T>
 >
 
-export type AcTableCapJSONField<T0 extends PhantomTypeArgument> = {
+export type AcTableCapJSONField<T extends PhantomTypeArgument> = {
   id: string
   ownership: ToJSON<Ownership<ToPhantom<AcTableOwnership>>>
 }
 
-export type AcTableCapJSON<T0 extends PhantomTypeArgument> = {
+export type AcTableCapJSON<T extends PhantomTypeArgument> = {
   $typeName: typeof AcTableCap.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>]
-} & AcTableCapJSONField<T0>
+  $typeArgs: [PhantomToTypeStr<T>]
+} & AcTableCapJSONField<T>
 
-export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
+export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
   static readonly $typeName: `${string}::ac_table::AcTableCap` = `${
@@ -639,48 +641,48 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
   static readonly $isPhantom = [true] as const
 
   readonly $typeName: typeof AcTableCap.$typeName = AcTableCap.$typeName
-  readonly $fullTypeName: `${string}::ac_table::AcTableCap<${PhantomToTypeStr<T0>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>]
+  readonly $fullTypeName: `${string}::ac_table::AcTableCap<${PhantomToTypeStr<T>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>]
   readonly $isPhantom: typeof AcTableCap.$isPhantom = AcTableCap.$isPhantom
 
   readonly id: ToField<UID>
   readonly ownership: ToField<Ownership<ToPhantom<AcTableOwnership>>>
 
-  private constructor(typeArgs: [PhantomToTypeStr<T0>], fields: AcTableCapFields<T0>) {
+  private constructor(typeArgs: [PhantomToTypeStr<T>], fields: AcTableCapFields<T>) {
     this.$fullTypeName = composeSuiType(
       AcTableCap.$typeName,
       ...typeArgs,
-    ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<T0>}>`
+    ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<T>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
     this.ownership = fields.ownership
   }
 
-  static reified<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): AcTableCapReified<ToPhantomTypeArgument<T0>> {
+  static reified<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): AcTableCapReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = AcTableCap.bcs
     return {
       typeName: AcTableCap.$typeName,
       fullTypeName: composeSuiType(
         AcTableCap.$typeName,
-        ...[extractType(T0)],
-      ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<ToPhantomTypeArgument<T0>>}>`,
-      typeArgs: [extractType(T0)] as [PhantomToTypeStr<ToPhantomTypeArgument<T0>>],
+        ...[extractType(T)],
+      ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
+      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
       isPhantom: AcTableCap.$isPhantom,
-      reifiedTypeArgs: [T0],
-      fromFields: (fields: Record<string, any>) => AcTableCap.fromFields(T0, fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableCap.fromFieldsWithTypes(T0, item),
-      fromBcs: (data: Uint8Array) => AcTableCap.fromFields(T0, reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T],
+      fromFields: (fields: Record<string, any>) => AcTableCap.fromFields(T, fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => AcTableCap.fromFieldsWithTypes(T, item),
+      fromBcs: (data: Uint8Array) => AcTableCap.fromFields(T, reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => AcTableCap.fromJSONField(T0, field),
-      fromJSON: (json: Record<string, any>) => AcTableCap.fromJSON(T0, json),
-      fromSuiParsedData: (content: SuiParsedData) => AcTableCap.fromSuiParsedData(T0, content),
-      fromSuiObjectData: (content: SuiObjectData) => AcTableCap.fromSuiObjectData(T0, content),
-      fetch: async (client: SupportedSuiClient, id: string) => AcTableCap.fetch(client, T0, id),
-      new: (fields: AcTableCapFields<ToPhantomTypeArgument<T0>>) => {
-        return new AcTableCap([extractType(T0)], fields)
+      fromJSONField: (field: any) => AcTableCap.fromJSONField(T, field),
+      fromJSON: (json: Record<string, any>) => AcTableCap.fromJSON(T, json),
+      fromSuiParsedData: (content: SuiParsedData) => AcTableCap.fromSuiParsedData(T, content),
+      fromSuiObjectData: (content: SuiObjectData) => AcTableCap.fromSuiObjectData(T, content),
+      fetch: async (client: SupportedSuiClient, id: string) => AcTableCap.fetch(client, T, id),
+      new: (fields: AcTableCapFields<ToPhantomTypeArgument<T>>) => {
+        return new AcTableCap([extractType(T)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -690,10 +692,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.reified
   }
 
-  static phantom<T0 extends PhantomReified<PhantomTypeArgument>>(
-    T0: T0,
-  ): PhantomReified<ToTypeStr<AcTableCap<ToPhantomTypeArgument<T0>>>> {
-    return phantom(AcTableCap.reified(T0))
+  static phantom<T extends PhantomReified<PhantomTypeArgument>>(
+    T: T,
+  ): PhantomReified<ToTypeStr<AcTableCap<ToPhantomTypeArgument<T>>>> {
+    return phantom(AcTableCap.reified(T))
   }
 
   static get p(): typeof AcTableCap.phantom {
@@ -716,10 +718,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.cachedBcs
   }
 
-  static fromFields<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFields<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     fields: Record<string, any>,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     return AcTableCap.reified(typeArg).new({
       id: decodeFromFields(UID.reified(), fields.id),
       ownership: decodeFromFields(
@@ -729,10 +731,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromFieldsWithTypes<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromFieldsWithTypes<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     item: FieldsWithTypes,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     if (!isAcTableCap(item.type)) {
       throw new Error('not a AcTableCap type')
     }
@@ -747,28 +749,28 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromBcs<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromBcs<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: Uint8Array,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     return AcTableCap.fromFields(typeArg, AcTableCap.bcs.parse(data))
   }
 
-  toJSONField(): AcTableCapJSONField<T0> {
+  toJSONField(): AcTableCapJSONField<T> {
     return {
       id: this.id,
       ownership: this.ownership.toJSONField(),
     }
   }
 
-  toJSON(): AcTableCapJSON<T0> {
+  toJSON(): AcTableCapJSON<T> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
-  static fromJSONField<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSONField<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     field: any,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     return AcTableCap.reified(typeArg).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       ownership: decodeFromJSONField(
@@ -778,10 +780,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     })
   }
 
-  static fromJSON<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromJSON<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     json: Record<string, any>,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     if (json.$typeName !== AcTableCap.$typeName) {
       throw new Error(
         `not a AcTableCap json object: expected '${AcTableCap.$typeName}' but got '${json.$typeName}'`,
@@ -796,10 +798,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.fromJSONField(typeArg, json)
   }
 
-  static fromSuiParsedData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     content: SuiParsedData,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -809,10 +811,10 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.fromFieldsWithTypes(typeArg, content)
   }
 
-  static fromSuiObjectData<T0 extends PhantomReified<PhantomTypeArgument>>(
-    typeArg: T0,
+  static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
     data: SuiObjectData,
-  ): AcTableCap<ToPhantomTypeArgument<T0>> {
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAcTableCap(data.bcs.type)) {
         throw new Error(`object at is not a AcTableCap object`)
@@ -844,11 +846,11 @@ export class AcTableCap<T0 extends PhantomTypeArgument> implements StructClass {
     )
   }
 
-  static async fetch<T0 extends PhantomReified<PhantomTypeArgument>>(
+  static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
     client: SupportedSuiClient,
-    typeArg: T0,
+    typeArg: T,
     id: string,
-  ): Promise<AcTableCap<ToPhantomTypeArgument<T0>>> {
+  ): Promise<AcTableCap<ToPhantomTypeArgument<T>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isAcTableCap(res.type)) {
       throw new Error(`object at id ${id} is not a AcTableCap object`)

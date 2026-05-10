@@ -4,6 +4,7 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
@@ -25,9 +26,12 @@ export function swapWithPartner(
   tx: Transaction,
   typeArgs: [string, string],
   args: SwapWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router_with_partner::swap_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -64,9 +68,12 @@ export function swapAbBcWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapAbBcWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ab_bc_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router_with_partner::swap_ab_bc_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -104,9 +111,12 @@ export function swapAbCbWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapAbCbWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ab_cb_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router_with_partner::swap_ab_cb_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -144,9 +154,12 @@ export function swapBaBcWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapBaBcWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ba_bc_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router_with_partner::swap_ba_bc_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),
@@ -184,9 +197,12 @@ export function swapBaCbWithPartner(
   tx: Transaction,
   typeArgs: [string, string, string],
   args: SwapBaCbWithPartnerArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('cetus-integrate')}::router_with_partner::swap_ba_cb_with_partner`,
+    target: `${
+      getPublishedAt('cetus-integrate', options?.env)
+    }::router_with_partner::swap_ba_cb_with_partner`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.a0),

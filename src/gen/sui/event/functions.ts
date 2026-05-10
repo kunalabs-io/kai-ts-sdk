@@ -1,6 +1,7 @@
 import { Transaction, TransactionArgument, TransactionResult } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
-import { generic, GenericArg } from '../../_framework/util'
+import { generic, GenericArg, pure } from '../../_framework/util'
 
 /**
  * Emit a custom Move event, sending the data offchain.
@@ -11,10 +12,58 @@ import { generic, GenericArg } from '../../_framework/util'
  * The type `T` is the main way to index the event, and can contain
  * phantom parameters, eg `emit(MyEvent<phantom T>)`.
  */
-export function emit(tx: Transaction, typeArg: string, event: GenericArg): TransactionResult {
+export function emit(
+  tx: Transaction,
+  typeArg: string,
+  event: GenericArg,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui')}::event::emit`,
+    target: `${getPublishedAt('sui', options?.env)}::event::emit`,
     typeArguments: [typeArg],
     arguments: [generic(tx, `${typeArg}`, event)],
+  })
+}
+
+/**
+ * Emits a custom Move event which can be authenticated by a light client.
+ *
+ * This method emits the authenticated event to the event stream for the Move package that
+ * defines the event type `T`.
+ * Only the package that defines the type `T` can emit authenticated events to this stream.
+ */
+export function emitAuthenticated(
+  tx: Transaction,
+  typeArg: string,
+  event: GenericArg,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::event::emit_authenticated`,
+    typeArguments: [typeArg],
+    arguments: [generic(tx, `${typeArg}`, event)],
+  })
+}
+
+export interface EmitAuthenticatedImplArgs {
+  accumulatorId: string | TransactionArgument
+  stream: string | TransactionArgument
+  event: GenericArg
+}
+
+export function emitAuthenticatedImpl(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: EmitAuthenticatedImplArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::event::emit_authenticated_impl`,
+    typeArguments: typeArgs,
+    arguments: [
+      pure(tx, args.accumulatorId, `address`),
+      pure(tx, args.stream, `address`),
+      generic(tx, `${typeArgs[1]}`, args.event),
+    ],
   })
 }

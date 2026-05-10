@@ -1,4 +1,4 @@
-import { CallArg, Transaction, TransactionArgument } from '@mysten/sui/transactions'
+import { CallArg, Transaction, TransactionObjectArgument } from '@mysten/sui/transactions'
 import { CoinStruct, SuiClient } from '@mysten/sui/client'
 import { Amount } from './amount'
 import * as coin from './gen/sui/coin/functions'
@@ -24,9 +24,9 @@ export function createCoinOfMinimumValueFromList(
   coins: CoinStruct[],
   amount: bigint,
   coinType: string
-) {
+): { coin: TransactionObjectArgument; amount: bigint } {
   if (amount === 0n) {
-    return { coin: coin.zero(tx, coinType), amount: 0n }
+    return { coin: coin.zero(tx, coinType) as TransactionObjectArgument, amount: 0n }
   }
 
   coins = coins.filter(c => compressSuiType(c.coinType) === compressSuiType(coinType))
@@ -59,7 +59,7 @@ export function createCoinOfMinimumValueFromList(
       selectedCoins.slice(1).map(c => tx.object(coinToObjectArg(c)))
     )
   }
-  const c: TransactionArgument = tx.object(coinToObjectArg(selectedCoins[0]))
+  const c = tx.object(coinToObjectArg(selectedCoins[0]))
 
   return {
     coin: c,
@@ -72,7 +72,7 @@ export function createCoinOfExactValueFromList(
   coins: CoinStruct[],
   amount: bigint,
   coinType: string
-) {
+): TransactionObjectArgument {
   const res = createCoinOfMinimumValueFromList(tx, coins, amount, coinType)
 
   // split the coin to the exact amount if necessary
@@ -88,7 +88,7 @@ export async function getCoins(
   address: string,
   coinType: string,
   maxAmount?: Amount
-) {
+): Promise<CoinStruct[]> {
   let acc = 0n
   const coins: Array<CoinStruct> = []
   let cursor = undefined
@@ -116,12 +116,9 @@ export async function createCoinOfExactValue(
   address: string,
   coinType: string,
   amount: Amount
-) {
-  let coin: TransactionArgument
-
+): Promise<TransactionObjectArgument> {
   if (compressSuiType(coinType) === SUI_TYPE_ARG) {
-    coin = tx.splitCoins(tx.gas, [amount.int])
-    return coin
+    return tx.splitCoins(tx.gas, [amount.int])
   }
 
   const coins = await getCoins(client, address, coinType, amount)
@@ -134,7 +131,7 @@ export async function createBalanceOfExactValue(
   address: string,
   coinType: string,
   amount: Amount
-) {
+): Promise<TransactionObjectArgument> {
   const c = await createCoinOfExactValue(client, tx, address, coinType, amount)
   return coin.intoBalance(tx, coinType, c)
 }
@@ -145,7 +142,7 @@ export async function createCoinOfMinimumValue(
   address: string,
   coinType: string,
   amount: Amount
-) {
+): Promise<{ coin: TransactionObjectArgument; amount: bigint | Amount }> {
   if (coinType === SUI_TYPE_ARG) {
     return {
       coin: tx.splitCoins(tx.gas, [amount.int]),

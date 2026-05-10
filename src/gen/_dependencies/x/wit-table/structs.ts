@@ -1,3 +1,9 @@
+/**
+ * Witness controlled table
+ * Witness is required to write or destory
+ * Read is open to anyone
+ */
+
 import { bcs, BcsType } from '@mysten/sui/bcs'
 import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
 import { fromBase64 } from '@mysten/sui/utils'
@@ -46,46 +52,53 @@ export function isWitTable(type: string): boolean {
 }
 
 export interface WitTableFields<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > {
   id: ToField<UID>
-  table: ToField<Table<ToPhantom<T1>, T2>>
-  keys: ToField<Option<VecSet<T1>>>
+  table: ToField<Table<ToPhantom<K>, V>>
+  keys: ToField<Option<VecSet<K>>>
   withKeys: ToField<'bool'>
 }
 
 export type WitTableReified<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
-> = Reified<WitTable<T0, T1, T2>, WitTableFields<T0, T1, T2>>
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
+> = Reified<WitTable<T, K, V>, WitTableFields<T, K, V>>
 
 export type WitTableJSONField<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > = {
   id: string
-  table: ToJSON<Table<ToPhantom<T1>, T2>>
-  keys: ToJSON<VecSet<T1>> | null
+  table: ToJSON<Table<ToPhantom<K>, V>>
+  keys: ToJSON<VecSet<K>> | null
   withKeys: boolean
 }
 
 export type WitTableJSON<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > = {
   $typeName: typeof WitTable.$typeName
-  $typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>]
-} & WitTableJSONField<T0, T1, T2>
+  $typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>]
+} & WitTableJSONField<T, K, V>
 
+/**
+ * A data structure backed by sui::table and sui::vec_set.
+ * All write operations are controlled by witness pattern
+ * If you set withKeys = true when creating table:
+ * It will store all the keys in a vector, with which you can use to loop the table.
+ * The keys are in insertion order.
+ */
 export class WitTable<
-  T0 extends PhantomTypeArgument,
-  T1 extends TypeArgument,
-  T2 extends PhantomTypeArgument,
+  T extends PhantomTypeArgument,
+  K extends TypeArgument,
+  V extends PhantomTypeArgument,
 > implements StructClass {
   __StructClass = true as const
 
@@ -96,27 +109,27 @@ export class WitTable<
   static readonly $isPhantom = [true, false, true] as const
 
   readonly $typeName: typeof WitTable.$typeName = WitTable.$typeName
-  readonly $fullTypeName: `${string}::wit_table::WitTable<${PhantomToTypeStr<T0>}, ${ToTypeStr<
-    T1
-  >}, ${PhantomToTypeStr<T2>}>`
-  readonly $typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>]
+  readonly $fullTypeName: `${string}::wit_table::WitTable<${PhantomToTypeStr<T>}, ${ToTypeStr<
+    K
+  >}, ${PhantomToTypeStr<V>}>`
+  readonly $typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>]
   readonly $isPhantom: typeof WitTable.$isPhantom = WitTable.$isPhantom
 
   readonly id: ToField<UID>
-  readonly table: ToField<Table<ToPhantom<T1>, T2>>
-  readonly keys: ToField<Option<VecSet<T1>>>
+  readonly table: ToField<Table<ToPhantom<K>, V>>
+  readonly keys: ToField<Option<VecSet<K>>>
   readonly withKeys: ToField<'bool'>
 
   private constructor(
-    typeArgs: [PhantomToTypeStr<T0>, ToTypeStr<T1>, PhantomToTypeStr<T2>],
-    fields: WitTableFields<T0, T1, T2>,
+    typeArgs: [PhantomToTypeStr<T>, ToTypeStr<K>, PhantomToTypeStr<V>],
+    fields: WitTableFields<T, K, V>,
   ) {
     this.$fullTypeName = composeSuiType(
       WitTable.$typeName,
       ...typeArgs,
-    ) as `${string}::wit_table::WitTable<${PhantomToTypeStr<T0>}, ${ToTypeStr<
-      T1
-    >}, ${PhantomToTypeStr<T2>}>`
+    ) as `${string}::wit_table::WitTable<${PhantomToTypeStr<T>}, ${ToTypeStr<
+      K
+    >}, ${PhantomToTypeStr<V>}>`
     this.$typeArgs = typeArgs
 
     this.id = fields.id
@@ -126,51 +139,48 @@ export class WitTable<
   }
 
   static reified<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
-    T2: T2,
-  ): WitTableReified<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
-    const reifiedBcs = WitTable.bcs(toBcs(T1))
+    T: T,
+    K: K,
+    V: V,
+  ): WitTableReified<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    const reifiedBcs = WitTable.bcs(toBcs(K))
     return {
       typeName: WitTable.$typeName,
       fullTypeName: composeSuiType(
         WitTable.$typeName,
-        ...[extractType(T0), extractType(T1), extractType(T2)],
+        ...[extractType(T), extractType(K), extractType(V)],
       ) as `${string}::wit_table::WitTable<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T0>
-      >}, ${ToTypeStr<ToTypeArgument<T1>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<T2>>}>`,
-      typeArgs: [extractType(T0), extractType(T1), extractType(T2)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T0>>,
-        ToTypeStr<ToTypeArgument<T1>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<T2>>,
+        ToPhantomTypeArgument<T>
+      >}, ${ToTypeStr<ToTypeArgument<K>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<V>>}>`,
+      typeArgs: [extractType(T), extractType(K), extractType(V)] as [
+        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+        ToTypeStr<ToTypeArgument<K>>,
+        PhantomToTypeStr<ToPhantomTypeArgument<V>>,
       ],
       isPhantom: WitTable.$isPhantom,
-      reifiedTypeArgs: [T0, T1, T2],
-      fromFields: (fields: Record<string, any>) => WitTable.fromFields([T0, T1, T2], fields),
-      fromFieldsWithTypes: (item: FieldsWithTypes) =>
-        WitTable.fromFieldsWithTypes([T0, T1, T2], item),
-      fromBcs: (data: Uint8Array) => WitTable.fromFields([T0, T1, T2], reifiedBcs.parse(data)),
+      reifiedTypeArgs: [T, K, V],
+      fromFields: (fields: Record<string, any>) => WitTable.fromFields([T, K, V], fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => WitTable.fromFieldsWithTypes([T, K, V], item),
+      fromBcs: (data: Uint8Array) => WitTable.fromFields([T, K, V], reifiedBcs.parse(data)),
       bcs: reifiedBcs,
-      fromJSONField: (field: any) => WitTable.fromJSONField([T0, T1, T2], field),
-      fromJSON: (json: Record<string, any>) => WitTable.fromJSON([T0, T1, T2], json),
-      fromSuiParsedData: (content: SuiParsedData) =>
-        WitTable.fromSuiParsedData([T0, T1, T2], content),
-      fromSuiObjectData: (content: SuiObjectData) =>
-        WitTable.fromSuiObjectData([T0, T1, T2], content),
+      fromJSONField: (field: any) => WitTable.fromJSONField([T, K, V], field),
+      fromJSON: (json: Record<string, any>) => WitTable.fromJSON([T, K, V], json),
+      fromSuiParsedData: (content: SuiParsedData) => WitTable.fromSuiParsedData([T, K, V], content),
+      fromSuiObjectData: (content: SuiObjectData) => WitTable.fromSuiObjectData([T, K, V], content),
       fetch: async (client: SupportedSuiClient, id: string) =>
-        WitTable.fetch(client, [T0, T1, T2], id),
+        WitTable.fetch(client, [T, K, V], id),
       new: (
         fields: WitTableFields<
-          ToPhantomTypeArgument<T0>,
-          ToTypeArgument<T1>,
-          ToPhantomTypeArgument<T2>
+          ToPhantomTypeArgument<T>,
+          ToTypeArgument<K>,
+          ToPhantomTypeArgument<V>
         >,
       ) => {
-        return new WitTable([extractType(T0), extractType(T1), extractType(T2)], fields)
+        return new WitTable([extractType(T), extractType(K), extractType(V)], fields)
       },
       kind: 'StructClassReified',
     }
@@ -181,17 +191,17 @@ export class WitTable<
   }
 
   static phantom<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    T0: T0,
-    T1: T1,
-    T2: T2,
+    T: T,
+    K: K,
+    V: V,
   ): PhantomReified<
-    ToTypeStr<WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>>>
+    ToTypeStr<WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>>>
   > {
-    return phantom(WitTable.reified(T0, T1, T2))
+    return phantom(WitTable.reified(T, K, V))
   }
 
   static get p(): typeof WitTable.phantom {
@@ -199,11 +209,11 @@ export class WitTable<
   }
 
   private static instantiateBcs() {
-    return <T1 extends BcsType<any>>(T1: T1) =>
-      bcs.struct(`WitTable<${T1.name}>`, {
+    return <K extends BcsType<any>>(K: K) =>
+      bcs.struct(`WitTable<${K.name}>`, {
         id: UID.bcs,
         table: Table.bcs,
-        keys: Option.bcs(VecSet.bcs(T1)),
+        keys: Option.bcs(VecSet.bcs(K)),
         with_keys: bcs.bool(),
       })
   }
@@ -218,13 +228,13 @@ export class WitTable<
   }
 
   static fromFields<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     fields: Record<string, any>,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return WitTable.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromFields(UID.reified(), fields.id),
       table: decodeFromFields(Table.reified(phantom(typeArgs[1]), typeArgs[2]), fields.table),
@@ -234,13 +244,13 @@ export class WitTable<
   }
 
   static fromFieldsWithTypes<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     item: FieldsWithTypes,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (!isWitTable(item.type)) {
       throw new Error('not a WitTable type')
     }
@@ -261,21 +271,21 @@ export class WitTable<
   }
 
   static fromBcs<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     data: Uint8Array,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return WitTable.fromFields(typeArgs, WitTable.bcs(toBcs(typeArgs[1])).parse(data))
   }
 
-  toJSONField(): WitTableJSONField<T0, T1, T2> {
+  toJSONField(): WitTableJSONField<T, K, V> {
     return {
       id: this.id,
       table: this.table.toJSONField(),
-      keys: fieldToJSON<Option<VecSet<T1>>>(
+      keys: fieldToJSON<Option<VecSet<K>>>(
         `${Option.$typeName}<${VecSet.$typeName}<${this.$typeArgs[1]}>>`,
         this.keys,
       ),
@@ -283,18 +293,18 @@ export class WitTable<
     }
   }
 
-  toJSON(): WitTableJSON<T0, T1, T2> {
+  toJSON(): WitTableJSON<T, K, V> {
     return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
   }
 
   static fromJSONField<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     field: any,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     return WitTable.reified(typeArgs[0], typeArgs[1], typeArgs[2]).new({
       id: decodeFromJSONField(UID.reified(), field.id),
       table: decodeFromJSONField(Table.reified(phantom(typeArgs[1]), typeArgs[2]), field.table),
@@ -304,13 +314,13 @@ export class WitTable<
   }
 
   static fromJSON<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     json: Record<string, any>,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (json.$typeName !== WitTable.$typeName) {
       throw new Error(
         `not a WitTable json object: expected '${WitTable.$typeName}' but got '${json.$typeName}'`,
@@ -326,13 +336,13 @@ export class WitTable<
   }
 
   static fromSuiParsedData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     content: SuiParsedData,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
     }
@@ -343,13 +353,13 @@ export class WitTable<
   }
 
   static fromSuiObjectData<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     data: SuiObjectData,
-  ): WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>> {
+  ): WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWitTable(data.bcs.type)) {
         throw new Error(`object at is not a WitTable object`)
@@ -382,14 +392,14 @@ export class WitTable<
   }
 
   static async fetch<
-    T0 extends PhantomReified<PhantomTypeArgument>,
-    T1 extends Reified<TypeArgument, any>,
-    T2 extends PhantomReified<PhantomTypeArgument>,
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
   >(
     client: SupportedSuiClient,
-    typeArgs: [T0, T1, T2],
+    typeArgs: [T, K, V],
     id: string,
-  ): Promise<WitTable<ToPhantomTypeArgument<T0>, ToTypeArgument<T1>, ToPhantomTypeArgument<T2>>> {
+  ): Promise<WitTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>>> {
     const res = await fetchObjectBcs(client, id)
     if (!isWitTable(res.type)) {
       throw new Error(`object at id ${id} is not a WitTable object`)

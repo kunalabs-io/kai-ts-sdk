@@ -4,15 +4,17 @@ import {
   TransactionObjectInput,
   TransactionResult,
 } from '@mysten/sui/transactions'
+import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 export function authorizeGovernance(
   tx: Transaction,
   wormholeState: TransactionObjectInput,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::authorize_governance`,
+    target: `${getPublishedAt('wormhole', options?.env)}::upgrade_contract::authorize_governance`,
     arguments: [obj(tx, wormholeState)],
   })
 }
@@ -28,9 +30,13 @@ export interface AuthorizeUpgradeArgs {
  * because a contract upgrade is only relevant to one particular network
  * (in this case Sui), whose build digest is encoded in this message.
  */
-export function authorizeUpgrade(tx: Transaction, args: AuthorizeUpgradeArgs): TransactionResult {
+export function authorizeUpgrade(
+  tx: Transaction,
+  args: AuthorizeUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::authorize_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::upgrade_contract::authorize_upgrade`,
     arguments: [
       obj(tx, args.wormholeState),
       obj(tx, args.receipt),
@@ -48,9 +54,13 @@ export interface CommitUpgradeArgs {
  * method invokes `state::commit_upgrade` which interacts with
  * `sui::package`.
  */
-export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): TransactionResult {
+export function commitUpgrade(
+  tx: Transaction,
+  args: CommitUpgradeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::commit_upgrade`,
+    target: `${getPublishedAt('wormhole', options?.env)}::upgrade_contract::commit_upgrade`,
     arguments: [
       obj(tx, args.self),
       obj(tx, args.receipt),
@@ -67,9 +77,10 @@ export function commitUpgrade(tx: Transaction, args: CommitUpgradeArgs): Transac
 export function takeDigest(
   tx: Transaction,
   governancePayload: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::take_digest`,
+    target: `${getPublishedAt('wormhole', options?.env)}::upgrade_contract::take_digest`,
     arguments: [pure(tx, governancePayload, `vector<u8>`)],
   })
 }
@@ -82,9 +93,12 @@ export interface HandleUpgradeContractArgs {
 export function handleUpgradeContract(
   tx: Transaction,
   args: HandleUpgradeContractArgs,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::handle_upgrade_contract`,
+    target: `${
+      getPublishedAt('wormhole', options?.env)
+    }::upgrade_contract::handle_upgrade_contract`,
     arguments: [
       obj(tx, args.wormholeState),
       pure(tx, args.payload, `vector<u8>`),
@@ -95,9 +109,10 @@ export function handleUpgradeContract(
 export function deserialize(
   tx: Transaction,
   payload: Array<number | TransactionArgument> | TransactionArgument,
+  options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('wormhole')}::upgrade_contract::deserialize`,
+    target: `${getPublishedAt('wormhole', options?.env)}::upgrade_contract::deserialize`,
     arguments: [pure(tx, payload, `vector<u8>`)],
   })
 }

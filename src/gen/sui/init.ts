@@ -1,6 +1,8 @@
 import { StructClassLoader } from '../_framework/loader'
 import * as accumulatorMetadata from './accumulator-metadata/structs'
+import * as accumulatorSettlement from './accumulator-settlement/structs'
 import * as accumulator from './accumulator/structs'
+import * as addressAlias from './address-alias/structs'
 import * as authenticatorState from './authenticator-state/structs'
 import * as bag from './bag/structs'
 import * as balance from './balance/structs'
@@ -8,12 +10,16 @@ import * as bcs from './bcs/structs'
 import * as bls12381 from './bls12381/structs'
 import * as borrow from './borrow/structs'
 import * as clock from './clock/structs'
+import * as coinRegistry from './coin-registry/structs'
 import * as coin from './coin/structs'
 import * as config from './config/structs'
 import * as denyList from './deny-list/structs'
+import * as derivedObject from './derived-object/structs'
+import * as displayRegistry from './display-registry/structs'
 import * as display from './display/structs'
 import * as dynamicField from './dynamic-field/structs'
 import * as dynamicObjectField from './dynamic-object-field/structs'
+import * as fundsAccumulator from './funds-accumulator/structs'
 import * as groth16 from './groth16/structs'
 import * as groupOps from './group-ops/structs'
 import * as kioskExtension from './kiosk-extension/structs'
@@ -27,6 +33,7 @@ import * as package_ from './package/structs'
 import * as party from './party/structs'
 import * as priorityQueue from './priority-queue/structs'
 import * as random from './random/structs'
+import * as ristretto255 from './ristretto255/structs'
 import * as sui from './sui/structs'
 import * as tableVec from './table-vec/structs'
 import * as table from './table/structs'
@@ -49,6 +56,11 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(accumulatorMetadata.Owner)
   loader.register(accumulatorMetadata.MetadataKey)
   loader.register(accumulatorMetadata.Metadata)
+  loader.register(accumulatorMetadata.AccumulatorObjectCountKey)
+  loader.register(accumulatorSettlement.EventStreamHead)
+  loader.register(addressAlias.AddressAliasState)
+  loader.register(addressAlias.AddressAliases)
+  loader.register(addressAlias.AliasKey)
   loader.register(authenticatorState.AuthenticatorState)
   loader.register(authenticatorState.AuthenticatorStateInner)
   loader.register(authenticatorState.JWK)
@@ -73,6 +85,14 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(coin.DenyCapV2)
   loader.register(coin.CurrencyCreated)
   loader.register(coin.DenyCap)
+  loader.register(coinRegistry.CoinRegistry)
+  loader.register(coinRegistry.ExtraField)
+  loader.register(coinRegistry.CurrencyKey)
+  loader.register(coinRegistry.LegacyMetadataKey)
+  loader.register(coinRegistry.MetadataCap)
+  loader.register(coinRegistry.Borrow)
+  loader.register(coinRegistry.Currency)
+  loader.register(coinRegistry.CurrencyInitializer)
   loader.register(config.Config)
   loader.register(config.Setting)
   loader.register(config.SettingData)
@@ -83,11 +103,19 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(denyList.GlobalPauseKey)
   loader.register(denyList.PerTypeConfigCreated)
   loader.register(denyList.PerTypeList)
+  loader.register(derivedObject.Claimed)
+  loader.register(derivedObject.DerivedObjectKey)
   loader.register(display.Display)
   loader.register(display.DisplayCreated)
   loader.register(display.VersionUpdated)
+  loader.register(displayRegistry.DisplayRegistry)
+  loader.register(displayRegistry.SystemMigrationCap)
+  loader.register(displayRegistry.Display)
+  loader.register(displayRegistry.DisplayCap)
+  loader.register(displayRegistry.DisplayKey)
   loader.register(dynamicField.Field)
   loader.register(dynamicObjectField.Wrapper)
+  loader.register(fundsAccumulator.Withdrawal)
   loader.register(groth16.Curve)
   loader.register(groth16.PreparedVerifyingKey)
   loader.register(groth16.PublicProofInputs)
@@ -124,6 +152,8 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(random.Random)
   loader.register(random.RandomInner)
   loader.register(random.RandomGenerator)
+  loader.register(ristretto255.Scalar)
+  loader.register(ristretto255.G)
   loader.register(sui.SUI)
   loader.register(table.Table)
   loader.register(tableVec.TableVec)
