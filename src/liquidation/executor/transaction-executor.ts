@@ -1,10 +1,10 @@
 import { Transaction } from '@mysten/sui/transactions'
-import { SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions } from '@mysten/sui/client'
+import { SuiClientTypes } from '@mysten/sui/client'
 
 export interface ExecutionResult {
   digest: string
   effects: string
-  data: SuiTransactionBlockResponse
+  data: SuiClientTypes.Transaction<{ effects: true; events: true }>
 }
 
 export interface TransactionExecutor {
@@ -12,7 +12,7 @@ export interface TransactionExecutor {
 
   executeTransaction(
     transaction: Transaction | Uint8Array,
-    options?: SuiTransactionBlockResponseOptions,
+    options?: SuiClientTypes.TransactionInclude,
     additionalSignatures?: string[]
   ): Promise<ExecutionResult>
 

@@ -21,7 +21,8 @@ import {
   withdraw,
 } from '../gen/kai-leverage/supply-pool/functions'
 import { normalizeSuiAddress, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
-import { SuiClient, SuiObjectData } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData } from '@mysten/sui/jsonRpc'
 import {
   CoinInfo,
   DEEP,
@@ -151,7 +152,7 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
-  async fetch(client: SuiClient): Promise<SupplyPool<T, ST>> {
+  async fetch(client: ClientWithCoreApi): Promise<SupplyPool<T, ST>> {
     const data = await this.r.fetch(client, this.id)
     return new SupplyPool({
       info: this,
@@ -160,8 +161,22 @@ export class SupplyPoolInfo<T extends PhantomTypeArgument, ST extends PhantomTyp
     })
   }
 
+  /**
+   * @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use
+   * {@link SupplyPoolInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })`
+   * for transport-agnostic parsing.
+   */
   fromSuiObjectData(data: SuiObjectData): SupplyPool<T, ST> {
     const data_ = this.r.fromSuiObjectData(data)
+    return new SupplyPool({
+      info: this,
+      reified: this.r,
+      data: data_,
+    })
+  }
+
+  fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SupplyPool<T, ST> {
+    const data_ = this.r.fromCoreObject(obj)
     return new SupplyPool({
       info: this,
       reified: this.r,

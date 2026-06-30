@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== COIN =============================== */
 
@@ -47,9 +42,9 @@ export type COINJSON = {
 export class COIN implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::coin::COIN` = `${
-    getTypeOrigin('whusdte', 'coin::COIN')
-  }::coin::COIN` as const
+  static get $typeName(): `${string}::coin::COIN` {
+    return `${getTypeOrigin('whusdte', 'coin::COIN')}::coin::COIN` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class COIN implements StructClass {
   static reified(): COINReified {
     const reifiedBcs = COIN.bcs
     return {
-      typeName: COIN.$typeName,
-      fullTypeName: composeSuiType(
-        COIN.$typeName,
-        ...[],
-      ) as `${string}::coin::COIN`,
+      get typeName() {
+        return COIN.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          COIN.$typeName,
+          ...[],
+        ) as `${string}::coin::COIN`
+      },
       typeArgs: [] as [],
       isPhantom: COIN.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class COIN implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => COIN.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => COIN.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => COIN.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => COIN.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => COIN.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => COIN.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => COIN.fetch(client, id),
       new: (fields: COINFields) => {
         return new COIN([], fields)
       },
@@ -170,6 +170,14 @@ export class COIN implements StructClass {
     return COIN.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): COIN {
+    if (!isCOIN(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a COIN object`)
+    }
+    return COIN.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link COIN.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): COIN {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class COIN implements StructClass {
     return COIN.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link COIN.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): COIN {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCOIN(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class COIN implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<COIN> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCOIN(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<COIN> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCOIN(object.type)) {
       throw new Error(`object at id ${id} is not a COIN object`)
     }
-
-    return COIN.fromBcs(res.bcsBytes)
+    return COIN.fromBcs(object.content)
   }
 }

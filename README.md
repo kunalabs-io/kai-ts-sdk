@@ -75,7 +75,7 @@ async function withdraw(client: SuiClient) {
 ### Info and Stats
 
 ```ts
-import { VAULTS, getVaultStats, getWalletVaultInfo } from '@kunalabs-io/kai'
+import { VAULTS, getVaultStats, getWalletVaultInfo, getAllVaultStats } from '@kunalabs-io/kai'
 import { SuiClient } from '@mysten/sui/client'
 
 async function stats(client: SuiClient) {
@@ -119,7 +119,7 @@ async function create(client: SuiClient) {
   const walletAddress = '...'
 
   const configInfo = POSITION_CONFIG_INFOS.find(info => info.name === 'Bluefin suiUSDT/USDC')!
-  // or e.g. `ALL_POSITION_CONFIG_INFOS['0x888fcd428659608b1adb45790f65dfbac4352150f67d6312f0c0a5f1f9b04692']`
+  // or e.g. `ALL_POSITION_CONFIG_INFOS.get('0x888fcd428659608b1adb45790f65dfbac4352150f67d6312f0c0a5f1f9b04692')`
 
   const config = await configInfo.fetchConfig(client)
 
@@ -261,8 +261,9 @@ export async function positionInfo(client: SuiClient) {
 Withdraws liquidity from the position.
 
 ```ts
-import { Position, findPositionCapForWalletPosition, USDC } from '@kunalabs-io/kai'
+import { AfRouterAdapter, Position, findPositionCapForWalletPosition, USDC } from '@kunalabs-io/kai'
 import { SuiClient } from '@mysten/sui/client'
+import Decimal from 'decimal.js'
 
 export async function withdraw(client: SuiClient) {
   const walletAddress = '...'
@@ -276,7 +277,7 @@ export async function withdraw(client: SuiClient) {
     throw new Error(`PositionCap not found for position ${position.id}`)
   }
 
-  const router = new AfRouterAdapter()
+  const router = await AfRouterAdapter.create()
   // or... `new CetusAggregatorAdapter(new CetusAggregatorClient())`
 
   // The reduction (withdrawal) process consists of withdrawing the LP ammounts, any extra collateral, and
@@ -296,7 +297,7 @@ export async function withdraw(client: SuiClient) {
         swapMethod: 'exact-in', // or 'exact-out'
         slippage: 0.0005, // 0.05%
         overestimationFactor: 0.0005, // 0.05%
-      }
+      },
       convertRewardsTo: USDC,
     },
     walletAddress
@@ -331,7 +332,7 @@ async function withdrawRewards(client: SuiClient) {
     throw new Error(`PositionCap not found for position ${position.id}`)
   }
 
-  const router = new AfRouterAdapter()
+  const router = await AfRouterAdapter.create()
   // or... `new CetusAggregatorAdapter(new CetusAggregatorClient())`
 
   // see `position.withdrawAllRewards()` if you need something more custom

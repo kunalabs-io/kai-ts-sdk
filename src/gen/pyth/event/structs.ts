@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { PriceFeed } from '../price-feed/structs'
 
 /* ============================== PythInitializationEvent =============================== */
@@ -52,9 +47,11 @@ export type PythInitializationEventJSON = {
 export class PythInitializationEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::event::PythInitializationEvent` = `${
-    getTypeOrigin('pyth', 'event::PythInitializationEvent')
-  }::event::PythInitializationEvent` as const
+  static get $typeName(): `${string}::event::PythInitializationEvent` {
+    return `${
+      getTypeOrigin('pyth', 'event::PythInitializationEvent')
+    }::event::PythInitializationEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +76,15 @@ export class PythInitializationEvent implements StructClass {
   static reified(): PythInitializationEventReified {
     const reifiedBcs = PythInitializationEvent.bcs
     return {
-      typeName: PythInitializationEvent.$typeName,
-      fullTypeName: composeSuiType(
-        PythInitializationEvent.$typeName,
-        ...[],
-      ) as `${string}::event::PythInitializationEvent`,
+      get typeName() {
+        return PythInitializationEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PythInitializationEvent.$typeName,
+          ...[],
+        ) as `${string}::event::PythInitializationEvent`
+      },
       typeArgs: [] as [],
       isPhantom: PythInitializationEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -94,11 +95,13 @@ export class PythInitializationEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PythInitializationEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythInitializationEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PythInitializationEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PythInitializationEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PythInitializationEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PythInitializationEvent.fetch(client, id),
       new: (fields: PythInitializationEventFields) => {
         return new PythInitializationEvent([], fields)
@@ -180,6 +183,14 @@ export class PythInitializationEvent implements StructClass {
     return PythInitializationEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PythInitializationEvent {
+    if (!isPythInitializationEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PythInitializationEvent object`)
+    }
+    return PythInitializationEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythInitializationEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PythInitializationEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -192,6 +203,7 @@ export class PythInitializationEvent implements StructClass {
     return PythInitializationEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythInitializationEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PythInitializationEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPythInitializationEvent(data.bcs.type)) {
@@ -208,13 +220,15 @@ export class PythInitializationEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PythInitializationEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPythInitializationEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PythInitializationEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPythInitializationEvent(object.type)) {
       throw new Error(`object at id ${id} is not a PythInitializationEvent object`)
     }
-
-    return PythInitializationEvent.fromBcs(res.bcsBytes)
+    return PythInitializationEvent.fromBcs(object.content)
   }
 }
 
@@ -249,9 +263,11 @@ export type PriceFeedUpdateEventJSON = {
 export class PriceFeedUpdateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::event::PriceFeedUpdateEvent` = `${
-    getTypeOrigin('pyth', 'event::PriceFeedUpdateEvent')
-  }::event::PriceFeedUpdateEvent` as const
+  static get $typeName(): `${string}::event::PriceFeedUpdateEvent` {
+    return `${
+      getTypeOrigin('pyth', 'event::PriceFeedUpdateEvent')
+    }::event::PriceFeedUpdateEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -279,11 +295,15 @@ export class PriceFeedUpdateEvent implements StructClass {
   static reified(): PriceFeedUpdateEventReified {
     const reifiedBcs = PriceFeedUpdateEvent.bcs
     return {
-      typeName: PriceFeedUpdateEvent.$typeName,
-      fullTypeName: composeSuiType(
-        PriceFeedUpdateEvent.$typeName,
-        ...[],
-      ) as `${string}::event::PriceFeedUpdateEvent`,
+      get typeName() {
+        return PriceFeedUpdateEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceFeedUpdateEvent.$typeName,
+          ...[],
+        ) as `${string}::event::PriceFeedUpdateEvent`
+      },
       typeArgs: [] as [],
       isPhantom: PriceFeedUpdateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -294,11 +314,13 @@ export class PriceFeedUpdateEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceFeedUpdateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceFeedUpdateEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceFeedUpdateEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PriceFeedUpdateEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PriceFeedUpdateEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PriceFeedUpdateEvent.fetch(client, id),
       new: (fields: PriceFeedUpdateEventFields) => {
         return new PriceFeedUpdateEvent([], fields)
@@ -385,6 +407,14 @@ export class PriceFeedUpdateEvent implements StructClass {
     return PriceFeedUpdateEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceFeedUpdateEvent {
+    if (!isPriceFeedUpdateEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceFeedUpdateEvent object`)
+    }
+    return PriceFeedUpdateEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceFeedUpdateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PriceFeedUpdateEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -397,6 +427,7 @@ export class PriceFeedUpdateEvent implements StructClass {
     return PriceFeedUpdateEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceFeedUpdateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PriceFeedUpdateEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceFeedUpdateEvent(data.bcs.type)) {
@@ -413,12 +444,14 @@ export class PriceFeedUpdateEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceFeedUpdateEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceFeedUpdateEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PriceFeedUpdateEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceFeedUpdateEvent(object.type)) {
       throw new Error(`object at id ${id} is not a PriceFeedUpdateEvent object`)
     }
-
-    return PriceFeedUpdateEvent.fromBcs(res.bcsBytes)
+    return PriceFeedUpdateEvent.fromBcs(object.content)
   }
 }

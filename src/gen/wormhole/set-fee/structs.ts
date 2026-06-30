@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== GovernanceWitness =============================== */
 
@@ -53,9 +48,11 @@ export type GovernanceWitnessJSON = {
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_fee::GovernanceWitness` = `${
-    getTypeOrigin('wormhole', 'set_fee::GovernanceWitness')
-  }::set_fee::GovernanceWitness` as const
+  static get $typeName(): `${string}::set_fee::GovernanceWitness` {
+    return `${
+      getTypeOrigin('wormhole', 'set_fee::GovernanceWitness')
+    }::set_fee::GovernanceWitness` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +76,15 @@ export class GovernanceWitness implements StructClass {
   static reified(): GovernanceWitnessReified {
     const reifiedBcs = GovernanceWitness.bcs
     return {
-      typeName: GovernanceWitness.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceWitness.$typeName,
-        ...[],
-      ) as `${string}::set_fee::GovernanceWitness`,
+      get typeName() {
+        return GovernanceWitness.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceWitness.$typeName,
+          ...[],
+        ) as `${string}::set_fee::GovernanceWitness`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -93,9 +94,11 @@ export class GovernanceWitness implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceWitness.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -176,6 +179,14 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceWitness {
+    if (!isGovernanceWitness(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceWitness object`)
+    }
+    return GovernanceWitness.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceWitness {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -186,6 +197,7 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceWitness {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceWitness(data.bcs.type)) {
@@ -202,13 +214,15 @@ export class GovernanceWitness implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceWitness(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceWitness> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceWitness(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
-
-    return GovernanceWitness.fromBcs(res.bcsBytes)
+    return GovernanceWitness.fromBcs(object.content)
   }
 }
 
@@ -237,9 +251,9 @@ export type SetFeeJSON = {
 export class SetFee implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_fee::SetFee` = `${
-    getTypeOrigin('wormhole', 'set_fee::SetFee')
-  }::set_fee::SetFee` as const
+  static get $typeName(): `${string}::set_fee::SetFee` {
+    return `${getTypeOrigin('wormhole', 'set_fee::SetFee')}::set_fee::SetFee` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -263,11 +277,15 @@ export class SetFee implements StructClass {
   static reified(): SetFeeReified {
     const reifiedBcs = SetFee.bcs
     return {
-      typeName: SetFee.$typeName,
-      fullTypeName: composeSuiType(
-        SetFee.$typeName,
-        ...[],
-      ) as `${string}::set_fee::SetFee`,
+      get typeName() {
+        return SetFee.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SetFee.$typeName,
+          ...[],
+        ) as `${string}::set_fee::SetFee`
+      },
       typeArgs: [] as [],
       isPhantom: SetFee.$isPhantom,
       reifiedTypeArgs: [],
@@ -277,9 +295,10 @@ export class SetFee implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SetFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetFee.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => SetFee.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SetFee.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SetFee.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SetFee.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SetFee.fetch(client, id),
       new: (fields: SetFeeFields) => {
         return new SetFee([], fields)
       },
@@ -360,6 +379,14 @@ export class SetFee implements StructClass {
     return SetFee.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SetFee {
+    if (!isSetFee(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SetFee object`)
+    }
+    return SetFee.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SetFee {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -370,6 +397,7 @@ export class SetFee implements StructClass {
     return SetFee.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SetFee {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSetFee(data.bcs.type)) {
@@ -386,12 +414,14 @@ export class SetFee implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SetFee> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSetFee(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SetFee> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSetFee(object.type)) {
       throw new Error(`object at id ${id} is not a SetFee object`)
     }
-
-    return SetFee.fromBcs(res.bcsBytes)
+    return SetFee.fromBcs(object.content)
   }
 }

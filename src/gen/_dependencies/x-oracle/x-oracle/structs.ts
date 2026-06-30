@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -24,10 +25,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { UID } from '../../../sui/object/structs'
@@ -64,9 +63,9 @@ export type X_ORACLEJSON = {
 export class X_ORACLE implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::x_oracle::X_ORACLE` = `${
-    getTypeOrigin('x-oracle', 'x_oracle::X_ORACLE')
-  }::x_oracle::X_ORACLE` as const
+  static get $typeName(): `${string}::x_oracle::X_ORACLE` {
+    return `${getTypeOrigin('x-oracle', 'x_oracle::X_ORACLE')}::x_oracle::X_ORACLE` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +89,15 @@ export class X_ORACLE implements StructClass {
   static reified(): X_ORACLEReified {
     const reifiedBcs = X_ORACLE.bcs
     return {
-      typeName: X_ORACLE.$typeName,
-      fullTypeName: composeSuiType(
-        X_ORACLE.$typeName,
-        ...[],
-      ) as `${string}::x_oracle::X_ORACLE`,
+      get typeName() {
+        return X_ORACLE.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          X_ORACLE.$typeName,
+          ...[],
+        ) as `${string}::x_oracle::X_ORACLE`
+      },
       typeArgs: [] as [],
       isPhantom: X_ORACLE.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,9 +107,11 @@ export class X_ORACLE implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => X_ORACLE.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => X_ORACLE.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        X_ORACLE.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => X_ORACLE.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => X_ORACLE.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => X_ORACLE.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => X_ORACLE.fetch(client, id),
       new: (fields: X_ORACLEFields) => {
         return new X_ORACLE([], fields)
       },
@@ -187,6 +192,14 @@ export class X_ORACLE implements StructClass {
     return X_ORACLE.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): X_ORACLE {
+    if (!isX_ORACLE(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a X_ORACLE object`)
+    }
+    return X_ORACLE.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link X_ORACLE.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): X_ORACLE {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -197,6 +210,7 @@ export class X_ORACLE implements StructClass {
     return X_ORACLE.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link X_ORACLE.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): X_ORACLE {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isX_ORACLE(data.bcs.type)) {
@@ -213,13 +227,15 @@ export class X_ORACLE implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<X_ORACLE> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isX_ORACLE(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<X_ORACLE> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isX_ORACLE(object.type)) {
       throw new Error(`object at id ${id} is not a X_ORACLE object`)
     }
-
-    return X_ORACLE.fromBcs(res.bcsBytes)
+    return X_ORACLE.fromBcs(object.content)
   }
 }
 
@@ -256,9 +272,9 @@ export type XOracleJSON = {
 export class XOracle implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::x_oracle::XOracle` = `${
-    getTypeOrigin('x-oracle', 'x_oracle::XOracle')
-  }::x_oracle::XOracle` as const
+  static get $typeName(): `${string}::x_oracle::XOracle` {
+    return `${getTypeOrigin('x-oracle', 'x_oracle::XOracle')}::x_oracle::XOracle` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -290,11 +306,15 @@ export class XOracle implements StructClass {
   static reified(): XOracleReified {
     const reifiedBcs = XOracle.bcs
     return {
-      typeName: XOracle.$typeName,
-      fullTypeName: composeSuiType(
-        XOracle.$typeName,
-        ...[],
-      ) as `${string}::x_oracle::XOracle`,
+      get typeName() {
+        return XOracle.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          XOracle.$typeName,
+          ...[],
+        ) as `${string}::x_oracle::XOracle`
+      },
       typeArgs: [] as [],
       isPhantom: XOracle.$isPhantom,
       reifiedTypeArgs: [],
@@ -304,9 +324,11 @@ export class XOracle implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => XOracle.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => XOracle.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        XOracle.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => XOracle.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => XOracle.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => XOracle.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => XOracle.fetch(client, id),
       new: (fields: XOracleFields) => {
         return new XOracle([], fields)
       },
@@ -443,6 +465,14 @@ export class XOracle implements StructClass {
     return XOracle.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): XOracle {
+    if (!isXOracle(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a XOracle object`)
+    }
+    return XOracle.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOracle.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): XOracle {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -453,6 +483,7 @@ export class XOracle implements StructClass {
     return XOracle.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOracle.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): XOracle {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isXOracle(data.bcs.type)) {
@@ -469,13 +500,15 @@ export class XOracle implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<XOracle> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isXOracle(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<XOracle> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isXOracle(object.type)) {
       throw new Error(`object at id ${id} is not a XOracle object`)
     }
-
-    return XOracle.fromBcs(res.bcsBytes)
+    return XOracle.fromBcs(object.content)
   }
 }
 
@@ -509,9 +542,11 @@ export type XOraclePolicyCapJSON = {
 export class XOraclePolicyCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::x_oracle::XOraclePolicyCap` = `${
-    getTypeOrigin('x-oracle', 'x_oracle::XOraclePolicyCap')
-  }::x_oracle::XOraclePolicyCap` as const
+  static get $typeName(): `${string}::x_oracle::XOraclePolicyCap` {
+    return `${
+      getTypeOrigin('x-oracle', 'x_oracle::XOraclePolicyCap')
+    }::x_oracle::XOraclePolicyCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -539,11 +574,15 @@ export class XOraclePolicyCap implements StructClass {
   static reified(): XOraclePolicyCapReified {
     const reifiedBcs = XOraclePolicyCap.bcs
     return {
-      typeName: XOraclePolicyCap.$typeName,
-      fullTypeName: composeSuiType(
-        XOraclePolicyCap.$typeName,
-        ...[],
-      ) as `${string}::x_oracle::XOraclePolicyCap`,
+      get typeName() {
+        return XOraclePolicyCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          XOraclePolicyCap.$typeName,
+          ...[],
+        ) as `${string}::x_oracle::XOraclePolicyCap`
+      },
       typeArgs: [] as [],
       isPhantom: XOraclePolicyCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -553,9 +592,11 @@ export class XOraclePolicyCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => XOraclePolicyCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => XOraclePolicyCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        XOraclePolicyCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => XOraclePolicyCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => XOraclePolicyCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => XOraclePolicyCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => XOraclePolicyCap.fetch(client, id),
       new: (fields: XOraclePolicyCapFields) => {
         return new XOraclePolicyCap([], fields)
       },
@@ -664,6 +705,14 @@ export class XOraclePolicyCap implements StructClass {
     return XOraclePolicyCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): XOraclePolicyCap {
+    if (!isXOraclePolicyCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a XOraclePolicyCap object`)
+    }
+    return XOraclePolicyCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOraclePolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): XOraclePolicyCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -674,6 +723,7 @@ export class XOraclePolicyCap implements StructClass {
     return XOraclePolicyCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOraclePolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): XOraclePolicyCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isXOraclePolicyCap(data.bcs.type)) {
@@ -690,13 +740,15 @@ export class XOraclePolicyCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<XOraclePolicyCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isXOraclePolicyCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<XOraclePolicyCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isXOraclePolicyCap(object.type)) {
       throw new Error(`object at id ${id} is not a XOraclePolicyCap object`)
     }
-
-    return XOraclePolicyCap.fromBcs(res.bcsBytes)
+    return XOraclePolicyCap.fromBcs(object.content)
   }
 }
 
@@ -734,9 +786,11 @@ export type XOraclePriceUpdateRequestJSON<T extends PhantomTypeArgument> = {
 export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::x_oracle::XOraclePriceUpdateRequest` = `${
-    getTypeOrigin('x-oracle', 'x_oracle::XOraclePriceUpdateRequest')
-  }::x_oracle::XOraclePriceUpdateRequest` as const
+  static get $typeName(): `${string}::x_oracle::XOraclePriceUpdateRequest` {
+    return `${
+      getTypeOrigin('x-oracle', 'x_oracle::XOraclePriceUpdateRequest')
+    }::x_oracle::XOraclePriceUpdateRequest` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -766,14 +820,20 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
   ): XOraclePriceUpdateRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = XOraclePriceUpdateRequest.bcs
     return {
-      typeName: XOraclePriceUpdateRequest.$typeName,
-      fullTypeName: composeSuiType(
-        XOraclePriceUpdateRequest.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return XOraclePriceUpdateRequest.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          XOraclePriceUpdateRequest.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::x_oracle::XOraclePriceUpdateRequest<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: XOraclePriceUpdateRequest.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => XOraclePriceUpdateRequest.fromFields(T, fields),
@@ -784,11 +844,13 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
       bcs: reifiedBcs,
       fromJSONField: (field: any) => XOraclePriceUpdateRequest.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => XOraclePriceUpdateRequest.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        XOraclePriceUpdateRequest.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         XOraclePriceUpdateRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         XOraclePriceUpdateRequest.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         XOraclePriceUpdateRequest.fetch(client, T, id),
       new: (fields: XOraclePriceUpdateRequestFields<ToPhantomTypeArgument<T>>) => {
         return new XOraclePriceUpdateRequest([extractType(T)], fields)
@@ -917,6 +979,34 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
     return XOraclePriceUpdateRequest.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>> {
+    if (!isXOraclePriceUpdateRequest(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a XOraclePriceUpdateRequest object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return XOraclePriceUpdateRequest.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOraclePriceUpdateRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -932,6 +1022,7 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
     return XOraclePriceUpdateRequest.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link XOraclePriceUpdateRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -968,16 +1059,19 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<XOraclePriceUpdateRequest<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isXOraclePriceUpdateRequest(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isXOraclePriceUpdateRequest(object.type)) {
       throw new Error(`object at id ${id} is not a XOraclePriceUpdateRequest object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -993,6 +1087,6 @@ export class XOraclePriceUpdateRequest<T extends PhantomTypeArgument> implements
       }
     }
 
-    return XOraclePriceUpdateRequest.fromBcs(typeArg, res.bcsBytes)
+    return XOraclePriceUpdateRequest.fromBcs(typeArg, object.content)
   }
 }

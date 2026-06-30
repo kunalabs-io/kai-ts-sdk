@@ -4,7 +4,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -30,10 +31,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
@@ -69,9 +68,11 @@ export type HotPotatoVectorJSON<T extends TypeArgument> = {
 export class HotPotatoVector<T extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::hot_potato_vector::HotPotatoVector` = `${
-    getTypeOrigin('pyth', 'hot_potato_vector::HotPotatoVector')
-  }::hot_potato_vector::HotPotatoVector` as const
+  static get $typeName(): `${string}::hot_potato_vector::HotPotatoVector` {
+    return `${
+      getTypeOrigin('pyth', 'hot_potato_vector::HotPotatoVector')
+    }::hot_potato_vector::HotPotatoVector` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
@@ -97,12 +98,18 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
   ): HotPotatoVectorReified<ToTypeArgument<T>> {
     const reifiedBcs = HotPotatoVector.bcs(toBcs(T))
     return {
-      typeName: HotPotatoVector.$typeName,
-      fullTypeName: composeSuiType(
-        HotPotatoVector.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::hot_potato_vector::HotPotatoVector<${ToTypeStr<ToTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
+      get typeName() {
+        return HotPotatoVector.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          HotPotatoVector.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::hot_potato_vector::HotPotatoVector<${ToTypeStr<ToTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>]
+      },
       isPhantom: HotPotatoVector.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => HotPotatoVector.fromFields(T, fields),
@@ -111,9 +118,11 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => HotPotatoVector.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => HotPotatoVector.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        HotPotatoVector.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => HotPotatoVector.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => HotPotatoVector.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => HotPotatoVector.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => HotPotatoVector.fetch(client, T, id),
       new: (fields: HotPotatoVectorFields<ToTypeArgument<T>>) => {
         return new HotPotatoVector([extractType(T)], fields)
       },
@@ -219,6 +228,34 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
     return HotPotatoVector.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): HotPotatoVector<ToTypeArgument<T>> {
+    if (!isHotPotatoVector(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a HotPotatoVector object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return HotPotatoVector.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link HotPotatoVector.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     content: SuiParsedData,
@@ -232,6 +269,7 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
     return HotPotatoVector.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link HotPotatoVector.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     data: SuiObjectData,
@@ -268,16 +306,19 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<HotPotatoVector<ToTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isHotPotatoVector(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isHotPotatoVector(object.type)) {
       throw new Error(`object at id ${id} is not a HotPotatoVector object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -293,6 +334,6 @@ export class HotPotatoVector<T extends TypeArgument> implements StructClass {
       }
     }
 
-    return HotPotatoVector.fromBcs(typeArg, res.bcsBytes)
+    return HotPotatoVector.fromBcs(typeArg, object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { ExternalAddress } from '../../wormhole/external-address/structs'
 
 /* ============================== GovernanceDataSource =============================== */
@@ -55,9 +50,11 @@ export type GovernanceDataSourceJSON = {
 export class GovernanceDataSource implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_governance_data_source::GovernanceDataSource` = `${
-    getTypeOrigin('pyth', 'set_governance_data_source::GovernanceDataSource')
-  }::set_governance_data_source::GovernanceDataSource` as const
+  static get $typeName(): `${string}::set_governance_data_source::GovernanceDataSource` {
+    return `${
+      getTypeOrigin('pyth', 'set_governance_data_source::GovernanceDataSource')
+    }::set_governance_data_source::GovernanceDataSource` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -85,11 +82,15 @@ export class GovernanceDataSource implements StructClass {
   static reified(): GovernanceDataSourceReified {
     const reifiedBcs = GovernanceDataSource.bcs
     return {
-      typeName: GovernanceDataSource.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceDataSource.$typeName,
-        ...[],
-      ) as `${string}::set_governance_data_source::GovernanceDataSource`,
+      get typeName() {
+        return GovernanceDataSource.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceDataSource.$typeName,
+          ...[],
+        ) as `${string}::set_governance_data_source::GovernanceDataSource`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceDataSource.$isPhantom,
       reifiedTypeArgs: [],
@@ -100,11 +101,13 @@ export class GovernanceDataSource implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceDataSource.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceDataSource.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceDataSource.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         GovernanceDataSource.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         GovernanceDataSource.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         GovernanceDataSource.fetch(client, id),
       new: (fields: GovernanceDataSourceFields) => {
         return new GovernanceDataSource([], fields)
@@ -199,6 +202,14 @@ export class GovernanceDataSource implements StructClass {
     return GovernanceDataSource.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceDataSource {
+    if (!isGovernanceDataSource(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceDataSource object`)
+    }
+    return GovernanceDataSource.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceDataSource.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceDataSource {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -211,6 +222,7 @@ export class GovernanceDataSource implements StructClass {
     return GovernanceDataSource.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceDataSource.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceDataSource {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceDataSource(data.bcs.type)) {
@@ -227,12 +239,14 @@ export class GovernanceDataSource implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceDataSource> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceDataSource(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceDataSource> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceDataSource(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceDataSource object`)
     }
-
-    return GovernanceDataSource.fromBcs(res.bcsBytes)
+    return GovernanceDataSource.fromBcs(object.content)
   }
 }

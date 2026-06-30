@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -66,9 +61,11 @@ export type CollateralDepositEventJSON = {
 export class CollateralDepositEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::deposit_collateral::CollateralDepositEvent` = `${
-    getTypeOrigin('protocol', 'deposit_collateral::CollateralDepositEvent')
-  }::deposit_collateral::CollateralDepositEvent` as const
+  static get $typeName(): `${string}::deposit_collateral::CollateralDepositEvent` {
+    return `${
+      getTypeOrigin('protocol', 'deposit_collateral::CollateralDepositEvent')
+    }::deposit_collateral::CollateralDepositEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -98,11 +95,15 @@ export class CollateralDepositEvent implements StructClass {
   static reified(): CollateralDepositEventReified {
     const reifiedBcs = CollateralDepositEvent.bcs
     return {
-      typeName: CollateralDepositEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CollateralDepositEvent.$typeName,
-        ...[],
-      ) as `${string}::deposit_collateral::CollateralDepositEvent`,
+      get typeName() {
+        return CollateralDepositEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollateralDepositEvent.$typeName,
+          ...[],
+        ) as `${string}::deposit_collateral::CollateralDepositEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CollateralDepositEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -113,11 +114,13 @@ export class CollateralDepositEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralDepositEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralDepositEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollateralDepositEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollateralDepositEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollateralDepositEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollateralDepositEvent.fetch(client, id),
       new: (fields: CollateralDepositEventFields) => {
         return new CollateralDepositEvent([], fields)
@@ -217,6 +220,14 @@ export class CollateralDepositEvent implements StructClass {
     return CollateralDepositEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollateralDepositEvent {
+    if (!isCollateralDepositEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollateralDepositEvent object`)
+    }
+    return CollateralDepositEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralDepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollateralDepositEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -229,6 +240,7 @@ export class CollateralDepositEvent implements StructClass {
     return CollateralDepositEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralDepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollateralDepositEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollateralDepositEvent(data.bcs.type)) {
@@ -245,12 +257,14 @@ export class CollateralDepositEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollateralDepositEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollateralDepositEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollateralDepositEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollateralDepositEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CollateralDepositEvent object`)
     }
-
-    return CollateralDepositEvent.fromBcs(res.bcsBytes)
+    return CollateralDepositEvent.fromBcs(object.content)
   }
 }

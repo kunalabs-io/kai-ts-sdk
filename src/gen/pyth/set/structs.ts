@@ -1,7 +1,8 @@
 /** A set data structure. */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -28,10 +29,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Table } from '../../sui/table/structs'
@@ -62,9 +61,9 @@ export type UnitJSON = {
 export class Unit implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set::Unit` = `${
-    getTypeOrigin('pyth', 'set::Unit')
-  }::set::Unit` as const
+  static get $typeName(): `${string}::set::Unit` {
+    return `${getTypeOrigin('pyth', 'set::Unit')}::set::Unit` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -88,11 +87,15 @@ export class Unit implements StructClass {
   static reified(): UnitReified {
     const reifiedBcs = Unit.bcs
     return {
-      typeName: Unit.$typeName,
-      fullTypeName: composeSuiType(
-        Unit.$typeName,
-        ...[],
-      ) as `${string}::set::Unit`,
+      get typeName() {
+        return Unit.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Unit.$typeName,
+          ...[],
+        ) as `${string}::set::Unit`
+      },
       typeArgs: [] as [],
       isPhantom: Unit.$isPhantom,
       reifiedTypeArgs: [],
@@ -102,9 +105,10 @@ export class Unit implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Unit.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Unit.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Unit.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Unit.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Unit.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Unit.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Unit.fetch(client, id),
       new: (fields: UnitFields) => {
         return new Unit([], fields)
       },
@@ -185,6 +189,14 @@ export class Unit implements StructClass {
     return Unit.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Unit {
+    if (!isUnit(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Unit object`)
+    }
+    return Unit.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Unit.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Unit {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -195,6 +207,7 @@ export class Unit implements StructClass {
     return Unit.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Unit.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Unit {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUnit(data.bcs.type)) {
@@ -211,13 +224,15 @@ export class Unit implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Unit> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUnit(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Unit> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUnit(object.type)) {
       throw new Error(`object at id ${id} is not a Unit object`)
     }
-
-    return Unit.fromBcs(res.bcsBytes)
+    return Unit.fromBcs(object.content)
   }
 }
 
@@ -252,9 +267,9 @@ export type SetJSON<A extends TypeArgument> = {
 export class Set<A extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set::Set` = `${
-    getTypeOrigin('pyth', 'set::Set')
-  }::set::Set` as const
+  static get $typeName(): `${string}::set::Set` {
+    return `${getTypeOrigin('pyth', 'set::Set')}::set::Set` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
@@ -282,12 +297,18 @@ export class Set<A extends TypeArgument> implements StructClass {
   ): SetReified<ToTypeArgument<A>> {
     const reifiedBcs = Set.bcs(toBcs(A))
     return {
-      typeName: Set.$typeName,
-      fullTypeName: composeSuiType(
-        Set.$typeName,
-        ...[extractType(A)],
-      ) as `${string}::set::Set<${ToTypeStr<ToTypeArgument<A>>}>`,
-      typeArgs: [extractType(A)] as [ToTypeStr<ToTypeArgument<A>>],
+      get typeName() {
+        return Set.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Set.$typeName,
+          ...[extractType(A)],
+        ) as `${string}::set::Set<${ToTypeStr<ToTypeArgument<A>>}>`
+      },
+      get typeArgs() {
+        return [extractType(A)] as [ToTypeStr<ToTypeArgument<A>>]
+      },
       isPhantom: Set.$isPhantom,
       reifiedTypeArgs: [A],
       fromFields: (fields: Record<string, any>) => Set.fromFields(A, fields),
@@ -296,9 +317,10 @@ export class Set<A extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Set.fromJSONField(A, field),
       fromJSON: (json: Record<string, any>) => Set.fromJSON(A, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Set.fromCoreObject(A, obj),
       fromSuiParsedData: (content: SuiParsedData) => Set.fromSuiParsedData(A, content),
       fromSuiObjectData: (content: SuiObjectData) => Set.fromSuiObjectData(A, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Set.fetch(client, A, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Set.fetch(client, A, id),
       new: (fields: SetFields<ToTypeArgument<A>>) => {
         return new Set([extractType(A)], fields)
       },
@@ -418,6 +440,34 @@ export class Set<A extends TypeArgument> implements StructClass {
     return Set.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<A extends Reified<TypeArgument, any>>(
+    typeArg: A,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Set<ToTypeArgument<A>> {
+    if (!isSet(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Set object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Set.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Set.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<A extends Reified<TypeArgument, any>>(
     typeArg: A,
     content: SuiParsedData,
@@ -431,6 +481,7 @@ export class Set<A extends TypeArgument> implements StructClass {
     return Set.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Set.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<A extends Reified<TypeArgument, any>>(
     typeArg: A,
     data: SuiObjectData,
@@ -467,16 +518,19 @@ export class Set<A extends TypeArgument> implements StructClass {
   }
 
   static async fetch<A extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: A,
     id: string,
   ): Promise<Set<ToTypeArgument<A>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSet(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSet(object.type)) {
       throw new Error(`object at id ${id} is not a Set object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -492,6 +546,6 @@ export class Set<A extends TypeArgument> implements StructClass {
       }
     }
 
-    return Set.fromBcs(typeArg, res.bcsBytes)
+    return Set.fromBcs(typeArg, object.content)
   }
 }

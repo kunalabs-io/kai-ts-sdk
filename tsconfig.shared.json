@@ -29,6 +29,8 @@
         // error out if import and file system have a casing mismatch. Recommended by TS
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
-        "composite": true
+        "composite": true,
+        // each file must be transpilable in isolation (required by bundler builds)
+        "isolatedModules": true
     }
 }

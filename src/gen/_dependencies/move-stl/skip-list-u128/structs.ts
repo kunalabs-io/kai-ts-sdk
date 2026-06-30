@@ -1,5 +1,6 @@
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -26,10 +27,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { UID } from '../../../sui/object/structs'
@@ -87,9 +86,11 @@ export type SkipListJSON<V extends TypeArgument> = {
 export class SkipList<V extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::skip_list_u128::SkipList` = `${
-    getTypeOrigin('move-stl', 'skip_list_u128::SkipList')
-  }::skip_list_u128::SkipList` as const
+  static get $typeName(): `${string}::skip_list_u128::SkipList` {
+    return `${
+      getTypeOrigin('move-stl', 'skip_list_u128::SkipList')
+    }::skip_list_u128::SkipList` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
@@ -137,12 +138,18 @@ export class SkipList<V extends TypeArgument> implements StructClass {
   ): SkipListReified<ToTypeArgument<V>> {
     const reifiedBcs = SkipList.bcs(toBcs(V))
     return {
-      typeName: SkipList.$typeName,
-      fullTypeName: composeSuiType(
-        SkipList.$typeName,
-        ...[extractType(V)],
-      ) as `${string}::skip_list_u128::SkipList<${ToTypeStr<ToTypeArgument<V>>}>`,
-      typeArgs: [extractType(V)] as [ToTypeStr<ToTypeArgument<V>>],
+      get typeName() {
+        return SkipList.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SkipList.$typeName,
+          ...[extractType(V)],
+        ) as `${string}::skip_list_u128::SkipList<${ToTypeStr<ToTypeArgument<V>>}>`
+      },
+      get typeArgs() {
+        return [extractType(V)] as [ToTypeStr<ToTypeArgument<V>>]
+      },
       isPhantom: SkipList.$isPhantom,
       reifiedTypeArgs: [V],
       fromFields: (fields: Record<string, any>) => SkipList.fromFields(V, fields),
@@ -151,9 +158,11 @@ export class SkipList<V extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SkipList.fromJSONField(V, field),
       fromJSON: (json: Record<string, any>) => SkipList.fromJSON(V, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SkipList.fromCoreObject(V, obj),
       fromSuiParsedData: (content: SuiParsedData) => SkipList.fromSuiParsedData(V, content),
       fromSuiObjectData: (content: SuiObjectData) => SkipList.fromSuiObjectData(V, content),
-      fetch: async (client: SupportedSuiClient, id: string) => SkipList.fetch(client, V, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SkipList.fetch(client, V, id),
       new: (fields: SkipListFields<ToTypeArgument<V>>) => {
         return new SkipList([extractType(V)], fields)
       },
@@ -303,6 +312,34 @@ export class SkipList<V extends TypeArgument> implements StructClass {
     return SkipList.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<V extends Reified<TypeArgument, any>>(
+    typeArg: V,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): SkipList<ToTypeArgument<V>> {
+    if (!isSkipList(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SkipList object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return SkipList.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SkipList.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<V extends Reified<TypeArgument, any>>(
     typeArg: V,
     content: SuiParsedData,
@@ -316,6 +353,7 @@ export class SkipList<V extends TypeArgument> implements StructClass {
     return SkipList.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SkipList.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<V extends Reified<TypeArgument, any>>(
     typeArg: V,
     data: SuiObjectData,
@@ -352,16 +390,19 @@ export class SkipList<V extends TypeArgument> implements StructClass {
   }
 
   static async fetch<V extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: V,
     id: string,
   ): Promise<SkipList<ToTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSkipList(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSkipList(object.type)) {
       throw new Error(`object at id ${id} is not a SkipList object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -377,7 +418,7 @@ export class SkipList<V extends TypeArgument> implements StructClass {
       }
     }
 
-    return SkipList.fromBcs(typeArg, res.bcsBytes)
+    return SkipList.fromBcs(typeArg, object.content)
   }
 }
 
@@ -423,9 +464,11 @@ export type SkipListNodeJSON<V extends TypeArgument> = {
 export class SkipListNode<V extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::skip_list_u128::SkipListNode` = `${
-    getTypeOrigin('move-stl', 'skip_list_u128::SkipListNode')
-  }::skip_list_u128::SkipListNode` as const
+  static get $typeName(): `${string}::skip_list_u128::SkipListNode` {
+    return `${
+      getTypeOrigin('move-stl', 'skip_list_u128::SkipListNode')
+    }::skip_list_u128::SkipListNode` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
@@ -461,12 +504,18 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
   ): SkipListNodeReified<ToTypeArgument<V>> {
     const reifiedBcs = SkipListNode.bcs(toBcs(V))
     return {
-      typeName: SkipListNode.$typeName,
-      fullTypeName: composeSuiType(
-        SkipListNode.$typeName,
-        ...[extractType(V)],
-      ) as `${string}::skip_list_u128::SkipListNode<${ToTypeStr<ToTypeArgument<V>>}>`,
-      typeArgs: [extractType(V)] as [ToTypeStr<ToTypeArgument<V>>],
+      get typeName() {
+        return SkipListNode.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SkipListNode.$typeName,
+          ...[extractType(V)],
+        ) as `${string}::skip_list_u128::SkipListNode<${ToTypeStr<ToTypeArgument<V>>}>`
+      },
+      get typeArgs() {
+        return [extractType(V)] as [ToTypeStr<ToTypeArgument<V>>]
+      },
       isPhantom: SkipListNode.$isPhantom,
       reifiedTypeArgs: [V],
       fromFields: (fields: Record<string, any>) => SkipListNode.fromFields(V, fields),
@@ -475,9 +524,11 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SkipListNode.fromJSONField(V, field),
       fromJSON: (json: Record<string, any>) => SkipListNode.fromJSON(V, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SkipListNode.fromCoreObject(V, obj),
       fromSuiParsedData: (content: SuiParsedData) => SkipListNode.fromSuiParsedData(V, content),
       fromSuiObjectData: (content: SuiObjectData) => SkipListNode.fromSuiObjectData(V, content),
-      fetch: async (client: SupportedSuiClient, id: string) => SkipListNode.fetch(client, V, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SkipListNode.fetch(client, V, id),
       new: (fields: SkipListNodeFields<ToTypeArgument<V>>) => {
         return new SkipListNode([extractType(V)], fields)
       },
@@ -598,6 +649,34 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
     return SkipListNode.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<V extends Reified<TypeArgument, any>>(
+    typeArg: V,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): SkipListNode<ToTypeArgument<V>> {
+    if (!isSkipListNode(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SkipListNode object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return SkipListNode.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SkipListNode.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<V extends Reified<TypeArgument, any>>(
     typeArg: V,
     content: SuiParsedData,
@@ -611,6 +690,7 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
     return SkipListNode.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SkipListNode.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<V extends Reified<TypeArgument, any>>(
     typeArg: V,
     data: SuiObjectData,
@@ -647,16 +727,19 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
   }
 
   static async fetch<V extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: V,
     id: string,
   ): Promise<SkipListNode<ToTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSkipListNode(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSkipListNode(object.type)) {
       throw new Error(`object at id ${id} is not a SkipListNode object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -672,7 +755,7 @@ export class SkipListNode<V extends TypeArgument> implements StructClass {
       }
     }
 
-    return SkipListNode.fromBcs(typeArg, res.bcsBytes)
+    return SkipListNode.fromBcs(typeArg, object.content)
   }
 }
 
@@ -705,9 +788,9 @@ export type ItemJSON = {
 export class Item implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::skip_list_u128::Item` = `${
-    getTypeOrigin('move-stl', 'skip_list_u128::Item')
-  }::skip_list_u128::Item` as const
+  static get $typeName(): `${string}::skip_list_u128::Item` {
+    return `${getTypeOrigin('move-stl', 'skip_list_u128::Item')}::skip_list_u128::Item` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -735,11 +818,15 @@ export class Item implements StructClass {
   static reified(): ItemReified {
     const reifiedBcs = Item.bcs
     return {
-      typeName: Item.$typeName,
-      fullTypeName: composeSuiType(
-        Item.$typeName,
-        ...[],
-      ) as `${string}::skip_list_u128::Item`,
+      get typeName() {
+        return Item.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Item.$typeName,
+          ...[],
+        ) as `${string}::skip_list_u128::Item`
+      },
       typeArgs: [] as [],
       isPhantom: Item.$isPhantom,
       reifiedTypeArgs: [],
@@ -749,9 +836,10 @@ export class Item implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Item.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Item.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Item.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Item.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Item.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Item.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Item.fetch(client, id),
       new: (fields: ItemFields) => {
         return new Item([], fields)
       },
@@ -842,6 +930,14 @@ export class Item implements StructClass {
     return Item.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Item {
+    if (!isItem(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Item object`)
+    }
+    return Item.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Item.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Item {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -852,6 +948,7 @@ export class Item implements StructClass {
     return Item.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Item.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Item {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isItem(data.bcs.type)) {
@@ -868,12 +965,14 @@ export class Item implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Item> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isItem(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Item> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isItem(object.type)) {
       throw new Error(`object at id ${id} is not a Item object`)
     }
-
-    return Item.fromBcs(res.bcsBytes)
+    return Item.fromBcs(object.content)
   }
 }

@@ -1,7 +1,8 @@
 /** Access management initialization for the Kai Leverage package */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== ACCESS_INIT =============================== */
 
@@ -50,9 +45,11 @@ export type ACCESS_INITJSON = {
 export class ACCESS_INIT implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::access_init::ACCESS_INIT` = `${
-    getTypeOrigin('kai-leverage', 'access_init::ACCESS_INIT')
-  }::access_init::ACCESS_INIT` as const
+  static get $typeName(): `${string}::access_init::ACCESS_INIT` {
+    return `${
+      getTypeOrigin('kai-leverage', 'access_init::ACCESS_INIT')
+    }::access_init::ACCESS_INIT` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -76,11 +73,15 @@ export class ACCESS_INIT implements StructClass {
   static reified(): ACCESS_INITReified {
     const reifiedBcs = ACCESS_INIT.bcs
     return {
-      typeName: ACCESS_INIT.$typeName,
-      fullTypeName: composeSuiType(
-        ACCESS_INIT.$typeName,
-        ...[],
-      ) as `${string}::access_init::ACCESS_INIT`,
+      get typeName() {
+        return ACCESS_INIT.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ACCESS_INIT.$typeName,
+          ...[],
+        ) as `${string}::access_init::ACCESS_INIT`
+      },
       typeArgs: [] as [],
       isPhantom: ACCESS_INIT.$isPhantom,
       reifiedTypeArgs: [],
@@ -90,9 +91,11 @@ export class ACCESS_INIT implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ACCESS_INIT.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACCESS_INIT.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ACCESS_INIT.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ACCESS_INIT.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACCESS_INIT.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ACCESS_INIT.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ACCESS_INIT.fetch(client, id),
       new: (fields: ACCESS_INITFields) => {
         return new ACCESS_INIT([], fields)
       },
@@ -173,6 +176,14 @@ export class ACCESS_INIT implements StructClass {
     return ACCESS_INIT.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ACCESS_INIT {
+    if (!isACCESS_INIT(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ACCESS_INIT object`)
+    }
+    return ACCESS_INIT.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACCESS_INIT.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ACCESS_INIT {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -183,6 +194,7 @@ export class ACCESS_INIT implements StructClass {
     return ACCESS_INIT.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACCESS_INIT.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ACCESS_INIT {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isACCESS_INIT(data.bcs.type)) {
@@ -199,12 +211,14 @@ export class ACCESS_INIT implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ACCESS_INIT> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isACCESS_INIT(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ACCESS_INIT> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isACCESS_INIT(object.type)) {
       throw new Error(`object at id ${id} is not a ACCESS_INIT object`)
     }
-
-    return ACCESS_INIT.fromBcs(res.bcsBytes)
+    return ACCESS_INIT.fromBcs(object.content)
   }
 }

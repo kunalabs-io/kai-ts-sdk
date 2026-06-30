@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -17,13 +18,7 @@ import {
   ToTypeStr as ToPhantom,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I128 } from '../../integer-mate/i128/structs'
 import { I32 } from '../../integer-mate/i32/structs'
@@ -60,9 +55,9 @@ export type TickManagerJSON = {
 export class TickManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::tick::TickManager` = `${
-    getTypeOrigin('bluefin-spot', 'tick::TickManager')
-  }::tick::TickManager` as const
+  static get $typeName(): `${string}::tick::TickManager` {
+    return `${getTypeOrigin('bluefin-spot', 'tick::TickManager')}::tick::TickManager` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +85,15 @@ export class TickManager implements StructClass {
   static reified(): TickManagerReified {
     const reifiedBcs = TickManager.bcs
     return {
-      typeName: TickManager.$typeName,
-      fullTypeName: composeSuiType(
-        TickManager.$typeName,
-        ...[],
-      ) as `${string}::tick::TickManager`,
+      get typeName() {
+        return TickManager.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TickManager.$typeName,
+          ...[],
+        ) as `${string}::tick::TickManager`
+      },
       typeArgs: [] as [],
       isPhantom: TickManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,9 +103,11 @@ export class TickManager implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TickManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TickManager.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TickManager.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TickManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TickManager.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TickManager.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TickManager.fetch(client, id),
       new: (fields: TickManagerFields) => {
         return new TickManager([], fields)
       },
@@ -215,6 +216,14 @@ export class TickManager implements StructClass {
     return TickManager.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TickManager {
+    if (!isTickManager(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TickManager object`)
+    }
+    return TickManager.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TickManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TickManager {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -225,6 +234,7 @@ export class TickManager implements StructClass {
     return TickManager.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TickManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TickManager {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTickManager(data.bcs.type)) {
@@ -241,13 +251,15 @@ export class TickManager implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TickManager> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTickManager(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TickManager> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTickManager(object.type)) {
       throw new Error(`object at id ${id} is not a TickManager object`)
     }
-
-    return TickManager.fromBcs(res.bcsBytes)
+    return TickManager.fromBcs(object.content)
   }
 }
 
@@ -295,9 +307,9 @@ export type TickInfoJSON = {
 export class TickInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::tick::TickInfo` = `${
-    getTypeOrigin('bluefin-spot', 'tick::TickInfo')
-  }::tick::TickInfo` as const
+  static get $typeName(): `${string}::tick::TickInfo` {
+    return `${getTypeOrigin('bluefin-spot', 'tick::TickInfo')}::tick::TickInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -339,11 +351,15 @@ export class TickInfo implements StructClass {
   static reified(): TickInfoReified {
     const reifiedBcs = TickInfo.bcs
     return {
-      typeName: TickInfo.$typeName,
-      fullTypeName: composeSuiType(
-        TickInfo.$typeName,
-        ...[],
-      ) as `${string}::tick::TickInfo`,
+      get typeName() {
+        return TickInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TickInfo.$typeName,
+          ...[],
+        ) as `${string}::tick::TickInfo`
+      },
       typeArgs: [] as [],
       isPhantom: TickInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -353,9 +369,11 @@ export class TickInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TickInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TickInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TickInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TickInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TickInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TickInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TickInfo.fetch(client, id),
       new: (fields: TickInfoFields) => {
         return new TickInfo([], fields)
       },
@@ -490,6 +508,14 @@ export class TickInfo implements StructClass {
     return TickInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TickInfo {
+    if (!isTickInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TickInfo object`)
+    }
+    return TickInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TickInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TickInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -500,6 +526,7 @@ export class TickInfo implements StructClass {
     return TickInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TickInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TickInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTickInfo(data.bcs.type)) {
@@ -516,12 +543,14 @@ export class TickInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TickInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTickInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TickInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTickInfo(object.type)) {
       throw new Error(`object at id ${id} is not a TickInfo object`)
     }
-
-    return TickInfo.fromBcs(res.bcsBytes)
+    return TickInfo.fromBcs(object.content)
   }
 }

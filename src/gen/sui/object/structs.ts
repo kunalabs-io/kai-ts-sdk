@@ -1,7 +1,8 @@
 /** Sui object identifiers */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
   decodeFromFields,
@@ -15,13 +16,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== ID =============================== */
 
@@ -80,11 +75,15 @@ export class ID implements StructClass {
   static reified(): IDReified {
     const reifiedBcs = ID.bcs
     return {
-      typeName: ID.$typeName,
-      fullTypeName: composeSuiType(
-        ID.$typeName,
-        ...[],
-      ) as `0x2::object::ID`,
+      get typeName() {
+        return ID.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ID.$typeName,
+          ...[],
+        ) as `0x2::object::ID`
+      },
       typeArgs: [] as [],
       isPhantom: ID.$isPhantom,
       reifiedTypeArgs: [],
@@ -94,9 +93,10 @@ export class ID implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ID.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ID.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => ID.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ID.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ID.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ID.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ID.fetch(client, id),
       new: (fields: IDFields) => {
         return new ID([], fields)
       },
@@ -180,6 +180,14 @@ export class ID implements StructClass {
     return ID.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ID {
+    if (!isID(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ID object`)
+    }
+    return ID.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ID.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ID {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -190,6 +198,7 @@ export class ID implements StructClass {
     return ID.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ID.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ID {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isID(data.bcs.type)) {
@@ -206,13 +215,15 @@ export class ID implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ID> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isID(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ID> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isID(object.type)) {
       throw new Error(`object at id ${id} is not a ID object`)
     }
-
-    return ID.fromBcs(res.bcsBytes)
+    return ID.fromBcs(object.content)
   }
 }
 
@@ -273,11 +284,15 @@ export class UID implements StructClass {
   static reified(): UIDReified {
     const reifiedBcs = UID.bcs
     return {
-      typeName: UID.$typeName,
-      fullTypeName: composeSuiType(
-        UID.$typeName,
-        ...[],
-      ) as `0x2::object::UID`,
+      get typeName() {
+        return UID.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UID.$typeName,
+          ...[],
+        ) as `0x2::object::UID`
+      },
       typeArgs: [] as [],
       isPhantom: UID.$isPhantom,
       reifiedTypeArgs: [],
@@ -287,9 +302,10 @@ export class UID implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UID.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UID.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => UID.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UID.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UID.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => UID.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UID.fetch(client, id),
       new: (fields: UIDFields) => {
         return new UID([], fields)
       },
@@ -370,6 +386,14 @@ export class UID implements StructClass {
     return UID.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UID {
+    if (!isUID(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UID object`)
+    }
+    return UID.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UID.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UID {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -380,6 +404,7 @@ export class UID implements StructClass {
     return UID.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UID.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UID {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUID(data.bcs.type)) {
@@ -396,12 +421,14 @@ export class UID implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UID> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUID(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UID> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUID(object.type)) {
       throw new Error(`object at id ${id} is not a UID object`)
     }
-
-    return UID.fromBcs(res.bcsBytes)
+    return UID.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { FixedPoint32 } from '../../../std/fixed-point32/structs'
 import { TypeName } from '../../../std/type-name/structs'
 
@@ -80,9 +75,11 @@ export type InterestModelJSON = {
 export class InterestModel implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::interest_model::InterestModel` = `${
-    getTypeOrigin('protocol', 'interest_model::InterestModel')
-  }::interest_model::InterestModel` as const
+  static get $typeName(): `${string}::interest_model::InterestModel` {
+    return `${
+      getTypeOrigin('protocol', 'interest_model::InterestModel')
+    }::interest_model::InterestModel` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -134,11 +131,15 @@ export class InterestModel implements StructClass {
   static reified(): InterestModelReified {
     const reifiedBcs = InterestModel.bcs
     return {
-      typeName: InterestModel.$typeName,
-      fullTypeName: composeSuiType(
-        InterestModel.$typeName,
-        ...[],
-      ) as `${string}::interest_model::InterestModel`,
+      get typeName() {
+        return InterestModel.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InterestModel.$typeName,
+          ...[],
+        ) as `${string}::interest_model::InterestModel`
+      },
       typeArgs: [] as [],
       isPhantom: InterestModel.$isPhantom,
       reifiedTypeArgs: [],
@@ -148,9 +149,11 @@ export class InterestModel implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModel.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModel.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InterestModel.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => InterestModel.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => InterestModel.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => InterestModel.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => InterestModel.fetch(client, id),
       new: (fields: InterestModelFields) => {
         return new InterestModel([], fields)
       },
@@ -296,6 +299,14 @@ export class InterestModel implements StructClass {
     return InterestModel.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InterestModel {
+    if (!isInterestModel(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InterestModel object`)
+    }
+    return InterestModel.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModel.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InterestModel {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -306,6 +317,7 @@ export class InterestModel implements StructClass {
     return InterestModel.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModel.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InterestModel {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInterestModel(data.bcs.type)) {
@@ -322,13 +334,15 @@ export class InterestModel implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InterestModel> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInterestModel(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InterestModel> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInterestModel(object.type)) {
       throw new Error(`object at id ${id} is not a InterestModel object`)
     }
-
-    return InterestModel.fromBcs(res.bcsBytes)
+    return InterestModel.fromBcs(object.content)
   }
 }
 
@@ -369,9 +383,11 @@ export type InterestModelChangeCreatedJSON = {
 export class InterestModelChangeCreated implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::interest_model::InterestModelChangeCreated` = `${
-    getTypeOrigin('protocol', 'interest_model::InterestModelChangeCreated')
-  }::interest_model::InterestModelChangeCreated` as const
+  static get $typeName(): `${string}::interest_model::InterestModelChangeCreated` {
+    return `${
+      getTypeOrigin('protocol', 'interest_model::InterestModelChangeCreated')
+    }::interest_model::InterestModelChangeCreated` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -403,11 +419,15 @@ export class InterestModelChangeCreated implements StructClass {
   static reified(): InterestModelChangeCreatedReified {
     const reifiedBcs = InterestModelChangeCreated.bcs
     return {
-      typeName: InterestModelChangeCreated.$typeName,
-      fullTypeName: composeSuiType(
-        InterestModelChangeCreated.$typeName,
-        ...[],
-      ) as `${string}::interest_model::InterestModelChangeCreated`,
+      get typeName() {
+        return InterestModelChangeCreated.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InterestModelChangeCreated.$typeName,
+          ...[],
+        ) as `${string}::interest_model::InterestModelChangeCreated`
+      },
       typeArgs: [] as [],
       isPhantom: InterestModelChangeCreated.$isPhantom,
       reifiedTypeArgs: [],
@@ -418,11 +438,13 @@ export class InterestModelChangeCreated implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModelChangeCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModelChangeCreated.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InterestModelChangeCreated.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         InterestModelChangeCreated.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         InterestModelChangeCreated.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         InterestModelChangeCreated.fetch(client, id),
       new: (fields: InterestModelChangeCreatedFields) => {
         return new InterestModelChangeCreated([], fields)
@@ -520,6 +542,14 @@ export class InterestModelChangeCreated implements StructClass {
     return InterestModelChangeCreated.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InterestModelChangeCreated {
+    if (!isInterestModelChangeCreated(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InterestModelChangeCreated object`)
+    }
+    return InterestModelChangeCreated.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModelChangeCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InterestModelChangeCreated {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -532,6 +562,7 @@ export class InterestModelChangeCreated implements StructClass {
     return InterestModelChangeCreated.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModelChangeCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InterestModelChangeCreated {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInterestModelChangeCreated(data.bcs.type)) {
@@ -548,13 +579,15 @@ export class InterestModelChangeCreated implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InterestModelChangeCreated> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInterestModelChangeCreated(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InterestModelChangeCreated> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInterestModelChangeCreated(object.type)) {
       throw new Error(`object at id ${id} is not a InterestModelChangeCreated object`)
     }
-
-    return InterestModelChangeCreated.fromBcs(res.bcsBytes)
+    return InterestModelChangeCreated.fromBcs(object.content)
   }
 }
 
@@ -588,9 +621,11 @@ export type InterestModelAddedJSON = {
 export class InterestModelAdded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::interest_model::InterestModelAdded` = `${
-    getTypeOrigin('protocol', 'interest_model::InterestModelAdded')
-  }::interest_model::InterestModelAdded` as const
+  static get $typeName(): `${string}::interest_model::InterestModelAdded` {
+    return `${
+      getTypeOrigin('protocol', 'interest_model::InterestModelAdded')
+    }::interest_model::InterestModelAdded` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -616,11 +651,15 @@ export class InterestModelAdded implements StructClass {
   static reified(): InterestModelAddedReified {
     const reifiedBcs = InterestModelAdded.bcs
     return {
-      typeName: InterestModelAdded.$typeName,
-      fullTypeName: composeSuiType(
-        InterestModelAdded.$typeName,
-        ...[],
-      ) as `${string}::interest_model::InterestModelAdded`,
+      get typeName() {
+        return InterestModelAdded.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InterestModelAdded.$typeName,
+          ...[],
+        ) as `${string}::interest_model::InterestModelAdded`
+      },
       typeArgs: [] as [],
       isPhantom: InterestModelAdded.$isPhantom,
       reifiedTypeArgs: [],
@@ -630,9 +669,11 @@ export class InterestModelAdded implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModelAdded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModelAdded.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InterestModelAdded.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => InterestModelAdded.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => InterestModelAdded.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => InterestModelAdded.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => InterestModelAdded.fetch(client, id),
       new: (fields: InterestModelAddedFields) => {
         return new InterestModelAdded([], fields)
       },
@@ -718,6 +759,14 @@ export class InterestModelAdded implements StructClass {
     return InterestModelAdded.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InterestModelAdded {
+    if (!isInterestModelAdded(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InterestModelAdded object`)
+    }
+    return InterestModelAdded.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModelAdded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InterestModelAdded {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -728,6 +777,7 @@ export class InterestModelAdded implements StructClass {
     return InterestModelAdded.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModelAdded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InterestModelAdded {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInterestModelAdded(data.bcs.type)) {
@@ -744,13 +794,15 @@ export class InterestModelAdded implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InterestModelAdded> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInterestModelAdded(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InterestModelAdded> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInterestModelAdded(object.type)) {
       throw new Error(`object at id ${id} is not a InterestModelAdded object`)
     }
-
-    return InterestModelAdded.fromBcs(res.bcsBytes)
+    return InterestModelAdded.fromBcs(object.content)
   }
 }
 
@@ -782,9 +834,11 @@ export type InterestModelsJSON = {
 export class InterestModels implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::interest_model::InterestModels` = `${
-    getTypeOrigin('protocol', 'interest_model::InterestModels')
-  }::interest_model::InterestModels` as const
+  static get $typeName(): `${string}::interest_model::InterestModels` {
+    return `${
+      getTypeOrigin('protocol', 'interest_model::InterestModels')
+    }::interest_model::InterestModels` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -808,11 +862,15 @@ export class InterestModels implements StructClass {
   static reified(): InterestModelsReified {
     const reifiedBcs = InterestModels.bcs
     return {
-      typeName: InterestModels.$typeName,
-      fullTypeName: composeSuiType(
-        InterestModels.$typeName,
-        ...[],
-      ) as `${string}::interest_model::InterestModels`,
+      get typeName() {
+        return InterestModels.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InterestModels.$typeName,
+          ...[],
+        ) as `${string}::interest_model::InterestModels`
+      },
       typeArgs: [] as [],
       isPhantom: InterestModels.$isPhantom,
       reifiedTypeArgs: [],
@@ -822,9 +880,11 @@ export class InterestModels implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InterestModels.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InterestModels.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InterestModels.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => InterestModels.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => InterestModels.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => InterestModels.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => InterestModels.fetch(client, id),
       new: (fields: InterestModelsFields) => {
         return new InterestModels([], fields)
       },
@@ -905,6 +965,14 @@ export class InterestModels implements StructClass {
     return InterestModels.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InterestModels {
+    if (!isInterestModels(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InterestModels object`)
+    }
+    return InterestModels.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModels.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InterestModels {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -915,6 +983,7 @@ export class InterestModels implements StructClass {
     return InterestModels.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InterestModels.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InterestModels {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInterestModels(data.bcs.type)) {
@@ -931,12 +1000,14 @@ export class InterestModels implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InterestModels> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInterestModels(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InterestModels> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInterestModels(object.type)) {
       throw new Error(`object at id ${id} is not a InterestModels object`)
     }
-
-    return InterestModels.fromBcs(res.bcsBytes)
+    return InterestModels.fromBcs(object.content)
   }
 }

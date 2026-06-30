@@ -5,7 +5,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -34,10 +35,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Option } from '../../../std/option/structs'
 import { UID } from '../../../sui/object/structs'
@@ -96,9 +95,9 @@ export class AcTable<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ac_table::AcTable` = `${
-    getTypeOrigin('x', 'ac_table::AcTable')
-  }::ac_table::AcTable` as const
+  static get $typeName(): `${string}::ac_table::AcTable` {
+    return `${getTypeOrigin('x', 'ac_table::AcTable')}::ac_table::AcTable` as const
+  }
   static readonly $numTypeParams = 3
   static readonly $isPhantom = [true, false, true] as const
 
@@ -143,18 +142,24 @@ export class AcTable<
   ): AcTableReified<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     const reifiedBcs = AcTable.bcs(toBcs(K))
     return {
-      typeName: AcTable.$typeName,
-      fullTypeName: composeSuiType(
-        AcTable.$typeName,
-        ...[extractType(T), extractType(K), extractType(V)],
-      ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}, ${ToTypeStr<
-        ToTypeArgument<K>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<V>>}>`,
-      typeArgs: [extractType(T), extractType(K), extractType(V)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        ToTypeStr<ToTypeArgument<K>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<V>>,
-      ],
+      get typeName() {
+        return AcTable.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AcTable.$typeName,
+          ...[extractType(T), extractType(K), extractType(V)],
+        ) as `${string}::ac_table::AcTable<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}, ${ToTypeStr<ToTypeArgument<K>>}, ${PhantomToTypeStr<ToPhantomTypeArgument<V>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T), extractType(K), extractType(V)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+          ToTypeStr<ToTypeArgument<K>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<V>>,
+        ]
+      },
       isPhantom: AcTable.$isPhantom,
       reifiedTypeArgs: [T, K, V],
       fromFields: (fields: Record<string, any>) => AcTable.fromFields([T, K, V], fields),
@@ -163,9 +168,11 @@ export class AcTable<
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTable.fromJSONField([T, K, V], field),
       fromJSON: (json: Record<string, any>) => AcTable.fromJSON([T, K, V], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AcTable.fromCoreObject([T, K, V], obj),
       fromSuiParsedData: (content: SuiParsedData) => AcTable.fromSuiParsedData([T, K, V], content),
       fromSuiObjectData: (content: SuiObjectData) => AcTable.fromSuiObjectData([T, K, V], content),
-      fetch: async (client: SupportedSuiClient, id: string) => AcTable.fetch(client, [T, K, V], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AcTable.fetch(client, [T, K, V], id),
       new: (
         fields: AcTableFields<
           ToPhantomTypeArgument<T>,
@@ -328,6 +335,38 @@ export class AcTable<
     return AcTable.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    T extends PhantomReified<PhantomTypeArgument>,
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, K, V],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (!isAcTable(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AcTable object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 3) {
+      throw new Error(
+        `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return AcTable.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTable.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     T extends PhantomReified<PhantomTypeArgument>,
     K extends Reified<TypeArgument, any>,
@@ -345,6 +384,7 @@ export class AcTable<
     return AcTable.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTable.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     T extends PhantomReified<PhantomTypeArgument>,
     K extends Reified<TypeArgument, any>,
@@ -389,16 +429,19 @@ export class AcTable<
     K extends Reified<TypeArgument, any>,
     V extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [T, K, V],
     id: string,
   ): Promise<AcTable<ToPhantomTypeArgument<T>, ToTypeArgument<K>, ToPhantomTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAcTable(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAcTable(object.type)) {
       throw new Error(`object at id ${id} is not a AcTable object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 3) {
       throw new Error(
         `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
@@ -414,7 +457,7 @@ export class AcTable<
       }
     }
 
-    return AcTable.fromBcs(typeArgs, res.bcsBytes)
+    return AcTable.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -443,9 +486,11 @@ export type AcTableOwnershipJSON = {
 export class AcTableOwnership implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ac_table::AcTableOwnership` = `${
-    getTypeOrigin('x', 'ac_table::AcTableOwnership')
-  }::ac_table::AcTableOwnership` as const
+  static get $typeName(): `${string}::ac_table::AcTableOwnership` {
+    return `${
+      getTypeOrigin('x', 'ac_table::AcTableOwnership')
+    }::ac_table::AcTableOwnership` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -469,11 +514,15 @@ export class AcTableOwnership implements StructClass {
   static reified(): AcTableOwnershipReified {
     const reifiedBcs = AcTableOwnership.bcs
     return {
-      typeName: AcTableOwnership.$typeName,
-      fullTypeName: composeSuiType(
-        AcTableOwnership.$typeName,
-        ...[],
-      ) as `${string}::ac_table::AcTableOwnership`,
+      get typeName() {
+        return AcTableOwnership.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AcTableOwnership.$typeName,
+          ...[],
+        ) as `${string}::ac_table::AcTableOwnership`
+      },
       typeArgs: [] as [],
       isPhantom: AcTableOwnership.$isPhantom,
       reifiedTypeArgs: [],
@@ -483,9 +532,11 @@ export class AcTableOwnership implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTableOwnership.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AcTableOwnership.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AcTableOwnership.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AcTableOwnership.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AcTableOwnership.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AcTableOwnership.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AcTableOwnership.fetch(client, id),
       new: (fields: AcTableOwnershipFields) => {
         return new AcTableOwnership([], fields)
       },
@@ -566,6 +617,14 @@ export class AcTableOwnership implements StructClass {
     return AcTableOwnership.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AcTableOwnership {
+    if (!isAcTableOwnership(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AcTableOwnership object`)
+    }
+    return AcTableOwnership.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTableOwnership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AcTableOwnership {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -576,6 +635,7 @@ export class AcTableOwnership implements StructClass {
     return AcTableOwnership.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTableOwnership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AcTableOwnership {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAcTableOwnership(data.bcs.type)) {
@@ -592,13 +652,15 @@ export class AcTableOwnership implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AcTableOwnership> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAcTableOwnership(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AcTableOwnership> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAcTableOwnership(object.type)) {
       throw new Error(`object at id ${id} is not a AcTableOwnership object`)
     }
-
-    return AcTableOwnership.fromBcs(res.bcsBytes)
+    return AcTableOwnership.fromBcs(object.content)
   }
 }
 
@@ -634,9 +696,9 @@ export type AcTableCapJSON<T extends PhantomTypeArgument> = {
 export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ac_table::AcTableCap` = `${
-    getTypeOrigin('x', 'ac_table::AcTableCap')
-  }::ac_table::AcTableCap` as const
+  static get $typeName(): `${string}::ac_table::AcTableCap` {
+    return `${getTypeOrigin('x', 'ac_table::AcTableCap')}::ac_table::AcTableCap` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -664,12 +726,18 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
   ): AcTableCapReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = AcTableCap.bcs
     return {
-      typeName: AcTableCap.$typeName,
-      fullTypeName: composeSuiType(
-        AcTableCap.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return AcTableCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AcTableCap.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::ac_table::AcTableCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: AcTableCap.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => AcTableCap.fromFields(T, fields),
@@ -678,9 +746,11 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AcTableCap.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => AcTableCap.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AcTableCap.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => AcTableCap.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => AcTableCap.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => AcTableCap.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AcTableCap.fetch(client, T, id),
       new: (fields: AcTableCapFields<ToPhantomTypeArgument<T>>) => {
         return new AcTableCap([extractType(T)], fields)
       },
@@ -798,6 +868,34 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): AcTableCap<ToPhantomTypeArgument<T>> {
+    if (!isAcTableCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AcTableCap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return AcTableCap.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTableCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -811,6 +909,7 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
     return AcTableCap.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AcTableCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -847,16 +946,19 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<AcTableCap<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAcTableCap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAcTableCap(object.type)) {
       throw new Error(`object at id ${id} is not a AcTableCap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -872,6 +974,6 @@ export class AcTableCap<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return AcTableCap.fromBcs(typeArg, res.bcsBytes)
+    return AcTableCap.fromBcs(typeArg, object.content)
   }
 }

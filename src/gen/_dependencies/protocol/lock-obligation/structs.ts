@@ -6,7 +6,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -21,13 +22,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -64,9 +59,11 @@ export type ObligationUnhealthyUnlockedJSON = {
 export class ObligationUnhealthyUnlocked implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::lock_obligation::ObligationUnhealthyUnlocked` = `${
-    getTypeOrigin('protocol', 'lock_obligation::ObligationUnhealthyUnlocked')
-  }::lock_obligation::ObligationUnhealthyUnlocked` as const
+  static get $typeName(): `${string}::lock_obligation::ObligationUnhealthyUnlocked` {
+    return `${
+      getTypeOrigin('protocol', 'lock_obligation::ObligationUnhealthyUnlocked')
+    }::lock_obligation::ObligationUnhealthyUnlocked` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -94,11 +91,15 @@ export class ObligationUnhealthyUnlocked implements StructClass {
   static reified(): ObligationUnhealthyUnlockedReified {
     const reifiedBcs = ObligationUnhealthyUnlocked.bcs
     return {
-      typeName: ObligationUnhealthyUnlocked.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationUnhealthyUnlocked.$typeName,
-        ...[],
-      ) as `${string}::lock_obligation::ObligationUnhealthyUnlocked`,
+      get typeName() {
+        return ObligationUnhealthyUnlocked.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationUnhealthyUnlocked.$typeName,
+          ...[],
+        ) as `${string}::lock_obligation::ObligationUnhealthyUnlocked`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationUnhealthyUnlocked.$isPhantom,
       reifiedTypeArgs: [],
@@ -109,11 +110,13 @@ export class ObligationUnhealthyUnlocked implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationUnhealthyUnlocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationUnhealthyUnlocked.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationUnhealthyUnlocked.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ObligationUnhealthyUnlocked.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ObligationUnhealthyUnlocked.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ObligationUnhealthyUnlocked.fetch(client, id),
       new: (fields: ObligationUnhealthyUnlockedFields) => {
         return new ObligationUnhealthyUnlocked([], fields)
@@ -201,6 +204,16 @@ export class ObligationUnhealthyUnlocked implements StructClass {
     return ObligationUnhealthyUnlocked.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ObligationUnhealthyUnlocked {
+    if (!isObligationUnhealthyUnlocked(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationUnhealthyUnlocked object`)
+    }
+    return ObligationUnhealthyUnlocked.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationUnhealthyUnlocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationUnhealthyUnlocked {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -213,6 +226,7 @@ export class ObligationUnhealthyUnlocked implements StructClass {
     return ObligationUnhealthyUnlocked.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationUnhealthyUnlocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationUnhealthyUnlocked {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationUnhealthyUnlocked(data.bcs.type)) {
@@ -229,12 +243,14 @@ export class ObligationUnhealthyUnlocked implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationUnhealthyUnlocked> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationUnhealthyUnlocked(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationUnhealthyUnlocked> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationUnhealthyUnlocked(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationUnhealthyUnlocked object`)
     }
-
-    return ObligationUnhealthyUnlocked.fromBcs(res.bcsBytes)
+    return ObligationUnhealthyUnlocked.fromBcs(object.content)
   }
 }

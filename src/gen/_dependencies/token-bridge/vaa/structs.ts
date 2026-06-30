@@ -12,7 +12,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -29,13 +30,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
 
@@ -83,9 +78,11 @@ export type TokenBridgeMessageJSON = {
 export class TokenBridgeMessage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vaa::TokenBridgeMessage` = `${
-    getTypeOrigin('token-bridge', 'vaa::TokenBridgeMessage')
-  }::vaa::TokenBridgeMessage` as const
+  static get $typeName(): `${string}::vaa::TokenBridgeMessage` {
+    return `${
+      getTypeOrigin('token-bridge', 'vaa::TokenBridgeMessage')
+    }::vaa::TokenBridgeMessage` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -122,11 +119,15 @@ export class TokenBridgeMessage implements StructClass {
   static reified(): TokenBridgeMessageReified {
     const reifiedBcs = TokenBridgeMessage.bcs
     return {
-      typeName: TokenBridgeMessage.$typeName,
-      fullTypeName: composeSuiType(
-        TokenBridgeMessage.$typeName,
-        ...[],
-      ) as `${string}::vaa::TokenBridgeMessage`,
+      get typeName() {
+        return TokenBridgeMessage.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TokenBridgeMessage.$typeName,
+          ...[],
+        ) as `${string}::vaa::TokenBridgeMessage`
+      },
       typeArgs: [] as [],
       isPhantom: TokenBridgeMessage.$isPhantom,
       reifiedTypeArgs: [],
@@ -136,9 +137,11 @@ export class TokenBridgeMessage implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenBridgeMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenBridgeMessage.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TokenBridgeMessage.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TokenBridgeMessage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TokenBridgeMessage.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TokenBridgeMessage.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TokenBridgeMessage.fetch(client, id),
       new: (fields: TokenBridgeMessageFields) => {
         return new TokenBridgeMessage([], fields)
       },
@@ -237,6 +240,14 @@ export class TokenBridgeMessage implements StructClass {
     return TokenBridgeMessage.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TokenBridgeMessage {
+    if (!isTokenBridgeMessage(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TokenBridgeMessage object`)
+    }
+    return TokenBridgeMessage.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TokenBridgeMessage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TokenBridgeMessage {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -247,6 +258,7 @@ export class TokenBridgeMessage implements StructClass {
     return TokenBridgeMessage.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TokenBridgeMessage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TokenBridgeMessage {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTokenBridgeMessage(data.bcs.type)) {
@@ -263,12 +275,14 @@ export class TokenBridgeMessage implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TokenBridgeMessage> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTokenBridgeMessage(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TokenBridgeMessage> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTokenBridgeMessage(object.type)) {
       throw new Error(`object at id ${id} is not a TokenBridgeMessage object`)
     }
-
-    return TokenBridgeMessage.fromBcs(res.bcsBytes)
+    return TokenBridgeMessage.fromBcs(object.content)
   }
 }

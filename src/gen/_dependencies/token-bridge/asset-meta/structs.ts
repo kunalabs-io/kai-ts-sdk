@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { String } from '../../../std/string/structs'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
 
@@ -74,9 +69,11 @@ export type AssetMetaJSON = {
 export class AssetMeta implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::asset_meta::AssetMeta` = `${
-    getTypeOrigin('token-bridge', 'asset_meta::AssetMeta')
-  }::asset_meta::AssetMeta` as const
+  static get $typeName(): `${string}::asset_meta::AssetMeta` {
+    return `${
+      getTypeOrigin('token-bridge', 'asset_meta::AssetMeta')
+    }::asset_meta::AssetMeta` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -116,11 +113,15 @@ export class AssetMeta implements StructClass {
   static reified(): AssetMetaReified {
     const reifiedBcs = AssetMeta.bcs
     return {
-      typeName: AssetMeta.$typeName,
-      fullTypeName: composeSuiType(
-        AssetMeta.$typeName,
-        ...[],
-      ) as `${string}::asset_meta::AssetMeta`,
+      get typeName() {
+        return AssetMeta.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AssetMeta.$typeName,
+          ...[],
+        ) as `${string}::asset_meta::AssetMeta`
+      },
       typeArgs: [] as [],
       isPhantom: AssetMeta.$isPhantom,
       reifiedTypeArgs: [],
@@ -130,9 +131,11 @@ export class AssetMeta implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AssetMeta.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AssetMeta.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AssetMeta.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AssetMeta.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AssetMeta.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AssetMeta.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AssetMeta.fetch(client, id),
       new: (fields: AssetMetaFields) => {
         return new AssetMeta([], fields)
       },
@@ -233,6 +236,14 @@ export class AssetMeta implements StructClass {
     return AssetMeta.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AssetMeta {
+    if (!isAssetMeta(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AssetMeta object`)
+    }
+    return AssetMeta.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AssetMeta.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AssetMeta {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -243,6 +254,7 @@ export class AssetMeta implements StructClass {
     return AssetMeta.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AssetMeta.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AssetMeta {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAssetMeta(data.bcs.type)) {
@@ -259,12 +271,14 @@ export class AssetMeta implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AssetMeta> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAssetMeta(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AssetMeta> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAssetMeta(object.type)) {
       throw new Error(`object at id ${id} is not a AssetMeta object`)
     }
-
-    return AssetMeta.fromBcs(res.bcsBytes)
+    return AssetMeta.fromBcs(object.content)
   }
 }

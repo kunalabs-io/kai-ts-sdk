@@ -7,7 +7,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -32,10 +33,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { UID } from '../../../sui/object/structs'
 
@@ -77,9 +76,11 @@ export type OneTimeLockValueJSON<T extends TypeArgument> = {
 export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::one_time_lock_value::OneTimeLockValue` = `${
-    getTypeOrigin('x', 'one_time_lock_value::OneTimeLockValue')
-  }::one_time_lock_value::OneTimeLockValue` as const
+  static get $typeName(): `${string}::one_time_lock_value::OneTimeLockValue` {
+    return `${
+      getTypeOrigin('x', 'one_time_lock_value::OneTimeLockValue')
+    }::one_time_lock_value::OneTimeLockValue` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [false] as const
 
@@ -111,12 +112,18 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
   ): OneTimeLockValueReified<ToTypeArgument<T>> {
     const reifiedBcs = OneTimeLockValue.bcs(toBcs(T))
     return {
-      typeName: OneTimeLockValue.$typeName,
-      fullTypeName: composeSuiType(
-        OneTimeLockValue.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<ToTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
+      get typeName() {
+        return OneTimeLockValue.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OneTimeLockValue.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::one_time_lock_value::OneTimeLockValue<${ToTypeStr<ToTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>]
+      },
       isPhantom: OneTimeLockValue.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => OneTimeLockValue.fromFields(T, fields),
@@ -125,10 +132,11 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OneTimeLockValue.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => OneTimeLockValue.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OneTimeLockValue.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => OneTimeLockValue.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => OneTimeLockValue.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        OneTimeLockValue.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => OneTimeLockValue.fetch(client, T, id),
       new: (fields: OneTimeLockValueFields<ToTypeArgument<T>>) => {
         return new OneTimeLockValue([extractType(T)], fields)
       },
@@ -249,6 +257,34 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
     return OneTimeLockValue.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): OneTimeLockValue<ToTypeArgument<T>> {
+    if (!isOneTimeLockValue(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OneTimeLockValue object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return OneTimeLockValue.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OneTimeLockValue.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     content: SuiParsedData,
@@ -262,6 +298,7 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
     return OneTimeLockValue.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OneTimeLockValue.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     data: SuiObjectData,
@@ -298,16 +335,19 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<OneTimeLockValue<ToTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOneTimeLockValue(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOneTimeLockValue(object.type)) {
       throw new Error(`object at id ${id} is not a OneTimeLockValue object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -323,6 +363,6 @@ export class OneTimeLockValue<T extends TypeArgument> implements StructClass {
       }
     }
 
-    return OneTimeLockValue.fromBcs(typeArg, res.bcsBytes)
+    return OneTimeLockValue.fromBcs(typeArg, object.content)
   }
 }

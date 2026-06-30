@@ -11,7 +11,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -37,10 +38,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
@@ -79,9 +78,9 @@ export type POOLJSON = {
 export class POOL implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::POOL` = `${
-    getTypeOrigin('cetus-clmm', 'pool::POOL')
-  }::pool::POOL` as const
+  static get $typeName(): `${string}::pool::POOL` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::POOL')}::pool::POOL` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -105,11 +104,15 @@ export class POOL implements StructClass {
   static reified(): POOLReified {
     const reifiedBcs = POOL.bcs
     return {
-      typeName: POOL.$typeName,
-      fullTypeName: composeSuiType(
-        POOL.$typeName,
-        ...[],
-      ) as `${string}::pool::POOL`,
+      get typeName() {
+        return POOL.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          POOL.$typeName,
+          ...[],
+        ) as `${string}::pool::POOL`
+      },
       typeArgs: [] as [],
       isPhantom: POOL.$isPhantom,
       reifiedTypeArgs: [],
@@ -119,9 +122,10 @@ export class POOL implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => POOL.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => POOL.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => POOL.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => POOL.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => POOL.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => POOL.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => POOL.fetch(client, id),
       new: (fields: POOLFields) => {
         return new POOL([], fields)
       },
@@ -202,6 +206,14 @@ export class POOL implements StructClass {
     return POOL.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): POOL {
+    if (!isPOOL(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a POOL object`)
+    }
+    return POOL.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link POOL.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): POOL {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -212,6 +224,7 @@ export class POOL implements StructClass {
     return POOL.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link POOL.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): POOL {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPOOL(data.bcs.type)) {
@@ -228,13 +241,15 @@ export class POOL implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<POOL> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPOOL(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<POOL> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPOOL(object.type)) {
       throw new Error(`object at id ${id} is not a POOL object`)
     }
-
-    return POOL.fromBcs(res.bcsBytes)
+    return POOL.fromBcs(object.content)
   }
 }
 
@@ -272,9 +287,11 @@ export type ProtocolFeeCollectCapJSON = {
 export class ProtocolFeeCollectCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::ProtocolFeeCollectCap` = `${
-    getTypeOrigin('cetus-clmm', 'pool::ProtocolFeeCollectCap')
-  }::pool::ProtocolFeeCollectCap` as const
+  static get $typeName(): `${string}::pool::ProtocolFeeCollectCap` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::ProtocolFeeCollectCap')
+    }::pool::ProtocolFeeCollectCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -298,11 +315,15 @@ export class ProtocolFeeCollectCap implements StructClass {
   static reified(): ProtocolFeeCollectCapReified {
     const reifiedBcs = ProtocolFeeCollectCap.bcs
     return {
-      typeName: ProtocolFeeCollectCap.$typeName,
-      fullTypeName: composeSuiType(
-        ProtocolFeeCollectCap.$typeName,
-        ...[],
-      ) as `${string}::pool::ProtocolFeeCollectCap`,
+      get typeName() {
+        return ProtocolFeeCollectCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ProtocolFeeCollectCap.$typeName,
+          ...[],
+        ) as `${string}::pool::ProtocolFeeCollectCap`
+      },
       typeArgs: [] as [],
       isPhantom: ProtocolFeeCollectCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -313,11 +334,13 @@ export class ProtocolFeeCollectCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ProtocolFeeCollectCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ProtocolFeeCollectCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ProtocolFeeCollectCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ProtocolFeeCollectCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ProtocolFeeCollectCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ProtocolFeeCollectCap.fetch(client, id),
       new: (fields: ProtocolFeeCollectCapFields) => {
         return new ProtocolFeeCollectCap([], fields)
@@ -399,6 +422,14 @@ export class ProtocolFeeCollectCap implements StructClass {
     return ProtocolFeeCollectCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ProtocolFeeCollectCap {
+    if (!isProtocolFeeCollectCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ProtocolFeeCollectCap object`)
+    }
+    return ProtocolFeeCollectCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ProtocolFeeCollectCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ProtocolFeeCollectCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -411,6 +442,7 @@ export class ProtocolFeeCollectCap implements StructClass {
     return ProtocolFeeCollectCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ProtocolFeeCollectCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ProtocolFeeCollectCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isProtocolFeeCollectCap(data.bcs.type)) {
@@ -427,13 +459,15 @@ export class ProtocolFeeCollectCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ProtocolFeeCollectCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isProtocolFeeCollectCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ProtocolFeeCollectCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isProtocolFeeCollectCap(object.type)) {
       throw new Error(`object at id ${id} is not a ProtocolFeeCollectCap object`)
     }
-
-    return ProtocolFeeCollectCap.fromBcs(res.bcsBytes)
+    return ProtocolFeeCollectCap.fromBcs(object.content)
   }
 }
 
@@ -530,9 +564,9 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::Pool` = `${
-    getTypeOrigin('cetus-clmm', 'pool::Pool')
-  }::pool::Pool` as const
+  static get $typeName(): `${string}::pool::Pool` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::Pool')}::pool::Pool` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -601,17 +635,23 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
   ): PoolReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
     const reifiedBcs = Pool.bcs
     return {
-      typeName: Pool.$typeName,
-      fullTypeName: composeSuiType(
-        Pool.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)],
-      ) as `${string}::pool::Pool<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinTypeA>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
+      get typeName() {
+        return Pool.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Pool.$typeName,
+          ...[extractType(CoinTypeA), extractType(CoinTypeB)],
+        ) as `${string}::pool::Pool<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinTypeA>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+        ]
+      },
       isPhantom: Pool.$isPhantom,
       reifiedTypeArgs: [CoinTypeA, CoinTypeB],
       fromFields: (fields: Record<string, any>) => Pool.fromFields([CoinTypeA, CoinTypeB], fields),
@@ -622,11 +662,13 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Pool.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) => Pool.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Pool.fromCoreObject([CoinTypeA, CoinTypeB], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         Pool.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         Pool.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         Pool.fetch(client, [CoinTypeA, CoinTypeB], id),
       new: (
         fields: PoolFields<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>,
@@ -845,6 +887,37 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     return Pool.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Pool<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isPool(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Pool object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Pool.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Pool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -861,6 +934,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     return Pool.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Pool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -903,16 +977,19 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinTypeA, CoinTypeB],
     id: string,
   ): Promise<Pool<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPool(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPool(object.type)) {
       throw new Error(`object at id ${id} is not a Pool object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -928,7 +1005,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       }
     }
 
-    return Pool.fromBcs(typeArgs, res.bcsBytes)
+    return Pool.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -976,9 +1053,9 @@ export type StatusJSON = {
 export class Status implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::Status` = `${
-    getTypeOrigin('cetus-clmm', 'pool::Status')
-  }::pool::Status` as const
+  static get $typeName(): `${string}::pool::Status` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::Status')}::pool::Status` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1012,11 +1089,15 @@ export class Status implements StructClass {
   static reified(): StatusReified {
     const reifiedBcs = Status.bcs
     return {
-      typeName: Status.$typeName,
-      fullTypeName: composeSuiType(
-        Status.$typeName,
-        ...[],
-      ) as `${string}::pool::Status`,
+      get typeName() {
+        return Status.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Status.$typeName,
+          ...[],
+        ) as `${string}::pool::Status`
+      },
       typeArgs: [] as [],
       isPhantom: Status.$isPhantom,
       reifiedTypeArgs: [],
@@ -1026,9 +1107,10 @@ export class Status implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Status.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Status.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Status.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Status.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Status.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Status.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Status.fetch(client, id),
       new: (fields: StatusFields) => {
         return new Status([], fields)
       },
@@ -1137,6 +1219,14 @@ export class Status implements StructClass {
     return Status.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Status {
+    if (!isStatus(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Status object`)
+    }
+    return Status.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Status.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Status {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1147,6 +1237,7 @@ export class Status implements StructClass {
     return Status.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Status.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Status {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isStatus(data.bcs.type)) {
@@ -1163,13 +1254,15 @@ export class Status implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Status> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStatus(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Status> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStatus(object.type)) {
       throw new Error(`object at id ${id} is not a Status object`)
     }
-
-    return Status.fromBcs(res.bcsBytes)
+    return Status.fromBcs(object.content)
   }
 }
 
@@ -1205,9 +1298,9 @@ export type PoolStatusJSON = {
 export class PoolStatus implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::PoolStatus` = `${
-    getTypeOrigin('cetus-clmm', 'pool::PoolStatus')
-  }::pool::PoolStatus` as const
+  static get $typeName(): `${string}::pool::PoolStatus` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::PoolStatus')}::pool::PoolStatus` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1233,11 +1326,15 @@ export class PoolStatus implements StructClass {
   static reified(): PoolStatusReified {
     const reifiedBcs = PoolStatus.bcs
     return {
-      typeName: PoolStatus.$typeName,
-      fullTypeName: composeSuiType(
-        PoolStatus.$typeName,
-        ...[],
-      ) as `${string}::pool::PoolStatus`,
+      get typeName() {
+        return PoolStatus.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PoolStatus.$typeName,
+          ...[],
+        ) as `${string}::pool::PoolStatus`
+      },
       typeArgs: [] as [],
       isPhantom: PoolStatus.$isPhantom,
       reifiedTypeArgs: [],
@@ -1247,9 +1344,11 @@ export class PoolStatus implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolStatus.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolStatus.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PoolStatus.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PoolStatus.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PoolStatus.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PoolStatus.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PoolStatus.fetch(client, id),
       new: (fields: PoolStatusFields) => {
         return new PoolStatus([], fields)
       },
@@ -1335,6 +1434,14 @@ export class PoolStatus implements StructClass {
     return PoolStatus.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PoolStatus {
+    if (!isPoolStatus(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PoolStatus object`)
+    }
+    return PoolStatus.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolStatus.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PoolStatus {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1345,6 +1452,7 @@ export class PoolStatus implements StructClass {
     return PoolStatus.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolStatus.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PoolStatus {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPoolStatus(data.bcs.type)) {
@@ -1361,13 +1469,15 @@ export class PoolStatus implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PoolStatus> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPoolStatus(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PoolStatus> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPoolStatus(object.type)) {
       throw new Error(`object at id ${id} is not a PoolStatus object`)
     }
-
-    return PoolStatus.fromBcs(res.bcsBytes)
+    return PoolStatus.fromBcs(object.content)
   }
 }
 
@@ -1412,9 +1522,9 @@ export type SwapResultJSON = {
 export class SwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::SwapResult` = `${
-    getTypeOrigin('cetus-clmm', 'pool::SwapResult')
-  }::pool::SwapResult` as const
+  static get $typeName(): `${string}::pool::SwapResult` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::SwapResult')}::pool::SwapResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1446,11 +1556,15 @@ export class SwapResult implements StructClass {
   static reified(): SwapResultReified {
     const reifiedBcs = SwapResult.bcs
     return {
-      typeName: SwapResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapResult.$typeName,
-        ...[],
-      ) as `${string}::pool::SwapResult`,
+      get typeName() {
+        return SwapResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapResult.$typeName,
+          ...[],
+        ) as `${string}::pool::SwapResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -1460,9 +1574,11 @@ export class SwapResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapResult.fetch(client, id),
       new: (fields: SwapResultFields) => {
         return new SwapResult([], fields)
       },
@@ -1563,6 +1679,14 @@ export class SwapResult implements StructClass {
     return SwapResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapResult {
+    if (!isSwapResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapResult object`)
+    }
+    return SwapResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1573,6 +1697,7 @@ export class SwapResult implements StructClass {
     return SwapResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapResult(data.bcs.type)) {
@@ -1589,13 +1714,15 @@ export class SwapResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapResult object`)
     }
-
-    return SwapResult.fromBcs(res.bcsBytes)
+    return SwapResult.fromBcs(object.content)
   }
 }
 
@@ -1657,9 +1784,11 @@ export class FlashSwapReceipt<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::FlashSwapReceipt` = `${
-    getTypeOrigin('cetus-clmm', 'pool::FlashSwapReceipt')
-  }::pool::FlashSwapReceipt` as const
+  static get $typeName(): `${string}::pool::FlashSwapReceipt` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::FlashSwapReceipt')
+    }::pool::FlashSwapReceipt` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -1704,17 +1833,23 @@ export class FlashSwapReceipt<
   ): FlashSwapReceiptReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
     const reifiedBcs = FlashSwapReceipt.bcs
     return {
-      typeName: FlashSwapReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        FlashSwapReceipt.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)],
-      ) as `${string}::pool::FlashSwapReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinTypeA>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
+      get typeName() {
+        return FlashSwapReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          FlashSwapReceipt.$typeName,
+          ...[extractType(CoinTypeA), extractType(CoinTypeB)],
+        ) as `${string}::pool::FlashSwapReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinTypeA>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+        ]
+      },
       isPhantom: FlashSwapReceipt.$isPhantom,
       reifiedTypeArgs: [CoinTypeA, CoinTypeB],
       fromFields: (fields: Record<string, any>) =>
@@ -1727,11 +1862,13 @@ export class FlashSwapReceipt<
       fromJSONField: (field: any) => FlashSwapReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) =>
         FlashSwapReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        FlashSwapReceipt.fromCoreObject([CoinTypeA, CoinTypeB], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         FlashSwapReceipt.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FlashSwapReceipt.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         FlashSwapReceipt.fetch(client, [CoinTypeA, CoinTypeB], id),
       new: (
         fields: FlashSwapReceiptFields<
@@ -1882,6 +2019,37 @@ export class FlashSwapReceipt<
     return FlashSwapReceipt.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isFlashSwapReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a FlashSwapReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return FlashSwapReceipt.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -1898,6 +2066,7 @@ export class FlashSwapReceipt<
     return FlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -1940,16 +2109,19 @@ export class FlashSwapReceipt<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinTypeA, CoinTypeB],
     id: string,
   ): Promise<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isFlashSwapReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isFlashSwapReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a FlashSwapReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -1965,7 +2137,7 @@ export class FlashSwapReceipt<
       }
     }
 
-    return FlashSwapReceipt.fromBcs(typeArgs, res.bcsBytes)
+    return FlashSwapReceipt.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -2024,9 +2196,11 @@ export class AddLiquidityReceipt<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::AddLiquidityReceipt` = `${
-    getTypeOrigin('cetus-clmm', 'pool::AddLiquidityReceipt')
-  }::pool::AddLiquidityReceipt` as const
+  static get $typeName(): `${string}::pool::AddLiquidityReceipt` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::AddLiquidityReceipt')
+    }::pool::AddLiquidityReceipt` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -2070,17 +2244,23 @@ export class AddLiquidityReceipt<
   > {
     const reifiedBcs = AddLiquidityReceipt.bcs
     return {
-      typeName: AddLiquidityReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        AddLiquidityReceipt.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)],
-      ) as `${string}::pool::AddLiquidityReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinTypeA>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
+      get typeName() {
+        return AddLiquidityReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddLiquidityReceipt.$typeName,
+          ...[extractType(CoinTypeA), extractType(CoinTypeB)],
+        ) as `${string}::pool::AddLiquidityReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinTypeA>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+        ]
+      },
       isPhantom: AddLiquidityReceipt.$isPhantom,
       reifiedTypeArgs: [CoinTypeA, CoinTypeB],
       fromFields: (fields: Record<string, any>) =>
@@ -2094,11 +2274,13 @@ export class AddLiquidityReceipt<
         AddLiquidityReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) =>
         AddLiquidityReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddLiquidityReceipt.fromCoreObject([CoinTypeA, CoinTypeB], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         AddLiquidityReceipt.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AddLiquidityReceipt.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         AddLiquidityReceipt.fetch(client, [CoinTypeA, CoinTypeB], id),
       new: (
         fields: AddLiquidityReceiptFields<
@@ -2241,6 +2423,37 @@ export class AddLiquidityReceipt<
     return AddLiquidityReceipt.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): AddLiquidityReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isAddLiquidityReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddLiquidityReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return AddLiquidityReceipt.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -2257,6 +2470,7 @@ export class AddLiquidityReceipt<
     return AddLiquidityReceipt.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -2299,18 +2513,21 @@ export class AddLiquidityReceipt<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinTypeA, CoinTypeB],
     id: string,
   ): Promise<
     AddLiquidityReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>
   > {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddLiquidityReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddLiquidityReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -2326,7 +2543,7 @@ export class AddLiquidityReceipt<
       }
     }
 
-    return AddLiquidityReceipt.fromBcs(typeArgs, res.bcsBytes)
+    return AddLiquidityReceipt.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -2374,9 +2591,11 @@ export type FlashLoanReceiptJSON = {
 export class FlashLoanReceipt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::FlashLoanReceipt` = `${
-    getTypeOrigin('cetus-clmm', 'pool::FlashLoanReceipt')
-  }::pool::FlashLoanReceipt` as const
+  static get $typeName(): `${string}::pool::FlashLoanReceipt` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::FlashLoanReceipt')
+    }::pool::FlashLoanReceipt` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2410,11 +2629,15 @@ export class FlashLoanReceipt implements StructClass {
   static reified(): FlashLoanReceiptReified {
     const reifiedBcs = FlashLoanReceipt.bcs
     return {
-      typeName: FlashLoanReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        FlashLoanReceipt.$typeName,
-        ...[],
-      ) as `${string}::pool::FlashLoanReceipt`,
+      get typeName() {
+        return FlashLoanReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          FlashLoanReceipt.$typeName,
+          ...[],
+        ) as `${string}::pool::FlashLoanReceipt`
+      },
       typeArgs: [] as [],
       isPhantom: FlashLoanReceipt.$isPhantom,
       reifiedTypeArgs: [],
@@ -2424,9 +2647,11 @@ export class FlashLoanReceipt implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => FlashLoanReceipt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FlashLoanReceipt.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        FlashLoanReceipt.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => FlashLoanReceipt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FlashLoanReceipt.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => FlashLoanReceipt.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => FlashLoanReceipt.fetch(client, id),
       new: (fields: FlashLoanReceiptFields) => {
         return new FlashLoanReceipt([], fields)
       },
@@ -2532,6 +2757,14 @@ export class FlashLoanReceipt implements StructClass {
     return FlashLoanReceipt.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): FlashLoanReceipt {
+    if (!isFlashLoanReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a FlashLoanReceipt object`)
+    }
+    return FlashLoanReceipt.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashLoanReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): FlashLoanReceipt {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2542,6 +2775,7 @@ export class FlashLoanReceipt implements StructClass {
     return FlashLoanReceipt.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashLoanReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): FlashLoanReceipt {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isFlashLoanReceipt(data.bcs.type)) {
@@ -2558,13 +2792,15 @@ export class FlashLoanReceipt implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<FlashLoanReceipt> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isFlashLoanReceipt(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<FlashLoanReceipt> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isFlashLoanReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a FlashLoanReceipt object`)
     }
-
-    return FlashLoanReceipt.fromBcs(res.bcsBytes)
+    return FlashLoanReceipt.fromBcs(object.content)
   }
 }
 
@@ -2616,9 +2852,11 @@ export type CalculatedSwapResultJSON = {
 export class CalculatedSwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::CalculatedSwapResult` = `${
-    getTypeOrigin('cetus-clmm', 'pool::CalculatedSwapResult')
-  }::pool::CalculatedSwapResult` as const
+  static get $typeName(): `${string}::pool::CalculatedSwapResult` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::CalculatedSwapResult')
+    }::pool::CalculatedSwapResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2654,11 +2892,15 @@ export class CalculatedSwapResult implements StructClass {
   static reified(): CalculatedSwapResultReified {
     const reifiedBcs = CalculatedSwapResult.bcs
     return {
-      typeName: CalculatedSwapResult.$typeName,
-      fullTypeName: composeSuiType(
-        CalculatedSwapResult.$typeName,
-        ...[],
-      ) as `${string}::pool::CalculatedSwapResult`,
+      get typeName() {
+        return CalculatedSwapResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CalculatedSwapResult.$typeName,
+          ...[],
+        ) as `${string}::pool::CalculatedSwapResult`
+      },
       typeArgs: [] as [],
       isPhantom: CalculatedSwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -2669,11 +2911,13 @@ export class CalculatedSwapResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CalculatedSwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CalculatedSwapResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CalculatedSwapResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CalculatedSwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CalculatedSwapResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CalculatedSwapResult.fetch(client, id),
       new: (fields: CalculatedSwapResultFields) => {
         return new CalculatedSwapResult([], fields)
@@ -2791,6 +3035,14 @@ export class CalculatedSwapResult implements StructClass {
     return CalculatedSwapResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CalculatedSwapResult {
+    if (!isCalculatedSwapResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CalculatedSwapResult object`)
+    }
+    return CalculatedSwapResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CalculatedSwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CalculatedSwapResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2803,6 +3055,7 @@ export class CalculatedSwapResult implements StructClass {
     return CalculatedSwapResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CalculatedSwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CalculatedSwapResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCalculatedSwapResult(data.bcs.type)) {
@@ -2819,13 +3072,15 @@ export class CalculatedSwapResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CalculatedSwapResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCalculatedSwapResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CalculatedSwapResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCalculatedSwapResult(object.type)) {
       throw new Error(`object at id ${id} is not a CalculatedSwapResult object`)
     }
-
-    return CalculatedSwapResult.fromBcs(res.bcsBytes)
+    return CalculatedSwapResult.fromBcs(object.content)
   }
 }
 
@@ -2876,9 +3131,9 @@ export type SwapStepResultJSON = {
 export class SwapStepResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::SwapStepResult` = `${
-    getTypeOrigin('cetus-clmm', 'pool::SwapStepResult')
-  }::pool::SwapStepResult` as const
+  static get $typeName(): `${string}::pool::SwapStepResult` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::SwapStepResult')}::pool::SwapStepResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2914,11 +3169,15 @@ export class SwapStepResult implements StructClass {
   static reified(): SwapStepResultReified {
     const reifiedBcs = SwapStepResult.bcs
     return {
-      typeName: SwapStepResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapStepResult.$typeName,
-        ...[],
-      ) as `${string}::pool::SwapStepResult`,
+      get typeName() {
+        return SwapStepResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapStepResult.$typeName,
+          ...[],
+        ) as `${string}::pool::SwapStepResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapStepResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -2928,9 +3187,11 @@ export class SwapStepResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapStepResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapStepResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapStepResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapStepResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapStepResult.fetch(client, id),
       new: (fields: SwapStepResultFields) => {
         return new SwapStepResult([], fields)
       },
@@ -3041,6 +3302,14 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapStepResult {
+    if (!isSwapStepResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapStepResult object`)
+    }
+    return SwapStepResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapStepResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3051,6 +3320,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapStepResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapStepResult(data.bcs.type)) {
@@ -3067,13 +3337,15 @@ export class SwapStepResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapStepResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapStepResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapStepResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapStepResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapStepResult object`)
     }
-
-    return SwapStepResult.fromBcs(res.bcsBytes)
+    return SwapStepResult.fromBcs(object.content)
   }
 }
 
@@ -3116,9 +3388,11 @@ export type OpenPositionEventJSON = {
 export class OpenPositionEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::OpenPositionEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::OpenPositionEvent')
-  }::pool::OpenPositionEvent` as const
+  static get $typeName(): `${string}::pool::OpenPositionEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::OpenPositionEvent')
+    }::pool::OpenPositionEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3148,11 +3422,15 @@ export class OpenPositionEvent implements StructClass {
   static reified(): OpenPositionEventReified {
     const reifiedBcs = OpenPositionEvent.bcs
     return {
-      typeName: OpenPositionEvent.$typeName,
-      fullTypeName: composeSuiType(
-        OpenPositionEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::OpenPositionEvent`,
+      get typeName() {
+        return OpenPositionEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OpenPositionEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::OpenPositionEvent`
+      },
       typeArgs: [] as [],
       isPhantom: OpenPositionEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -3162,9 +3440,11 @@ export class OpenPositionEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OpenPositionEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OpenPositionEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OpenPositionEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => OpenPositionEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => OpenPositionEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => OpenPositionEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => OpenPositionEvent.fetch(client, id),
       new: (fields: OpenPositionEventFields) => {
         return new OpenPositionEvent([], fields)
       },
@@ -3260,6 +3540,14 @@ export class OpenPositionEvent implements StructClass {
     return OpenPositionEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OpenPositionEvent {
+    if (!isOpenPositionEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OpenPositionEvent object`)
+    }
+    return OpenPositionEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OpenPositionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OpenPositionEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3270,6 +3558,7 @@ export class OpenPositionEvent implements StructClass {
     return OpenPositionEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OpenPositionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OpenPositionEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOpenPositionEvent(data.bcs.type)) {
@@ -3286,13 +3575,15 @@ export class OpenPositionEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<OpenPositionEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOpenPositionEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OpenPositionEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOpenPositionEvent(object.type)) {
       throw new Error(`object at id ${id} is not a OpenPositionEvent object`)
     }
-
-    return OpenPositionEvent.fromBcs(res.bcsBytes)
+    return OpenPositionEvent.fromBcs(object.content)
   }
 }
 
@@ -3329,9 +3620,11 @@ export type ClosePositionEventJSON = {
 export class ClosePositionEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::ClosePositionEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::ClosePositionEvent')
-  }::pool::ClosePositionEvent` as const
+  static get $typeName(): `${string}::pool::ClosePositionEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::ClosePositionEvent')
+    }::pool::ClosePositionEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3357,11 +3650,15 @@ export class ClosePositionEvent implements StructClass {
   static reified(): ClosePositionEventReified {
     const reifiedBcs = ClosePositionEvent.bcs
     return {
-      typeName: ClosePositionEvent.$typeName,
-      fullTypeName: composeSuiType(
-        ClosePositionEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::ClosePositionEvent`,
+      get typeName() {
+        return ClosePositionEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ClosePositionEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::ClosePositionEvent`
+      },
       typeArgs: [] as [],
       isPhantom: ClosePositionEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -3371,9 +3668,11 @@ export class ClosePositionEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ClosePositionEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ClosePositionEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ClosePositionEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ClosePositionEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ClosePositionEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ClosePositionEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ClosePositionEvent.fetch(client, id),
       new: (fields: ClosePositionEventFields) => {
         return new ClosePositionEvent([], fields)
       },
@@ -3459,6 +3758,14 @@ export class ClosePositionEvent implements StructClass {
     return ClosePositionEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ClosePositionEvent {
+    if (!isClosePositionEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ClosePositionEvent object`)
+    }
+    return ClosePositionEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ClosePositionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ClosePositionEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3469,6 +3776,7 @@ export class ClosePositionEvent implements StructClass {
     return ClosePositionEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ClosePositionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ClosePositionEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isClosePositionEvent(data.bcs.type)) {
@@ -3485,13 +3793,15 @@ export class ClosePositionEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ClosePositionEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isClosePositionEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ClosePositionEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isClosePositionEvent(object.type)) {
       throw new Error(`object at id ${id} is not a ClosePositionEvent object`)
     }
-
-    return ClosePositionEvent.fromBcs(res.bcsBytes)
+    return ClosePositionEvent.fromBcs(object.content)
   }
 }
 
@@ -3547,9 +3857,11 @@ export type AddLiquidityEventJSON = {
 export class AddLiquidityEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::AddLiquidityEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::AddLiquidityEvent')
-  }::pool::AddLiquidityEvent` as const
+  static get $typeName(): `${string}::pool::AddLiquidityEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::AddLiquidityEvent')
+    }::pool::AddLiquidityEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3587,11 +3899,15 @@ export class AddLiquidityEvent implements StructClass {
   static reified(): AddLiquidityEventReified {
     const reifiedBcs = AddLiquidityEvent.bcs
     return {
-      typeName: AddLiquidityEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddLiquidityEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::AddLiquidityEvent`,
+      get typeName() {
+        return AddLiquidityEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddLiquidityEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::AddLiquidityEvent`
+      },
       typeArgs: [] as [],
       isPhantom: AddLiquidityEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -3601,9 +3917,11 @@ export class AddLiquidityEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddLiquidityEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddLiquidityEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddLiquidityEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddLiquidityEvent.fetch(client, id),
       new: (fields: AddLiquidityEventFields) => {
         return new AddLiquidityEvent([], fields)
       },
@@ -3719,6 +4037,14 @@ export class AddLiquidityEvent implements StructClass {
     return AddLiquidityEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddLiquidityEvent {
+    if (!isAddLiquidityEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddLiquidityEvent object`)
+    }
+    return AddLiquidityEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddLiquidityEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3729,6 +4055,7 @@ export class AddLiquidityEvent implements StructClass {
     return AddLiquidityEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddLiquidityEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddLiquidityEvent(data.bcs.type)) {
@@ -3745,13 +4072,15 @@ export class AddLiquidityEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddLiquidityEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddLiquidityEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddLiquidityEvent(object.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityEvent object`)
     }
-
-    return AddLiquidityEvent.fromBcs(res.bcsBytes)
+    return AddLiquidityEvent.fromBcs(object.content)
   }
 }
 
@@ -3797,9 +4126,11 @@ export type AddLiquidityV2EventJSON = {
 export class AddLiquidityV2Event implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::AddLiquidityV2Event` = `${
-    getTypeOrigin('cetus-clmm', 'pool::AddLiquidityV2Event')
-  }::pool::AddLiquidityV2Event` as const
+  static get $typeName(): `${string}::pool::AddLiquidityV2Event` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::AddLiquidityV2Event')
+    }::pool::AddLiquidityV2Event` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3839,11 +4170,15 @@ export class AddLiquidityV2Event implements StructClass {
   static reified(): AddLiquidityV2EventReified {
     const reifiedBcs = AddLiquidityV2Event.bcs
     return {
-      typeName: AddLiquidityV2Event.$typeName,
-      fullTypeName: composeSuiType(
-        AddLiquidityV2Event.$typeName,
-        ...[],
-      ) as `${string}::pool::AddLiquidityV2Event`,
+      get typeName() {
+        return AddLiquidityV2Event.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddLiquidityV2Event.$typeName,
+          ...[],
+        ) as `${string}::pool::AddLiquidityV2Event`
+      },
       typeArgs: [] as [],
       isPhantom: AddLiquidityV2Event.$isPhantom,
       reifiedTypeArgs: [],
@@ -3853,10 +4188,11 @@ export class AddLiquidityV2Event implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityV2Event.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddLiquidityV2Event.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityV2Event.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddLiquidityV2Event.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        AddLiquidityV2Event.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddLiquidityV2Event.fetch(client, id),
       new: (fields: AddLiquidityV2EventFields) => {
         return new AddLiquidityV2Event([], fields)
       },
@@ -3977,6 +4313,14 @@ export class AddLiquidityV2Event implements StructClass {
     return AddLiquidityV2Event.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddLiquidityV2Event {
+    if (!isAddLiquidityV2Event(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddLiquidityV2Event object`)
+    }
+    return AddLiquidityV2Event.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddLiquidityV2Event {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3987,6 +4331,7 @@ export class AddLiquidityV2Event implements StructClass {
     return AddLiquidityV2Event.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddLiquidityV2Event {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddLiquidityV2Event(data.bcs.type)) {
@@ -4003,13 +4348,15 @@ export class AddLiquidityV2Event implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityV2Event> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddLiquidityV2Event(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddLiquidityV2Event> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddLiquidityV2Event(object.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityV2Event object`)
     }
-
-    return AddLiquidityV2Event.fromBcs(res.bcsBytes)
+    return AddLiquidityV2Event.fromBcs(object.content)
   }
 }
 
@@ -4060,9 +4407,11 @@ export type RemoveLiquidityV2EventJSON = {
 export class RemoveLiquidityV2Event implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::RemoveLiquidityV2Event` = `${
-    getTypeOrigin('cetus-clmm', 'pool::RemoveLiquidityV2Event')
-  }::pool::RemoveLiquidityV2Event` as const
+  static get $typeName(): `${string}::pool::RemoveLiquidityV2Event` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::RemoveLiquidityV2Event')
+    }::pool::RemoveLiquidityV2Event` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4102,11 +4451,15 @@ export class RemoveLiquidityV2Event implements StructClass {
   static reified(): RemoveLiquidityV2EventReified {
     const reifiedBcs = RemoveLiquidityV2Event.bcs
     return {
-      typeName: RemoveLiquidityV2Event.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveLiquidityV2Event.$typeName,
-        ...[],
-      ) as `${string}::pool::RemoveLiquidityV2Event`,
+      get typeName() {
+        return RemoveLiquidityV2Event.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RemoveLiquidityV2Event.$typeName,
+          ...[],
+        ) as `${string}::pool::RemoveLiquidityV2Event`
+      },
       typeArgs: [] as [],
       isPhantom: RemoveLiquidityV2Event.$isPhantom,
       reifiedTypeArgs: [],
@@ -4117,11 +4470,13 @@ export class RemoveLiquidityV2Event implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveLiquidityV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveLiquidityV2Event.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RemoveLiquidityV2Event.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RemoveLiquidityV2Event.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RemoveLiquidityV2Event.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RemoveLiquidityV2Event.fetch(client, id),
       new: (fields: RemoveLiquidityV2EventFields) => {
         return new RemoveLiquidityV2Event([], fields)
@@ -4243,6 +4598,14 @@ export class RemoveLiquidityV2Event implements StructClass {
     return RemoveLiquidityV2Event.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RemoveLiquidityV2Event {
+    if (!isRemoveLiquidityV2Event(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RemoveLiquidityV2Event object`)
+    }
+    return RemoveLiquidityV2Event.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveLiquidityV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RemoveLiquidityV2Event {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4255,6 +4618,7 @@ export class RemoveLiquidityV2Event implements StructClass {
     return RemoveLiquidityV2Event.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveLiquidityV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RemoveLiquidityV2Event {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRemoveLiquidityV2Event(data.bcs.type)) {
@@ -4271,13 +4635,15 @@ export class RemoveLiquidityV2Event implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RemoveLiquidityV2Event> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRemoveLiquidityV2Event(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RemoveLiquidityV2Event> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRemoveLiquidityV2Event(object.type)) {
       throw new Error(`object at id ${id} is not a RemoveLiquidityV2Event object`)
     }
-
-    return RemoveLiquidityV2Event.fromBcs(res.bcsBytes)
+    return RemoveLiquidityV2Event.fromBcs(object.content)
   }
 }
 
@@ -4331,9 +4697,11 @@ export type RemoveLiquidityEventJSON = {
 export class RemoveLiquidityEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::RemoveLiquidityEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::RemoveLiquidityEvent')
-  }::pool::RemoveLiquidityEvent` as const
+  static get $typeName(): `${string}::pool::RemoveLiquidityEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::RemoveLiquidityEvent')
+    }::pool::RemoveLiquidityEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4371,11 +4739,15 @@ export class RemoveLiquidityEvent implements StructClass {
   static reified(): RemoveLiquidityEventReified {
     const reifiedBcs = RemoveLiquidityEvent.bcs
     return {
-      typeName: RemoveLiquidityEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveLiquidityEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::RemoveLiquidityEvent`,
+      get typeName() {
+        return RemoveLiquidityEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RemoveLiquidityEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::RemoveLiquidityEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RemoveLiquidityEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -4386,11 +4758,13 @@ export class RemoveLiquidityEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveLiquidityEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveLiquidityEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RemoveLiquidityEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RemoveLiquidityEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RemoveLiquidityEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RemoveLiquidityEvent.fetch(client, id),
       new: (fields: RemoveLiquidityEventFields) => {
         return new RemoveLiquidityEvent([], fields)
@@ -4507,6 +4881,14 @@ export class RemoveLiquidityEvent implements StructClass {
     return RemoveLiquidityEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RemoveLiquidityEvent {
+    if (!isRemoveLiquidityEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RemoveLiquidityEvent object`)
+    }
+    return RemoveLiquidityEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveLiquidityEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RemoveLiquidityEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4519,6 +4901,7 @@ export class RemoveLiquidityEvent implements StructClass {
     return RemoveLiquidityEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveLiquidityEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RemoveLiquidityEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRemoveLiquidityEvent(data.bcs.type)) {
@@ -4535,13 +4918,15 @@ export class RemoveLiquidityEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RemoveLiquidityEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRemoveLiquidityEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RemoveLiquidityEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRemoveLiquidityEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RemoveLiquidityEvent object`)
     }
-
-    return RemoveLiquidityEvent.fromBcs(res.bcsBytes)
+    return RemoveLiquidityEvent.fromBcs(object.content)
   }
 }
 
@@ -4607,9 +4992,9 @@ export type SwapEventJSON = {
 export class SwapEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::SwapEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::SwapEvent')
-  }::pool::SwapEvent` as const
+  static get $typeName(): `${string}::pool::SwapEvent` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::SwapEvent')}::pool::SwapEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4655,11 +5040,15 @@ export class SwapEvent implements StructClass {
   static reified(): SwapEventReified {
     const reifiedBcs = SwapEvent.bcs
     return {
-      typeName: SwapEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SwapEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::SwapEvent`,
+      get typeName() {
+        return SwapEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::SwapEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SwapEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -4669,9 +5058,11 @@ export class SwapEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapEvent.fetch(client, id),
       new: (fields: SwapEventFields) => {
         return new SwapEvent([], fields)
       },
@@ -4807,6 +5198,14 @@ export class SwapEvent implements StructClass {
     return SwapEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapEvent {
+    if (!isSwapEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapEvent object`)
+    }
+    return SwapEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4817,6 +5216,7 @@ export class SwapEvent implements StructClass {
     return SwapEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapEvent(data.bcs.type)) {
@@ -4833,13 +5233,15 @@ export class SwapEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SwapEvent object`)
     }
-
-    return SwapEvent.fromBcs(res.bcsBytes)
+    return SwapEvent.fromBcs(object.content)
   }
 }
 
@@ -4884,9 +5286,11 @@ export type CollectProtocolFeeEventJSON = {
 export class CollectProtocolFeeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::CollectProtocolFeeEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::CollectProtocolFeeEvent')
-  }::pool::CollectProtocolFeeEvent` as const
+  static get $typeName(): `${string}::pool::CollectProtocolFeeEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::CollectProtocolFeeEvent')
+    }::pool::CollectProtocolFeeEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4915,11 +5319,15 @@ export class CollectProtocolFeeEvent implements StructClass {
   static reified(): CollectProtocolFeeEventReified {
     const reifiedBcs = CollectProtocolFeeEvent.bcs
     return {
-      typeName: CollectProtocolFeeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CollectProtocolFeeEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::CollectProtocolFeeEvent`,
+      get typeName() {
+        return CollectProtocolFeeEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollectProtocolFeeEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::CollectProtocolFeeEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CollectProtocolFeeEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -4930,11 +5338,13 @@ export class CollectProtocolFeeEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectProtocolFeeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollectProtocolFeeEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollectProtocolFeeEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollectProtocolFeeEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollectProtocolFeeEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollectProtocolFeeEvent.fetch(client, id),
       new: (fields: CollectProtocolFeeEventFields) => {
         return new CollectProtocolFeeEvent([], fields)
@@ -5026,6 +5436,14 @@ export class CollectProtocolFeeEvent implements StructClass {
     return CollectProtocolFeeEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollectProtocolFeeEvent {
+    if (!isCollectProtocolFeeEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollectProtocolFeeEvent object`)
+    }
+    return CollectProtocolFeeEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectProtocolFeeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollectProtocolFeeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5038,6 +5456,7 @@ export class CollectProtocolFeeEvent implements StructClass {
     return CollectProtocolFeeEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectProtocolFeeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollectProtocolFeeEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollectProtocolFeeEvent(data.bcs.type)) {
@@ -5054,13 +5473,15 @@ export class CollectProtocolFeeEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollectProtocolFeeEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollectProtocolFeeEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollectProtocolFeeEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollectProtocolFeeEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CollectProtocolFeeEvent object`)
     }
-
-    return CollectProtocolFeeEvent.fromBcs(res.bcsBytes)
+    return CollectProtocolFeeEvent.fromBcs(object.content)
   }
 }
 
@@ -5102,9 +5523,9 @@ export type CollectFeeEventJSON = {
 export class CollectFeeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::CollectFeeEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::CollectFeeEvent')
-  }::pool::CollectFeeEvent` as const
+  static get $typeName(): `${string}::pool::CollectFeeEvent` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::CollectFeeEvent')}::pool::CollectFeeEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5134,11 +5555,15 @@ export class CollectFeeEvent implements StructClass {
   static reified(): CollectFeeEventReified {
     const reifiedBcs = CollectFeeEvent.bcs
     return {
-      typeName: CollectFeeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CollectFeeEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::CollectFeeEvent`,
+      get typeName() {
+        return CollectFeeEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollectFeeEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::CollectFeeEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CollectFeeEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -5148,9 +5573,11 @@ export class CollectFeeEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectFeeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollectFeeEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollectFeeEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CollectFeeEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CollectFeeEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CollectFeeEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CollectFeeEvent.fetch(client, id),
       new: (fields: CollectFeeEventFields) => {
         return new CollectFeeEvent([], fields)
       },
@@ -5246,6 +5673,14 @@ export class CollectFeeEvent implements StructClass {
     return CollectFeeEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollectFeeEvent {
+    if (!isCollectFeeEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollectFeeEvent object`)
+    }
+    return CollectFeeEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectFeeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollectFeeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5256,6 +5691,7 @@ export class CollectFeeEvent implements StructClass {
     return CollectFeeEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectFeeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollectFeeEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollectFeeEvent(data.bcs.type)) {
@@ -5272,13 +5708,15 @@ export class CollectFeeEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollectFeeEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollectFeeEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollectFeeEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollectFeeEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CollectFeeEvent object`)
     }
-
-    return CollectFeeEvent.fromBcs(res.bcsBytes)
+    return CollectFeeEvent.fromBcs(object.content)
   }
 }
 
@@ -5318,9 +5756,11 @@ export type UpdateFeeRateEventJSON = {
 export class UpdateFeeRateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::UpdateFeeRateEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::UpdateFeeRateEvent')
-  }::pool::UpdateFeeRateEvent` as const
+  static get $typeName(): `${string}::pool::UpdateFeeRateEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::UpdateFeeRateEvent')
+    }::pool::UpdateFeeRateEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5348,11 +5788,15 @@ export class UpdateFeeRateEvent implements StructClass {
   static reified(): UpdateFeeRateEventReified {
     const reifiedBcs = UpdateFeeRateEvent.bcs
     return {
-      typeName: UpdateFeeRateEvent.$typeName,
-      fullTypeName: composeSuiType(
-        UpdateFeeRateEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::UpdateFeeRateEvent`,
+      get typeName() {
+        return UpdateFeeRateEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpdateFeeRateEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::UpdateFeeRateEvent`
+      },
       typeArgs: [] as [],
       isPhantom: UpdateFeeRateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -5362,9 +5806,11 @@ export class UpdateFeeRateEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateFeeRateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateFeeRateEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpdateFeeRateEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFeeRateEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateFeeRateEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => UpdateFeeRateEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UpdateFeeRateEvent.fetch(client, id),
       new: (fields: UpdateFeeRateEventFields) => {
         return new UpdateFeeRateEvent([], fields)
       },
@@ -5455,6 +5901,14 @@ export class UpdateFeeRateEvent implements StructClass {
     return UpdateFeeRateEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpdateFeeRateEvent {
+    if (!isUpdateFeeRateEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpdateFeeRateEvent object`)
+    }
+    return UpdateFeeRateEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateFeeRateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpdateFeeRateEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5465,6 +5919,7 @@ export class UpdateFeeRateEvent implements StructClass {
     return UpdateFeeRateEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateFeeRateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpdateFeeRateEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpdateFeeRateEvent(data.bcs.type)) {
@@ -5481,13 +5936,15 @@ export class UpdateFeeRateEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateFeeRateEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpdateFeeRateEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpdateFeeRateEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpdateFeeRateEvent(object.type)) {
       throw new Error(`object at id ${id} is not a UpdateFeeRateEvent object`)
     }
-
-    return UpdateFeeRateEvent.fromBcs(res.bcsBytes)
+    return UpdateFeeRateEvent.fromBcs(object.content)
   }
 }
 
@@ -5527,9 +5984,11 @@ export type UpdateEmissionEventJSON = {
 export class UpdateEmissionEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::UpdateEmissionEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::UpdateEmissionEvent')
-  }::pool::UpdateEmissionEvent` as const
+  static get $typeName(): `${string}::pool::UpdateEmissionEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::UpdateEmissionEvent')
+    }::pool::UpdateEmissionEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5557,11 +6016,15 @@ export class UpdateEmissionEvent implements StructClass {
   static reified(): UpdateEmissionEventReified {
     const reifiedBcs = UpdateEmissionEvent.bcs
     return {
-      typeName: UpdateEmissionEvent.$typeName,
-      fullTypeName: composeSuiType(
-        UpdateEmissionEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::UpdateEmissionEvent`,
+      get typeName() {
+        return UpdateEmissionEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpdateEmissionEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::UpdateEmissionEvent`
+      },
       typeArgs: [] as [],
       isPhantom: UpdateEmissionEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -5571,10 +6034,11 @@ export class UpdateEmissionEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateEmissionEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateEmissionEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpdateEmissionEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UpdateEmissionEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateEmissionEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        UpdateEmissionEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UpdateEmissionEvent.fetch(client, id),
       new: (fields: UpdateEmissionEventFields) => {
         return new UpdateEmissionEvent([], fields)
       },
@@ -5665,6 +6129,14 @@ export class UpdateEmissionEvent implements StructClass {
     return UpdateEmissionEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpdateEmissionEvent {
+    if (!isUpdateEmissionEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpdateEmissionEvent object`)
+    }
+    return UpdateEmissionEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateEmissionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpdateEmissionEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5675,6 +6147,7 @@ export class UpdateEmissionEvent implements StructClass {
     return UpdateEmissionEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateEmissionEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpdateEmissionEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpdateEmissionEvent(data.bcs.type)) {
@@ -5691,13 +6164,15 @@ export class UpdateEmissionEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateEmissionEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpdateEmissionEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpdateEmissionEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpdateEmissionEvent(object.type)) {
       throw new Error(`object at id ${id} is not a UpdateEmissionEvent object`)
     }
-
-    return UpdateEmissionEvent.fromBcs(res.bcsBytes)
+    return UpdateEmissionEvent.fromBcs(object.content)
   }
 }
 
@@ -5733,9 +6208,11 @@ export type AddRewarderEventJSON = {
 export class AddRewarderEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::AddRewarderEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::AddRewarderEvent')
-  }::pool::AddRewarderEvent` as const
+  static get $typeName(): `${string}::pool::AddRewarderEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::AddRewarderEvent')
+    }::pool::AddRewarderEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5761,11 +6238,15 @@ export class AddRewarderEvent implements StructClass {
   static reified(): AddRewarderEventReified {
     const reifiedBcs = AddRewarderEvent.bcs
     return {
-      typeName: AddRewarderEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddRewarderEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::AddRewarderEvent`,
+      get typeName() {
+        return AddRewarderEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddRewarderEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::AddRewarderEvent`
+      },
       typeArgs: [] as [],
       isPhantom: AddRewarderEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -5775,9 +6256,11 @@ export class AddRewarderEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddRewarderEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddRewarderEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddRewarderEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddRewarderEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddRewarderEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddRewarderEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddRewarderEvent.fetch(client, id),
       new: (fields: AddRewarderEventFields) => {
         return new AddRewarderEvent([], fields)
       },
@@ -5863,6 +6346,14 @@ export class AddRewarderEvent implements StructClass {
     return AddRewarderEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddRewarderEvent {
+    if (!isAddRewarderEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddRewarderEvent object`)
+    }
+    return AddRewarderEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddRewarderEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5873,6 +6364,7 @@ export class AddRewarderEvent implements StructClass {
     return AddRewarderEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddRewarderEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddRewarderEvent(data.bcs.type)) {
@@ -5889,13 +6381,15 @@ export class AddRewarderEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddRewarderEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddRewarderEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddRewarderEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddRewarderEvent(object.type)) {
       throw new Error(`object at id ${id} is not a AddRewarderEvent object`)
     }
-
-    return AddRewarderEvent.fromBcs(res.bcsBytes)
+    return AddRewarderEvent.fromBcs(object.content)
   }
 }
 
@@ -5935,9 +6429,11 @@ export type CollectRewardEventJSON = {
 export class CollectRewardEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::CollectRewardEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::CollectRewardEvent')
-  }::pool::CollectRewardEvent` as const
+  static get $typeName(): `${string}::pool::CollectRewardEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::CollectRewardEvent')
+    }::pool::CollectRewardEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5965,11 +6461,15 @@ export class CollectRewardEvent implements StructClass {
   static reified(): CollectRewardEventReified {
     const reifiedBcs = CollectRewardEvent.bcs
     return {
-      typeName: CollectRewardEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CollectRewardEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::CollectRewardEvent`,
+      get typeName() {
+        return CollectRewardEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollectRewardEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::CollectRewardEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CollectRewardEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -5979,9 +6479,11 @@ export class CollectRewardEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectRewardEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollectRewardEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollectRewardEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CollectRewardEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CollectRewardEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CollectRewardEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CollectRewardEvent.fetch(client, id),
       new: (fields: CollectRewardEventFields) => {
         return new CollectRewardEvent([], fields)
       },
@@ -6072,6 +6574,14 @@ export class CollectRewardEvent implements StructClass {
     return CollectRewardEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollectRewardEvent {
+    if (!isCollectRewardEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollectRewardEvent object`)
+    }
+    return CollectRewardEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectRewardEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollectRewardEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6082,6 +6592,7 @@ export class CollectRewardEvent implements StructClass {
     return CollectRewardEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectRewardEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollectRewardEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollectRewardEvent(data.bcs.type)) {
@@ -6098,13 +6609,15 @@ export class CollectRewardEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollectRewardEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollectRewardEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollectRewardEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollectRewardEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CollectRewardEvent object`)
     }
-
-    return CollectRewardEvent.fromBcs(res.bcsBytes)
+    return CollectRewardEvent.fromBcs(object.content)
   }
 }
 
@@ -6147,9 +6660,11 @@ export type CollectRewardV2EventJSON = {
 export class CollectRewardV2Event implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::CollectRewardV2Event` = `${
-    getTypeOrigin('cetus-clmm', 'pool::CollectRewardV2Event')
-  }::pool::CollectRewardV2Event` as const
+  static get $typeName(): `${string}::pool::CollectRewardV2Event` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::CollectRewardV2Event')
+    }::pool::CollectRewardV2Event` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6179,11 +6694,15 @@ export class CollectRewardV2Event implements StructClass {
   static reified(): CollectRewardV2EventReified {
     const reifiedBcs = CollectRewardV2Event.bcs
     return {
-      typeName: CollectRewardV2Event.$typeName,
-      fullTypeName: composeSuiType(
-        CollectRewardV2Event.$typeName,
-        ...[],
-      ) as `${string}::pool::CollectRewardV2Event`,
+      get typeName() {
+        return CollectRewardV2Event.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollectRewardV2Event.$typeName,
+          ...[],
+        ) as `${string}::pool::CollectRewardV2Event`
+      },
       typeArgs: [] as [],
       isPhantom: CollectRewardV2Event.$isPhantom,
       reifiedTypeArgs: [],
@@ -6194,11 +6713,13 @@ export class CollectRewardV2Event implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectRewardV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollectRewardV2Event.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollectRewardV2Event.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollectRewardV2Event.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollectRewardV2Event.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollectRewardV2Event.fetch(client, id),
       new: (fields: CollectRewardV2EventFields) => {
         return new CollectRewardV2Event([], fields)
@@ -6295,6 +6816,14 @@ export class CollectRewardV2Event implements StructClass {
     return CollectRewardV2Event.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollectRewardV2Event {
+    if (!isCollectRewardV2Event(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollectRewardV2Event object`)
+    }
+    return CollectRewardV2Event.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectRewardV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollectRewardV2Event {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6307,6 +6836,7 @@ export class CollectRewardV2Event implements StructClass {
     return CollectRewardV2Event.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectRewardV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollectRewardV2Event {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollectRewardV2Event(data.bcs.type)) {
@@ -6323,13 +6853,15 @@ export class CollectRewardV2Event implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollectRewardV2Event> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollectRewardV2Event(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollectRewardV2Event> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollectRewardV2Event(object.type)) {
       throw new Error(`object at id ${id} is not a CollectRewardV2Event object`)
     }
-
-    return CollectRewardV2Event.fromBcs(res.bcsBytes)
+    return CollectRewardV2Event.fromBcs(object.content)
   }
 }
 
@@ -6383,9 +6915,9 @@ export type FlashLoanEventJSON = {
 export class FlashLoanEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::FlashLoanEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::FlashLoanEvent')
-  }::pool::FlashLoanEvent` as const
+  static get $typeName(): `${string}::pool::FlashLoanEvent` {
+    return `${getTypeOrigin('cetus-clmm', 'pool::FlashLoanEvent')}::pool::FlashLoanEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6423,11 +6955,15 @@ export class FlashLoanEvent implements StructClass {
   static reified(): FlashLoanEventReified {
     const reifiedBcs = FlashLoanEvent.bcs
     return {
-      typeName: FlashLoanEvent.$typeName,
-      fullTypeName: composeSuiType(
-        FlashLoanEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::FlashLoanEvent`,
+      get typeName() {
+        return FlashLoanEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          FlashLoanEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::FlashLoanEvent`
+      },
       typeArgs: [] as [],
       isPhantom: FlashLoanEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -6437,9 +6973,11 @@ export class FlashLoanEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => FlashLoanEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FlashLoanEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        FlashLoanEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => FlashLoanEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FlashLoanEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => FlashLoanEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => FlashLoanEvent.fetch(client, id),
       new: (fields: FlashLoanEventFields) => {
         return new FlashLoanEvent([], fields)
       },
@@ -6555,6 +7093,14 @@ export class FlashLoanEvent implements StructClass {
     return FlashLoanEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): FlashLoanEvent {
+    if (!isFlashLoanEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a FlashLoanEvent object`)
+    }
+    return FlashLoanEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): FlashLoanEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6565,6 +7111,7 @@ export class FlashLoanEvent implements StructClass {
     return FlashLoanEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): FlashLoanEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isFlashLoanEvent(data.bcs.type)) {
@@ -6581,13 +7128,15 @@ export class FlashLoanEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<FlashLoanEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isFlashLoanEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<FlashLoanEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isFlashLoanEvent(object.type)) {
       throw new Error(`object at id ${id} is not a FlashLoanEvent object`)
     }
-
-    return FlashLoanEvent.fromBcs(res.bcsBytes)
+    return FlashLoanEvent.fromBcs(object.content)
   }
 }
 
@@ -6636,9 +7185,11 @@ export type UpdatePoolStatusEventJSON = {
 export class UpdatePoolStatusEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::UpdatePoolStatusEvent` = `${
-    getTypeOrigin('cetus-clmm', 'pool::UpdatePoolStatusEvent')
-  }::pool::UpdatePoolStatusEvent` as const
+  static get $typeName(): `${string}::pool::UpdatePoolStatusEvent` {
+    return `${
+      getTypeOrigin('cetus-clmm', 'pool::UpdatePoolStatusEvent')
+    }::pool::UpdatePoolStatusEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6670,11 +7221,15 @@ export class UpdatePoolStatusEvent implements StructClass {
   static reified(): UpdatePoolStatusEventReified {
     const reifiedBcs = UpdatePoolStatusEvent.bcs
     return {
-      typeName: UpdatePoolStatusEvent.$typeName,
-      fullTypeName: composeSuiType(
-        UpdatePoolStatusEvent.$typeName,
-        ...[],
-      ) as `${string}::pool::UpdatePoolStatusEvent`,
+      get typeName() {
+        return UpdatePoolStatusEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpdatePoolStatusEvent.$typeName,
+          ...[],
+        ) as `${string}::pool::UpdatePoolStatusEvent`
+      },
       typeArgs: [] as [],
       isPhantom: UpdatePoolStatusEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -6685,11 +7240,13 @@ export class UpdatePoolStatusEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdatePoolStatusEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdatePoolStatusEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpdatePoolStatusEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         UpdatePoolStatusEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         UpdatePoolStatusEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         UpdatePoolStatusEvent.fetch(client, id),
       new: (fields: UpdatePoolStatusEventFields) => {
         return new UpdatePoolStatusEvent([], fields)
@@ -6797,6 +7354,14 @@ export class UpdatePoolStatusEvent implements StructClass {
     return UpdatePoolStatusEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpdatePoolStatusEvent {
+    if (!isUpdatePoolStatusEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpdatePoolStatusEvent object`)
+    }
+    return UpdatePoolStatusEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdatePoolStatusEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpdatePoolStatusEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6809,6 +7374,7 @@ export class UpdatePoolStatusEvent implements StructClass {
     return UpdatePoolStatusEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdatePoolStatusEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpdatePoolStatusEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpdatePoolStatusEvent(data.bcs.type)) {
@@ -6825,12 +7391,14 @@ export class UpdatePoolStatusEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdatePoolStatusEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpdatePoolStatusEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpdatePoolStatusEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpdatePoolStatusEvent(object.type)) {
       throw new Error(`object at id ${id} is not a UpdatePoolStatusEvent object`)
     }
-
-    return UpdatePoolStatusEvent.fromBcs(res.bcsBytes)
+    return UpdatePoolStatusEvent.fromBcs(object.content)
   }
 }

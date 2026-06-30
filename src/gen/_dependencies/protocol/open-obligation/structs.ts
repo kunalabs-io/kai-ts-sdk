@@ -8,7 +8,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -23,13 +24,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ID } from '../../../sui/object/structs'
 
 /* ============================== ObligationHotPotato =============================== */
@@ -64,9 +59,11 @@ export type ObligationHotPotatoJSON = {
 export class ObligationHotPotato implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::open_obligation::ObligationHotPotato` = `${
-    getTypeOrigin('protocol', 'open_obligation::ObligationHotPotato')
-  }::open_obligation::ObligationHotPotato` as const
+  static get $typeName(): `${string}::open_obligation::ObligationHotPotato` {
+    return `${
+      getTypeOrigin('protocol', 'open_obligation::ObligationHotPotato')
+    }::open_obligation::ObligationHotPotato` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +87,15 @@ export class ObligationHotPotato implements StructClass {
   static reified(): ObligationHotPotatoReified {
     const reifiedBcs = ObligationHotPotato.bcs
     return {
-      typeName: ObligationHotPotato.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationHotPotato.$typeName,
-        ...[],
-      ) as `${string}::open_obligation::ObligationHotPotato`,
+      get typeName() {
+        return ObligationHotPotato.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationHotPotato.$typeName,
+          ...[],
+        ) as `${string}::open_obligation::ObligationHotPotato`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationHotPotato.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,10 +105,11 @@ export class ObligationHotPotato implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationHotPotato.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationHotPotato.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationHotPotato.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObligationHotPotato.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObligationHotPotato.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        ObligationHotPotato.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObligationHotPotato.fetch(client, id),
       new: (fields: ObligationHotPotatoFields) => {
         return new ObligationHotPotato([], fields)
       },
@@ -188,6 +190,14 @@ export class ObligationHotPotato implements StructClass {
     return ObligationHotPotato.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationHotPotato {
+    if (!isObligationHotPotato(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationHotPotato object`)
+    }
+    return ObligationHotPotato.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationHotPotato.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationHotPotato {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -198,6 +208,7 @@ export class ObligationHotPotato implements StructClass {
     return ObligationHotPotato.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationHotPotato.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationHotPotato {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationHotPotato(data.bcs.type)) {
@@ -214,13 +225,15 @@ export class ObligationHotPotato implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationHotPotato> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationHotPotato(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationHotPotato> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationHotPotato(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationHotPotato object`)
     }
-
-    return ObligationHotPotato.fromBcs(res.bcsBytes)
+    return ObligationHotPotato.fromBcs(object.content)
   }
 }
 
@@ -259,9 +272,11 @@ export type ObligationCreatedEventJSON = {
 export class ObligationCreatedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::open_obligation::ObligationCreatedEvent` = `${
-    getTypeOrigin('protocol', 'open_obligation::ObligationCreatedEvent')
-  }::open_obligation::ObligationCreatedEvent` as const
+  static get $typeName(): `${string}::open_obligation::ObligationCreatedEvent` {
+    return `${
+      getTypeOrigin('protocol', 'open_obligation::ObligationCreatedEvent')
+    }::open_obligation::ObligationCreatedEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -289,11 +304,15 @@ export class ObligationCreatedEvent implements StructClass {
   static reified(): ObligationCreatedEventReified {
     const reifiedBcs = ObligationCreatedEvent.bcs
     return {
-      typeName: ObligationCreatedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationCreatedEvent.$typeName,
-        ...[],
-      ) as `${string}::open_obligation::ObligationCreatedEvent`,
+      get typeName() {
+        return ObligationCreatedEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationCreatedEvent.$typeName,
+          ...[],
+        ) as `${string}::open_obligation::ObligationCreatedEvent`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationCreatedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -304,11 +323,13 @@ export class ObligationCreatedEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationCreatedEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationCreatedEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ObligationCreatedEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ObligationCreatedEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ObligationCreatedEvent.fetch(client, id),
       new: (fields: ObligationCreatedEventFields) => {
         return new ObligationCreatedEvent([], fields)
@@ -403,6 +424,14 @@ export class ObligationCreatedEvent implements StructClass {
     return ObligationCreatedEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationCreatedEvent {
+    if (!isObligationCreatedEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationCreatedEvent object`)
+    }
+    return ObligationCreatedEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationCreatedEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -415,6 +444,7 @@ export class ObligationCreatedEvent implements StructClass {
     return ObligationCreatedEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationCreatedEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationCreatedEvent(data.bcs.type)) {
@@ -431,12 +461,14 @@ export class ObligationCreatedEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationCreatedEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationCreatedEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationCreatedEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationCreatedEvent(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationCreatedEvent object`)
     }
-
-    return ObligationCreatedEvent.fromBcs(res.bcsBytes)
+    return ObligationCreatedEvent.fromBcs(object.content)
   }
 }

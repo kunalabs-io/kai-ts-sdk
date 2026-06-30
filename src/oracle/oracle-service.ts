@@ -1,6 +1,6 @@
-import { PriceFeed, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
+import { PriceUpdate, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import Decimal from 'decimal.js'
 import { Logger } from 'pino'
 import { Counter, Gauge, Meter } from '@opentelemetry/api'
@@ -12,9 +12,13 @@ import { Amount } from '../amount'
 import { CoinInfo, USDC } from '../coin-info'
 import { PhantomTypeArgument, TypeArgument } from '../gen/_framework/reified'
 import { State } from '../gen/pyth/state/structs'
-import { PYTH_STATE_ID } from '../liquidation/pyth'
+import { PriceInfoObject as PriceInfoObject_ } from '../gen/pyth/price-info/structs'
+import { PYTH_STATE_ID } from '../protocol-infra'
 import { PriceFeedUpdateInfo } from '../liquidation/position-monitor/utils'
 import { PriceFeedInfo, PriceInfoObject, pythPrice } from '../pyth'
+
+type ParsedPriceFeed = NonNullable<PriceUpdate['parsed']>[number]
+type PriceUpdatesStream = Awaited<ReturnType<SuiPriceServiceConnection['getPriceUpdatesStream']>>
 
 // ============================================================================
 // Types (merged from types.ts)
@@ -22,7 +26,7 @@ import { PriceFeedInfo, PriceInfoObject, pythPrice } from '../pyth'
 
 export interface OracleServiceConfig {
   /** Sui client for on-chain queries */
-  client: SuiClient
+  client: ClientWithCoreApi
   /** Logger for warnings and debug info */
   logger: Logger
   /** Pyth Hermes endpoint URL. Default: https://hermes.pyth.network */
@@ -90,8 +94,8 @@ const HEALTH_CHECK_INTERVAL_MS = 30000 // 30 seconds
 /**
  * Extracts price from a Pyth price feed as a Decimal USD value
  */
-function getPriceUsdFromFeed(feed: PriceFeed): Decimal {
-  const price = feed.getPriceUnchecked()
+function getPriceUsdFromFeed(feed: ParsedPriceFeed): Decimal {
+  const price = feed.price
   return new Decimal(price.price).mul(new Decimal(10).pow(price.expo))
 }
 
@@ -99,9 +103,9 @@ function getPriceUsdFromFeed(feed: PriceFeed): Decimal {
  * Converts two Pyth price feeds to a Price<X, Y> object
  */
 function priceFromPythFeeds<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
-  feedX: PriceFeed,
+  feedX: ParsedPriceFeed,
   infoX: CoinInfo<X>,
-  feedY: PriceFeed,
+  feedY: ParsedPriceFeed,
   infoY: CoinInfo<Y>
 ): Price<X, Y> {
   const priceX = getPriceUsdFromFeed(feedX) // USD / X
@@ -192,7 +196,7 @@ export class OracleService {
   private readonly coinTypeToFeedId: Map<string, string> = new Map()
 
   // Price state
-  private priceFeeds: Map<string, PriceFeed> = new Map()
+  private priceFeeds: Map<string, ParsedPriceFeed> = new Map()
   private lastUpdateTime: Map<string, number> = new Map()
 
   // On-chain staleness tracking
@@ -205,6 +209,7 @@ export class OracleService {
   private pollingInterval: ReturnType<typeof setInterval> | null = null
   private onChainPollInterval: ReturnType<typeof setInterval> | null = null
   private healthCheckInterval: ReturnType<typeof setInterval> | null = null
+  private eventSource: PriceUpdatesStream | null = null
   private priceUpdateCount = 0
   private updateTriggeredCount = 0
 
@@ -228,9 +233,7 @@ export class OracleService {
     this.mode = this.config.mode
 
     // Create Pyth connection internally
-    this.pythConnection = new SuiPriceServiceConnection(this.config.pythHermesUrl, {
-      priceFeedRequestConfig: { binary: true },
-    })
+    this.pythConnection = new SuiPriceServiceConnection(this.config.pythHermesUrl)
 
     // Collect all unique feed IDs from position configs
     const { feedIds, feedIdToPioMap } = this.collectFeedInfo()
@@ -324,8 +327,11 @@ export class OracleService {
       this.healthCheckInterval = null
     }
 
-    // Close WebSocket connection
-    this.pythConnection.closeWebSocket()
+    // Close the Pyth SSE stream
+    if (this.eventSource) {
+      this.eventSource.close()
+      this.eventSource = null
+    }
 
     this.logger.info('OracleService stopped')
   }
@@ -334,7 +340,8 @@ export class OracleService {
    * Fetches initial prices from Pyth before starting streaming/polling.
    */
   private async fetchInitialPrices(): Promise<void> {
-    const feeds = await this.pythConnection.getLatestPriceFeeds(this.feedIds)
+    const feeds = (await this.pythConnection.getLatestPriceUpdates(this.feedIds, { parsed: true }))
+      .parsed
 
     if (!feeds) {
       throw new Error('Failed to fetch initial price feeds from Pyth')
@@ -352,29 +359,34 @@ export class OracleService {
    * Fetches the Pyth base update fee from on-chain state.
    */
   private async fetchPythBaseUpdateFee(): Promise<void> {
-    const pythStateRes = await this.config.client.getObject({
-      id: PYTH_STATE_ID,
-      options: { showBcs: true },
-    })
+    const pythState = await State.fetch(this.config.client, PYTH_STATE_ID)
 
-    if (pythStateRes.error || !pythStateRes.data) {
-      throw new Error(`Failed to get Pyth state: ${pythStateRes.error}`)
-    }
-
-    this.pythBaseUpdateFee = State.fromSuiObjectData(pythStateRes.data).baseUpdateFee
+    this.pythBaseUpdateFee = pythState.baseUpdateFee
   }
 
   /**
    * Starts WebSocket streaming for price updates.
    */
   private async startStreaming(): Promise<void> {
-    await this.pythConnection.subscribePriceFeedUpdates(this.feedIds, priceFeed => {
-      const normalizedId = normalizeSuiAddress(priceFeed.id)
-      this.priceFeeds.set(normalizedId, priceFeed)
-      this.lastUpdateTime.set(normalizedId, Date.now())
-      this.priceUpdateCount++
-      this.prometheusMetrics?.priceUpdateCount.add(1)
+    // pyth-sui-js v3 streams via Hermes SSE (EventSource); each message is a PriceUpdate.
+    const eventSource = await this.pythConnection.getPriceUpdatesStream(this.feedIds, {
+      parsed: true,
     })
+    eventSource.onmessage = event => {
+      const update = JSON.parse(event.data) as PriceUpdate
+      const now = Date.now()
+      for (const priceFeed of update.parsed ?? []) {
+        const normalizedId = normalizeSuiAddress(priceFeed.id)
+        this.priceFeeds.set(normalizedId, priceFeed)
+        this.lastUpdateTime.set(normalizedId, now)
+        this.priceUpdateCount++
+        this.prometheusMetrics?.priceUpdateCount.add(1)
+      }
+    }
+    eventSource.onerror = error => {
+      this.logger.warn({ err: error }, 'Pyth price stream error')
+    }
+    this.eventSource = eventSource
   }
 
   /**
@@ -383,7 +395,9 @@ export class OracleService {
   private startPolling(): void {
     this.pollingInterval = setInterval(async () => {
       try {
-        const feeds = await this.pythConnection.getLatestPriceFeeds(this.feedIds)
+        const feeds = (
+          await this.pythConnection.getLatestPriceUpdates(this.feedIds, { parsed: true })
+        ).parsed
 
         if (feeds) {
           const now = Date.now()
@@ -455,37 +469,28 @@ export class OracleService {
       const pioIds = Array.from(this.feedIdToPioMap.values())
       const uniquePioIds = [...new Set(pioIds)]
 
-      const objects = await this.config.client.multiGetObjects({
-        ids: uniquePioIds,
-        options: { showContent: true },
+      const { objects } = await this.config.client.core.getObjects({
+        objectIds: uniquePioIds,
+        include: { content: true },
       })
 
       const now = Date.now()
 
       for (let i = 0; i < uniquePioIds.length; i++) {
         const obj = objects[i]
-        if (!obj.data?.content || obj.data.content.dataType !== 'moveObject') {
+        if (obj instanceof Error) {
           continue
         }
 
-        const fields = obj.data.content.fields as {
-          price_info?: {
-            fields?: {
-              arrival_time?: string
-            }
-          }
-        }
+        const arrivalTime = PriceInfoObject_.fromCoreObject(obj).priceInfo.arrivalTime
 
-        const arrivalTime = fields?.price_info?.fields?.arrival_time
-        if (arrivalTime) {
-          // Find which feed ID(s) map to this PIO
-          for (const [feedId, pioId] of this.feedIdToPioMap.entries()) {
-            if (pioId === uniquePioIds[i]) {
-              this.onChainData.set(feedId, {
-                arrivalTimeSec: Number(arrivalTime),
-                fetchedAtMs: now,
-              })
-            }
+        // Find which feed ID(s) map to this PIO
+        for (const [feedId, pioId] of this.feedIdToPioMap.entries()) {
+          if (pioId === uniquePioIds[i]) {
+            this.onChainData.set(feedId, {
+              arrivalTimeSec: Number(arrivalTime),
+              fetchedAtMs: now,
+            })
           }
         }
       }
@@ -505,7 +510,10 @@ export class OracleService {
 
     // Stop current mode
     if (this.mode === 'streaming') {
-      this.pythConnection.closeWebSocket()
+      if (this.eventSource) {
+        this.eventSource.close()
+        this.eventSource = null
+      }
     } else {
       if (this.pollingInterval) {
         clearInterval(this.pollingInterval)
@@ -550,7 +558,7 @@ export class OracleService {
    * Gets the cached price feed for a given feed ID.
    * Throws if the feed is not available.
    */
-  getPriceFeed(feedId: string): PriceFeed {
+  getPriceFeed(feedId: string): ParsedPriceFeed {
     const normalizedId = normalizeSuiAddress(feedId)
     const feed = this.priceFeeds.get(normalizedId)
     if (!feed) {
@@ -672,7 +680,7 @@ export class OracleService {
     const feedIds = feeds.map(f => normalizeSuiAddress(f.priceFeedId))
     const priceInfoObjectIds = feeds.map(f => f.priceInfoObjectId)
 
-    const priceFeeds: PriceFeed[] = []
+    const priceFeeds: ParsedPriceFeed[] = []
     for (const feedId of feedIds) {
       const feed = this.priceFeeds.get(feedId)
       if (!feed) {

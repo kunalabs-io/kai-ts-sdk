@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
 /* ============================== ExpectSwapResult =============================== */
@@ -65,9 +60,11 @@ export type ExpectSwapResultJSON = {
 export class ExpectSwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::expect_swap::ExpectSwapResult` = `${
-    getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResult')
-  }::expect_swap::ExpectSwapResult` as const
+  static get $typeName(): `${string}::expect_swap::ExpectSwapResult` {
+    return `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResult')
+    }::expect_swap::ExpectSwapResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -103,11 +100,15 @@ export class ExpectSwapResult implements StructClass {
   static reified(): ExpectSwapResultReified {
     const reifiedBcs = ExpectSwapResult.bcs
     return {
-      typeName: ExpectSwapResult.$typeName,
-      fullTypeName: composeSuiType(
-        ExpectSwapResult.$typeName,
-        ...[],
-      ) as `${string}::expect_swap::ExpectSwapResult`,
+      get typeName() {
+        return ExpectSwapResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ExpectSwapResult.$typeName,
+          ...[],
+        ) as `${string}::expect_swap::ExpectSwapResult`
+      },
       typeArgs: [] as [],
       isPhantom: ExpectSwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -117,9 +118,11 @@ export class ExpectSwapResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ExpectSwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExpectSwapResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ExpectSwapResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ExpectSwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ExpectSwapResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ExpectSwapResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ExpectSwapResult.fetch(client, id),
       new: (fields: ExpectSwapResultFields) => {
         return new ExpectSwapResult([], fields)
       },
@@ -236,6 +239,14 @@ export class ExpectSwapResult implements StructClass {
     return ExpectSwapResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ExpectSwapResult {
+    if (!isExpectSwapResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ExpectSwapResult object`)
+    }
+    return ExpectSwapResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExpectSwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ExpectSwapResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -246,6 +257,7 @@ export class ExpectSwapResult implements StructClass {
     return ExpectSwapResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExpectSwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ExpectSwapResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isExpectSwapResult(data.bcs.type)) {
@@ -262,13 +274,15 @@ export class ExpectSwapResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ExpectSwapResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isExpectSwapResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ExpectSwapResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isExpectSwapResult(object.type)) {
       throw new Error(`object at id ${id} is not a ExpectSwapResult object`)
     }
-
-    return ExpectSwapResult.fromBcs(res.bcsBytes)
+    return ExpectSwapResult.fromBcs(object.content)
   }
 }
 
@@ -312,9 +326,11 @@ export type SwapStepResultJSON = {
 export class SwapStepResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::expect_swap::SwapStepResult` = `${
-    getTypeOrigin('cetus-integrate', 'expect_swap::SwapStepResult')
-  }::expect_swap::SwapStepResult` as const
+  static get $typeName(): `${string}::expect_swap::SwapStepResult` {
+    return `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::SwapStepResult')
+    }::expect_swap::SwapStepResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -350,11 +366,15 @@ export class SwapStepResult implements StructClass {
   static reified(): SwapStepResultReified {
     const reifiedBcs = SwapStepResult.bcs
     return {
-      typeName: SwapStepResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapStepResult.$typeName,
-        ...[],
-      ) as `${string}::expect_swap::SwapStepResult`,
+      get typeName() {
+        return SwapStepResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapStepResult.$typeName,
+          ...[],
+        ) as `${string}::expect_swap::SwapStepResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapStepResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -364,9 +384,11 @@ export class SwapStepResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapStepResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapStepResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapStepResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapStepResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapStepResult.fetch(client, id),
       new: (fields: SwapStepResultFields) => {
         return new SwapStepResult([], fields)
       },
@@ -477,6 +499,14 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapStepResult {
+    if (!isSwapStepResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapStepResult object`)
+    }
+    return SwapStepResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapStepResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -487,6 +517,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapStepResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapStepResult(data.bcs.type)) {
@@ -503,13 +534,15 @@ export class SwapStepResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapStepResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapStepResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapStepResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapStepResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapStepResult object`)
     }
-
-    return SwapStepResult.fromBcs(res.bcsBytes)
+    return SwapStepResult.fromBcs(object.content)
   }
 }
 
@@ -547,9 +580,11 @@ export type SwapResultJSON = {
 export class SwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::expect_swap::SwapResult` = `${
-    getTypeOrigin('cetus-integrate', 'expect_swap::SwapResult')
-  }::expect_swap::SwapResult` as const
+  static get $typeName(): `${string}::expect_swap::SwapResult` {
+    return `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::SwapResult')
+    }::expect_swap::SwapResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -581,11 +616,15 @@ export class SwapResult implements StructClass {
   static reified(): SwapResultReified {
     const reifiedBcs = SwapResult.bcs
     return {
-      typeName: SwapResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapResult.$typeName,
-        ...[],
-      ) as `${string}::expect_swap::SwapResult`,
+      get typeName() {
+        return SwapResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapResult.$typeName,
+          ...[],
+        ) as `${string}::expect_swap::SwapResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -595,9 +634,11 @@ export class SwapResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapResult.fetch(client, id),
       new: (fields: SwapResultFields) => {
         return new SwapResult([], fields)
       },
@@ -698,6 +739,14 @@ export class SwapResult implements StructClass {
     return SwapResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapResult {
+    if (!isSwapResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapResult object`)
+    }
+    return SwapResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -708,6 +757,7 @@ export class SwapResult implements StructClass {
     return SwapResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapResult(data.bcs.type)) {
@@ -724,13 +774,15 @@ export class SwapResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapResult object`)
     }
-
-    return SwapResult.fromBcs(res.bcsBytes)
+    return SwapResult.fromBcs(object.content)
   }
 }
 
@@ -767,9 +819,11 @@ export type ExpectSwapResultEventJSON = {
 export class ExpectSwapResultEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::expect_swap::ExpectSwapResultEvent` = `${
-    getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResultEvent')
-  }::expect_swap::ExpectSwapResultEvent` as const
+  static get $typeName(): `${string}::expect_swap::ExpectSwapResultEvent` {
+    return `${
+      getTypeOrigin('cetus-integrate', 'expect_swap::ExpectSwapResultEvent')
+    }::expect_swap::ExpectSwapResultEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -795,11 +849,15 @@ export class ExpectSwapResultEvent implements StructClass {
   static reified(): ExpectSwapResultEventReified {
     const reifiedBcs = ExpectSwapResultEvent.bcs
     return {
-      typeName: ExpectSwapResultEvent.$typeName,
-      fullTypeName: composeSuiType(
-        ExpectSwapResultEvent.$typeName,
-        ...[],
-      ) as `${string}::expect_swap::ExpectSwapResultEvent`,
+      get typeName() {
+        return ExpectSwapResultEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ExpectSwapResultEvent.$typeName,
+          ...[],
+        ) as `${string}::expect_swap::ExpectSwapResultEvent`
+      },
       typeArgs: [] as [],
       isPhantom: ExpectSwapResultEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -810,11 +868,13 @@ export class ExpectSwapResultEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ExpectSwapResultEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExpectSwapResultEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ExpectSwapResultEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ExpectSwapResultEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ExpectSwapResultEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ExpectSwapResultEvent.fetch(client, id),
       new: (fields: ExpectSwapResultEventFields) => {
         return new ExpectSwapResultEvent([], fields)
@@ -901,6 +961,14 @@ export class ExpectSwapResultEvent implements StructClass {
     return ExpectSwapResultEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ExpectSwapResultEvent {
+    if (!isExpectSwapResultEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ExpectSwapResultEvent object`)
+    }
+    return ExpectSwapResultEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExpectSwapResultEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ExpectSwapResultEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -913,6 +981,7 @@ export class ExpectSwapResultEvent implements StructClass {
     return ExpectSwapResultEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExpectSwapResultEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ExpectSwapResultEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isExpectSwapResultEvent(data.bcs.type)) {
@@ -929,12 +998,14 @@ export class ExpectSwapResultEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ExpectSwapResultEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isExpectSwapResultEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ExpectSwapResultEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isExpectSwapResultEvent(object.type)) {
       throw new Error(`object at id ${id} is not a ExpectSwapResultEvent object`)
     }
-
-    return ExpectSwapResultEvent.fromBcs(res.bcsBytes)
+    return ExpectSwapResultEvent.fromBcs(object.content)
   }
 }

@@ -81,7 +81,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -105,10 +106,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Balance } from '../balance/structs'
 import { ID, UID } from '../object/structs'
@@ -217,11 +216,15 @@ export class Kiosk implements StructClass {
   static reified(): KioskReified {
     const reifiedBcs = Kiosk.bcs
     return {
-      typeName: Kiosk.$typeName,
-      fullTypeName: composeSuiType(
-        Kiosk.$typeName,
-        ...[],
-      ) as `0x2::kiosk::Kiosk`,
+      get typeName() {
+        return Kiosk.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Kiosk.$typeName,
+          ...[],
+        ) as `0x2::kiosk::Kiosk`
+      },
       typeArgs: [] as [],
       isPhantom: Kiosk.$isPhantom,
       reifiedTypeArgs: [],
@@ -231,9 +234,10 @@ export class Kiosk implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Kiosk.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Kiosk.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Kiosk.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Kiosk.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Kiosk.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Kiosk.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Kiosk.fetch(client, id),
       new: (fields: KioskFields) => {
         return new Kiosk([], fields)
       },
@@ -340,6 +344,14 @@ export class Kiosk implements StructClass {
     return Kiosk.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Kiosk {
+    if (!isKiosk(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Kiosk object`)
+    }
+    return Kiosk.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Kiosk.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Kiosk {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -350,6 +362,7 @@ export class Kiosk implements StructClass {
     return Kiosk.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Kiosk.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Kiosk {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isKiosk(data.bcs.type)) {
@@ -366,13 +379,15 @@ export class Kiosk implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Kiosk> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isKiosk(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Kiosk> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isKiosk(object.type)) {
       throw new Error(`object at id ${id} is not a Kiosk object`)
     }
-
-    return Kiosk.fromBcs(res.bcsBytes)
+    return Kiosk.fromBcs(object.content)
   }
 }
 
@@ -433,11 +448,15 @@ export class KioskOwnerCap implements StructClass {
   static reified(): KioskOwnerCapReified {
     const reifiedBcs = KioskOwnerCap.bcs
     return {
-      typeName: KioskOwnerCap.$typeName,
-      fullTypeName: composeSuiType(
-        KioskOwnerCap.$typeName,
-        ...[],
-      ) as `0x2::kiosk::KioskOwnerCap`,
+      get typeName() {
+        return KioskOwnerCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          KioskOwnerCap.$typeName,
+          ...[],
+        ) as `0x2::kiosk::KioskOwnerCap`
+      },
       typeArgs: [] as [],
       isPhantom: KioskOwnerCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -447,9 +466,11 @@ export class KioskOwnerCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => KioskOwnerCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => KioskOwnerCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        KioskOwnerCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => KioskOwnerCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => KioskOwnerCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => KioskOwnerCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => KioskOwnerCap.fetch(client, id),
       new: (fields: KioskOwnerCapFields) => {
         return new KioskOwnerCap([], fields)
       },
@@ -535,6 +556,14 @@ export class KioskOwnerCap implements StructClass {
     return KioskOwnerCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): KioskOwnerCap {
+    if (!isKioskOwnerCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a KioskOwnerCap object`)
+    }
+    return KioskOwnerCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link KioskOwnerCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): KioskOwnerCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -545,6 +574,7 @@ export class KioskOwnerCap implements StructClass {
     return KioskOwnerCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link KioskOwnerCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): KioskOwnerCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isKioskOwnerCap(data.bcs.type)) {
@@ -561,13 +591,15 @@ export class KioskOwnerCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<KioskOwnerCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isKioskOwnerCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<KioskOwnerCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isKioskOwnerCap(object.type)) {
       throw new Error(`object at id ${id} is not a KioskOwnerCap object`)
     }
-
-    return KioskOwnerCap.fromBcs(res.bcsBytes)
+    return KioskOwnerCap.fromBcs(object.content)
   }
 }
 
@@ -654,12 +686,18 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
   ): PurchaseCapReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = PurchaseCap.bcs
     return {
-      typeName: PurchaseCap.$typeName,
-      fullTypeName: composeSuiType(
-        PurchaseCap.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::kiosk::PurchaseCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return PurchaseCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PurchaseCap.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::kiosk::PurchaseCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: PurchaseCap.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => PurchaseCap.fromFields(T, fields),
@@ -668,9 +706,11 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PurchaseCap.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => PurchaseCap.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PurchaseCap.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => PurchaseCap.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => PurchaseCap.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => PurchaseCap.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PurchaseCap.fetch(client, T, id),
       new: (fields: PurchaseCapFields<ToPhantomTypeArgument<T>>) => {
         return new PurchaseCap([extractType(T)], fields)
       },
@@ -789,6 +829,34 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
     return PurchaseCap.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): PurchaseCap<ToPhantomTypeArgument<T>> {
+    if (!isPurchaseCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PurchaseCap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return PurchaseCap.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PurchaseCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -802,6 +870,7 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
     return PurchaseCap.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PurchaseCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -838,16 +907,19 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<PurchaseCap<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPurchaseCap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPurchaseCap(object.type)) {
       throw new Error(`object at id ${id} is not a PurchaseCap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -863,7 +935,7 @@ export class PurchaseCap<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return PurchaseCap.fromBcs(typeArg, res.bcsBytes)
+    return PurchaseCap.fromBcs(typeArg, object.content)
   }
 }
 
@@ -924,11 +996,15 @@ export class Borrow implements StructClass {
   static reified(): BorrowReified {
     const reifiedBcs = Borrow.bcs
     return {
-      typeName: Borrow.$typeName,
-      fullTypeName: composeSuiType(
-        Borrow.$typeName,
-        ...[],
-      ) as `0x2::kiosk::Borrow`,
+      get typeName() {
+        return Borrow.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Borrow.$typeName,
+          ...[],
+        ) as `0x2::kiosk::Borrow`
+      },
       typeArgs: [] as [],
       isPhantom: Borrow.$isPhantom,
       reifiedTypeArgs: [],
@@ -938,9 +1014,10 @@ export class Borrow implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Borrow.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Borrow.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Borrow.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Borrow.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Borrow.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Borrow.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Borrow.fetch(client, id),
       new: (fields: BorrowFields) => {
         return new Borrow([], fields)
       },
@@ -1026,6 +1103,14 @@ export class Borrow implements StructClass {
     return Borrow.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Borrow {
+    if (!isBorrow(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Borrow object`)
+    }
+    return Borrow.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Borrow.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Borrow {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1036,6 +1121,7 @@ export class Borrow implements StructClass {
     return Borrow.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Borrow.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Borrow {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrow(data.bcs.type)) {
@@ -1052,13 +1138,15 @@ export class Borrow implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Borrow> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrow(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Borrow> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrow(object.type)) {
       throw new Error(`object at id ${id} is not a Borrow object`)
     }
-
-    return Borrow.fromBcs(res.bcsBytes)
+    return Borrow.fromBcs(object.content)
   }
 }
 
@@ -1112,11 +1200,15 @@ export class Item implements StructClass {
   static reified(): ItemReified {
     const reifiedBcs = Item.bcs
     return {
-      typeName: Item.$typeName,
-      fullTypeName: composeSuiType(
-        Item.$typeName,
-        ...[],
-      ) as `0x2::kiosk::Item`,
+      get typeName() {
+        return Item.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Item.$typeName,
+          ...[],
+        ) as `0x2::kiosk::Item`
+      },
       typeArgs: [] as [],
       isPhantom: Item.$isPhantom,
       reifiedTypeArgs: [],
@@ -1126,9 +1218,10 @@ export class Item implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Item.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Item.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Item.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Item.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Item.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Item.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Item.fetch(client, id),
       new: (fields: ItemFields) => {
         return new Item([], fields)
       },
@@ -1209,6 +1302,14 @@ export class Item implements StructClass {
     return Item.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Item {
+    if (!isItem(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Item object`)
+    }
+    return Item.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Item.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Item {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1219,6 +1320,7 @@ export class Item implements StructClass {
     return Item.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Item.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Item {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isItem(data.bcs.type)) {
@@ -1235,13 +1337,15 @@ export class Item implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Item> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isItem(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Item> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isItem(object.type)) {
       throw new Error(`object at id ${id} is not a Item object`)
     }
-
-    return Item.fromBcs(res.bcsBytes)
+    return Item.fromBcs(object.content)
   }
 }
 
@@ -1302,11 +1406,15 @@ export class Listing implements StructClass {
   static reified(): ListingReified {
     const reifiedBcs = Listing.bcs
     return {
-      typeName: Listing.$typeName,
-      fullTypeName: composeSuiType(
-        Listing.$typeName,
-        ...[],
-      ) as `0x2::kiosk::Listing`,
+      get typeName() {
+        return Listing.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Listing.$typeName,
+          ...[],
+        ) as `0x2::kiosk::Listing`
+      },
       typeArgs: [] as [],
       isPhantom: Listing.$isPhantom,
       reifiedTypeArgs: [],
@@ -1316,9 +1424,11 @@ export class Listing implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Listing.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Listing.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Listing.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Listing.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Listing.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Listing.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Listing.fetch(client, id),
       new: (fields: ListingFields) => {
         return new Listing([], fields)
       },
@@ -1404,6 +1514,14 @@ export class Listing implements StructClass {
     return Listing.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Listing {
+    if (!isListing(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Listing object`)
+    }
+    return Listing.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Listing.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Listing {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1414,6 +1532,7 @@ export class Listing implements StructClass {
     return Listing.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Listing.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Listing {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isListing(data.bcs.type)) {
@@ -1430,13 +1549,15 @@ export class Listing implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Listing> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isListing(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Listing> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isListing(object.type)) {
       throw new Error(`object at id ${id} is not a Listing object`)
     }
-
-    return Listing.fromBcs(res.bcsBytes)
+    return Listing.fromBcs(object.content)
   }
 }
 
@@ -1494,11 +1615,15 @@ export class Lock implements StructClass {
   static reified(): LockReified {
     const reifiedBcs = Lock.bcs
     return {
-      typeName: Lock.$typeName,
-      fullTypeName: composeSuiType(
-        Lock.$typeName,
-        ...[],
-      ) as `0x2::kiosk::Lock`,
+      get typeName() {
+        return Lock.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Lock.$typeName,
+          ...[],
+        ) as `0x2::kiosk::Lock`
+      },
       typeArgs: [] as [],
       isPhantom: Lock.$isPhantom,
       reifiedTypeArgs: [],
@@ -1508,9 +1633,10 @@ export class Lock implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Lock.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Lock.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Lock.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Lock.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Lock.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Lock.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Lock.fetch(client, id),
       new: (fields: LockFields) => {
         return new Lock([], fields)
       },
@@ -1591,6 +1717,14 @@ export class Lock implements StructClass {
     return Lock.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Lock {
+    if (!isLock(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Lock object`)
+    }
+    return Lock.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Lock.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Lock {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1601,6 +1735,7 @@ export class Lock implements StructClass {
     return Lock.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Lock.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Lock {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLock(data.bcs.type)) {
@@ -1617,13 +1752,15 @@ export class Lock implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Lock> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLock(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Lock> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLock(object.type)) {
       throw new Error(`object at id ${id} is not a Lock object`)
     }
-
-    return Lock.fromBcs(res.bcsBytes)
+    return Lock.fromBcs(object.content)
   }
 }
 
@@ -1694,12 +1831,18 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
   ): ItemListedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = ItemListed.bcs
     return {
-      typeName: ItemListed.$typeName,
-      fullTypeName: composeSuiType(
-        ItemListed.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::kiosk::ItemListed<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return ItemListed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ItemListed.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::kiosk::ItemListed<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: ItemListed.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => ItemListed.fromFields(T, fields),
@@ -1708,9 +1851,11 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ItemListed.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => ItemListed.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ItemListed.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => ItemListed.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => ItemListed.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => ItemListed.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ItemListed.fetch(client, T, id),
       new: (fields: ItemListedFields<ToPhantomTypeArgument<T>>) => {
         return new ItemListed([extractType(T)], fields)
       },
@@ -1824,6 +1969,34 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
     return ItemListed.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ItemListed<ToPhantomTypeArgument<T>> {
+    if (!isItemListed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ItemListed object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ItemListed.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemListed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -1837,6 +2010,7 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
     return ItemListed.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemListed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -1873,16 +2047,19 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<ItemListed<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isItemListed(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isItemListed(object.type)) {
       throw new Error(`object at id ${id} is not a ItemListed object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1898,7 +2075,7 @@ export class ItemListed<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return ItemListed.fromBcs(typeArg, res.bcsBytes)
+    return ItemListed.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1975,12 +2152,18 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
   ): ItemPurchasedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = ItemPurchased.bcs
     return {
-      typeName: ItemPurchased.$typeName,
-      fullTypeName: composeSuiType(
-        ItemPurchased.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::kiosk::ItemPurchased<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return ItemPurchased.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ItemPurchased.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::kiosk::ItemPurchased<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: ItemPurchased.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => ItemPurchased.fromFields(T, fields),
@@ -1989,9 +2172,11 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ItemPurchased.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => ItemPurchased.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ItemPurchased.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => ItemPurchased.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => ItemPurchased.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => ItemPurchased.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ItemPurchased.fetch(client, T, id),
       new: (fields: ItemPurchasedFields<ToPhantomTypeArgument<T>>) => {
         return new ItemPurchased([extractType(T)], fields)
       },
@@ -2105,6 +2290,34 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
     return ItemPurchased.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ItemPurchased<ToPhantomTypeArgument<T>> {
+    if (!isItemPurchased(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ItemPurchased object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ItemPurchased.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemPurchased.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -2118,6 +2331,7 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
     return ItemPurchased.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemPurchased.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -2154,16 +2368,19 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<ItemPurchased<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isItemPurchased(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isItemPurchased(object.type)) {
       throw new Error(`object at id ${id} is not a ItemPurchased object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -2179,7 +2396,7 @@ export class ItemPurchased<T extends PhantomTypeArgument> implements StructClass
       }
     }
 
-    return ItemPurchased.fromBcs(typeArg, res.bcsBytes)
+    return ItemPurchased.fromBcs(typeArg, object.content)
   }
 }
 
@@ -2245,12 +2462,18 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
   ): ItemDelistedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = ItemDelisted.bcs
     return {
-      typeName: ItemDelisted.$typeName,
-      fullTypeName: composeSuiType(
-        ItemDelisted.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::kiosk::ItemDelisted<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return ItemDelisted.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ItemDelisted.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::kiosk::ItemDelisted<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: ItemDelisted.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => ItemDelisted.fromFields(T, fields),
@@ -2259,9 +2482,11 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ItemDelisted.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => ItemDelisted.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ItemDelisted.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => ItemDelisted.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => ItemDelisted.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => ItemDelisted.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ItemDelisted.fetch(client, T, id),
       new: (fields: ItemDelistedFields<ToPhantomTypeArgument<T>>) => {
         return new ItemDelisted([extractType(T)], fields)
       },
@@ -2370,6 +2595,34 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
     return ItemDelisted.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ItemDelisted<ToPhantomTypeArgument<T>> {
+    if (!isItemDelisted(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ItemDelisted object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ItemDelisted.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemDelisted.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -2383,6 +2636,7 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
     return ItemDelisted.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ItemDelisted.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -2419,16 +2673,19 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<ItemDelisted<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isItemDelisted(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isItemDelisted(object.type)) {
       throw new Error(`object at id ${id} is not a ItemDelisted object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -2444,6 +2701,6 @@ export class ItemDelisted<T extends PhantomTypeArgument> implements StructClass 
       }
     }
 
-    return ItemDelisted.fromBcs(typeArg, res.bcsBytes)
+    return ItemDelisted.fromBcs(typeArg, object.content)
   }
 }

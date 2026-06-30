@@ -20,7 +20,8 @@ import * as coin from '../../gen/sui/coin/functions'
 import * as metrics from '../metrics'
 import { Logger } from 'pino'
 import Decimal from 'decimal.js'
-import { SuiClient, SuiEvent, DryRunTransactionBlockResponse } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import { isSuiGrpcClient } from '@mysten/sui/grpc'
 import { PositionInfo } from '../position-monitor/utils'
 import { OracleService, OnChainPriceData } from '../../oracle'
 
@@ -30,7 +31,7 @@ export interface DryRunResult {
   storageCost: bigint | null
   dryRunGasPrice: bigint | null
   /** Dry run events when the simulation succeeded, null when dry run failed or was unreliable. */
-  events: SuiEvent[] | null
+  events: SuiClientTypes.Event[] | null
 }
 
 interface PriceUpdateNeeded {
@@ -58,7 +59,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
   protected readonly skipDryRun: boolean
 
   constructor(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     logger: Logger,
     oracleService: OracleService,
     options?: FlashSwapExecutorOptions
@@ -67,20 +68,6 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     this.logger = this.logger.child({ task: 'flash_swap_executor' })
     this.oracleService = oracleService
     this.skipDryRun = options?.skipDryRun ?? false
-  }
-
-  /**
-   * Validates transaction success. Does NOT log - caller is responsible for logging.
-   * Throws on transaction failure but NOT on missing events (that's handled separately).
-   */
-  protected assertTxSuccess(result: DryRunTransactionBlockResponse, context: string): void {
-    if ('errors' in result && result.errors) {
-      throw new Error(`${context}: ${result.errors}`)
-    }
-
-    if (result.effects?.status?.status === 'failure') {
-      throw new Error(`${context}: ${result.effects?.status?.error}`)
-    }
   }
 
   /**
@@ -115,13 +102,13 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     const effects = bcs.TransactionEffects.fromBase64(result.effects)
     const status = effects.V1?.status || effects.V2?.status
 
-    if (status?.Failed) {
-      const error = status.Failed.error
+    if (status?.Failure) {
+      const error = status.Failure.error
       const executionError = error as Record<string, unknown>
 
       if (error.$kind === 'ExecutionCancelledDueToSharedObjectCongestion') {
         const congestedObjects =
-          error.ExecutionCancelledDueToSharedObjectCongestion.congestedObjects
+          error.ExecutionCancelledDueToSharedObjectCongestion.congested_objects
         throw new CongestionError(context, congestedObjects, result.digest, executionError)
       }
 
@@ -130,6 +117,32 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       }
 
       throw new ExecutionFailureError(context, error.$kind, result.digest, executionError)
+    }
+  }
+
+  /**
+   * Reads the congestion-elevated `suggested_gas_price` from the raw gRPC SimulateTransaction
+   * response — the transport-agnostic core API drops it. Returns null for non-gRPC clients
+   * (where the caller falls back to the reference gas price); a gRPC read that fails is logged
+   * and treated as null so it can't take down the core dry run, but isn't silently swallowed.
+   */
+  protected async readSuggestedGasPrice(txBytes: Uint8Array): Promise<bigint | null> {
+    const client = this.client
+    if (!isSuiGrpcClient(client)) {
+      return null
+    }
+    try {
+      const { response } = await client.transactionExecutionService.simulateTransaction({
+        transaction: { bcs: { value: txBytes } },
+        readMask: { paths: ['suggested_gas_price'] },
+      })
+      return response.suggestedGasPrice ?? null
+    } catch (err) {
+      this.logger.warn(
+        { err },
+        'Failed to read suggested gas price from gRPC; falling back to reference price'
+      )
+      return null
     }
   }
 
@@ -153,14 +166,27 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       dryRunTx.setGasBudget(50_000_000_000n)
 
       txBytes = await executor.buildTransaction(dryRunTx)
-      const result = await this.client.dryRunTransactionBlock({
-        transactionBlock: txBytes,
-      })
 
-      if (result.effects?.status?.status === 'failure') {
-        const errorStr = result.effects.status.error ?? ''
+      // Simulate for status/gas/events (transport-agnostic), read the congestion-elevated
+      // suggested gas price from the raw gRPC response (null on non-gRPC clients), and the
+      // reference gas price as the budget-scaling baseline — all in parallel.
+      const [result, suggestedGasPrice, refGasPrice] = await Promise.all([
+        this.client.core.simulateTransaction({
+          transaction: txBytes,
+          include: { effects: true, events: true },
+        }),
+        this.readSuggestedGasPrice(txBytes),
+        this.client.core.getReferenceGasPrice(),
+      ])
+
+      const txResult = result.Transaction ?? result.FailedTransaction
+      const status = txResult.status
+
+      if (!status.success) {
+        const errorStr = status.error.message ?? ''
 
         const isTransientDryRunFailure =
+          status.error.$kind === 'CongestedObjects' ||
           errorStr.startsWith('ExecutionCancelledDueToSharedObjectCongestion') ||
           errorStr.startsWith('InsufficientGas')
 
@@ -178,13 +204,12 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
         }
       }
 
-      const gasUsed = result.effects?.gasUsed
-      const suggestedGasPrice = result.suggestedGasPrice ? BigInt(result.suggestedGasPrice) : null
+      const gasUsed = txResult.effects?.gasUsed
       const computationCost = gasUsed ? BigInt(gasUsed.computationCost) : null
       const storageCost = gasUsed ? BigInt(gasUsed.storageCost) : null
-      const dryRunGasPrice = BigInt(result.input.gasData.price)
+      const dryRunGasPrice = BigInt(refGasPrice.referenceGasPrice)
 
-      if (result.effects?.status?.status !== 'failure') {
+      if (status.success) {
         logger.info(
           {
             suggestedGasPrice: suggestedGasPrice?.toString(),
@@ -201,7 +226,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
         computationCost,
         storageCost,
         dryRunGasPrice,
-        events: result.effects?.status?.status !== 'failure' ? result.events : null,
+        events: status.success ? (txResult.events ?? null) : null,
       }
     } catch (error) {
       if (error instanceof ExecutionFailureError) {
@@ -408,7 +433,7 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       // If dry run succeeded but shows no action events, skip execution to save gas
       if (dryRunResult.events !== null) {
         const hasActionEvents = dryRunResult.events.some(
-          e => isLiquidationInfo(e.type) || isDeleverageInfo(e.type)
+          e => isLiquidationInfo(e.eventType) || isDeleverageInfo(e.eventType)
         )
         if (!hasActionEvents) {
           logger.info('Dry run shows no action events, skipping execution')
@@ -420,13 +445,13 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     // Execute
     const res = await executor.executeTransaction(tx, {
-      showEvents: true,
+      events: true,
     })
     this.assertExecutionSuccess(res, 'Liquidation')
 
     const events = res.data.events ?? []
-    const liquidated = events.some(e => isLiquidationInfo(e.type))
-    const deleveraged = events.some(e => isDeleverageInfo(e.type))
+    const liquidated = events.some(e => isLiquidationInfo(e.eventType))
+    const deleveraged = events.some(e => isDeleverageInfo(e.eventType))
 
     if (liquidated || deleveraged) {
       logger.info({ txDigest: res.digest, liquidated, deleveraged }, 'Position processed')

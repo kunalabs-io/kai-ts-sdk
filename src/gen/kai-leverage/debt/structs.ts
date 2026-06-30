@@ -16,7 +16,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -40,10 +41,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { TreasuryCap } from '../../sui/coin/structs'
 
@@ -78,9 +77,11 @@ export type DebtShareBalanceJSON<T extends PhantomTypeArgument> = {
 export class DebtShareBalance<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt::DebtShareBalance` = `${
-    getTypeOrigin('kai-leverage', 'debt::DebtShareBalance')
-  }::debt::DebtShareBalance` as const
+  static get $typeName(): `${string}::debt::DebtShareBalance` {
+    return `${
+      getTypeOrigin('kai-leverage', 'debt::DebtShareBalance')
+    }::debt::DebtShareBalance` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -106,12 +107,18 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
   ): DebtShareBalanceReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DebtShareBalance.bcs
     return {
-      typeName: DebtShareBalance.$typeName,
-      fullTypeName: composeSuiType(
-        DebtShareBalance.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::debt::DebtShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return DebtShareBalance.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DebtShareBalance.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::debt::DebtShareBalance<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: DebtShareBalance.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtShareBalance.fromFields(T, fields),
@@ -120,10 +127,11 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtShareBalance.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtShareBalance.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DebtShareBalance.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => DebtShareBalance.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => DebtShareBalance.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        DebtShareBalance.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DebtShareBalance.fetch(client, T, id),
       new: (fields: DebtShareBalanceFields<ToPhantomTypeArgument<T>>) => {
         return new DebtShareBalance([extractType(T)], fields)
       },
@@ -227,6 +235,34 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
     return DebtShareBalance.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DebtShareBalance<ToPhantomTypeArgument<T>> {
+    if (!isDebtShareBalance(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DebtShareBalance object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DebtShareBalance.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtShareBalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -240,6 +276,7 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
     return DebtShareBalance.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtShareBalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -276,16 +313,19 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<DebtShareBalance<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDebtShareBalance(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDebtShareBalance(object.type)) {
       throw new Error(`object at id ${id} is not a DebtShareBalance object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -301,7 +341,7 @@ export class DebtShareBalance<T extends PhantomTypeArgument> implements StructCl
       }
     }
 
-    return DebtShareBalance.fromBcs(typeArg, res.bcsBytes)
+    return DebtShareBalance.fromBcs(typeArg, object.content)
   }
 }
 
@@ -338,9 +378,9 @@ export type DebtRegistryJSON<T extends PhantomTypeArgument> = {
 export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt::DebtRegistry` = `${
-    getTypeOrigin('kai-leverage', 'debt::DebtRegistry')
-  }::debt::DebtRegistry` as const
+  static get $typeName(): `${string}::debt::DebtRegistry` {
+    return `${getTypeOrigin('kai-leverage', 'debt::DebtRegistry')}::debt::DebtRegistry` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -368,12 +408,18 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
   ): DebtRegistryReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DebtRegistry.bcs
     return {
-      typeName: DebtRegistry.$typeName,
-      fullTypeName: composeSuiType(
-        DebtRegistry.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::debt::DebtRegistry<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return DebtRegistry.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DebtRegistry.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::debt::DebtRegistry<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: DebtRegistry.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtRegistry.fromFields(T, fields),
@@ -382,9 +428,11 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtRegistry.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtRegistry.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DebtRegistry.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => DebtRegistry.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => DebtRegistry.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => DebtRegistry.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DebtRegistry.fetch(client, T, id),
       new: (fields: DebtRegistryFields<ToPhantomTypeArgument<T>>) => {
         return new DebtRegistry([extractType(T)], fields)
       },
@@ -493,6 +541,34 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
     return DebtRegistry.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DebtRegistry<ToPhantomTypeArgument<T>> {
+    if (!isDebtRegistry(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DebtRegistry object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DebtRegistry.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -506,6 +582,7 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
     return DebtRegistry.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -542,16 +619,19 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<DebtRegistry<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDebtRegistry(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDebtRegistry(object.type)) {
       throw new Error(`object at id ${id} is not a DebtRegistry object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -567,7 +647,7 @@ export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass 
       }
     }
 
-    return DebtRegistry.fromBcs(typeArg, res.bcsBytes)
+    return DebtRegistry.fromBcs(typeArg, object.content)
   }
 }
 
@@ -604,9 +684,9 @@ export type DebtTreasuryJSON<T extends PhantomTypeArgument> = {
 export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt::DebtTreasury` = `${
-    getTypeOrigin('kai-leverage', 'debt::DebtTreasury')
-  }::debt::DebtTreasury` as const
+  static get $typeName(): `${string}::debt::DebtTreasury` {
+    return `${getTypeOrigin('kai-leverage', 'debt::DebtTreasury')}::debt::DebtTreasury` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -634,12 +714,18 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
   ): DebtTreasuryReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DebtTreasury.bcs
     return {
-      typeName: DebtTreasury.$typeName,
-      fullTypeName: composeSuiType(
-        DebtTreasury.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::debt::DebtTreasury<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return DebtTreasury.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DebtTreasury.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::debt::DebtTreasury<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: DebtTreasury.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DebtTreasury.fromFields(T, fields),
@@ -648,9 +734,11 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtTreasury.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DebtTreasury.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DebtTreasury.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => DebtTreasury.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => DebtTreasury.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => DebtTreasury.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DebtTreasury.fetch(client, T, id),
       new: (fields: DebtTreasuryFields<ToPhantomTypeArgument<T>>) => {
         return new DebtTreasury([extractType(T)], fields)
       },
@@ -759,6 +847,34 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
     return DebtTreasury.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DebtTreasury<ToPhantomTypeArgument<T>> {
+    if (!isDebtTreasury(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DebtTreasury object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DebtTreasury.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtTreasury.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -772,6 +888,7 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
     return DebtTreasury.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtTreasury.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -808,16 +925,19 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<DebtTreasury<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDebtTreasury(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDebtTreasury(object.type)) {
       throw new Error(`object at id ${id} is not a DebtTreasury object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -833,6 +953,6 @@ export class DebtTreasury<T extends PhantomTypeArgument> implements StructClass 
       }
     }
 
-    return DebtTreasury.fromBcs(typeArg, res.bcsBytes)
+    return DebtTreasury.fromBcs(typeArg, object.content)
   }
 }

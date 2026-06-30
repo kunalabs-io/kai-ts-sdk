@@ -2,7 +2,7 @@ import { Logger } from 'pino'
 import { Histogram } from '@opentelemetry/api'
 import { Interval } from '../interval'
 import * as metrics from '../metrics'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import {
   PositionInfo,
   calcPositionMarginLevelWithOracle,
@@ -28,7 +28,7 @@ export interface PositionMonitorConfig {
 
 export abstract class BasePositionMonitor extends Interval implements PositionMonitor {
   protected readonly oracleService: OracleService
-  protected client: SuiClient
+  protected client: ClientWithCoreApi
   protected config: PositionMonitorConfig
   private liquidationObservers: ((positions: Map<string, PositionInfo>) => Promise<void>)[] = []
 
@@ -68,7 +68,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
   constructor(
     pollIntervalMs: number,
     logger: Logger,
-    client: SuiClient,
+    client: ClientWithCoreApi,
     oracleService: OracleService,
     config: PositionMonitorConfig = {
       includeDeleveragePositions: false,

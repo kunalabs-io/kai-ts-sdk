@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { UID } from '../../../sui/object/structs'
 import { VecSet } from '../../../sui/vec-set/structs'
@@ -65,9 +60,11 @@ export type ObligationAccessStoreJSON = {
 export class ObligationAccessStore implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation_access::ObligationAccessStore` = `${
-    getTypeOrigin('protocol', 'obligation_access::ObligationAccessStore')
-  }::obligation_access::ObligationAccessStore` as const
+  static get $typeName(): `${string}::obligation_access::ObligationAccessStore` {
+    return `${
+      getTypeOrigin('protocol', 'obligation_access::ObligationAccessStore')
+    }::obligation_access::ObligationAccessStore` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -95,11 +92,15 @@ export class ObligationAccessStore implements StructClass {
   static reified(): ObligationAccessStoreReified {
     const reifiedBcs = ObligationAccessStore.bcs
     return {
-      typeName: ObligationAccessStore.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationAccessStore.$typeName,
-        ...[],
-      ) as `${string}::obligation_access::ObligationAccessStore`,
+      get typeName() {
+        return ObligationAccessStore.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationAccessStore.$typeName,
+          ...[],
+        ) as `${string}::obligation_access::ObligationAccessStore`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationAccessStore.$isPhantom,
       reifiedTypeArgs: [],
@@ -110,11 +111,13 @@ export class ObligationAccessStore implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationAccessStore.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationAccessStore.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationAccessStore.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ObligationAccessStore.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ObligationAccessStore.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ObligationAccessStore.fetch(client, id),
       new: (fields: ObligationAccessStoreFields) => {
         return new ObligationAccessStore([], fields)
@@ -212,6 +215,14 @@ export class ObligationAccessStore implements StructClass {
     return ObligationAccessStore.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationAccessStore {
+    if (!isObligationAccessStore(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationAccessStore object`)
+    }
+    return ObligationAccessStore.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationAccessStore.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationAccessStore {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -224,6 +235,7 @@ export class ObligationAccessStore implements StructClass {
     return ObligationAccessStore.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationAccessStore.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationAccessStore {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationAccessStore(data.bcs.type)) {
@@ -240,12 +252,14 @@ export class ObligationAccessStore implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationAccessStore> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationAccessStore(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationAccessStore> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationAccessStore(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationAccessStore object`)
     }
-
-    return ObligationAccessStore.fromBcs(res.bcsBytes)
+    return ObligationAccessStore.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Bytes32 } from '../bytes32/structs'
 import { Set } from '../set/structs'
 
@@ -58,9 +53,11 @@ export type ConsumedVAAsJSON = {
 export class ConsumedVAAs implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::consumed_vaas::ConsumedVAAs` = `${
-    getTypeOrigin('wormhole', 'consumed_vaas::ConsumedVAAs')
-  }::consumed_vaas::ConsumedVAAs` as const
+  static get $typeName(): `${string}::consumed_vaas::ConsumedVAAs` {
+    return `${
+      getTypeOrigin('wormhole', 'consumed_vaas::ConsumedVAAs')
+    }::consumed_vaas::ConsumedVAAs` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -84,11 +81,15 @@ export class ConsumedVAAs implements StructClass {
   static reified(): ConsumedVAAsReified {
     const reifiedBcs = ConsumedVAAs.bcs
     return {
-      typeName: ConsumedVAAs.$typeName,
-      fullTypeName: composeSuiType(
-        ConsumedVAAs.$typeName,
-        ...[],
-      ) as `${string}::consumed_vaas::ConsumedVAAs`,
+      get typeName() {
+        return ConsumedVAAs.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ConsumedVAAs.$typeName,
+          ...[],
+        ) as `${string}::consumed_vaas::ConsumedVAAs`
+      },
       typeArgs: [] as [],
       isPhantom: ConsumedVAAs.$isPhantom,
       reifiedTypeArgs: [],
@@ -98,9 +99,11 @@ export class ConsumedVAAs implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ConsumedVAAs.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ConsumedVAAs.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ConsumedVAAs.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ConsumedVAAs.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ConsumedVAAs.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ConsumedVAAs.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ConsumedVAAs.fetch(client, id),
       new: (fields: ConsumedVAAsFields) => {
         return new ConsumedVAAs([], fields)
       },
@@ -184,6 +187,14 @@ export class ConsumedVAAs implements StructClass {
     return ConsumedVAAs.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ConsumedVAAs {
+    if (!isConsumedVAAs(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ConsumedVAAs object`)
+    }
+    return ConsumedVAAs.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ConsumedVAAs.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ConsumedVAAs {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -194,6 +205,7 @@ export class ConsumedVAAs implements StructClass {
     return ConsumedVAAs.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ConsumedVAAs.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ConsumedVAAs {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isConsumedVAAs(data.bcs.type)) {
@@ -210,12 +222,14 @@ export class ConsumedVAAs implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ConsumedVAAs> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isConsumedVAAs(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ConsumedVAAs> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isConsumedVAAs(object.type)) {
       throw new Error(`object at id ${id} is not a ConsumedVAAs object`)
     }
-
-    return ConsumedVAAs.fromBcs(res.bcsBytes)
+    return ConsumedVAAs.fromBcs(object.content)
   }
 }

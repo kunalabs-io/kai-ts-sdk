@@ -1,7 +1,8 @@
 /** This module implements a `Guardian` that warehouses a 20-byte public key. */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Bytes20 } from '../bytes20/structs'
 
 /* ============================== Guardian =============================== */
@@ -51,9 +46,9 @@ export type GuardianJSON = {
 export class Guardian implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::guardian::Guardian` = `${
-    getTypeOrigin('wormhole', 'guardian::Guardian')
-  }::guardian::Guardian` as const
+  static get $typeName(): `${string}::guardian::Guardian` {
+    return `${getTypeOrigin('wormhole', 'guardian::Guardian')}::guardian::Guardian` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +72,15 @@ export class Guardian implements StructClass {
   static reified(): GuardianReified {
     const reifiedBcs = Guardian.bcs
     return {
-      typeName: Guardian.$typeName,
-      fullTypeName: composeSuiType(
-        Guardian.$typeName,
-        ...[],
-      ) as `${string}::guardian::Guardian`,
+      get typeName() {
+        return Guardian.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Guardian.$typeName,
+          ...[],
+        ) as `${string}::guardian::Guardian`
+      },
       typeArgs: [] as [],
       isPhantom: Guardian.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +90,11 @@ export class Guardian implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Guardian.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Guardian.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Guardian.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Guardian.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Guardian.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Guardian.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Guardian.fetch(client, id),
       new: (fields: GuardianFields) => {
         return new Guardian([], fields)
       },
@@ -174,6 +175,14 @@ export class Guardian implements StructClass {
     return Guardian.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Guardian {
+    if (!isGuardian(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Guardian object`)
+    }
+    return Guardian.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Guardian.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Guardian {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -184,6 +193,7 @@ export class Guardian implements StructClass {
     return Guardian.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Guardian.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Guardian {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGuardian(data.bcs.type)) {
@@ -200,12 +210,14 @@ export class Guardian implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Guardian> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGuardian(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Guardian> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGuardian(object.type)) {
       throw new Error(`object at id ${id} is not a Guardian object`)
     }
-
-    return Guardian.fromBcs(res.bcsBytes)
+    return Guardian.fromBcs(object.content)
   }
 }

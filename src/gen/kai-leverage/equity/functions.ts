@@ -130,7 +130,11 @@ export interface CreateTreasuryArgs {
   iconUrl: TransactionObjectInput | null
 }
 
-/** Create a new equity treasury. The treasury has the ability to mint equity as fungible coins. */
+/**
+ * Create a new equity treasury. The treasury has the ability to mint equity as fungible coins.
+ *
+ * @deprecated TODO: migrate currency creation to `coin_registry`
+ */
 export function createTreasury(
   tx: Transaction,
   typeArg: string,

@@ -7,7 +7,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -34,10 +35,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { String } from '../../../std/ascii/structs'
@@ -84,9 +83,11 @@ export type TokenRegistryJSON = {
 export class TokenRegistry implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::token_registry::TokenRegistry` = `${
-    getTypeOrigin('token-bridge', 'token_registry::TokenRegistry')
-  }::token_registry::TokenRegistry` as const
+  static get $typeName(): `${string}::token_registry::TokenRegistry` {
+    return `${
+      getTypeOrigin('token-bridge', 'token_registry::TokenRegistry')
+    }::token_registry::TokenRegistry` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -116,11 +117,15 @@ export class TokenRegistry implements StructClass {
   static reified(): TokenRegistryReified {
     const reifiedBcs = TokenRegistry.bcs
     return {
-      typeName: TokenRegistry.$typeName,
-      fullTypeName: composeSuiType(
-        TokenRegistry.$typeName,
-        ...[],
-      ) as `${string}::token_registry::TokenRegistry`,
+      get typeName() {
+        return TokenRegistry.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TokenRegistry.$typeName,
+          ...[],
+        ) as `${string}::token_registry::TokenRegistry`
+      },
       typeArgs: [] as [],
       isPhantom: TokenRegistry.$isPhantom,
       reifiedTypeArgs: [],
@@ -130,9 +135,11 @@ export class TokenRegistry implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TokenRegistry.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TokenRegistry.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TokenRegistry.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TokenRegistry.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TokenRegistry.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TokenRegistry.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TokenRegistry.fetch(client, id),
       new: (fields: TokenRegistryFields) => {
         return new TokenRegistry([], fields)
       },
@@ -237,6 +244,14 @@ export class TokenRegistry implements StructClass {
     return TokenRegistry.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TokenRegistry {
+    if (!isTokenRegistry(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TokenRegistry object`)
+    }
+    return TokenRegistry.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TokenRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TokenRegistry {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -247,6 +262,7 @@ export class TokenRegistry implements StructClass {
     return TokenRegistry.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TokenRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TokenRegistry {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTokenRegistry(data.bcs.type)) {
@@ -263,13 +279,15 @@ export class TokenRegistry implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TokenRegistry> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTokenRegistry(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TokenRegistry> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTokenRegistry(object.type)) {
       throw new Error(`object at id ${id} is not a TokenRegistry object`)
     }
-
-    return TokenRegistry.fromBcs(res.bcsBytes)
+    return TokenRegistry.fromBcs(object.content)
   }
 }
 
@@ -319,9 +337,11 @@ export type VerifiedAssetJSON<CoinType extends PhantomTypeArgument> = {
 export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::token_registry::VerifiedAsset` = `${
-    getTypeOrigin('token-bridge', 'token_registry::VerifiedAsset')
-  }::token_registry::VerifiedAsset` as const
+  static get $typeName(): `${string}::token_registry::VerifiedAsset` {
+    return `${
+      getTypeOrigin('token-bridge', 'token_registry::VerifiedAsset')
+    }::token_registry::VerifiedAsset` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -356,14 +376,20 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
   ): VerifiedAssetReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = VerifiedAsset.bcs
     return {
-      typeName: VerifiedAsset.$typeName,
-      fullTypeName: composeSuiType(
-        VerifiedAsset.$typeName,
-        ...[extractType(CoinType)],
-      ) as `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinType>
-      >}>`,
-      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
+      get typeName() {
+        return VerifiedAsset.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          VerifiedAsset.$typeName,
+          ...[extractType(CoinType)],
+        ) as `${string}::token_registry::VerifiedAsset<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinType>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>]
+      },
       isPhantom: VerifiedAsset.$isPhantom,
       reifiedTypeArgs: [CoinType],
       fromFields: (fields: Record<string, any>) => VerifiedAsset.fromFields(CoinType, fields),
@@ -373,11 +399,13 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
       bcs: reifiedBcs,
       fromJSONField: (field: any) => VerifiedAsset.fromJSONField(CoinType, field),
       fromJSON: (json: Record<string, any>) => VerifiedAsset.fromJSON(CoinType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        VerifiedAsset.fromCoreObject(CoinType, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         VerifiedAsset.fromSuiParsedData(CoinType, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         VerifiedAsset.fromSuiObjectData(CoinType, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         VerifiedAsset.fetch(client, CoinType, id),
       new: (fields: VerifiedAssetFields<ToPhantomTypeArgument<CoinType>>) => {
         return new VerifiedAsset([extractType(CoinType)], fields)
@@ -497,6 +525,34 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
     return VerifiedAsset.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): VerifiedAsset<ToPhantomTypeArgument<CoinType>> {
+    if (!isVerifiedAsset(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a VerifiedAsset object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return VerifiedAsset.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VerifiedAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     content: SuiParsedData,
@@ -510,6 +566,7 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
     return VerifiedAsset.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VerifiedAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     data: SuiObjectData,
@@ -546,16 +603,19 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
   }
 
   static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: CoinType,
     id: string,
   ): Promise<VerifiedAsset<ToPhantomTypeArgument<CoinType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVerifiedAsset(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVerifiedAsset(object.type)) {
       throw new Error(`object at id ${id} is not a VerifiedAsset object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -571,7 +631,7 @@ export class VerifiedAsset<CoinType extends PhantomTypeArgument> implements Stru
       }
     }
 
-    return VerifiedAsset.fromBcs(typeArg, res.bcsBytes)
+    return VerifiedAsset.fromBcs(typeArg, object.content)
   }
 }
 
@@ -606,9 +666,9 @@ export type KeyJSON<CoinType extends PhantomTypeArgument> = {
 export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::token_registry::Key` = `${
-    getTypeOrigin('token-bridge', 'token_registry::Key')
-  }::token_registry::Key` as const
+  static get $typeName(): `${string}::token_registry::Key` {
+    return `${getTypeOrigin('token-bridge', 'token_registry::Key')}::token_registry::Key` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -634,12 +694,18 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
   ): KeyReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = Key.bcs
     return {
-      typeName: Key.$typeName,
-      fullTypeName: composeSuiType(
-        Key.$typeName,
-        ...[extractType(CoinType)],
-      ) as `${string}::token_registry::Key<${PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>}>`,
-      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
+      get typeName() {
+        return Key.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Key.$typeName,
+          ...[extractType(CoinType)],
+        ) as `${string}::token_registry::Key<${PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>]
+      },
       isPhantom: Key.$isPhantom,
       reifiedTypeArgs: [CoinType],
       fromFields: (fields: Record<string, any>) => Key.fromFields(CoinType, fields),
@@ -648,9 +714,11 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Key.fromJSONField(CoinType, field),
       fromJSON: (json: Record<string, any>) => Key.fromJSON(CoinType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Key.fromCoreObject(CoinType, obj),
       fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(CoinType, content),
       fromSuiObjectData: (content: SuiObjectData) => Key.fromSuiObjectData(CoinType, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Key.fetch(client, CoinType, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Key.fetch(client, CoinType, id),
       new: (fields: KeyFields<ToPhantomTypeArgument<CoinType>>) => {
         return new Key([extractType(CoinType)], fields)
       },
@@ -754,6 +822,34 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
     return Key.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Key<ToPhantomTypeArgument<CoinType>> {
+    if (!isKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Key object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Key.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Key.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     content: SuiParsedData,
@@ -767,6 +863,7 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
     return Key.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Key.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     data: SuiObjectData,
@@ -803,16 +900,19 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: CoinType,
     id: string,
   ): Promise<Key<ToPhantomTypeArgument<CoinType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isKey(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isKey(object.type)) {
       throw new Error(`object at id ${id} is not a Key object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -828,7 +928,7 @@ export class Key<CoinType extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return Key.fromBcs(typeArg, res.bcsBytes)
+    return Key.fromBcs(typeArg, object.content)
   }
 }
 
@@ -867,9 +967,11 @@ export type CoinTypeKeyJSON = {
 export class CoinTypeKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::token_registry::CoinTypeKey` = `${
-    getTypeOrigin('token-bridge', 'token_registry::CoinTypeKey')
-  }::token_registry::CoinTypeKey` as const
+  static get $typeName(): `${string}::token_registry::CoinTypeKey` {
+    return `${
+      getTypeOrigin('token-bridge', 'token_registry::CoinTypeKey')
+    }::token_registry::CoinTypeKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -895,11 +997,15 @@ export class CoinTypeKey implements StructClass {
   static reified(): CoinTypeKeyReified {
     const reifiedBcs = CoinTypeKey.bcs
     return {
-      typeName: CoinTypeKey.$typeName,
-      fullTypeName: composeSuiType(
-        CoinTypeKey.$typeName,
-        ...[],
-      ) as `${string}::token_registry::CoinTypeKey`,
+      get typeName() {
+        return CoinTypeKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CoinTypeKey.$typeName,
+          ...[],
+        ) as `${string}::token_registry::CoinTypeKey`
+      },
       typeArgs: [] as [],
       isPhantom: CoinTypeKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -909,9 +1015,11 @@ export class CoinTypeKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinTypeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinTypeKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CoinTypeKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CoinTypeKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CoinTypeKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CoinTypeKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CoinTypeKey.fetch(client, id),
       new: (fields: CoinTypeKeyFields) => {
         return new CoinTypeKey([], fields)
       },
@@ -997,6 +1105,14 @@ export class CoinTypeKey implements StructClass {
     return CoinTypeKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CoinTypeKey {
+    if (!isCoinTypeKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CoinTypeKey object`)
+    }
+    return CoinTypeKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinTypeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CoinTypeKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1007,6 +1123,7 @@ export class CoinTypeKey implements StructClass {
     return CoinTypeKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinTypeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CoinTypeKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCoinTypeKey(data.bcs.type)) {
@@ -1023,12 +1140,14 @@ export class CoinTypeKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CoinTypeKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCoinTypeKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CoinTypeKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCoinTypeKey(object.type)) {
       throw new Error(`object at id ${id} is not a CoinTypeKey object`)
     }
-
-    return CoinTypeKey.fromBcs(res.bcsBytes)
+    return CoinTypeKey.fromBcs(object.content)
   }
 }

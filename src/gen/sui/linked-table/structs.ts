@@ -4,7 +4,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -31,10 +32,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { UID } from '../object/structs'
@@ -123,17 +122,23 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
   ): LinkedTableReified<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
     const reifiedBcs = LinkedTable.bcs(toBcs(K))
     return {
-      typeName: LinkedTable.$typeName,
-      fullTypeName: composeSuiType(
-        LinkedTable.$typeName,
-        ...[extractType(K), extractType(V)],
-      ) as `0x2::linked_table::LinkedTable<${ToTypeStr<ToTypeArgument<K>>}, ${PhantomToTypeStr<
-        ToPhantomTypeArgument<V>
-      >}>`,
-      typeArgs: [extractType(K), extractType(V)] as [
-        ToTypeStr<ToTypeArgument<K>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<V>>,
-      ],
+      get typeName() {
+        return LinkedTable.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LinkedTable.$typeName,
+          ...[extractType(K), extractType(V)],
+        ) as `0x2::linked_table::LinkedTable<${ToTypeStr<ToTypeArgument<K>>}, ${PhantomToTypeStr<
+          ToPhantomTypeArgument<V>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(K), extractType(V)] as [
+          ToTypeStr<ToTypeArgument<K>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<V>>,
+        ]
+      },
       isPhantom: LinkedTable.$isPhantom,
       reifiedTypeArgs: [K, V],
       fromFields: (fields: Record<string, any>) => LinkedTable.fromFields([K, V], fields),
@@ -142,10 +147,11 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LinkedTable.fromJSONField([K, V], field),
       fromJSON: (json: Record<string, any>) => LinkedTable.fromJSON([K, V], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LinkedTable.fromCoreObject([K, V], obj),
       fromSuiParsedData: (content: SuiParsedData) => LinkedTable.fromSuiParsedData([K, V], content),
       fromSuiObjectData: (content: SuiObjectData) => LinkedTable.fromSuiObjectData([K, V], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        LinkedTable.fetch(client, [K, V], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => LinkedTable.fetch(client, [K, V], id),
       new: (fields: LinkedTableFields<ToTypeArgument<K>, ToPhantomTypeArgument<V>>) => {
         return new LinkedTable([extractType(K), extractType(V)], fields)
       },
@@ -284,6 +290,37 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
     return LinkedTable.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    K extends Reified<TypeArgument, any>,
+    V extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [K, V],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>> {
+    if (!isLinkedTable(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LinkedTable object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return LinkedTable.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LinkedTable.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     K extends Reified<TypeArgument, any>,
     V extends PhantomReified<PhantomTypeArgument>,
@@ -300,6 +337,7 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
     return LinkedTable.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LinkedTable.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     K extends Reified<TypeArgument, any>,
     V extends PhantomReified<PhantomTypeArgument>,
@@ -342,16 +380,19 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
     K extends Reified<TypeArgument, any>,
     V extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [K, V],
     id: string,
   ): Promise<LinkedTable<ToTypeArgument<K>, ToPhantomTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLinkedTable(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLinkedTable(object.type)) {
       throw new Error(`object at id ${id} is not a LinkedTable object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -367,7 +408,7 @@ export class LinkedTable<K extends TypeArgument, V extends PhantomTypeArgument>
       }
     }
 
-    return LinkedTable.fromBcs(typeArgs, res.bcsBytes)
+    return LinkedTable.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -440,17 +481,23 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
   ): NodeReified<ToTypeArgument<K>, ToTypeArgument<V>> {
     const reifiedBcs = Node.bcs(toBcs(K), toBcs(V))
     return {
-      typeName: Node.$typeName,
-      fullTypeName: composeSuiType(
-        Node.$typeName,
-        ...[extractType(K), extractType(V)],
-      ) as `0x2::linked_table::Node<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<
-        ToTypeArgument<V>
-      >}>`,
-      typeArgs: [extractType(K), extractType(V)] as [
-        ToTypeStr<ToTypeArgument<K>>,
-        ToTypeStr<ToTypeArgument<V>>,
-      ],
+      get typeName() {
+        return Node.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Node.$typeName,
+          ...[extractType(K), extractType(V)],
+        ) as `0x2::linked_table::Node<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<
+          ToTypeArgument<V>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(K), extractType(V)] as [
+          ToTypeStr<ToTypeArgument<K>>,
+          ToTypeStr<ToTypeArgument<V>>,
+        ]
+      },
       isPhantom: Node.$isPhantom,
       reifiedTypeArgs: [K, V],
       fromFields: (fields: Record<string, any>) => Node.fromFields([K, V], fields),
@@ -459,9 +506,11 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Node.fromJSONField([K, V], field),
       fromJSON: (json: Record<string, any>) => Node.fromJSON([K, V], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Node.fromCoreObject([K, V], obj),
       fromSuiParsedData: (content: SuiParsedData) => Node.fromSuiParsedData([K, V], content),
       fromSuiObjectData: (content: SuiObjectData) => Node.fromSuiObjectData([K, V], content),
-      fetch: async (client: SupportedSuiClient, id: string) => Node.fetch(client, [K, V], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Node.fetch(client, [K, V], id),
       new: (fields: NodeFields<ToTypeArgument<K>, ToTypeArgument<V>>) => {
         return new Node([extractType(K), extractType(V)], fields)
       },
@@ -580,6 +629,34 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
     return Node.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Node<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (!isNode(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Node object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Node.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Node.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -596,6 +673,7 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
     return Node.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Node.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -635,16 +713,19 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
   }
 
   static async fetch<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [K, V],
     id: string,
   ): Promise<Node<ToTypeArgument<K>, ToTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isNode(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isNode(object.type)) {
       throw new Error(`object at id ${id} is not a Node object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -660,6 +741,6 @@ export class Node<K extends TypeArgument, V extends TypeArgument> implements Str
       }
     }
 
-    return Node.fromBcs(typeArgs, res.bcsBytes)
+    return Node.fromBcs(typeArgs, object.content)
   }
 }

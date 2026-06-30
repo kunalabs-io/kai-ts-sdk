@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { UID } from '../../../sui/object/structs'
 
@@ -73,9 +68,9 @@ export type SpoolJSON = {
 export class Spool implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::spool::Spool` = `${
-    getTypeOrigin('spool', 'spool::Spool')
-  }::spool::Spool` as const
+  static get $typeName(): `${string}::spool::Spool` {
+    return `${getTypeOrigin('spool', 'spool::Spool')}::spool::Spool` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -123,11 +118,15 @@ export class Spool implements StructClass {
   static reified(): SpoolReified {
     const reifiedBcs = Spool.bcs
     return {
-      typeName: Spool.$typeName,
-      fullTypeName: composeSuiType(
-        Spool.$typeName,
-        ...[],
-      ) as `${string}::spool::Spool`,
+      get typeName() {
+        return Spool.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Spool.$typeName,
+          ...[],
+        ) as `${string}::spool::Spool`
+      },
       typeArgs: [] as [],
       isPhantom: Spool.$isPhantom,
       reifiedTypeArgs: [],
@@ -137,9 +136,10 @@ export class Spool implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Spool.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Spool.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Spool.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Spool.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Spool.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Spool.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Spool.fetch(client, id),
       new: (fields: SpoolFields) => {
         return new Spool([], fields)
       },
@@ -273,6 +273,14 @@ export class Spool implements StructClass {
     return Spool.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Spool {
+    if (!isSpool(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Spool object`)
+    }
+    return Spool.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Spool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Spool {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -283,6 +291,7 @@ export class Spool implements StructClass {
     return Spool.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Spool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Spool {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSpool(data.bcs.type)) {
@@ -299,12 +308,14 @@ export class Spool implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Spool> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSpool(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Spool> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSpool(object.type)) {
       throw new Error(`object at id ${id} is not a Spool object`)
     }
-
-    return Spool.fromBcs(res.bcsBytes)
+    return Spool.fromBcs(object.content)
   }
 }

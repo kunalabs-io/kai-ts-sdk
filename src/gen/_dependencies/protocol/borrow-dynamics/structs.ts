@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { FixedPoint32 } from '../../../std/fixed-point32/structs'
 
 /* ============================== BorrowDynamics =============================== */
@@ -51,9 +46,11 @@ export type BorrowDynamicsJSON = {
 export class BorrowDynamics implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_dynamics::BorrowDynamics` = `${
-    getTypeOrigin('protocol', 'borrow_dynamics::BorrowDynamics')
-  }::borrow_dynamics::BorrowDynamics` as const
+  static get $typeName(): `${string}::borrow_dynamics::BorrowDynamics` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_dynamics::BorrowDynamics')
+    }::borrow_dynamics::BorrowDynamics` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +74,15 @@ export class BorrowDynamics implements StructClass {
   static reified(): BorrowDynamicsReified {
     const reifiedBcs = BorrowDynamics.bcs
     return {
-      typeName: BorrowDynamics.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowDynamics.$typeName,
-        ...[],
-      ) as `${string}::borrow_dynamics::BorrowDynamics`,
+      get typeName() {
+        return BorrowDynamics.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowDynamics.$typeName,
+          ...[],
+        ) as `${string}::borrow_dynamics::BorrowDynamics`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowDynamics.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +92,11 @@ export class BorrowDynamics implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowDynamics.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowDynamics.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowDynamics.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowDynamics.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowDynamics.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowDynamics.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowDynamics.fetch(client, id),
       new: (fields: BorrowDynamicsFields) => {
         return new BorrowDynamics([], fields)
       },
@@ -174,6 +177,14 @@ export class BorrowDynamics implements StructClass {
     return BorrowDynamics.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowDynamics {
+    if (!isBorrowDynamics(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowDynamics object`)
+    }
+    return BorrowDynamics.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowDynamics.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowDynamics {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -184,6 +195,7 @@ export class BorrowDynamics implements StructClass {
     return BorrowDynamics.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowDynamics.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowDynamics {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowDynamics(data.bcs.type)) {
@@ -200,13 +212,15 @@ export class BorrowDynamics implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowDynamics> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowDynamics(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowDynamics> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowDynamics(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowDynamics object`)
     }
-
-    return BorrowDynamics.fromBcs(res.bcsBytes)
+    return BorrowDynamics.fromBcs(object.content)
   }
 }
 
@@ -244,9 +258,11 @@ export type BorrowDynamicJSON = {
 export class BorrowDynamic implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_dynamics::BorrowDynamic` = `${
-    getTypeOrigin('protocol', 'borrow_dynamics::BorrowDynamic')
-  }::borrow_dynamics::BorrowDynamic` as const
+  static get $typeName(): `${string}::borrow_dynamics::BorrowDynamic` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_dynamics::BorrowDynamic')
+    }::borrow_dynamics::BorrowDynamic` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -276,11 +292,15 @@ export class BorrowDynamic implements StructClass {
   static reified(): BorrowDynamicReified {
     const reifiedBcs = BorrowDynamic.bcs
     return {
-      typeName: BorrowDynamic.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowDynamic.$typeName,
-        ...[],
-      ) as `${string}::borrow_dynamics::BorrowDynamic`,
+      get typeName() {
+        return BorrowDynamic.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowDynamic.$typeName,
+          ...[],
+        ) as `${string}::borrow_dynamics::BorrowDynamic`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowDynamic.$isPhantom,
       reifiedTypeArgs: [],
@@ -290,9 +310,11 @@ export class BorrowDynamic implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowDynamic.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowDynamic.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowDynamic.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowDynamic.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowDynamic.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowDynamic.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowDynamic.fetch(client, id),
       new: (fields: BorrowDynamicFields) => {
         return new BorrowDynamic([], fields)
       },
@@ -388,6 +410,14 @@ export class BorrowDynamic implements StructClass {
     return BorrowDynamic.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowDynamic {
+    if (!isBorrowDynamic(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowDynamic object`)
+    }
+    return BorrowDynamic.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowDynamic.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowDynamic {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -398,6 +428,7 @@ export class BorrowDynamic implements StructClass {
     return BorrowDynamic.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowDynamic.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowDynamic {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowDynamic(data.bcs.type)) {
@@ -414,12 +445,14 @@ export class BorrowDynamic implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowDynamic> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowDynamic(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowDynamic> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowDynamic(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowDynamic object`)
     }
-
-    return BorrowDynamic.fromBcs(res.bcsBytes)
+    return BorrowDynamic.fromBcs(object.content)
   }
 }

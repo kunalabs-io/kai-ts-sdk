@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== I32 =============================== */
 
@@ -47,9 +42,9 @@ export type I32JSON = {
 export class I32 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::i32::I32` = `${
-    getTypeOrigin('integer-library', 'i32::I32')
-  }::i32::I32` as const
+  static get $typeName(): `${string}::i32::I32` {
+    return `${getTypeOrigin('integer-library', 'i32::I32')}::i32::I32` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class I32 implements StructClass {
   static reified(): I32Reified {
     const reifiedBcs = I32.bcs
     return {
-      typeName: I32.$typeName,
-      fullTypeName: composeSuiType(
-        I32.$typeName,
-        ...[],
-      ) as `${string}::i32::I32`,
+      get typeName() {
+        return I32.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          I32.$typeName,
+          ...[],
+        ) as `${string}::i32::I32`
+      },
       typeArgs: [] as [],
       isPhantom: I32.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class I32 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => I32.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I32.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => I32.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => I32.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => I32.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => I32.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => I32.fetch(client, id),
       new: (fields: I32Fields) => {
         return new I32([], fields)
       },
@@ -170,6 +170,14 @@ export class I32 implements StructClass {
     return I32.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): I32 {
+    if (!isI32(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a I32 object`)
+    }
+    return I32.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I32.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): I32 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class I32 implements StructClass {
     return I32.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I32.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): I32 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isI32(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class I32 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<I32> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isI32(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<I32> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isI32(object.type)) {
       throw new Error(`object at id ${id} is not a I32 object`)
     }
-
-    return I32.fromBcs(res.bcsBytes)
+    return I32.fromBcs(object.content)
   }
 }

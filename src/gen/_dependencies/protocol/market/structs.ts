@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { UID } from '../../../sui/object/structs'
 import { AcTable } from '../../x/ac-table/structs'
@@ -78,9 +73,9 @@ export type MarketJSON = {
 export class Market implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::market::Market` = `${
-    getTypeOrigin('protocol', 'market::Market')
-  }::market::Market` as const
+  static get $typeName(): `${string}::market::Market` {
+    return `${getTypeOrigin('protocol', 'market::Market')}::market::Market` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -128,11 +123,15 @@ export class Market implements StructClass {
   static reified(): MarketReified {
     const reifiedBcs = Market.bcs
     return {
-      typeName: Market.$typeName,
-      fullTypeName: composeSuiType(
-        Market.$typeName,
-        ...[],
-      ) as `${string}::market::Market`,
+      get typeName() {
+        return Market.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Market.$typeName,
+          ...[],
+        ) as `${string}::market::Market`
+      },
       typeArgs: [] as [],
       isPhantom: Market.$isPhantom,
       reifiedTypeArgs: [],
@@ -142,9 +141,10 @@ export class Market implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Market.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Market.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Market.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Market.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Market.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Market.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Market.fetch(client, id),
       new: (fields: MarketFields) => {
         return new Market([], fields)
       },
@@ -394,6 +394,14 @@ export class Market implements StructClass {
     return Market.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Market {
+    if (!isMarket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Market object`)
+    }
+    return Market.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Market.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Market {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -404,6 +412,7 @@ export class Market implements StructClass {
     return Market.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Market.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Market {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isMarket(data.bcs.type)) {
@@ -420,12 +429,14 @@ export class Market implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Market> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isMarket(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Market> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isMarket(object.type)) {
       throw new Error(`object at id ${id} is not a Market object`)
     }
-
-    return Market.fromBcs(res.bcsBytes)
+    return Market.fromBcs(object.content)
   }
 }

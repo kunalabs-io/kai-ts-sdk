@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { FixedPoint32 } from '../../../std/fixed-point32/structs'
 import { TypeName } from '../../../std/type-name/structs'
 
@@ -49,9 +44,9 @@ export type RiskModelsJSON = {
 export class RiskModels implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::risk_model::RiskModels` = `${
-    getTypeOrigin('protocol', 'risk_model::RiskModels')
-  }::risk_model::RiskModels` as const
+  static get $typeName(): `${string}::risk_model::RiskModels` {
+    return `${getTypeOrigin('protocol', 'risk_model::RiskModels')}::risk_model::RiskModels` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -75,11 +70,15 @@ export class RiskModels implements StructClass {
   static reified(): RiskModelsReified {
     const reifiedBcs = RiskModels.bcs
     return {
-      typeName: RiskModels.$typeName,
-      fullTypeName: composeSuiType(
-        RiskModels.$typeName,
-        ...[],
-      ) as `${string}::risk_model::RiskModels`,
+      get typeName() {
+        return RiskModels.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RiskModels.$typeName,
+          ...[],
+        ) as `${string}::risk_model::RiskModels`
+      },
       typeArgs: [] as [],
       isPhantom: RiskModels.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,9 +88,11 @@ export class RiskModels implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModels.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModels.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RiskModels.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RiskModels.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RiskModels.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RiskModels.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RiskModels.fetch(client, id),
       new: (fields: RiskModelsFields) => {
         return new RiskModels([], fields)
       },
@@ -172,6 +173,14 @@ export class RiskModels implements StructClass {
     return RiskModels.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RiskModels {
+    if (!isRiskModels(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RiskModels object`)
+    }
+    return RiskModels.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModels.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RiskModels {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -182,6 +191,7 @@ export class RiskModels implements StructClass {
     return RiskModels.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModels.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RiskModels {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRiskModels(data.bcs.type)) {
@@ -198,13 +208,15 @@ export class RiskModels implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RiskModels> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRiskModels(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RiskModels> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRiskModels(object.type)) {
       throw new Error(`object at id ${id} is not a RiskModels object`)
     }
-
-    return RiskModels.fromBcs(res.bcsBytes)
+    return RiskModels.fromBcs(object.content)
   }
 }
 
@@ -245,9 +257,9 @@ export type RiskModelJSON = {
 export class RiskModel implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::risk_model::RiskModel` = `${
-    getTypeOrigin('protocol', 'risk_model::RiskModel')
-  }::risk_model::RiskModel` as const
+  static get $typeName(): `${string}::risk_model::RiskModel` {
+    return `${getTypeOrigin('protocol', 'risk_model::RiskModel')}::risk_model::RiskModel` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -283,11 +295,15 @@ export class RiskModel implements StructClass {
   static reified(): RiskModelReified {
     const reifiedBcs = RiskModel.bcs
     return {
-      typeName: RiskModel.$typeName,
-      fullTypeName: composeSuiType(
-        RiskModel.$typeName,
-        ...[],
-      ) as `${string}::risk_model::RiskModel`,
+      get typeName() {
+        return RiskModel.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RiskModel.$typeName,
+          ...[],
+        ) as `${string}::risk_model::RiskModel`
+      },
       typeArgs: [] as [],
       isPhantom: RiskModel.$isPhantom,
       reifiedTypeArgs: [],
@@ -297,9 +313,11 @@ export class RiskModel implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModel.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModel.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RiskModel.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RiskModel.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RiskModel.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RiskModel.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RiskModel.fetch(client, id),
       new: (fields: RiskModelFields) => {
         return new RiskModel([], fields)
       },
@@ -431,6 +449,14 @@ export class RiskModel implements StructClass {
     return RiskModel.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RiskModel {
+    if (!isRiskModel(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RiskModel object`)
+    }
+    return RiskModel.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModel.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RiskModel {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -441,6 +467,7 @@ export class RiskModel implements StructClass {
     return RiskModel.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModel.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RiskModel {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRiskModel(data.bcs.type)) {
@@ -457,13 +484,15 @@ export class RiskModel implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RiskModel> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRiskModel(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RiskModel> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRiskModel(object.type)) {
       throw new Error(`object at id ${id} is not a RiskModel object`)
     }
-
-    return RiskModel.fromBcs(res.bcsBytes)
+    return RiskModel.fromBcs(object.content)
   }
 }
 
@@ -504,9 +533,11 @@ export type RiskModelChangeCreatedJSON = {
 export class RiskModelChangeCreated implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::risk_model::RiskModelChangeCreated` = `${
-    getTypeOrigin('protocol', 'risk_model::RiskModelChangeCreated')
-  }::risk_model::RiskModelChangeCreated` as const
+  static get $typeName(): `${string}::risk_model::RiskModelChangeCreated` {
+    return `${
+      getTypeOrigin('protocol', 'risk_model::RiskModelChangeCreated')
+    }::risk_model::RiskModelChangeCreated` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -536,11 +567,15 @@ export class RiskModelChangeCreated implements StructClass {
   static reified(): RiskModelChangeCreatedReified {
     const reifiedBcs = RiskModelChangeCreated.bcs
     return {
-      typeName: RiskModelChangeCreated.$typeName,
-      fullTypeName: composeSuiType(
-        RiskModelChangeCreated.$typeName,
-        ...[],
-      ) as `${string}::risk_model::RiskModelChangeCreated`,
+      get typeName() {
+        return RiskModelChangeCreated.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RiskModelChangeCreated.$typeName,
+          ...[],
+        ) as `${string}::risk_model::RiskModelChangeCreated`
+      },
       typeArgs: [] as [],
       isPhantom: RiskModelChangeCreated.$isPhantom,
       reifiedTypeArgs: [],
@@ -551,11 +586,13 @@ export class RiskModelChangeCreated implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModelChangeCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModelChangeCreated.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RiskModelChangeCreated.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RiskModelChangeCreated.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RiskModelChangeCreated.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RiskModelChangeCreated.fetch(client, id),
       new: (fields: RiskModelChangeCreatedFields) => {
         return new RiskModelChangeCreated([], fields)
@@ -652,6 +689,14 @@ export class RiskModelChangeCreated implements StructClass {
     return RiskModelChangeCreated.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RiskModelChangeCreated {
+    if (!isRiskModelChangeCreated(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RiskModelChangeCreated object`)
+    }
+    return RiskModelChangeCreated.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModelChangeCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RiskModelChangeCreated {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -664,6 +709,7 @@ export class RiskModelChangeCreated implements StructClass {
     return RiskModelChangeCreated.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModelChangeCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RiskModelChangeCreated {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRiskModelChangeCreated(data.bcs.type)) {
@@ -680,13 +726,15 @@ export class RiskModelChangeCreated implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RiskModelChangeCreated> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRiskModelChangeCreated(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RiskModelChangeCreated> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRiskModelChangeCreated(object.type)) {
       throw new Error(`object at id ${id} is not a RiskModelChangeCreated object`)
     }
-
-    return RiskModelChangeCreated.fromBcs(res.bcsBytes)
+    return RiskModelChangeCreated.fromBcs(object.content)
   }
 }
 
@@ -718,9 +766,11 @@ export type RiskModelAddedJSON = {
 export class RiskModelAdded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::risk_model::RiskModelAdded` = `${
-    getTypeOrigin('protocol', 'risk_model::RiskModelAdded')
-  }::risk_model::RiskModelAdded` as const
+  static get $typeName(): `${string}::risk_model::RiskModelAdded` {
+    return `${
+      getTypeOrigin('protocol', 'risk_model::RiskModelAdded')
+    }::risk_model::RiskModelAdded` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -746,11 +796,15 @@ export class RiskModelAdded implements StructClass {
   static reified(): RiskModelAddedReified {
     const reifiedBcs = RiskModelAdded.bcs
     return {
-      typeName: RiskModelAdded.$typeName,
-      fullTypeName: composeSuiType(
-        RiskModelAdded.$typeName,
-        ...[],
-      ) as `${string}::risk_model::RiskModelAdded`,
+      get typeName() {
+        return RiskModelAdded.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RiskModelAdded.$typeName,
+          ...[],
+        ) as `${string}::risk_model::RiskModelAdded`
+      },
       typeArgs: [] as [],
       isPhantom: RiskModelAdded.$isPhantom,
       reifiedTypeArgs: [],
@@ -760,9 +814,11 @@ export class RiskModelAdded implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RiskModelAdded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RiskModelAdded.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RiskModelAdded.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RiskModelAdded.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RiskModelAdded.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RiskModelAdded.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RiskModelAdded.fetch(client, id),
       new: (fields: RiskModelAddedFields) => {
         return new RiskModelAdded([], fields)
       },
@@ -848,6 +904,14 @@ export class RiskModelAdded implements StructClass {
     return RiskModelAdded.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RiskModelAdded {
+    if (!isRiskModelAdded(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RiskModelAdded object`)
+    }
+    return RiskModelAdded.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModelAdded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RiskModelAdded {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -858,6 +922,7 @@ export class RiskModelAdded implements StructClass {
     return RiskModelAdded.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RiskModelAdded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RiskModelAdded {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRiskModelAdded(data.bcs.type)) {
@@ -874,12 +939,14 @@ export class RiskModelAdded implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RiskModelAdded> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRiskModelAdded(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RiskModelAdded> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRiskModelAdded(object.type)) {
       throw new Error(`object at id ${id} is not a RiskModelAdded object`)
     }
-
-    return RiskModelAdded.fromBcs(res.bcsBytes)
+    return RiskModelAdded.fromBcs(object.content)
   }
 }

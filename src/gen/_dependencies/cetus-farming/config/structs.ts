@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ID, UID } from '../../../sui/object/structs'
 import { Table } from '../../../sui/table/structs'
 import { ACL } from '../acl/structs'
@@ -51,9 +46,9 @@ export type AdminCapJSON = {
 export class AdminCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::AdminCap` = `${
-    getTypeOrigin('cetus-farming', 'config::AdminCap')
-  }::config::AdminCap` as const
+  static get $typeName(): `${string}::config::AdminCap` {
+    return `${getTypeOrigin('cetus-farming', 'config::AdminCap')}::config::AdminCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +72,15 @@ export class AdminCap implements StructClass {
   static reified(): AdminCapReified {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[],
-      ) as `${string}::config::AdminCap`,
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[],
+        ) as `${string}::config::AdminCap`
+      },
       typeArgs: [] as [],
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +90,11 @@ export class AdminCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, id),
       new: (fields: AdminCapFields) => {
         return new AdminCap([], fields)
       },
@@ -174,6 +175,14 @@ export class AdminCap implements StructClass {
     return AdminCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AdminCap {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+    return AdminCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AdminCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -184,6 +193,7 @@ export class AdminCap implements StructClass {
     return AdminCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AdminCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
@@ -200,13 +210,15 @@ export class AdminCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AdminCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AdminCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
-
-    return AdminCap.fromBcs(res.bcsBytes)
+    return AdminCap.fromBcs(object.content)
   }
 }
 
@@ -235,9 +247,9 @@ export type OperatorCapJSON = {
 export class OperatorCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::OperatorCap` = `${
-    getTypeOrigin('cetus-farming', 'config::OperatorCap')
-  }::config::OperatorCap` as const
+  static get $typeName(): `${string}::config::OperatorCap` {
+    return `${getTypeOrigin('cetus-farming', 'config::OperatorCap')}::config::OperatorCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -261,11 +273,15 @@ export class OperatorCap implements StructClass {
   static reified(): OperatorCapReified {
     const reifiedBcs = OperatorCap.bcs
     return {
-      typeName: OperatorCap.$typeName,
-      fullTypeName: composeSuiType(
-        OperatorCap.$typeName,
-        ...[],
-      ) as `${string}::config::OperatorCap`,
+      get typeName() {
+        return OperatorCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OperatorCap.$typeName,
+          ...[],
+        ) as `${string}::config::OperatorCap`
+      },
       typeArgs: [] as [],
       isPhantom: OperatorCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -275,9 +291,11 @@ export class OperatorCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OperatorCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OperatorCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OperatorCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => OperatorCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => OperatorCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => OperatorCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => OperatorCap.fetch(client, id),
       new: (fields: OperatorCapFields) => {
         return new OperatorCap([], fields)
       },
@@ -358,6 +376,14 @@ export class OperatorCap implements StructClass {
     return OperatorCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OperatorCap {
+    if (!isOperatorCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OperatorCap object`)
+    }
+    return OperatorCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OperatorCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OperatorCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -368,6 +394,7 @@ export class OperatorCap implements StructClass {
     return OperatorCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OperatorCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OperatorCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOperatorCap(data.bcs.type)) {
@@ -384,13 +411,15 @@ export class OperatorCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<OperatorCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOperatorCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OperatorCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOperatorCap(object.type)) {
       throw new Error(`object at id ${id} is not a OperatorCap object`)
     }
-
-    return OperatorCap.fromBcs(res.bcsBytes)
+    return OperatorCap.fromBcs(object.content)
   }
 }
 
@@ -425,9 +454,11 @@ export type GlobalConfigJSON = {
 export class GlobalConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::GlobalConfig` = `${
-    getTypeOrigin('cetus-farming', 'config::GlobalConfig')
-  }::config::GlobalConfig` as const
+  static get $typeName(): `${string}::config::GlobalConfig` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::GlobalConfig')
+    }::config::GlobalConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -457,11 +488,15 @@ export class GlobalConfig implements StructClass {
   static reified(): GlobalConfigReified {
     const reifiedBcs = GlobalConfig.bcs
     return {
-      typeName: GlobalConfig.$typeName,
-      fullTypeName: composeSuiType(
-        GlobalConfig.$typeName,
-        ...[],
-      ) as `${string}::config::GlobalConfig`,
+      get typeName() {
+        return GlobalConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GlobalConfig.$typeName,
+          ...[],
+        ) as `${string}::config::GlobalConfig`
+      },
       typeArgs: [] as [],
       isPhantom: GlobalConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -471,9 +506,11 @@ export class GlobalConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GlobalConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GlobalConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GlobalConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GlobalConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GlobalConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GlobalConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GlobalConfig.fetch(client, id),
       new: (fields: GlobalConfigFields) => {
         return new GlobalConfig([], fields)
       },
@@ -578,6 +615,14 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GlobalConfig {
+    if (!isGlobalConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GlobalConfig object`)
+    }
+    return GlobalConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GlobalConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GlobalConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -588,6 +633,7 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GlobalConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GlobalConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGlobalConfig(data.bcs.type)) {
@@ -604,13 +650,15 @@ export class GlobalConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GlobalConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGlobalConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GlobalConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGlobalConfig(object.type)) {
       throw new Error(`object at id ${id} is not a GlobalConfig object`)
     }
-
-    return GlobalConfig.fromBcs(res.bcsBytes)
+    return GlobalConfig.fromBcs(object.content)
   }
 }
 
@@ -642,9 +690,11 @@ export type InitConfigEventJSON = {
 export class InitConfigEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::InitConfigEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::InitConfigEvent')
-  }::config::InitConfigEvent` as const
+  static get $typeName(): `${string}::config::InitConfigEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::InitConfigEvent')
+    }::config::InitConfigEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -670,11 +720,15 @@ export class InitConfigEvent implements StructClass {
   static reified(): InitConfigEventReified {
     const reifiedBcs = InitConfigEvent.bcs
     return {
-      typeName: InitConfigEvent.$typeName,
-      fullTypeName: composeSuiType(
-        InitConfigEvent.$typeName,
-        ...[],
-      ) as `${string}::config::InitConfigEvent`,
+      get typeName() {
+        return InitConfigEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InitConfigEvent.$typeName,
+          ...[],
+        ) as `${string}::config::InitConfigEvent`
+      },
       typeArgs: [] as [],
       isPhantom: InitConfigEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -684,9 +738,11 @@ export class InitConfigEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InitConfigEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InitConfigEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InitConfigEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => InitConfigEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => InitConfigEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => InitConfigEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => InitConfigEvent.fetch(client, id),
       new: (fields: InitConfigEventFields) => {
         return new InitConfigEvent([], fields)
       },
@@ -772,6 +828,14 @@ export class InitConfigEvent implements StructClass {
     return InitConfigEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InitConfigEvent {
+    if (!isInitConfigEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InitConfigEvent object`)
+    }
+    return InitConfigEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InitConfigEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InitConfigEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -782,6 +846,7 @@ export class InitConfigEvent implements StructClass {
     return InitConfigEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InitConfigEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InitConfigEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInitConfigEvent(data.bcs.type)) {
@@ -798,13 +863,15 @@ export class InitConfigEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InitConfigEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInitConfigEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InitConfigEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInitConfigEvent(object.type)) {
       throw new Error(`object at id ${id} is not a InitConfigEvent object`)
     }
-
-    return InitConfigEvent.fromBcs(res.bcsBytes)
+    return InitConfigEvent.fromBcs(object.content)
   }
 }
 
@@ -838,9 +905,11 @@ export type AddOperatorEventJSON = {
 export class AddOperatorEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::AddOperatorEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::AddOperatorEvent')
-  }::config::AddOperatorEvent` as const
+  static get $typeName(): `${string}::config::AddOperatorEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::AddOperatorEvent')
+    }::config::AddOperatorEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -868,11 +937,15 @@ export class AddOperatorEvent implements StructClass {
   static reified(): AddOperatorEventReified {
     const reifiedBcs = AddOperatorEvent.bcs
     return {
-      typeName: AddOperatorEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddOperatorEvent.$typeName,
-        ...[],
-      ) as `${string}::config::AddOperatorEvent`,
+      get typeName() {
+        return AddOperatorEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddOperatorEvent.$typeName,
+          ...[],
+        ) as `${string}::config::AddOperatorEvent`
+      },
       typeArgs: [] as [],
       isPhantom: AddOperatorEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -882,9 +955,11 @@ export class AddOperatorEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddOperatorEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddOperatorEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddOperatorEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddOperatorEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddOperatorEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddOperatorEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddOperatorEvent.fetch(client, id),
       new: (fields: AddOperatorEventFields) => {
         return new AddOperatorEvent([], fields)
       },
@@ -978,6 +1053,14 @@ export class AddOperatorEvent implements StructClass {
     return AddOperatorEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddOperatorEvent {
+    if (!isAddOperatorEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddOperatorEvent object`)
+    }
+    return AddOperatorEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddOperatorEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddOperatorEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -988,6 +1071,7 @@ export class AddOperatorEvent implements StructClass {
     return AddOperatorEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddOperatorEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddOperatorEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddOperatorEvent(data.bcs.type)) {
@@ -1004,13 +1088,15 @@ export class AddOperatorEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddOperatorEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddOperatorEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddOperatorEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddOperatorEvent(object.type)) {
       throw new Error(`object at id ${id} is not a AddOperatorEvent object`)
     }
-
-    return AddOperatorEvent.fromBcs(res.bcsBytes)
+    return AddOperatorEvent.fromBcs(object.content)
   }
 }
 
@@ -1042,9 +1128,11 @@ export type SetRolesEventJSON = {
 export class SetRolesEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::SetRolesEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::SetRolesEvent')
-  }::config::SetRolesEvent` as const
+  static get $typeName(): `${string}::config::SetRolesEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::SetRolesEvent')
+    }::config::SetRolesEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1070,11 +1158,15 @@ export class SetRolesEvent implements StructClass {
   static reified(): SetRolesEventReified {
     const reifiedBcs = SetRolesEvent.bcs
     return {
-      typeName: SetRolesEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SetRolesEvent.$typeName,
-        ...[],
-      ) as `${string}::config::SetRolesEvent`,
+      get typeName() {
+        return SetRolesEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SetRolesEvent.$typeName,
+          ...[],
+        ) as `${string}::config::SetRolesEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SetRolesEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1084,9 +1176,11 @@ export class SetRolesEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SetRolesEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetRolesEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SetRolesEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SetRolesEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SetRolesEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SetRolesEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SetRolesEvent.fetch(client, id),
       new: (fields: SetRolesEventFields) => {
         return new SetRolesEvent([], fields)
       },
@@ -1175,6 +1269,14 @@ export class SetRolesEvent implements StructClass {
     return SetRolesEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SetRolesEvent {
+    if (!isSetRolesEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SetRolesEvent object`)
+    }
+    return SetRolesEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetRolesEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SetRolesEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1185,6 +1287,7 @@ export class SetRolesEvent implements StructClass {
     return SetRolesEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetRolesEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SetRolesEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSetRolesEvent(data.bcs.type)) {
@@ -1201,13 +1304,15 @@ export class SetRolesEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SetRolesEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSetRolesEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SetRolesEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSetRolesEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SetRolesEvent object`)
     }
-
-    return SetRolesEvent.fromBcs(res.bcsBytes)
+    return SetRolesEvent.fromBcs(object.content)
   }
 }
 
@@ -1238,9 +1343,11 @@ export type AddRoleEventJSON = {
 export class AddRoleEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::AddRoleEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::AddRoleEvent')
-  }::config::AddRoleEvent` as const
+  static get $typeName(): `${string}::config::AddRoleEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::AddRoleEvent')
+    }::config::AddRoleEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1266,11 +1373,15 @@ export class AddRoleEvent implements StructClass {
   static reified(): AddRoleEventReified {
     const reifiedBcs = AddRoleEvent.bcs
     return {
-      typeName: AddRoleEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AddRoleEvent.$typeName,
-        ...[],
-      ) as `${string}::config::AddRoleEvent`,
+      get typeName() {
+        return AddRoleEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddRoleEvent.$typeName,
+          ...[],
+        ) as `${string}::config::AddRoleEvent`
+      },
       typeArgs: [] as [],
       isPhantom: AddRoleEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1280,9 +1391,11 @@ export class AddRoleEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddRoleEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddRoleEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddRoleEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddRoleEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddRoleEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddRoleEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddRoleEvent.fetch(client, id),
       new: (fields: AddRoleEventFields) => {
         return new AddRoleEvent([], fields)
       },
@@ -1371,6 +1484,14 @@ export class AddRoleEvent implements StructClass {
     return AddRoleEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddRoleEvent {
+    if (!isAddRoleEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddRoleEvent object`)
+    }
+    return AddRoleEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddRoleEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddRoleEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1381,6 +1502,7 @@ export class AddRoleEvent implements StructClass {
     return AddRoleEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddRoleEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddRoleEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddRoleEvent(data.bcs.type)) {
@@ -1397,13 +1519,15 @@ export class AddRoleEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddRoleEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddRoleEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddRoleEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddRoleEvent(object.type)) {
       throw new Error(`object at id ${id} is not a AddRoleEvent object`)
     }
-
-    return AddRoleEvent.fromBcs(res.bcsBytes)
+    return AddRoleEvent.fromBcs(object.content)
   }
 }
 
@@ -1435,9 +1559,11 @@ export type RemoveRoleEventJSON = {
 export class RemoveRoleEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::RemoveRoleEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::RemoveRoleEvent')
-  }::config::RemoveRoleEvent` as const
+  static get $typeName(): `${string}::config::RemoveRoleEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::RemoveRoleEvent')
+    }::config::RemoveRoleEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1463,11 +1589,15 @@ export class RemoveRoleEvent implements StructClass {
   static reified(): RemoveRoleEventReified {
     const reifiedBcs = RemoveRoleEvent.bcs
     return {
-      typeName: RemoveRoleEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveRoleEvent.$typeName,
-        ...[],
-      ) as `${string}::config::RemoveRoleEvent`,
+      get typeName() {
+        return RemoveRoleEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RemoveRoleEvent.$typeName,
+          ...[],
+        ) as `${string}::config::RemoveRoleEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RemoveRoleEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1477,9 +1607,11 @@ export class RemoveRoleEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveRoleEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveRoleEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RemoveRoleEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RemoveRoleEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RemoveRoleEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RemoveRoleEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RemoveRoleEvent.fetch(client, id),
       new: (fields: RemoveRoleEventFields) => {
         return new RemoveRoleEvent([], fields)
       },
@@ -1568,6 +1700,14 @@ export class RemoveRoleEvent implements StructClass {
     return RemoveRoleEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RemoveRoleEvent {
+    if (!isRemoveRoleEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RemoveRoleEvent object`)
+    }
+    return RemoveRoleEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveRoleEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RemoveRoleEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1578,6 +1718,7 @@ export class RemoveRoleEvent implements StructClass {
     return RemoveRoleEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveRoleEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RemoveRoleEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRemoveRoleEvent(data.bcs.type)) {
@@ -1594,13 +1735,15 @@ export class RemoveRoleEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RemoveRoleEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRemoveRoleEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RemoveRoleEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRemoveRoleEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RemoveRoleEvent object`)
     }
-
-    return RemoveRoleEvent.fromBcs(res.bcsBytes)
+    return RemoveRoleEvent.fromBcs(object.content)
   }
 }
 
@@ -1630,9 +1773,11 @@ export type RemoveMemberEventJSON = {
 export class RemoveMemberEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::RemoveMemberEvent` = `${
-    getTypeOrigin('cetus-farming', 'config::RemoveMemberEvent')
-  }::config::RemoveMemberEvent` as const
+  static get $typeName(): `${string}::config::RemoveMemberEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::RemoveMemberEvent')
+    }::config::RemoveMemberEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1656,11 +1801,15 @@ export class RemoveMemberEvent implements StructClass {
   static reified(): RemoveMemberEventReified {
     const reifiedBcs = RemoveMemberEvent.bcs
     return {
-      typeName: RemoveMemberEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RemoveMemberEvent.$typeName,
-        ...[],
-      ) as `${string}::config::RemoveMemberEvent`,
+      get typeName() {
+        return RemoveMemberEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RemoveMemberEvent.$typeName,
+          ...[],
+        ) as `${string}::config::RemoveMemberEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RemoveMemberEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1670,9 +1819,11 @@ export class RemoveMemberEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RemoveMemberEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RemoveMemberEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RemoveMemberEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RemoveMemberEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RemoveMemberEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RemoveMemberEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RemoveMemberEvent.fetch(client, id),
       new: (fields: RemoveMemberEventFields) => {
         return new RemoveMemberEvent([], fields)
       },
@@ -1756,6 +1907,14 @@ export class RemoveMemberEvent implements StructClass {
     return RemoveMemberEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RemoveMemberEvent {
+    if (!isRemoveMemberEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RemoveMemberEvent object`)
+    }
+    return RemoveMemberEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveMemberEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RemoveMemberEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1766,6 +1925,7 @@ export class RemoveMemberEvent implements StructClass {
     return RemoveMemberEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RemoveMemberEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RemoveMemberEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRemoveMemberEvent(data.bcs.type)) {
@@ -1782,13 +1942,15 @@ export class RemoveMemberEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RemoveMemberEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRemoveMemberEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RemoveMemberEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRemoveMemberEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RemoveMemberEvent object`)
     }
-
-    return RemoveMemberEvent.fromBcs(res.bcsBytes)
+    return RemoveMemberEvent.fromBcs(object.content)
   }
 }
 
@@ -1820,9 +1982,11 @@ export type SetPackageVersionJSON = {
 export class SetPackageVersion implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::SetPackageVersion` = `${
-    getTypeOrigin('cetus-farming', 'config::SetPackageVersion')
-  }::config::SetPackageVersion` as const
+  static get $typeName(): `${string}::config::SetPackageVersion` {
+    return `${
+      getTypeOrigin('cetus-farming', 'config::SetPackageVersion')
+    }::config::SetPackageVersion` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1848,11 +2012,15 @@ export class SetPackageVersion implements StructClass {
   static reified(): SetPackageVersionReified {
     const reifiedBcs = SetPackageVersion.bcs
     return {
-      typeName: SetPackageVersion.$typeName,
-      fullTypeName: composeSuiType(
-        SetPackageVersion.$typeName,
-        ...[],
-      ) as `${string}::config::SetPackageVersion`,
+      get typeName() {
+        return SetPackageVersion.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SetPackageVersion.$typeName,
+          ...[],
+        ) as `${string}::config::SetPackageVersion`
+      },
       typeArgs: [] as [],
       isPhantom: SetPackageVersion.$isPhantom,
       reifiedTypeArgs: [],
@@ -1862,9 +2030,11 @@ export class SetPackageVersion implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SetPackageVersion.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SetPackageVersion.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SetPackageVersion.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SetPackageVersion.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SetPackageVersion.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SetPackageVersion.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SetPackageVersion.fetch(client, id),
       new: (fields: SetPackageVersionFields) => {
         return new SetPackageVersion([], fields)
       },
@@ -1950,6 +2120,14 @@ export class SetPackageVersion implements StructClass {
     return SetPackageVersion.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SetPackageVersion {
+    if (!isSetPackageVersion(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SetPackageVersion object`)
+    }
+    return SetPackageVersion.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetPackageVersion.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SetPackageVersion {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1960,6 +2138,7 @@ export class SetPackageVersion implements StructClass {
     return SetPackageVersion.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SetPackageVersion.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SetPackageVersion {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSetPackageVersion(data.bcs.type)) {
@@ -1976,12 +2155,14 @@ export class SetPackageVersion implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SetPackageVersion> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSetPackageVersion(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SetPackageVersion> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSetPackageVersion(object.type)) {
       throw new Error(`object at id ${id} is not a SetPackageVersion object`)
     }
-
-    return SetPackageVersion.fromBcs(res.bcsBytes)
+    return SetPackageVersion.fromBcs(object.content)
   }
 }

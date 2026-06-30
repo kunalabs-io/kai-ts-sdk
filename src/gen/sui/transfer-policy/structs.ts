@@ -22,7 +22,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -46,10 +47,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { TypeName } from '../../std/type-name/structs'
 import { Balance } from '../balance/structs'
@@ -162,12 +161,18 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
   ): TransferRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferRequest.bcs
     return {
-      typeName: TransferRequest.$typeName,
-      fullTypeName: composeSuiType(
-        TransferRequest.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::TransferRequest<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TransferRequest.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferRequest.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::TransferRequest<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TransferRequest.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TransferRequest.fromFields(T, fields),
@@ -176,9 +181,11 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferRequest.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TransferRequest.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferRequest.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => TransferRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => TransferRequest.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => TransferRequest.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TransferRequest.fetch(client, T, id),
       new: (fields: TransferRequestFields<ToPhantomTypeArgument<T>>) => {
         return new TransferRequest([extractType(T)], fields)
       },
@@ -297,6 +304,34 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
     return TransferRequest.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferRequest<ToPhantomTypeArgument<T>> {
+    if (!isTransferRequest(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferRequest object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferRequest.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -310,6 +345,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
     return TransferRequest.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -346,16 +382,19 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TransferRequest<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferRequest(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferRequest(object.type)) {
       throw new Error(`object at id ${id} is not a TransferRequest object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -371,7 +410,7 @@ export class TransferRequest<T extends PhantomTypeArgument> implements StructCla
       }
     }
 
-    return TransferRequest.fromBcs(typeArg, res.bcsBytes)
+    return TransferRequest.fromBcs(typeArg, object.content)
   }
 }
 
@@ -469,12 +508,18 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
   ): TransferPolicyReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicy.bcs
     return {
-      typeName: TransferPolicy.$typeName,
-      fullTypeName: composeSuiType(
-        TransferPolicy.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::TransferPolicy<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TransferPolicy.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferPolicy.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::TransferPolicy<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TransferPolicy.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TransferPolicy.fromFields(T, fields),
@@ -483,9 +528,11 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferPolicy.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TransferPolicy.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferPolicy.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => TransferPolicy.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => TransferPolicy.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => TransferPolicy.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TransferPolicy.fetch(client, T, id),
       new: (fields: TransferPolicyFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicy([extractType(T)], fields)
       },
@@ -602,6 +649,34 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
     return TransferPolicy.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferPolicy<ToPhantomTypeArgument<T>> {
+    if (!isTransferPolicy(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferPolicy object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicy.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -615,6 +690,7 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
     return TransferPolicy.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -651,16 +727,19 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TransferPolicy<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferPolicy(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferPolicy(object.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicy object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -676,7 +755,7 @@ export class TransferPolicy<T extends PhantomTypeArgument> implements StructClas
       }
     }
 
-    return TransferPolicy.fromBcs(typeArg, res.bcsBytes)
+    return TransferPolicy.fromBcs(typeArg, object.content)
   }
 }
 
@@ -743,12 +822,20 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
   ): TransferPolicyCapReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyCap.bcs
     return {
-      typeName: TransferPolicyCap.$typeName,
-      fullTypeName: composeSuiType(
-        TransferPolicyCap.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::TransferPolicyCap<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TransferPolicyCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferPolicyCap.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::TransferPolicyCap<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TransferPolicyCap.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TransferPolicyCap.fromFields(T, fields),
@@ -758,11 +845,13 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferPolicyCap.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TransferPolicyCap.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferPolicyCap.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         TransferPolicyCap.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyCap.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         TransferPolicyCap.fetch(client, T, id),
       new: (fields: TransferPolicyCapFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyCap([extractType(T)], fields)
@@ -872,6 +961,34 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
     return TransferPolicyCap.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferPolicyCap<ToPhantomTypeArgument<T>> {
+    if (!isTransferPolicyCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferPolicyCap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyCap.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -885,6 +1002,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
     return TransferPolicyCap.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -921,16 +1039,19 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TransferPolicyCap<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferPolicyCap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferPolicyCap(object.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyCap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -946,7 +1067,7 @@ export class TransferPolicyCap<T extends PhantomTypeArgument> implements StructC
       }
     }
 
-    return TransferPolicyCap.fromBcs(typeArg, res.bcsBytes)
+    return TransferPolicyCap.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1009,14 +1130,20 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
   ): TransferPolicyCreatedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyCreated.bcs
     return {
-      typeName: TransferPolicyCreated.$typeName,
-      fullTypeName: composeSuiType(
-        TransferPolicyCreated.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TransferPolicyCreated.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferPolicyCreated.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::TransferPolicyCreated<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TransferPolicyCreated.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TransferPolicyCreated.fromFields(T, fields),
@@ -1026,11 +1153,13 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferPolicyCreated.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TransferPolicyCreated.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferPolicyCreated.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         TransferPolicyCreated.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyCreated.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         TransferPolicyCreated.fetch(client, T, id),
       new: (fields: TransferPolicyCreatedFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyCreated([extractType(T)], fields)
@@ -1135,6 +1264,34 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
     return TransferPolicyCreated.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferPolicyCreated<ToPhantomTypeArgument<T>> {
+    if (!isTransferPolicyCreated(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferPolicyCreated object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyCreated.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -1150,6 +1307,7 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
     return TransferPolicyCreated.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -1186,16 +1344,19 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TransferPolicyCreated<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferPolicyCreated(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferPolicyCreated(object.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyCreated object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1211,7 +1372,7 @@ export class TransferPolicyCreated<T extends PhantomTypeArgument> implements Str
       }
     }
 
-    return TransferPolicyCreated.fromBcs(typeArg, res.bcsBytes)
+    return TransferPolicyCreated.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1275,14 +1436,20 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
   ): TransferPolicyDestroyedReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TransferPolicyDestroyed.bcs
     return {
-      typeName: TransferPolicyDestroyed.$typeName,
-      fullTypeName: composeSuiType(
-        TransferPolicyDestroyed.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TransferPolicyDestroyed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferPolicyDestroyed.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::TransferPolicyDestroyed<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TransferPolicyDestroyed.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TransferPolicyDestroyed.fromFields(T, fields),
@@ -1292,11 +1459,13 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferPolicyDestroyed.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TransferPolicyDestroyed.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferPolicyDestroyed.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         TransferPolicyDestroyed.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferPolicyDestroyed.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         TransferPolicyDestroyed.fetch(client, T, id),
       new: (fields: TransferPolicyDestroyedFields<ToPhantomTypeArgument<T>>) => {
         return new TransferPolicyDestroyed([extractType(T)], fields)
@@ -1401,6 +1570,34 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
     return TransferPolicyDestroyed.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferPolicyDestroyed<ToPhantomTypeArgument<T>> {
+    if (!isTransferPolicyDestroyed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferPolicyDestroyed object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferPolicyDestroyed.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyDestroyed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -1416,6 +1613,7 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
     return TransferPolicyDestroyed.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferPolicyDestroyed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -1452,16 +1650,19 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TransferPolicyDestroyed<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferPolicyDestroyed(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferPolicyDestroyed(object.type)) {
       throw new Error(`object at id ${id} is not a TransferPolicyDestroyed object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1477,7 +1678,7 @@ export class TransferPolicyDestroyed<T extends PhantomTypeArgument> implements S
       }
     }
 
-    return TransferPolicyDestroyed.fromBcs(typeArg, res.bcsBytes)
+    return TransferPolicyDestroyed.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1534,12 +1735,18 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
   ): RuleKeyReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = RuleKey.bcs
     return {
-      typeName: RuleKey.$typeName,
-      fullTypeName: composeSuiType(
-        RuleKey.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::transfer_policy::RuleKey<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return RuleKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RuleKey.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::transfer_policy::RuleKey<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: RuleKey.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => RuleKey.fromFields(T, fields),
@@ -1548,9 +1755,11 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RuleKey.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => RuleKey.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RuleKey.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => RuleKey.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => RuleKey.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => RuleKey.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RuleKey.fetch(client, T, id),
       new: (fields: RuleKeyFields<ToPhantomTypeArgument<T>>) => {
         return new RuleKey([extractType(T)], fields)
       },
@@ -1654,6 +1863,34 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
     return RuleKey.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): RuleKey<ToPhantomTypeArgument<T>> {
+    if (!isRuleKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RuleKey object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RuleKey.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RuleKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -1667,6 +1904,7 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
     return RuleKey.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RuleKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -1703,16 +1941,19 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<RuleKey<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRuleKey(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRuleKey(object.type)) {
       throw new Error(`object at id ${id} is not a RuleKey object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1728,6 +1969,6 @@ export class RuleKey<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return RuleKey.fromBcs(typeArg, res.bcsBytes)
+    return RuleKey.fromBcs(typeArg, object.content)
   }
 }

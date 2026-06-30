@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 
 /* ============================== MintEvent =============================== */
@@ -64,9 +59,9 @@ export type MintEventJSON = {
 export class MintEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::mint::MintEvent` = `${
-    getTypeOrigin('protocol', 'mint::MintEvent')
-  }::mint::MintEvent` as const
+  static get $typeName(): `${string}::mint::MintEvent` {
+    return `${getTypeOrigin('protocol', 'mint::MintEvent')}::mint::MintEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -100,11 +95,15 @@ export class MintEvent implements StructClass {
   static reified(): MintEventReified {
     const reifiedBcs = MintEvent.bcs
     return {
-      typeName: MintEvent.$typeName,
-      fullTypeName: composeSuiType(
-        MintEvent.$typeName,
-        ...[],
-      ) as `${string}::mint::MintEvent`,
+      get typeName() {
+        return MintEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          MintEvent.$typeName,
+          ...[],
+        ) as `${string}::mint::MintEvent`
+      },
       typeArgs: [] as [],
       isPhantom: MintEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -114,9 +113,11 @@ export class MintEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => MintEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MintEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        MintEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => MintEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => MintEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => MintEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => MintEvent.fetch(client, id),
       new: (fields: MintEventFields) => {
         return new MintEvent([], fields)
       },
@@ -225,6 +226,14 @@ export class MintEvent implements StructClass {
     return MintEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): MintEvent {
+    if (!isMintEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a MintEvent object`)
+    }
+    return MintEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MintEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): MintEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -235,6 +244,7 @@ export class MintEvent implements StructClass {
     return MintEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MintEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): MintEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isMintEvent(data.bcs.type)) {
@@ -251,12 +261,14 @@ export class MintEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<MintEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isMintEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<MintEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isMintEvent(object.type)) {
       throw new Error(`object at id ${id} is not a MintEvent object`)
     }
-
-    return MintEvent.fromBcs(res.bcsBytes)
+    return MintEvent.fromBcs(object.content)
   }
 }

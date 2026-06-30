@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { Entity } from '../../_dependencies/access-management/access/structs'
 import { getTypeOrigin } from '../../_envs'
@@ -30,10 +31,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { Balance } from '../../sui/balance/structs'
@@ -71,9 +70,11 @@ export type IncentiveInjectInfoJSON = {
 export class IncentiveInjectInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::kai_leverage_supply_pool::IncentiveInjectInfo` = `${
-    getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::IncentiveInjectInfo')
-  }::kai_leverage_supply_pool::IncentiveInjectInfo` as const
+  static get $typeName(): `${string}::kai_leverage_supply_pool::IncentiveInjectInfo` {
+    return `${
+      getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::IncentiveInjectInfo')
+    }::kai_leverage_supply_pool::IncentiveInjectInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -99,11 +100,15 @@ export class IncentiveInjectInfo implements StructClass {
   static reified(): IncentiveInjectInfoReified {
     const reifiedBcs = IncentiveInjectInfo.bcs
     return {
-      typeName: IncentiveInjectInfo.$typeName,
-      fullTypeName: composeSuiType(
-        IncentiveInjectInfo.$typeName,
-        ...[],
-      ) as `${string}::kai_leverage_supply_pool::IncentiveInjectInfo`,
+      get typeName() {
+        return IncentiveInjectInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          IncentiveInjectInfo.$typeName,
+          ...[],
+        ) as `${string}::kai_leverage_supply_pool::IncentiveInjectInfo`
+      },
       typeArgs: [] as [],
       isPhantom: IncentiveInjectInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -113,10 +118,11 @@ export class IncentiveInjectInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => IncentiveInjectInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => IncentiveInjectInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        IncentiveInjectInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => IncentiveInjectInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => IncentiveInjectInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        IncentiveInjectInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => IncentiveInjectInfo.fetch(client, id),
       new: (fields: IncentiveInjectInfoFields) => {
         return new IncentiveInjectInfo([], fields)
       },
@@ -202,6 +208,14 @@ export class IncentiveInjectInfo implements StructClass {
     return IncentiveInjectInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): IncentiveInjectInfo {
+    if (!isIncentiveInjectInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a IncentiveInjectInfo object`)
+    }
+    return IncentiveInjectInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link IncentiveInjectInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): IncentiveInjectInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -212,6 +226,7 @@ export class IncentiveInjectInfo implements StructClass {
     return IncentiveInjectInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link IncentiveInjectInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): IncentiveInjectInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isIncentiveInjectInfo(data.bcs.type)) {
@@ -228,13 +243,15 @@ export class IncentiveInjectInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<IncentiveInjectInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isIncentiveInjectInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<IncentiveInjectInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isIncentiveInjectInfo(object.type)) {
       throw new Error(`object at id ${id} is not a IncentiveInjectInfo object`)
     }
-
-    return IncentiveInjectInfo.fromBcs(res.bcsBytes)
+    return IncentiveInjectInfo.fromBcs(object.content)
   }
 }
 
@@ -267,9 +284,11 @@ export type AdminCapJSON = {
 export class AdminCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::kai_leverage_supply_pool::AdminCap` = `${
-    getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::AdminCap')
-  }::kai_leverage_supply_pool::AdminCap` as const
+  static get $typeName(): `${string}::kai_leverage_supply_pool::AdminCap` {
+    return `${
+      getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::AdminCap')
+    }::kai_leverage_supply_pool::AdminCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -293,11 +312,15 @@ export class AdminCap implements StructClass {
   static reified(): AdminCapReified {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[],
-      ) as `${string}::kai_leverage_supply_pool::AdminCap`,
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[],
+        ) as `${string}::kai_leverage_supply_pool::AdminCap`
+      },
       typeArgs: [] as [],
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -307,9 +330,11 @@ export class AdminCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, id),
       new: (fields: AdminCapFields) => {
         return new AdminCap([], fields)
       },
@@ -390,6 +415,14 @@ export class AdminCap implements StructClass {
     return AdminCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AdminCap {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+    return AdminCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AdminCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -400,6 +433,7 @@ export class AdminCap implements StructClass {
     return AdminCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AdminCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
@@ -416,13 +450,15 @@ export class AdminCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AdminCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AdminCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
-
-    return AdminCap.fromBcs(res.bcsBytes)
+    return AdminCap.fromBcs(object.content)
   }
 }
 
@@ -486,9 +522,11 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::kai_leverage_supply_pool::Strategy` = `${
-    getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::Strategy')
-  }::kai_leverage_supply_pool::Strategy` as const
+  static get $typeName(): `${string}::kai_leverage_supply_pool::Strategy` {
+    return `${
+      getTypeOrigin('kai-sav', 'kai_leverage_supply_pool::Strategy')
+    }::kai_leverage_supply_pool::Strategy` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -546,17 +584,23 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
   ): StrategyReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
     const reifiedBcs = Strategy.bcs
     return {
-      typeName: Strategy.$typeName,
-      fullTypeName: composeSuiType(
-        Strategy.$typeName,
-        ...[extractType(T), extractType(ST)],
-      ) as `${string}::kai_leverage_supply_pool::Strategy<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`,
-      typeArgs: [extractType(T), extractType(ST)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<ST>>,
-      ],
+      get typeName() {
+        return Strategy.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Strategy.$typeName,
+          ...[extractType(T), extractType(ST)],
+        ) as `${string}::kai_leverage_supply_pool::Strategy<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<ST>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T), extractType(ST)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<ST>>,
+        ]
+      },
       isPhantom: Strategy.$isPhantom,
       reifiedTypeArgs: [T, ST],
       fromFields: (fields: Record<string, any>) => Strategy.fromFields([T, ST], fields),
@@ -565,9 +609,11 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Strategy.fromJSONField([T, ST], field),
       fromJSON: (json: Record<string, any>) => Strategy.fromJSON([T, ST], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Strategy.fromCoreObject([T, ST], obj),
       fromSuiParsedData: (content: SuiParsedData) => Strategy.fromSuiParsedData([T, ST], content),
       fromSuiObjectData: (content: SuiObjectData) => Strategy.fromSuiObjectData([T, ST], content),
-      fetch: async (client: SupportedSuiClient, id: string) => Strategy.fetch(client, [T, ST], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Strategy.fetch(client, [T, ST], id),
       new: (fields: StrategyFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>>) => {
         return new Strategy([extractType(T), extractType(ST)], fields)
       },
@@ -737,6 +783,37 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
     return Strategy.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    T extends PhantomReified<PhantomTypeArgument>,
+    ST extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, ST],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Strategy<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>> {
+    if (!isStrategy(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Strategy object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Strategy.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Strategy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
@@ -753,6 +830,7 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
     return Strategy.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Strategy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
@@ -795,16 +873,19 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
     T extends PhantomReified<PhantomTypeArgument>,
     ST extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [T, ST],
     id: string,
   ): Promise<Strategy<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<ST>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategy(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategy(object.type)) {
       throw new Error(`object at id ${id} is not a Strategy object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -820,6 +901,6 @@ export class Strategy<T extends PhantomTypeArgument, ST extends PhantomTypeArgum
       }
     }
 
-    return Strategy.fromBcs(typeArgs, res.bcsBytes)
+    return Strategy.fromBcs(typeArgs, object.content)
   }
 }

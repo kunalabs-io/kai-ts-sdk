@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== GovernanceWitness =============================== */
 
@@ -55,9 +50,11 @@ export type GovernanceWitnessJSON = {
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::transfer_fee::GovernanceWitness` = `${
-    getTypeOrigin('wormhole', 'transfer_fee::GovernanceWitness')
-  }::transfer_fee::GovernanceWitness` as const
+  static get $typeName(): `${string}::transfer_fee::GovernanceWitness` {
+    return `${
+      getTypeOrigin('wormhole', 'transfer_fee::GovernanceWitness')
+    }::transfer_fee::GovernanceWitness` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -81,11 +78,15 @@ export class GovernanceWitness implements StructClass {
   static reified(): GovernanceWitnessReified {
     const reifiedBcs = GovernanceWitness.bcs
     return {
-      typeName: GovernanceWitness.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceWitness.$typeName,
-        ...[],
-      ) as `${string}::transfer_fee::GovernanceWitness`,
+      get typeName() {
+        return GovernanceWitness.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceWitness.$typeName,
+          ...[],
+        ) as `${string}::transfer_fee::GovernanceWitness`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -95,9 +96,11 @@ export class GovernanceWitness implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceWitness.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -178,6 +181,14 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceWitness {
+    if (!isGovernanceWitness(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceWitness object`)
+    }
+    return GovernanceWitness.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceWitness {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -188,6 +199,7 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceWitness {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceWitness(data.bcs.type)) {
@@ -204,13 +216,15 @@ export class GovernanceWitness implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceWitness(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceWitness> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceWitness(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
-
-    return GovernanceWitness.fromBcs(res.bcsBytes)
+    return GovernanceWitness.fromBcs(object.content)
   }
 }
 
@@ -242,9 +256,11 @@ export type TransferFeeJSON = {
 export class TransferFee implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::transfer_fee::TransferFee` = `${
-    getTypeOrigin('wormhole', 'transfer_fee::TransferFee')
-  }::transfer_fee::TransferFee` as const
+  static get $typeName(): `${string}::transfer_fee::TransferFee` {
+    return `${
+      getTypeOrigin('wormhole', 'transfer_fee::TransferFee')
+    }::transfer_fee::TransferFee` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -270,11 +286,15 @@ export class TransferFee implements StructClass {
   static reified(): TransferFeeReified {
     const reifiedBcs = TransferFee.bcs
     return {
-      typeName: TransferFee.$typeName,
-      fullTypeName: composeSuiType(
-        TransferFee.$typeName,
-        ...[],
-      ) as `${string}::transfer_fee::TransferFee`,
+      get typeName() {
+        return TransferFee.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferFee.$typeName,
+          ...[],
+        ) as `${string}::transfer_fee::TransferFee`
+      },
       typeArgs: [] as [],
       isPhantom: TransferFee.$isPhantom,
       reifiedTypeArgs: [],
@@ -284,9 +304,11 @@ export class TransferFee implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferFee.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferFee.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TransferFee.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TransferFee.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TransferFee.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TransferFee.fetch(client, id),
       new: (fields: TransferFeeFields) => {
         return new TransferFee([], fields)
       },
@@ -375,6 +397,14 @@ export class TransferFee implements StructClass {
     return TransferFee.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TransferFee {
+    if (!isTransferFee(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferFee object`)
+    }
+    return TransferFee.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TransferFee {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -385,6 +415,7 @@ export class TransferFee implements StructClass {
     return TransferFee.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TransferFee {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferFee(data.bcs.type)) {
@@ -401,12 +432,14 @@ export class TransferFee implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TransferFee> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferFee(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TransferFee> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferFee(object.type)) {
       throw new Error(`object at id ${id} is not a TransferFee object`)
     }
-
-    return TransferFee.fromBcs(res.bcsBytes)
+    return TransferFee.fromBcs(object.content)
   }
 }

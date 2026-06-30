@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Bytes32 } from '../bytes32/structs'
 
@@ -58,9 +53,11 @@ export type CurrentVersionJSON = {
 export class CurrentVersion implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::package_utils::CurrentVersion` = `${
-    getTypeOrigin('wormhole', 'package_utils::CurrentVersion')
-  }::package_utils::CurrentVersion` as const
+  static get $typeName(): `${string}::package_utils::CurrentVersion` {
+    return `${
+      getTypeOrigin('wormhole', 'package_utils::CurrentVersion')
+    }::package_utils::CurrentVersion` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -84,11 +81,15 @@ export class CurrentVersion implements StructClass {
   static reified(): CurrentVersionReified {
     const reifiedBcs = CurrentVersion.bcs
     return {
-      typeName: CurrentVersion.$typeName,
-      fullTypeName: composeSuiType(
-        CurrentVersion.$typeName,
-        ...[],
-      ) as `${string}::package_utils::CurrentVersion`,
+      get typeName() {
+        return CurrentVersion.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CurrentVersion.$typeName,
+          ...[],
+        ) as `${string}::package_utils::CurrentVersion`
+      },
       typeArgs: [] as [],
       isPhantom: CurrentVersion.$isPhantom,
       reifiedTypeArgs: [],
@@ -98,9 +99,11 @@ export class CurrentVersion implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CurrentVersion.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CurrentVersion.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CurrentVersion.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CurrentVersion.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CurrentVersion.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CurrentVersion.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CurrentVersion.fetch(client, id),
       new: (fields: CurrentVersionFields) => {
         return new CurrentVersion([], fields)
       },
@@ -181,6 +184,14 @@ export class CurrentVersion implements StructClass {
     return CurrentVersion.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CurrentVersion {
+    if (!isCurrentVersion(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CurrentVersion object`)
+    }
+    return CurrentVersion.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentVersion.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CurrentVersion {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -191,6 +202,7 @@ export class CurrentVersion implements StructClass {
     return CurrentVersion.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentVersion.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CurrentVersion {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCurrentVersion(data.bcs.type)) {
@@ -207,13 +219,15 @@ export class CurrentVersion implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CurrentVersion> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCurrentVersion(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CurrentVersion> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCurrentVersion(object.type)) {
       throw new Error(`object at id ${id} is not a CurrentVersion object`)
     }
-
-    return CurrentVersion.fromBcs(res.bcsBytes)
+    return CurrentVersion.fromBcs(object.content)
   }
 }
 
@@ -249,9 +263,11 @@ export type CurrentPackageJSON = {
 export class CurrentPackage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::package_utils::CurrentPackage` = `${
-    getTypeOrigin('wormhole', 'package_utils::CurrentPackage')
-  }::package_utils::CurrentPackage` as const
+  static get $typeName(): `${string}::package_utils::CurrentPackage` {
+    return `${
+      getTypeOrigin('wormhole', 'package_utils::CurrentPackage')
+    }::package_utils::CurrentPackage` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -275,11 +291,15 @@ export class CurrentPackage implements StructClass {
   static reified(): CurrentPackageReified {
     const reifiedBcs = CurrentPackage.bcs
     return {
-      typeName: CurrentPackage.$typeName,
-      fullTypeName: composeSuiType(
-        CurrentPackage.$typeName,
-        ...[],
-      ) as `${string}::package_utils::CurrentPackage`,
+      get typeName() {
+        return CurrentPackage.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CurrentPackage.$typeName,
+          ...[],
+        ) as `${string}::package_utils::CurrentPackage`
+      },
       typeArgs: [] as [],
       isPhantom: CurrentPackage.$isPhantom,
       reifiedTypeArgs: [],
@@ -289,9 +309,11 @@ export class CurrentPackage implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CurrentPackage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CurrentPackage.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CurrentPackage.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CurrentPackage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CurrentPackage.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CurrentPackage.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CurrentPackage.fetch(client, id),
       new: (fields: CurrentPackageFields) => {
         return new CurrentPackage([], fields)
       },
@@ -372,6 +394,14 @@ export class CurrentPackage implements StructClass {
     return CurrentPackage.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CurrentPackage {
+    if (!isCurrentPackage(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CurrentPackage object`)
+    }
+    return CurrentPackage.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentPackage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CurrentPackage {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -382,6 +412,7 @@ export class CurrentPackage implements StructClass {
     return CurrentPackage.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentPackage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CurrentPackage {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCurrentPackage(data.bcs.type)) {
@@ -398,13 +429,15 @@ export class CurrentPackage implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CurrentPackage> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCurrentPackage(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CurrentPackage> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCurrentPackage(object.type)) {
       throw new Error(`object at id ${id} is not a CurrentPackage object`)
     }
-
-    return CurrentPackage.fromBcs(res.bcsBytes)
+    return CurrentPackage.fromBcs(object.content)
   }
 }
 
@@ -436,9 +469,11 @@ export type PendingPackageJSON = {
 export class PendingPackage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::package_utils::PendingPackage` = `${
-    getTypeOrigin('wormhole', 'package_utils::PendingPackage')
-  }::package_utils::PendingPackage` as const
+  static get $typeName(): `${string}::package_utils::PendingPackage` {
+    return `${
+      getTypeOrigin('wormhole', 'package_utils::PendingPackage')
+    }::package_utils::PendingPackage` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -462,11 +497,15 @@ export class PendingPackage implements StructClass {
   static reified(): PendingPackageReified {
     const reifiedBcs = PendingPackage.bcs
     return {
-      typeName: PendingPackage.$typeName,
-      fullTypeName: composeSuiType(
-        PendingPackage.$typeName,
-        ...[],
-      ) as `${string}::package_utils::PendingPackage`,
+      get typeName() {
+        return PendingPackage.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PendingPackage.$typeName,
+          ...[],
+        ) as `${string}::package_utils::PendingPackage`
+      },
       typeArgs: [] as [],
       isPhantom: PendingPackage.$isPhantom,
       reifiedTypeArgs: [],
@@ -476,9 +515,11 @@ export class PendingPackage implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PendingPackage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PendingPackage.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PendingPackage.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PendingPackage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PendingPackage.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PendingPackage.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PendingPackage.fetch(client, id),
       new: (fields: PendingPackageFields) => {
         return new PendingPackage([], fields)
       },
@@ -559,6 +600,14 @@ export class PendingPackage implements StructClass {
     return PendingPackage.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PendingPackage {
+    if (!isPendingPackage(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PendingPackage object`)
+    }
+    return PendingPackage.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PendingPackage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PendingPackage {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -569,6 +618,7 @@ export class PendingPackage implements StructClass {
     return PendingPackage.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PendingPackage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PendingPackage {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPendingPackage(data.bcs.type)) {
@@ -585,13 +635,15 @@ export class PendingPackage implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PendingPackage> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPendingPackage(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PendingPackage> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPendingPackage(object.type)) {
       throw new Error(`object at id ${id} is not a PendingPackage object`)
     }
-
-    return PendingPackage.fromBcs(res.bcsBytes)
+    return PendingPackage.fromBcs(object.content)
   }
 }
 
@@ -623,9 +675,11 @@ export type PackageInfoJSON = {
 export class PackageInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::package_utils::PackageInfo` = `${
-    getTypeOrigin('wormhole', 'package_utils::PackageInfo')
-  }::package_utils::PackageInfo` as const
+  static get $typeName(): `${string}::package_utils::PackageInfo` {
+    return `${
+      getTypeOrigin('wormhole', 'package_utils::PackageInfo')
+    }::package_utils::PackageInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -651,11 +705,15 @@ export class PackageInfo implements StructClass {
   static reified(): PackageInfoReified {
     const reifiedBcs = PackageInfo.bcs
     return {
-      typeName: PackageInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PackageInfo.$typeName,
-        ...[],
-      ) as `${string}::package_utils::PackageInfo`,
+      get typeName() {
+        return PackageInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PackageInfo.$typeName,
+          ...[],
+        ) as `${string}::package_utils::PackageInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PackageInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -665,9 +723,11 @@ export class PackageInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PackageInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PackageInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PackageInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PackageInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PackageInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PackageInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PackageInfo.fetch(client, id),
       new: (fields: PackageInfoFields) => {
         return new PackageInfo([], fields)
       },
@@ -753,6 +813,14 @@ export class PackageInfo implements StructClass {
     return PackageInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PackageInfo {
+    if (!isPackageInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PackageInfo object`)
+    }
+    return PackageInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PackageInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PackageInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -763,6 +831,7 @@ export class PackageInfo implements StructClass {
     return PackageInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PackageInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PackageInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPackageInfo(data.bcs.type)) {
@@ -779,12 +848,14 @@ export class PackageInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PackageInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPackageInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PackageInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPackageInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PackageInfo object`)
     }
-
-    return PackageInfo.fromBcs(res.bcsBytes)
+    return PackageInfo.fromBcs(object.content)
   }
 }

@@ -1,5 +1,5 @@
 import { Transaction } from '@mysten/sui/transactions'
-import { SuiClient, SuiTransactionBlockResponseOptions } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import { Signer } from '@mysten/sui/cryptography'
 import { toBase64 } from '@mysten/sui/utils'
 import { TransactionExecutor, ExecutionResult } from './transaction-executor'
@@ -13,7 +13,7 @@ import { TransactionExecutor, ExecutionResult } from './transaction-executor'
  */
 export class SimpleTransactionExecutor implements TransactionExecutor {
   constructor(
-    private readonly client: SuiClient,
+    private readonly client: ClientWithCoreApi,
     private readonly signer: Signer
   ) {}
 
@@ -23,7 +23,7 @@ export class SimpleTransactionExecutor implements TransactionExecutor {
 
   async executeTransaction(
     transaction: Transaction | Uint8Array,
-    options?: SuiTransactionBlockResponseOptions,
+    _options?: SuiClientTypes.TransactionInclude,
     additionalSignatures?: string[]
   ): Promise<ExecutionResult> {
     let txBytes: Uint8Array
@@ -40,25 +40,23 @@ export class SimpleTransactionExecutor implements TransactionExecutor {
     // Combine signatures
     const signatures = additionalSignatures ? [signature, ...additionalSignatures] : [signature]
 
-    // Execute the transaction
-    const response = await this.client.executeTransactionBlock({
-      transactionBlock: txBytes,
-      signature: signatures,
-      options: {
-        ...options,
-        showRawEffects: true,
-      },
+    // Execute the transaction (effects + events are always requested; consumers read both)
+    const res = await this.client.core.executeTransaction({
+      transaction: txBytes,
+      signatures,
+      include: { effects: true, events: true },
     })
+    const tx = res.Transaction ?? res.FailedTransaction
 
-    // Wait for transaction confirmation before returning
-    await this.client.waitForTransaction({ digest: response.digest })
+    // Wait for transaction confirmation (read-after-write barrier) before returning
+    await this.client.core.waitForTransaction({ digest: tx.digest })
 
-    const effectsBytes = Uint8Array.from(response.rawEffects!)
+    const effectsBytes = tx.effects?.bcs ?? new Uint8Array()
 
     return {
-      digest: response.digest,
+      digest: tx.digest,
       effects: toBase64(effectsBytes),
-      data: response,
+      data: tx,
     }
   }
 

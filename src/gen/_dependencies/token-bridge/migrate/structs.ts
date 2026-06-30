@@ -9,7 +9,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -24,13 +25,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ID } from '../../../sui/object/structs'
 
 /* ============================== MigrateComplete =============================== */
@@ -60,9 +55,11 @@ export type MigrateCompleteJSON = {
 export class MigrateComplete implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::migrate::MigrateComplete` = `${
-    getTypeOrigin('token-bridge', 'migrate::MigrateComplete')
-  }::migrate::MigrateComplete` as const
+  static get $typeName(): `${string}::migrate::MigrateComplete` {
+    return `${
+      getTypeOrigin('token-bridge', 'migrate::MigrateComplete')
+    }::migrate::MigrateComplete` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -86,11 +83,15 @@ export class MigrateComplete implements StructClass {
   static reified(): MigrateCompleteReified {
     const reifiedBcs = MigrateComplete.bcs
     return {
-      typeName: MigrateComplete.$typeName,
-      fullTypeName: composeSuiType(
-        MigrateComplete.$typeName,
-        ...[],
-      ) as `${string}::migrate::MigrateComplete`,
+      get typeName() {
+        return MigrateComplete.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          MigrateComplete.$typeName,
+          ...[],
+        ) as `${string}::migrate::MigrateComplete`
+      },
       typeArgs: [] as [],
       isPhantom: MigrateComplete.$isPhantom,
       reifiedTypeArgs: [],
@@ -100,9 +101,11 @@ export class MigrateComplete implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => MigrateComplete.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MigrateComplete.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        MigrateComplete.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => MigrateComplete.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => MigrateComplete.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => MigrateComplete.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => MigrateComplete.fetch(client, id),
       new: (fields: MigrateCompleteFields) => {
         return new MigrateComplete([], fields)
       },
@@ -183,6 +186,14 @@ export class MigrateComplete implements StructClass {
     return MigrateComplete.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): MigrateComplete {
+    if (!isMigrateComplete(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a MigrateComplete object`)
+    }
+    return MigrateComplete.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MigrateComplete.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): MigrateComplete {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -193,6 +204,7 @@ export class MigrateComplete implements StructClass {
     return MigrateComplete.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MigrateComplete.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): MigrateComplete {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isMigrateComplete(data.bcs.type)) {
@@ -209,12 +221,14 @@ export class MigrateComplete implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<MigrateComplete> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isMigrateComplete(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<MigrateComplete> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isMigrateComplete(object.type)) {
       throw new Error(`object at id ${id} is not a MigrateComplete object`)
     }
-
-    return MigrateComplete.fromBcs(res.bcsBytes)
+    return MigrateComplete.fromBcs(object.content)
   }
 }

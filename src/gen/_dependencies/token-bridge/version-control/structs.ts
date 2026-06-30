@@ -7,7 +7,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -22,13 +23,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== V__0_2_0 =============================== */
 
@@ -57,9 +52,11 @@ export type V__0_2_0JSON = {
 export class V__0_2_0 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::version_control::V__0_2_0` = `${
-    getTypeOrigin('token-bridge', 'version_control::V__0_2_0')
-  }::version_control::V__0_2_0` as const
+  static get $typeName(): `${string}::version_control::V__0_2_0` {
+    return `${
+      getTypeOrigin('token-bridge', 'version_control::V__0_2_0')
+    }::version_control::V__0_2_0` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -83,11 +80,15 @@ export class V__0_2_0 implements StructClass {
   static reified(): V__0_2_0Reified {
     const reifiedBcs = V__0_2_0.bcs
     return {
-      typeName: V__0_2_0.$typeName,
-      fullTypeName: composeSuiType(
-        V__0_2_0.$typeName,
-        ...[],
-      ) as `${string}::version_control::V__0_2_0`,
+      get typeName() {
+        return V__0_2_0.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          V__0_2_0.$typeName,
+          ...[],
+        ) as `${string}::version_control::V__0_2_0`
+      },
       typeArgs: [] as [],
       isPhantom: V__0_2_0.$isPhantom,
       reifiedTypeArgs: [],
@@ -97,9 +98,11 @@ export class V__0_2_0 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => V__0_2_0.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => V__0_2_0.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        V__0_2_0.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => V__0_2_0.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => V__0_2_0.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => V__0_2_0.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => V__0_2_0.fetch(client, id),
       new: (fields: V__0_2_0Fields) => {
         return new V__0_2_0([], fields)
       },
@@ -180,6 +183,14 @@ export class V__0_2_0 implements StructClass {
     return V__0_2_0.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): V__0_2_0 {
+    if (!isV__0_2_0(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a V__0_2_0 object`)
+    }
+    return V__0_2_0.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link V__0_2_0.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): V__0_2_0 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -190,6 +201,7 @@ export class V__0_2_0 implements StructClass {
     return V__0_2_0.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link V__0_2_0.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): V__0_2_0 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isV__0_2_0(data.bcs.type)) {
@@ -206,13 +218,15 @@ export class V__0_2_0 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<V__0_2_0> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isV__0_2_0(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<V__0_2_0> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isV__0_2_0(object.type)) {
       throw new Error(`object at id ${id} is not a V__0_2_0 object`)
     }
-
-    return V__0_2_0.fromBcs(res.bcsBytes)
+    return V__0_2_0.fromBcs(object.content)
   }
 }
 
@@ -242,9 +256,11 @@ export type V__DUMMYJSON = {
 export class V__DUMMY implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::version_control::V__DUMMY` = `${
-    getTypeOrigin('token-bridge', 'version_control::V__DUMMY')
-  }::version_control::V__DUMMY` as const
+  static get $typeName(): `${string}::version_control::V__DUMMY` {
+    return `${
+      getTypeOrigin('token-bridge', 'version_control::V__DUMMY')
+    }::version_control::V__DUMMY` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -268,11 +284,15 @@ export class V__DUMMY implements StructClass {
   static reified(): V__DUMMYReified {
     const reifiedBcs = V__DUMMY.bcs
     return {
-      typeName: V__DUMMY.$typeName,
-      fullTypeName: composeSuiType(
-        V__DUMMY.$typeName,
-        ...[],
-      ) as `${string}::version_control::V__DUMMY`,
+      get typeName() {
+        return V__DUMMY.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          V__DUMMY.$typeName,
+          ...[],
+        ) as `${string}::version_control::V__DUMMY`
+      },
       typeArgs: [] as [],
       isPhantom: V__DUMMY.$isPhantom,
       reifiedTypeArgs: [],
@@ -282,9 +302,11 @@ export class V__DUMMY implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => V__DUMMY.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => V__DUMMY.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        V__DUMMY.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => V__DUMMY.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => V__DUMMY.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => V__DUMMY.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => V__DUMMY.fetch(client, id),
       new: (fields: V__DUMMYFields) => {
         return new V__DUMMY([], fields)
       },
@@ -365,6 +387,14 @@ export class V__DUMMY implements StructClass {
     return V__DUMMY.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): V__DUMMY {
+    if (!isV__DUMMY(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a V__DUMMY object`)
+    }
+    return V__DUMMY.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link V__DUMMY.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): V__DUMMY {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -375,6 +405,7 @@ export class V__DUMMY implements StructClass {
     return V__DUMMY.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link V__DUMMY.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): V__DUMMY {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isV__DUMMY(data.bcs.type)) {
@@ -391,12 +422,14 @@ export class V__DUMMY implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<V__DUMMY> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isV__DUMMY(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<V__DUMMY> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isV__DUMMY(object.type)) {
       throw new Error(`object at id ${id} is not a V__DUMMY object`)
     }
-
-    return V__DUMMY.fromBcs(res.bcsBytes)
+    return V__DUMMY.fromBcs(object.content)
   }
 }

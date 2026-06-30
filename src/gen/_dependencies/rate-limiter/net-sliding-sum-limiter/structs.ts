@@ -5,15 +5,44 @@
  * for input and output values, allowing calculation of net values (input - output)
  * while enforcing maximum limits on both directions independently.
  *
+ * # Gross vs. net caps
+ *
+ * Each side has two independent bounds: a *gross* cap on the per-side total
+ * over the window (`max_inflow_limit`, `max_outflow_limit`) and a *net* cap on
+ * `|inflow − outflow|` (`max_net_inflow_limit`, `max_net_outflow_limit`).
+ * They are not interchangeable.
+ *
+ * The net cap is a secondary check that bounds wash-style flows where both
+ * sides grow together; it does *not* bound damage on its own. The effective
+ * outflow ceiling over the window is:
+ *
+ * ```text
+ * min(max_outflow_limit, max_net_outflow_limit + inflow_sum)
+ * ```
+ *
+ * If `max_outflow_limit = None`, the ceiling scales 1:1 with however much
+ * inflow has accumulated in the window — including inflow from unrelated
+ * callers. A caller can therefore inflate their own outflow headroom by
+ * first generating inflow, or by waiting for inflow from any other source.
+ * The same relationship holds symmetrically on the inflow side.
+ *
+ * Set both the gross and the net cap on a given side unless the ceiling is
+ * intended to float with the opposite side.
+ *
+ * See `sliding_sum_limiter`'s module-level "Cap sizing" note for the
+ * per-side burst behavior that applies to each gross cap.
+ *
  * # Examples
  *
  * ```move
  * // Create net limiter with 5-minute buckets, 12 buckets total (1 hour window)
  * let mut net_limiter = net_sliding_sum_limiter::new(
- * 5 * 60 * 1000,  // 5 minutes per bucket
- * 12,             // 12 buckets (1 hour total)
- * option::some(10000), // Maximum inflow limit
- * option::some(8000),  // Maximum outflow limit
+ * 5 * 60 * 1000,       // 5 minutes per bucket
+ * 12,                  // 12 buckets (1 hour total)
+ * option::some(10000), // Gross inflow cap (per-window total)
+ * option::some(8000),  // Gross outflow cap (per-window total)
+ * option::some(5000),  // Net inflow cap  (bound on inflow - outflow)
+ * option::some(3000),  // Net outflow cap (bound on outflow - inflow)
  * &clock
  * );
  *
@@ -29,7 +58,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -45,13 +75,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Option } from '../../../std/option/structs'
 import { SlidingSumLimiter } from '../sliding-sum-limiter/structs'
 
@@ -89,9 +113,11 @@ export type NetSlidingSumLimiterJSON = {
 export class NetSlidingSumLimiter implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::net_sliding_sum_limiter::NetSlidingSumLimiter` = `${
-    getTypeOrigin('rate-limiter', 'net_sliding_sum_limiter::NetSlidingSumLimiter')
-  }::net_sliding_sum_limiter::NetSlidingSumLimiter` as const
+  static get $typeName(): `${string}::net_sliding_sum_limiter::NetSlidingSumLimiter` {
+    return `${
+      getTypeOrigin('rate-limiter', 'net_sliding_sum_limiter::NetSlidingSumLimiter')
+    }::net_sliding_sum_limiter::NetSlidingSumLimiter` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -121,11 +147,15 @@ export class NetSlidingSumLimiter implements StructClass {
   static reified(): NetSlidingSumLimiterReified {
     const reifiedBcs = NetSlidingSumLimiter.bcs
     return {
-      typeName: NetSlidingSumLimiter.$typeName,
-      fullTypeName: composeSuiType(
-        NetSlidingSumLimiter.$typeName,
-        ...[],
-      ) as `${string}::net_sliding_sum_limiter::NetSlidingSumLimiter`,
+      get typeName() {
+        return NetSlidingSumLimiter.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          NetSlidingSumLimiter.$typeName,
+          ...[],
+        ) as `${string}::net_sliding_sum_limiter::NetSlidingSumLimiter`
+      },
       typeArgs: [] as [],
       isPhantom: NetSlidingSumLimiter.$isPhantom,
       reifiedTypeArgs: [],
@@ -136,11 +166,13 @@ export class NetSlidingSumLimiter implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => NetSlidingSumLimiter.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => NetSlidingSumLimiter.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        NetSlidingSumLimiter.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         NetSlidingSumLimiter.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         NetSlidingSumLimiter.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         NetSlidingSumLimiter.fetch(client, id),
       new: (fields: NetSlidingSumLimiterFields) => {
         return new NetSlidingSumLimiter([], fields)
@@ -255,6 +287,14 @@ export class NetSlidingSumLimiter implements StructClass {
     return NetSlidingSumLimiter.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): NetSlidingSumLimiter {
+    if (!isNetSlidingSumLimiter(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a NetSlidingSumLimiter object`)
+    }
+    return NetSlidingSumLimiter.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NetSlidingSumLimiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): NetSlidingSumLimiter {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -267,6 +307,7 @@ export class NetSlidingSumLimiter implements StructClass {
     return NetSlidingSumLimiter.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NetSlidingSumLimiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): NetSlidingSumLimiter {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isNetSlidingSumLimiter(data.bcs.type)) {
@@ -283,12 +324,14 @@ export class NetSlidingSumLimiter implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<NetSlidingSumLimiter> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isNetSlidingSumLimiter(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<NetSlidingSumLimiter> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isNetSlidingSumLimiter(object.type)) {
       throw new Error(`object at id ${id} is not a NetSlidingSumLimiter object`)
     }
-
-    return NetSlidingSumLimiter.fromBcs(res.bcsBytes)
+    return NetSlidingSumLimiter.fromBcs(object.content)
   }
 }

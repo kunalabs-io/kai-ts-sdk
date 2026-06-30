@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
 import { String } from '../../std/string/structs'
@@ -53,9 +48,9 @@ export type POSITIONJSON = {
 export class POSITION implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position::POSITION` = `${
-    getTypeOrigin('bluefin-spot', 'position::POSITION')
-  }::position::POSITION` as const
+  static get $typeName(): `${string}::position::POSITION` {
+    return `${getTypeOrigin('bluefin-spot', 'position::POSITION')}::position::POSITION` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +74,15 @@ export class POSITION implements StructClass {
   static reified(): POSITIONReified {
     const reifiedBcs = POSITION.bcs
     return {
-      typeName: POSITION.$typeName,
-      fullTypeName: composeSuiType(
-        POSITION.$typeName,
-        ...[],
-      ) as `${string}::position::POSITION`,
+      get typeName() {
+        return POSITION.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          POSITION.$typeName,
+          ...[],
+        ) as `${string}::position::POSITION`
+      },
       typeArgs: [] as [],
       isPhantom: POSITION.$isPhantom,
       reifiedTypeArgs: [],
@@ -93,9 +92,11 @@ export class POSITION implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => POSITION.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => POSITION.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        POSITION.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => POSITION.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => POSITION.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => POSITION.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => POSITION.fetch(client, id),
       new: (fields: POSITIONFields) => {
         return new POSITION([], fields)
       },
@@ -176,6 +177,14 @@ export class POSITION implements StructClass {
     return POSITION.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): POSITION {
+    if (!isPOSITION(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a POSITION object`)
+    }
+    return POSITION.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link POSITION.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): POSITION {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -186,6 +195,7 @@ export class POSITION implements StructClass {
     return POSITION.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link POSITION.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): POSITION {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPOSITION(data.bcs.type)) {
@@ -202,13 +212,15 @@ export class POSITION implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<POSITION> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPOSITION(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<POSITION> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPOSITION(object.type)) {
       throw new Error(`object at id ${id} is not a POSITION object`)
     }
-
-    return POSITION.fromBcs(res.bcsBytes)
+    return POSITION.fromBcs(object.content)
   }
 }
 
@@ -269,9 +281,9 @@ export type PositionJSON = {
 export class Position implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position::Position` = `${
-    getTypeOrigin('bluefin-spot', 'position::Position')
-  }::position::Position` as const
+  static get $typeName(): `${string}::position::Position` {
+    return `${getTypeOrigin('bluefin-spot', 'position::Position')}::position::Position` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -327,11 +339,15 @@ export class Position implements StructClass {
   static reified(): PositionReified {
     const reifiedBcs = Position.bcs
     return {
-      typeName: Position.$typeName,
-      fullTypeName: composeSuiType(
-        Position.$typeName,
-        ...[],
-      ) as `${string}::position::Position`,
+      get typeName() {
+        return Position.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Position.$typeName,
+          ...[],
+        ) as `${string}::position::Position`
+      },
       typeArgs: [] as [],
       isPhantom: Position.$isPhantom,
       reifiedTypeArgs: [],
@@ -341,9 +357,11 @@ export class Position implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Position.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Position.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Position.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Position.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Position.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Position.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Position.fetch(client, id),
       new: (fields: PositionFields) => {
         return new Position([], fields)
       },
@@ -510,6 +528,14 @@ export class Position implements StructClass {
     return Position.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Position {
+    if (!isPosition(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Position object`)
+    }
+    return Position.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Position.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Position {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -520,6 +546,7 @@ export class Position implements StructClass {
     return Position.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Position.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Position {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPosition(data.bcs.type)) {
@@ -536,13 +563,15 @@ export class Position implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Position> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPosition(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Position> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPosition(object.type)) {
       throw new Error(`object at id ${id} is not a Position object`)
     }
-
-    return Position.fromBcs(res.bcsBytes)
+    return Position.fromBcs(object.content)
   }
 }
 
@@ -576,9 +605,11 @@ export type PositionRewardInfoJSON = {
 export class PositionRewardInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position::PositionRewardInfo` = `${
-    getTypeOrigin('bluefin-spot', 'position::PositionRewardInfo')
-  }::position::PositionRewardInfo` as const
+  static get $typeName(): `${string}::position::PositionRewardInfo` {
+    return `${
+      getTypeOrigin('bluefin-spot', 'position::PositionRewardInfo')
+    }::position::PositionRewardInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -604,11 +635,15 @@ export class PositionRewardInfo implements StructClass {
   static reified(): PositionRewardInfoReified {
     const reifiedBcs = PositionRewardInfo.bcs
     return {
-      typeName: PositionRewardInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PositionRewardInfo.$typeName,
-        ...[],
-      ) as `${string}::position::PositionRewardInfo`,
+      get typeName() {
+        return PositionRewardInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PositionRewardInfo.$typeName,
+          ...[],
+        ) as `${string}::position::PositionRewardInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PositionRewardInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -618,9 +653,11 @@ export class PositionRewardInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionRewardInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionRewardInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PositionRewardInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PositionRewardInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionRewardInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PositionRewardInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PositionRewardInfo.fetch(client, id),
       new: (fields: PositionRewardInfoFields) => {
         return new PositionRewardInfo([], fields)
       },
@@ -709,6 +746,14 @@ export class PositionRewardInfo implements StructClass {
     return PositionRewardInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PositionRewardInfo {
+    if (!isPositionRewardInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PositionRewardInfo object`)
+    }
+    return PositionRewardInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PositionRewardInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -719,6 +764,7 @@ export class PositionRewardInfo implements StructClass {
     return PositionRewardInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PositionRewardInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPositionRewardInfo(data.bcs.type)) {
@@ -735,12 +781,14 @@ export class PositionRewardInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionRewardInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPositionRewardInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PositionRewardInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPositionRewardInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PositionRewardInfo object`)
     }
-
-    return PositionRewardInfo.fromBcs(res.bcsBytes)
+    return PositionRewardInfo.fromBcs(object.content)
   }
 }

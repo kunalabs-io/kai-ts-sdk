@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { String } from '../../../std/ascii/structs'
 import { TypeName } from '../../../std/type-name/structs'
 import { UID } from '../../../sui/object/structs'
@@ -58,9 +53,11 @@ export type COIN_DECIMALS_REGISTRYJSON = {
 export class COIN_DECIMALS_REGISTRY implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::coin_decimals_registry::COIN_DECIMALS_REGISTRY` = `${
-    getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::COIN_DECIMALS_REGISTRY')
-  }::coin_decimals_registry::COIN_DECIMALS_REGISTRY` as const
+  static get $typeName(): `${string}::coin_decimals_registry::COIN_DECIMALS_REGISTRY` {
+    return `${
+      getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::COIN_DECIMALS_REGISTRY')
+    }::coin_decimals_registry::COIN_DECIMALS_REGISTRY` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -84,11 +81,15 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
   static reified(): COIN_DECIMALS_REGISTRYReified {
     const reifiedBcs = COIN_DECIMALS_REGISTRY.bcs
     return {
-      typeName: COIN_DECIMALS_REGISTRY.$typeName,
-      fullTypeName: composeSuiType(
-        COIN_DECIMALS_REGISTRY.$typeName,
-        ...[],
-      ) as `${string}::coin_decimals_registry::COIN_DECIMALS_REGISTRY`,
+      get typeName() {
+        return COIN_DECIMALS_REGISTRY.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          COIN_DECIMALS_REGISTRY.$typeName,
+          ...[],
+        ) as `${string}::coin_decimals_registry::COIN_DECIMALS_REGISTRY`
+      },
       typeArgs: [] as [],
       isPhantom: COIN_DECIMALS_REGISTRY.$isPhantom,
       reifiedTypeArgs: [],
@@ -99,11 +100,13 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => COIN_DECIMALS_REGISTRY.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => COIN_DECIMALS_REGISTRY.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        COIN_DECIMALS_REGISTRY.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         COIN_DECIMALS_REGISTRY.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         COIN_DECIMALS_REGISTRY.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         COIN_DECIMALS_REGISTRY.fetch(client, id),
       new: (fields: COIN_DECIMALS_REGISTRYFields) => {
         return new COIN_DECIMALS_REGISTRY([], fields)
@@ -185,6 +188,14 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
     return COIN_DECIMALS_REGISTRY.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): COIN_DECIMALS_REGISTRY {
+    if (!isCOIN_DECIMALS_REGISTRY(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a COIN_DECIMALS_REGISTRY object`)
+    }
+    return COIN_DECIMALS_REGISTRY.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link COIN_DECIMALS_REGISTRY.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): COIN_DECIMALS_REGISTRY {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -197,6 +208,7 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
     return COIN_DECIMALS_REGISTRY.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link COIN_DECIMALS_REGISTRY.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): COIN_DECIMALS_REGISTRY {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCOIN_DECIMALS_REGISTRY(data.bcs.type)) {
@@ -213,13 +225,15 @@ export class COIN_DECIMALS_REGISTRY implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<COIN_DECIMALS_REGISTRY> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCOIN_DECIMALS_REGISTRY(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<COIN_DECIMALS_REGISTRY> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCOIN_DECIMALS_REGISTRY(object.type)) {
       throw new Error(`object at id ${id} is not a COIN_DECIMALS_REGISTRY object`)
     }
-
-    return COIN_DECIMALS_REGISTRY.fromBcs(res.bcsBytes)
+    return COIN_DECIMALS_REGISTRY.fromBcs(object.content)
   }
 }
 
@@ -253,9 +267,11 @@ export type CoinDecimalsRegistryJSON = {
 export class CoinDecimalsRegistry implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::coin_decimals_registry::CoinDecimalsRegistry` = `${
-    getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::CoinDecimalsRegistry')
-  }::coin_decimals_registry::CoinDecimalsRegistry` as const
+  static get $typeName(): `${string}::coin_decimals_registry::CoinDecimalsRegistry` {
+    return `${
+      getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::CoinDecimalsRegistry')
+    }::coin_decimals_registry::CoinDecimalsRegistry` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -281,11 +297,15 @@ export class CoinDecimalsRegistry implements StructClass {
   static reified(): CoinDecimalsRegistryReified {
     const reifiedBcs = CoinDecimalsRegistry.bcs
     return {
-      typeName: CoinDecimalsRegistry.$typeName,
-      fullTypeName: composeSuiType(
-        CoinDecimalsRegistry.$typeName,
-        ...[],
-      ) as `${string}::coin_decimals_registry::CoinDecimalsRegistry`,
+      get typeName() {
+        return CoinDecimalsRegistry.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CoinDecimalsRegistry.$typeName,
+          ...[],
+        ) as `${string}::coin_decimals_registry::CoinDecimalsRegistry`
+      },
       typeArgs: [] as [],
       isPhantom: CoinDecimalsRegistry.$isPhantom,
       reifiedTypeArgs: [],
@@ -296,11 +316,13 @@ export class CoinDecimalsRegistry implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinDecimalsRegistry.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinDecimalsRegistry.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CoinDecimalsRegistry.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CoinDecimalsRegistry.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CoinDecimalsRegistry.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CoinDecimalsRegistry.fetch(client, id),
       new: (fields: CoinDecimalsRegistryFields) => {
         return new CoinDecimalsRegistry([], fields)
@@ -396,6 +418,14 @@ export class CoinDecimalsRegistry implements StructClass {
     return CoinDecimalsRegistry.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CoinDecimalsRegistry {
+    if (!isCoinDecimalsRegistry(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CoinDecimalsRegistry object`)
+    }
+    return CoinDecimalsRegistry.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinDecimalsRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CoinDecimalsRegistry {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -408,6 +438,7 @@ export class CoinDecimalsRegistry implements StructClass {
     return CoinDecimalsRegistry.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinDecimalsRegistry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CoinDecimalsRegistry {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCoinDecimalsRegistry(data.bcs.type)) {
@@ -424,13 +455,15 @@ export class CoinDecimalsRegistry implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CoinDecimalsRegistry> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCoinDecimalsRegistry(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CoinDecimalsRegistry> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCoinDecimalsRegistry(object.type)) {
       throw new Error(`object at id ${id} is not a CoinDecimalsRegistry object`)
     }
-
-    return CoinDecimalsRegistry.fromBcs(res.bcsBytes)
+    return CoinDecimalsRegistry.fromBcs(object.content)
   }
 }
 
@@ -469,9 +502,11 @@ export type CoinDecimalsRegisteredJSON = {
 export class CoinDecimalsRegistered implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::coin_decimals_registry::CoinDecimalsRegistered` = `${
-    getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::CoinDecimalsRegistered')
-  }::coin_decimals_registry::CoinDecimalsRegistered` as const
+  static get $typeName(): `${string}::coin_decimals_registry::CoinDecimalsRegistered` {
+    return `${
+      getTypeOrigin('coin-decimals-registry', 'coin_decimals_registry::CoinDecimalsRegistered')
+    }::coin_decimals_registry::CoinDecimalsRegistered` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -499,11 +534,15 @@ export class CoinDecimalsRegistered implements StructClass {
   static reified(): CoinDecimalsRegisteredReified {
     const reifiedBcs = CoinDecimalsRegistered.bcs
     return {
-      typeName: CoinDecimalsRegistered.$typeName,
-      fullTypeName: composeSuiType(
-        CoinDecimalsRegistered.$typeName,
-        ...[],
-      ) as `${string}::coin_decimals_registry::CoinDecimalsRegistered`,
+      get typeName() {
+        return CoinDecimalsRegistered.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CoinDecimalsRegistered.$typeName,
+          ...[],
+        ) as `${string}::coin_decimals_registry::CoinDecimalsRegistered`
+      },
       typeArgs: [] as [],
       isPhantom: CoinDecimalsRegistered.$isPhantom,
       reifiedTypeArgs: [],
@@ -514,11 +553,13 @@ export class CoinDecimalsRegistered implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CoinDecimalsRegistered.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CoinDecimalsRegistered.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CoinDecimalsRegistered.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CoinDecimalsRegistered.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CoinDecimalsRegistered.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CoinDecimalsRegistered.fetch(client, id),
       new: (fields: CoinDecimalsRegisteredFields) => {
         return new CoinDecimalsRegistered([], fields)
@@ -613,6 +654,14 @@ export class CoinDecimalsRegistered implements StructClass {
     return CoinDecimalsRegistered.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CoinDecimalsRegistered {
+    if (!isCoinDecimalsRegistered(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CoinDecimalsRegistered object`)
+    }
+    return CoinDecimalsRegistered.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinDecimalsRegistered.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CoinDecimalsRegistered {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -625,6 +674,7 @@ export class CoinDecimalsRegistered implements StructClass {
     return CoinDecimalsRegistered.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CoinDecimalsRegistered.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CoinDecimalsRegistered {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCoinDecimalsRegistered(data.bcs.type)) {
@@ -641,12 +691,14 @@ export class CoinDecimalsRegistered implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CoinDecimalsRegistered> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCoinDecimalsRegistered(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CoinDecimalsRegistered> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCoinDecimalsRegistered(object.type)) {
       throw new Error(`object at id ${id} is not a CoinDecimalsRegistered object`)
     }
-
-    return CoinDecimalsRegistered.fromBcs(res.bcsBytes)
+    return CoinDecimalsRegistered.fromBcs(object.content)
   }
 }

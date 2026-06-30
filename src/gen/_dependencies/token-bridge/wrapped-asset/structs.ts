@@ -8,7 +8,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -32,10 +33,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { String } from '../../../std/string/structs'
 import { TreasuryCap } from '../../../sui/coin/structs'
@@ -80,9 +79,11 @@ export type ForeignInfoJSON<C extends PhantomTypeArgument> = {
 export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::wrapped_asset::ForeignInfo` = `${
-    getTypeOrigin('token-bridge', 'wrapped_asset::ForeignInfo')
-  }::wrapped_asset::ForeignInfo` as const
+  static get $typeName(): `${string}::wrapped_asset::ForeignInfo` {
+    return `${
+      getTypeOrigin('token-bridge', 'wrapped_asset::ForeignInfo')
+    }::wrapped_asset::ForeignInfo` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -114,12 +115,18 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
   ): ForeignInfoReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = ForeignInfo.bcs
     return {
-      typeName: ForeignInfo.$typeName,
-      fullTypeName: composeSuiType(
-        ForeignInfo.$typeName,
-        ...[extractType(C)],
-      ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
-      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
+      get typeName() {
+        return ForeignInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ForeignInfo.$typeName,
+          ...[extractType(C)],
+        ) as `${string}::wrapped_asset::ForeignInfo<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`
+      },
+      get typeArgs() {
+        return [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>]
+      },
       isPhantom: ForeignInfo.$isPhantom,
       reifiedTypeArgs: [C],
       fromFields: (fields: Record<string, any>) => ForeignInfo.fromFields(C, fields),
@@ -128,9 +135,11 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ForeignInfo.fromJSONField(C, field),
       fromJSON: (json: Record<string, any>) => ForeignInfo.fromJSON(C, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ForeignInfo.fromCoreObject(C, obj),
       fromSuiParsedData: (content: SuiParsedData) => ForeignInfo.fromSuiParsedData(C, content),
       fromSuiObjectData: (content: SuiObjectData) => ForeignInfo.fromSuiObjectData(C, content),
-      fetch: async (client: SupportedSuiClient, id: string) => ForeignInfo.fetch(client, C, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ForeignInfo.fetch(client, C, id),
       new: (fields: ForeignInfoFields<ToPhantomTypeArgument<C>>) => {
         return new ForeignInfo([extractType(C)], fields)
       },
@@ -249,6 +258,34 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
     return ForeignInfo.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ForeignInfo<ToPhantomTypeArgument<C>> {
+    if (!isForeignInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ForeignInfo object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ForeignInfo.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ForeignInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     content: SuiParsedData,
@@ -262,6 +299,7 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
     return ForeignInfo.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ForeignInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     data: SuiObjectData,
@@ -298,16 +336,19 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: C,
     id: string,
   ): Promise<ForeignInfo<ToPhantomTypeArgument<C>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isForeignInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isForeignInfo(object.type)) {
       throw new Error(`object at id ${id} is not a ForeignInfo object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -323,7 +364,7 @@ export class ForeignInfo<C extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return ForeignInfo.fromBcs(typeArg, res.bcsBytes)
+    return ForeignInfo.fromBcs(typeArg, object.content)
   }
 }
 
@@ -368,9 +409,11 @@ export type WrappedAssetJSON<C extends PhantomTypeArgument> = {
 export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::wrapped_asset::WrappedAsset` = `${
-    getTypeOrigin('token-bridge', 'wrapped_asset::WrappedAsset')
-  }::wrapped_asset::WrappedAsset` as const
+  static get $typeName(): `${string}::wrapped_asset::WrappedAsset` {
+    return `${
+      getTypeOrigin('token-bridge', 'wrapped_asset::WrappedAsset')
+    }::wrapped_asset::WrappedAsset` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -402,12 +445,18 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
   ): WrappedAssetReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = WrappedAsset.bcs
     return {
-      typeName: WrappedAsset.$typeName,
-      fullTypeName: composeSuiType(
-        WrappedAsset.$typeName,
-        ...[extractType(C)],
-      ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
-      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
+      get typeName() {
+        return WrappedAsset.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WrappedAsset.$typeName,
+          ...[extractType(C)],
+        ) as `${string}::wrapped_asset::WrappedAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`
+      },
+      get typeArgs() {
+        return [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>]
+      },
       isPhantom: WrappedAsset.$isPhantom,
       reifiedTypeArgs: [C],
       fromFields: (fields: Record<string, any>) => WrappedAsset.fromFields(C, fields),
@@ -416,9 +465,11 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedAsset.fromJSONField(C, field),
       fromJSON: (json: Record<string, any>) => WrappedAsset.fromJSON(C, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WrappedAsset.fromCoreObject(C, obj),
       fromSuiParsedData: (content: SuiParsedData) => WrappedAsset.fromSuiParsedData(C, content),
       fromSuiObjectData: (content: SuiObjectData) => WrappedAsset.fromSuiObjectData(C, content),
-      fetch: async (client: SupportedSuiClient, id: string) => WrappedAsset.fetch(client, C, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WrappedAsset.fetch(client, C, id),
       new: (fields: WrappedAssetFields<ToPhantomTypeArgument<C>>) => {
         return new WrappedAsset([extractType(C)], fields)
       },
@@ -540,6 +591,34 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
     return WrappedAsset.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WrappedAsset<ToPhantomTypeArgument<C>> {
+    if (!isWrappedAsset(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WrappedAsset object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WrappedAsset.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     content: SuiParsedData,
@@ -553,6 +632,7 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
     return WrappedAsset.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     data: SuiObjectData,
@@ -589,16 +669,19 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
   }
 
   static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: C,
     id: string,
   ): Promise<WrappedAsset<ToPhantomTypeArgument<C>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWrappedAsset(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWrappedAsset(object.type)) {
       throw new Error(`object at id ${id} is not a WrappedAsset object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -614,6 +697,6 @@ export class WrappedAsset<C extends PhantomTypeArgument> implements StructClass 
       }
     }
 
-    return WrappedAsset.fromBcs(typeArg, res.bcsBytes)
+    return WrappedAsset.fromBcs(typeArg, object.content)
   }
 }

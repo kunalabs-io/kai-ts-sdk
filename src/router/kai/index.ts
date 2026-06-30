@@ -226,8 +226,6 @@ export function swap(tx: Transaction, args: SwapArgs): TransactionObjectArgument
 export class KaiRouterAdapter implements Router {
   id = () => 'kai'
 
-  async initialize(): Promise<void> {}
-
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
     if (args.amountIn === 0n) {
       balance.destroyZero(args.tx, args.inInfo.typeName, args.balanceIn)

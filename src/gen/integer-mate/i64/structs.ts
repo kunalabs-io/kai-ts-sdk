@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== I64 =============================== */
 
@@ -47,9 +42,9 @@ export type I64JSON = {
 export class I64 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::i64::I64` = `${
-    getTypeOrigin('integer-mate', 'i64::I64')
-  }::i64::I64` as const
+  static get $typeName(): `${string}::i64::I64` {
+    return `${getTypeOrigin('integer-mate', 'i64::I64')}::i64::I64` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class I64 implements StructClass {
   static reified(): I64Reified {
     const reifiedBcs = I64.bcs
     return {
-      typeName: I64.$typeName,
-      fullTypeName: composeSuiType(
-        I64.$typeName,
-        ...[],
-      ) as `${string}::i64::I64`,
+      get typeName() {
+        return I64.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          I64.$typeName,
+          ...[],
+        ) as `${string}::i64::I64`
+      },
       typeArgs: [] as [],
       isPhantom: I64.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class I64 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => I64.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I64.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => I64.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => I64.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => I64.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => I64.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => I64.fetch(client, id),
       new: (fields: I64Fields) => {
         return new I64([], fields)
       },
@@ -170,6 +170,14 @@ export class I64 implements StructClass {
     return I64.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): I64 {
+    if (!isI64(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a I64 object`)
+    }
+    return I64.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I64.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): I64 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class I64 implements StructClass {
     return I64.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I64.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): I64 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isI64(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class I64 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<I64> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isI64(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<I64> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isI64(object.type)) {
       throw new Error(`object at id ${id} is not a I64 object`)
     }
-
-    return I64.fromBcs(res.bcsBytes)
+    return I64.fromBcs(object.content)
   }
 }

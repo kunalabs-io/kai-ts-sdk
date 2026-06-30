@@ -7,7 +7,7 @@ import {
 } from '@mysten/sui/transactions'
 import * as balance from '../../gen/sui/balance/functions'
 import * as cetusUtil from '../../gen/kai-leverage-util/cetus/functions'
-import { CETUS_GLOBAL_CONFIG_ID } from '../../constants'
+import { CETUS_GLOBAL_CONFIG_ID } from '../../protocol-infra'
 import { findRoute, findRouteStep, RouteStep, swapWithRoute } from './index'
 import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'

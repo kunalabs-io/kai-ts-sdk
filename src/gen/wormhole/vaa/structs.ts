@@ -21,7 +21,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -38,13 +39,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Bytes32 } from '../bytes32/structs'
 import { ExternalAddress } from '../external-address/structs'
@@ -109,9 +104,9 @@ export type VAAJSON = {
 export class VAA implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vaa::VAA` = `${
-    getTypeOrigin('wormhole', 'vaa::VAA')
-  }::vaa::VAA` as const
+  static get $typeName(): `${string}::vaa::VAA` {
+    return `${getTypeOrigin('wormhole', 'vaa::VAA')}::vaa::VAA` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -166,11 +161,15 @@ export class VAA implements StructClass {
   static reified(): VAAReified {
     const reifiedBcs = VAA.bcs
     return {
-      typeName: VAA.$typeName,
-      fullTypeName: composeSuiType(
-        VAA.$typeName,
-        ...[],
-      ) as `${string}::vaa::VAA`,
+      get typeName() {
+        return VAA.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          VAA.$typeName,
+          ...[],
+        ) as `${string}::vaa::VAA`
+      },
       typeArgs: [] as [],
       isPhantom: VAA.$isPhantom,
       reifiedTypeArgs: [],
@@ -180,9 +179,10 @@ export class VAA implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => VAA.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VAA.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => VAA.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => VAA.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VAA.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => VAA.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => VAA.fetch(client, id),
       new: (fields: VAAFields) => {
         return new VAA([], fields)
       },
@@ -306,6 +306,14 @@ export class VAA implements StructClass {
     return VAA.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): VAA {
+    if (!isVAA(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a VAA object`)
+    }
+    return VAA.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VAA.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): VAA {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -316,6 +324,7 @@ export class VAA implements StructClass {
     return VAA.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VAA.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): VAA {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isVAA(data.bcs.type)) {
@@ -332,12 +341,14 @@ export class VAA implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<VAA> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVAA(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<VAA> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVAA(object.type)) {
       throw new Error(`object at id ${id} is not a VAA object`)
     }
-
-    return VAA.fromBcs(res.bcsBytes)
+    return VAA.fromBcs(object.content)
   }
 }

@@ -1,4 +1,4 @@
-import { Aftermath, RouterProtocolName } from 'aftermath-ts-sdk'
+import { Aftermath, RouterProtocolName, Router as AfRouter } from 'aftermath-ts-sdk'
 import { PhantomTypeArgument } from '../gen/_framework/reified'
 import { Price } from '../price'
 import Decimal from 'decimal.js'
@@ -38,14 +38,19 @@ export const AF_AGG_ALL_PROTOCOLS: RouterProtocolName[] = [
 ]
 
 export class AfRouterAdapter implements Router {
-  private afSdk = new Aftermath('MAINNET')
-  private router = this.afSdk.Router()
+  private constructor(private readonly router: AfRouter) {}
+
+  /** Creates a fully-initialized adapter. The Aftermath SDK resolves its
+   * on-chain addresses over the network, so construction is async — there is
+   * no public constructor, which makes an uninitialized adapter unrepresentable. */
+  static async create(): Promise<AfRouterAdapter> {
+    const afSdk = await Aftermath.create({ network: 'MAINNET' })
+    return new AfRouterAdapter(afSdk.Router())
+  }
 
   id(): string {
     return 'aftermath-aggregator'
   }
-
-  async initialize(): Promise<void> {}
 
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
     if (args.inInfo.typeName === args.outInfo.typeName) {

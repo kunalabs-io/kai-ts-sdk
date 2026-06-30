@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== StalePriceThreshold =============================== */
 
@@ -50,9 +45,11 @@ export type StalePriceThresholdJSON = {
 export class StalePriceThreshold implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_stale_price_threshold::StalePriceThreshold` = `${
-    getTypeOrigin('pyth', 'set_stale_price_threshold::StalePriceThreshold')
-  }::set_stale_price_threshold::StalePriceThreshold` as const
+  static get $typeName(): `${string}::set_stale_price_threshold::StalePriceThreshold` {
+    return `${
+      getTypeOrigin('pyth', 'set_stale_price_threshold::StalePriceThreshold')
+    }::set_stale_price_threshold::StalePriceThreshold` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -76,11 +73,15 @@ export class StalePriceThreshold implements StructClass {
   static reified(): StalePriceThresholdReified {
     const reifiedBcs = StalePriceThreshold.bcs
     return {
-      typeName: StalePriceThreshold.$typeName,
-      fullTypeName: composeSuiType(
-        StalePriceThreshold.$typeName,
-        ...[],
-      ) as `${string}::set_stale_price_threshold::StalePriceThreshold`,
+      get typeName() {
+        return StalePriceThreshold.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StalePriceThreshold.$typeName,
+          ...[],
+        ) as `${string}::set_stale_price_threshold::StalePriceThreshold`
+      },
       typeArgs: [] as [],
       isPhantom: StalePriceThreshold.$isPhantom,
       reifiedTypeArgs: [],
@@ -90,10 +91,11 @@ export class StalePriceThreshold implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StalePriceThreshold.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StalePriceThreshold.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StalePriceThreshold.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => StalePriceThreshold.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => StalePriceThreshold.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        StalePriceThreshold.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => StalePriceThreshold.fetch(client, id),
       new: (fields: StalePriceThresholdFields) => {
         return new StalePriceThreshold([], fields)
       },
@@ -174,6 +176,14 @@ export class StalePriceThreshold implements StructClass {
     return StalePriceThreshold.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): StalePriceThreshold {
+    if (!isStalePriceThreshold(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StalePriceThreshold object`)
+    }
+    return StalePriceThreshold.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StalePriceThreshold.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): StalePriceThreshold {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -184,6 +194,7 @@ export class StalePriceThreshold implements StructClass {
     return StalePriceThreshold.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StalePriceThreshold.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): StalePriceThreshold {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isStalePriceThreshold(data.bcs.type)) {
@@ -200,12 +211,14 @@ export class StalePriceThreshold implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<StalePriceThreshold> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStalePriceThreshold(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<StalePriceThreshold> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStalePriceThreshold(object.type)) {
       throw new Error(`object at id ${id} is not a StalePriceThreshold object`)
     }
-
-    return StalePriceThreshold.fromBcs(res.bcsBytes)
+    return StalePriceThreshold.fromBcs(object.content)
   }
 }

@@ -29,7 +29,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -53,10 +54,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Coin } from '../../../sui/coin/structs'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
@@ -97,9 +96,11 @@ export type TransferRedeemedJSON = {
 export class TransferRedeemed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::complete_transfer::TransferRedeemed` = `${
-    getTypeOrigin('token-bridge', 'complete_transfer::TransferRedeemed')
-  }::complete_transfer::TransferRedeemed` as const
+  static get $typeName(): `${string}::complete_transfer::TransferRedeemed` {
+    return `${
+      getTypeOrigin('token-bridge', 'complete_transfer::TransferRedeemed')
+    }::complete_transfer::TransferRedeemed` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -127,11 +128,15 @@ export class TransferRedeemed implements StructClass {
   static reified(): TransferRedeemedReified {
     const reifiedBcs = TransferRedeemed.bcs
     return {
-      typeName: TransferRedeemed.$typeName,
-      fullTypeName: composeSuiType(
-        TransferRedeemed.$typeName,
-        ...[],
-      ) as `${string}::complete_transfer::TransferRedeemed`,
+      get typeName() {
+        return TransferRedeemed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferRedeemed.$typeName,
+          ...[],
+        ) as `${string}::complete_transfer::TransferRedeemed`
+      },
       typeArgs: [] as [],
       isPhantom: TransferRedeemed.$isPhantom,
       reifiedTypeArgs: [],
@@ -141,9 +146,11 @@ export class TransferRedeemed implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferRedeemed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferRedeemed.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferRedeemed.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TransferRedeemed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TransferRedeemed.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => TransferRedeemed.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TransferRedeemed.fetch(client, id),
       new: (fields: TransferRedeemedFields) => {
         return new TransferRedeemed([], fields)
       },
@@ -237,6 +244,14 @@ export class TransferRedeemed implements StructClass {
     return TransferRedeemed.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TransferRedeemed {
+    if (!isTransferRedeemed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferRedeemed object`)
+    }
+    return TransferRedeemed.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferRedeemed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TransferRedeemed {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -247,6 +262,7 @@ export class TransferRedeemed implements StructClass {
     return TransferRedeemed.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferRedeemed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TransferRedeemed {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferRedeemed(data.bcs.type)) {
@@ -263,13 +279,15 @@ export class TransferRedeemed implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TransferRedeemed> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferRedeemed(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TransferRedeemed> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferRedeemed(object.type)) {
       throw new Error(`object at id ${id} is not a TransferRedeemed object`)
     }
-
-    return TransferRedeemed.fromBcs(res.bcsBytes)
+    return TransferRedeemed.fromBcs(object.content)
   }
 }
 
@@ -313,9 +331,11 @@ export type RelayerReceiptJSON<CoinType extends PhantomTypeArgument> = {
 export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::complete_transfer::RelayerReceipt` = `${
-    getTypeOrigin('token-bridge', 'complete_transfer::RelayerReceipt')
-  }::complete_transfer::RelayerReceipt` as const
+  static get $typeName(): `${string}::complete_transfer::RelayerReceipt` {
+    return `${
+      getTypeOrigin('token-bridge', 'complete_transfer::RelayerReceipt')
+    }::complete_transfer::RelayerReceipt` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -347,14 +367,20 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
   ): RelayerReceiptReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = RelayerReceipt.bcs
     return {
-      typeName: RelayerReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        RelayerReceipt.$typeName,
-        ...[extractType(CoinType)],
-      ) as `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinType>
-      >}>`,
-      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
+      get typeName() {
+        return RelayerReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RelayerReceipt.$typeName,
+          ...[extractType(CoinType)],
+        ) as `${string}::complete_transfer::RelayerReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinType>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>]
+      },
       isPhantom: RelayerReceipt.$isPhantom,
       reifiedTypeArgs: [CoinType],
       fromFields: (fields: Record<string, any>) => RelayerReceipt.fromFields(CoinType, fields),
@@ -364,11 +390,13 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RelayerReceipt.fromJSONField(CoinType, field),
       fromJSON: (json: Record<string, any>) => RelayerReceipt.fromJSON(CoinType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RelayerReceipt.fromCoreObject(CoinType, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RelayerReceipt.fromSuiParsedData(CoinType, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RelayerReceipt.fromSuiObjectData(CoinType, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RelayerReceipt.fetch(client, CoinType, id),
       new: (fields: RelayerReceiptFields<ToPhantomTypeArgument<CoinType>>) => {
         return new RelayerReceipt([extractType(CoinType)], fields)
@@ -473,6 +501,34 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
     return RelayerReceipt.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): RelayerReceipt<ToPhantomTypeArgument<CoinType>> {
+    if (!isRelayerReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RelayerReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RelayerReceipt.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RelayerReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     content: SuiParsedData,
@@ -486,6 +542,7 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
     return RelayerReceipt.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RelayerReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     data: SuiObjectData,
@@ -522,16 +579,19 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
   }
 
   static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: CoinType,
     id: string,
   ): Promise<RelayerReceipt<ToPhantomTypeArgument<CoinType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRelayerReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRelayerReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a RelayerReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -547,6 +607,6 @@ export class RelayerReceipt<CoinType extends PhantomTypeArgument> implements Str
       }
     }
 
-    return RelayerReceipt.fromBcs(typeArg, res.bcsBytes)
+    return RelayerReceipt.fromBcs(typeArg, object.content)
   }
 }

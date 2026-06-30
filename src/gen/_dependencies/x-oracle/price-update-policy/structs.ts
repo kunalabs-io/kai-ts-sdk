@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -25,10 +26,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { TypeName } from '../../../std/type-name/structs'
@@ -72,9 +71,11 @@ export type PriceUpdateRequestJSON<T extends PhantomTypeArgument> = {
 export class PriceUpdateRequest<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price_update_policy::PriceUpdateRequest` = `${
-    getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdateRequest')
-  }::price_update_policy::PriceUpdateRequest` as const
+  static get $typeName(): `${string}::price_update_policy::PriceUpdateRequest` {
+    return `${
+      getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdateRequest')
+    }::price_update_policy::PriceUpdateRequest` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -106,14 +107,20 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
   ): PriceUpdateRequestReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = PriceUpdateRequest.bcs
     return {
-      typeName: PriceUpdateRequest.$typeName,
-      fullTypeName: composeSuiType(
-        PriceUpdateRequest.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return PriceUpdateRequest.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceUpdateRequest.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::price_update_policy::PriceUpdateRequest<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: PriceUpdateRequest.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => PriceUpdateRequest.fromFields(T, fields),
@@ -123,11 +130,13 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdateRequest.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => PriceUpdateRequest.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceUpdateRequest.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PriceUpdateRequest.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PriceUpdateRequest.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PriceUpdateRequest.fetch(client, T, id),
       new: (fields: PriceUpdateRequestFields<ToPhantomTypeArgument<T>>) => {
         return new PriceUpdateRequest([extractType(T)], fields)
@@ -242,6 +251,34 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
     return PriceUpdateRequest.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): PriceUpdateRequest<ToPhantomTypeArgument<T>> {
+    if (!isPriceUpdateRequest(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceUpdateRequest object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return PriceUpdateRequest.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdateRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -255,6 +292,7 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
     return PriceUpdateRequest.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdateRequest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -291,16 +329,19 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<PriceUpdateRequest<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceUpdateRequest(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceUpdateRequest(object.type)) {
       throw new Error(`object at id ${id} is not a PriceUpdateRequest object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -316,7 +357,7 @@ export class PriceUpdateRequest<T extends PhantomTypeArgument> implements Struct
       }
     }
 
-    return PriceUpdateRequest.fromBcs(typeArg, res.bcsBytes)
+    return PriceUpdateRequest.fromBcs(typeArg, object.content)
   }
 }
 
@@ -350,9 +391,11 @@ export type PriceUpdatePolicyJSON = {
 export class PriceUpdatePolicy implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price_update_policy::PriceUpdatePolicy` = `${
-    getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdatePolicy')
-  }::price_update_policy::PriceUpdatePolicy` as const
+  static get $typeName(): `${string}::price_update_policy::PriceUpdatePolicy` {
+    return `${
+      getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdatePolicy')
+    }::price_update_policy::PriceUpdatePolicy` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -378,11 +421,15 @@ export class PriceUpdatePolicy implements StructClass {
   static reified(): PriceUpdatePolicyReified {
     const reifiedBcs = PriceUpdatePolicy.bcs
     return {
-      typeName: PriceUpdatePolicy.$typeName,
-      fullTypeName: composeSuiType(
-        PriceUpdatePolicy.$typeName,
-        ...[],
-      ) as `${string}::price_update_policy::PriceUpdatePolicy`,
+      get typeName() {
+        return PriceUpdatePolicy.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceUpdatePolicy.$typeName,
+          ...[],
+        ) as `${string}::price_update_policy::PriceUpdatePolicy`
+      },
       typeArgs: [] as [],
       isPhantom: PriceUpdatePolicy.$isPhantom,
       reifiedTypeArgs: [],
@@ -392,9 +439,11 @@ export class PriceUpdatePolicy implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdatePolicy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceUpdatePolicy.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceUpdatePolicy.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PriceUpdatePolicy.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PriceUpdatePolicy.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PriceUpdatePolicy.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PriceUpdatePolicy.fetch(client, id),
       new: (fields: PriceUpdatePolicyFields) => {
         return new PriceUpdatePolicy([], fields)
       },
@@ -480,6 +529,14 @@ export class PriceUpdatePolicy implements StructClass {
     return PriceUpdatePolicy.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceUpdatePolicy {
+    if (!isPriceUpdatePolicy(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceUpdatePolicy object`)
+    }
+    return PriceUpdatePolicy.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdatePolicy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PriceUpdatePolicy {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -490,6 +547,7 @@ export class PriceUpdatePolicy implements StructClass {
     return PriceUpdatePolicy.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdatePolicy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PriceUpdatePolicy {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceUpdatePolicy(data.bcs.type)) {
@@ -506,13 +564,15 @@ export class PriceUpdatePolicy implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceUpdatePolicy> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceUpdatePolicy(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PriceUpdatePolicy> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceUpdatePolicy(object.type)) {
       throw new Error(`object at id ${id} is not a PriceUpdatePolicy object`)
     }
-
-    return PriceUpdatePolicy.fromBcs(res.bcsBytes)
+    return PriceUpdatePolicy.fromBcs(object.content)
   }
 }
 
@@ -546,9 +606,11 @@ export type PriceUpdatePolicyCapJSON = {
 export class PriceUpdatePolicyCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price_update_policy::PriceUpdatePolicyCap` = `${
-    getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdatePolicyCap')
-  }::price_update_policy::PriceUpdatePolicyCap` as const
+  static get $typeName(): `${string}::price_update_policy::PriceUpdatePolicyCap` {
+    return `${
+      getTypeOrigin('x-oracle', 'price_update_policy::PriceUpdatePolicyCap')
+    }::price_update_policy::PriceUpdatePolicyCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -574,11 +636,15 @@ export class PriceUpdatePolicyCap implements StructClass {
   static reified(): PriceUpdatePolicyCapReified {
     const reifiedBcs = PriceUpdatePolicyCap.bcs
     return {
-      typeName: PriceUpdatePolicyCap.$typeName,
-      fullTypeName: composeSuiType(
-        PriceUpdatePolicyCap.$typeName,
-        ...[],
-      ) as `${string}::price_update_policy::PriceUpdatePolicyCap`,
+      get typeName() {
+        return PriceUpdatePolicyCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceUpdatePolicyCap.$typeName,
+          ...[],
+        ) as `${string}::price_update_policy::PriceUpdatePolicyCap`
+      },
       typeArgs: [] as [],
       isPhantom: PriceUpdatePolicyCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -589,11 +655,13 @@ export class PriceUpdatePolicyCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceUpdatePolicyCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceUpdatePolicyCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceUpdatePolicyCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PriceUpdatePolicyCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PriceUpdatePolicyCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PriceUpdatePolicyCap.fetch(client, id),
       new: (fields: PriceUpdatePolicyCapFields) => {
         return new PriceUpdatePolicyCap([], fields)
@@ -680,6 +748,14 @@ export class PriceUpdatePolicyCap implements StructClass {
     return PriceUpdatePolicyCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceUpdatePolicyCap {
+    if (!isPriceUpdatePolicyCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceUpdatePolicyCap object`)
+    }
+    return PriceUpdatePolicyCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdatePolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PriceUpdatePolicyCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -692,6 +768,7 @@ export class PriceUpdatePolicyCap implements StructClass {
     return PriceUpdatePolicyCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceUpdatePolicyCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PriceUpdatePolicyCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceUpdatePolicyCap(data.bcs.type)) {
@@ -708,12 +785,14 @@ export class PriceUpdatePolicyCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceUpdatePolicyCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceUpdatePolicyCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PriceUpdatePolicyCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceUpdatePolicyCap(object.type)) {
       throw new Error(`object at id ${id} is not a PriceUpdatePolicyCap object`)
     }
-
-    return PriceUpdatePolicyCap.fromBcs(res.bcsBytes)
+    return PriceUpdatePolicyCap.fromBcs(object.content)
   }
 }

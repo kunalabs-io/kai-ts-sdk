@@ -26,8 +26,6 @@ export class CetusAggregatorAdapter implements Router {
     return 'cetus-aggregator'
   }
 
-  async initialize(): Promise<void> {}
-
   async swapBalance(args: RouterSwapBalanceArgs): Promise<RouterSwapBalanceResult> {
     if (args.inInfo.typeName === args.outInfo.typeName) {
       return { tx: args.tx, balanceOut: args.balanceIn }
@@ -88,8 +86,12 @@ export class CetusAggregatorAdapter implements Router {
     })
     coin.destroyZero(args.tx, args.inInfo.typeName, args.coinIn)
 
+    // The aggregator uses `signer` as the swap's owner/refund address (it
+    // refunds unused input to it on exact-out swaps); its "" default serializes
+    // to an invalid address under @mysten/sui v2's stricter BCS validation.
+    this.aggregator.signer = args.sender
     const coinOut = await this.aggregator.routerSwap({
-      routers: route,
+      router: route,
       inputCoin: coinIn,
       slippage: args.slippage,
       txb: args.tx,
@@ -158,8 +160,12 @@ export class CetusAggregatorAdapter implements Router {
       })
     )
 
+    // The aggregator uses `signer` as the swap's owner/refund address (it
+    // refunds unused input to it on exact-out swaps); its "" default serializes
+    // to an invalid address under @mysten/sui v2's stricter BCS validation.
+    this.aggregator.signer = args.sender
     const coinOut = await this.aggregator.routerSwap({
-      routers: route,
+      router: route,
       inputCoin: coinIn,
       slippage: args.slippage,
       txb: args.tx,
@@ -199,8 +205,12 @@ export class CetusAggregatorAdapter implements Router {
       splitAmount: amountIn,
     })
 
+    // The aggregator uses `signer` as the swap's owner/refund address (it
+    // refunds unused input to it on exact-out swaps); its "" default serializes
+    // to an invalid address under @mysten/sui v2's stricter BCS validation.
+    this.aggregator.signer = args.sender
     const coinOut = await this.aggregator.routerSwap({
-      routers: route,
+      router: route,
       inputCoin: coinIn,
       slippage: args.slippage,
       txb: args.tx,

@@ -1,4 +1,5 @@
-import { SuiClient, SuiObjectData } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData } from '@mysten/sui/jsonRpc'
 import { PhantomTypeArgument } from './gen/_framework/reified'
 import { PriceInfoObject as PriceInfoObject_ } from './gen/pyth/price-info/structs'
 import {
@@ -29,11 +30,17 @@ export class PriceFeedInfo<T extends PhantomTypeArgument> {
     this.T = args.T
   }
 
-  async fetchPioData(client: SuiClient): Promise<PriceInfoObject<T>> {
+  async fetchPioData(client: ClientWithCoreApi): Promise<PriceInfoObject<T>> {
     const data = await PriceInfoObject_.r.fetch(client, this.priceInfoObjectId)
     return new PriceInfoObject(data, this.T)
   }
 
+  pioFromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceInfoObject<T> {
+    const data_ = PriceInfoObject_.r.fromCoreObject(obj)
+    return new PriceInfoObject(data_, this.T)
+  }
+
+  /** @deprecated Use {@link PriceFeedInfo.pioFromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   pioFromSuiObjectData(data: SuiObjectData): PriceInfoObject<T> {
     const data_ = PriceInfoObject_.r.fromSuiObjectData(data)
     return new PriceInfoObject(data_, this.T)

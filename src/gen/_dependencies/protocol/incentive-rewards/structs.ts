@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { FixedPoint32 } from '../../../std/fixed-point32/structs'
 import { TypeName } from '../../../std/type-name/structs'
 
@@ -52,9 +47,11 @@ export type RewardFactorsJSON = {
 export class RewardFactors implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::incentive_rewards::RewardFactors` = `${
-    getTypeOrigin('protocol', 'incentive_rewards::RewardFactors')
-  }::incentive_rewards::RewardFactors` as const
+  static get $typeName(): `${string}::incentive_rewards::RewardFactors` {
+    return `${
+      getTypeOrigin('protocol', 'incentive_rewards::RewardFactors')
+    }::incentive_rewards::RewardFactors` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -78,11 +75,15 @@ export class RewardFactors implements StructClass {
   static reified(): RewardFactorsReified {
     const reifiedBcs = RewardFactors.bcs
     return {
-      typeName: RewardFactors.$typeName,
-      fullTypeName: composeSuiType(
-        RewardFactors.$typeName,
-        ...[],
-      ) as `${string}::incentive_rewards::RewardFactors`,
+      get typeName() {
+        return RewardFactors.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RewardFactors.$typeName,
+          ...[],
+        ) as `${string}::incentive_rewards::RewardFactors`
+      },
       typeArgs: [] as [],
       isPhantom: RewardFactors.$isPhantom,
       reifiedTypeArgs: [],
@@ -92,9 +93,11 @@ export class RewardFactors implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardFactors.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardFactors.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RewardFactors.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RewardFactors.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewardFactors.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RewardFactors.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RewardFactors.fetch(client, id),
       new: (fields: RewardFactorsFields) => {
         return new RewardFactors([], fields)
       },
@@ -175,6 +178,14 @@ export class RewardFactors implements StructClass {
     return RewardFactors.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RewardFactors {
+    if (!isRewardFactors(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RewardFactors object`)
+    }
+    return RewardFactors.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardFactors.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RewardFactors {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -185,6 +196,7 @@ export class RewardFactors implements StructClass {
     return RewardFactors.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardFactors.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RewardFactors {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRewardFactors(data.bcs.type)) {
@@ -201,13 +213,15 @@ export class RewardFactors implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RewardFactors> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRewardFactors(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RewardFactors> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRewardFactors(object.type)) {
       throw new Error(`object at id ${id} is not a RewardFactors object`)
     }
-
-    return RewardFactors.fromBcs(res.bcsBytes)
+    return RewardFactors.fromBcs(object.content)
   }
 }
 
@@ -241,9 +255,11 @@ export type RewardFactorJSON = {
 export class RewardFactor implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::incentive_rewards::RewardFactor` = `${
-    getTypeOrigin('protocol', 'incentive_rewards::RewardFactor')
-  }::incentive_rewards::RewardFactor` as const
+  static get $typeName(): `${string}::incentive_rewards::RewardFactor` {
+    return `${
+      getTypeOrigin('protocol', 'incentive_rewards::RewardFactor')
+    }::incentive_rewards::RewardFactor` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -269,11 +285,15 @@ export class RewardFactor implements StructClass {
   static reified(): RewardFactorReified {
     const reifiedBcs = RewardFactor.bcs
     return {
-      typeName: RewardFactor.$typeName,
-      fullTypeName: composeSuiType(
-        RewardFactor.$typeName,
-        ...[],
-      ) as `${string}::incentive_rewards::RewardFactor`,
+      get typeName() {
+        return RewardFactor.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RewardFactor.$typeName,
+          ...[],
+        ) as `${string}::incentive_rewards::RewardFactor`
+      },
       typeArgs: [] as [],
       isPhantom: RewardFactor.$isPhantom,
       reifiedTypeArgs: [],
@@ -283,9 +303,11 @@ export class RewardFactor implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardFactor.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewardFactor.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RewardFactor.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RewardFactor.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewardFactor.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RewardFactor.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RewardFactor.fetch(client, id),
       new: (fields: RewardFactorFields) => {
         return new RewardFactor([], fields)
       },
@@ -371,6 +393,14 @@ export class RewardFactor implements StructClass {
     return RewardFactor.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RewardFactor {
+    if (!isRewardFactor(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RewardFactor object`)
+    }
+    return RewardFactor.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardFactor.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RewardFactor {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -381,6 +411,7 @@ export class RewardFactor implements StructClass {
     return RewardFactor.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardFactor.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RewardFactor {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRewardFactor(data.bcs.type)) {
@@ -397,12 +428,14 @@ export class RewardFactor implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RewardFactor> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRewardFactor(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RewardFactor> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRewardFactor(object.type)) {
       throw new Error(`object at id ${id} is not a RewardFactor object`)
     }
-
-    return RewardFactor.fromBcs(res.bcsBytes)
+    return RewardFactor.fromBcs(object.content)
   }
 }

@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { FixedPoint32 } from '../../../std/fixed-point32/structs'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
@@ -69,9 +64,11 @@ export type LiquidateEventJSON = {
 export class LiquidateEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::liquidate::LiquidateEvent` = `${
-    getTypeOrigin('protocol', 'liquidate::LiquidateEvent')
-  }::liquidate::LiquidateEvent` as const
+  static get $typeName(): `${string}::liquidate::LiquidateEvent` {
+    return `${
+      getTypeOrigin('protocol', 'liquidate::LiquidateEvent')
+    }::liquidate::LiquidateEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -107,11 +104,15 @@ export class LiquidateEvent implements StructClass {
   static reified(): LiquidateEventReified {
     const reifiedBcs = LiquidateEvent.bcs
     return {
-      typeName: LiquidateEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LiquidateEvent.$typeName,
-        ...[],
-      ) as `${string}::liquidate::LiquidateEvent`,
+      get typeName() {
+        return LiquidateEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LiquidateEvent.$typeName,
+          ...[],
+        ) as `${string}::liquidate::LiquidateEvent`
+      },
       typeArgs: [] as [],
       isPhantom: LiquidateEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -121,9 +122,11 @@ export class LiquidateEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidateEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidateEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LiquidateEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => LiquidateEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LiquidateEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => LiquidateEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => LiquidateEvent.fetch(client, id),
       new: (fields: LiquidateEventFields) => {
         return new LiquidateEvent([], fields)
       },
@@ -237,6 +240,14 @@ export class LiquidateEvent implements StructClass {
     return LiquidateEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LiquidateEvent {
+    if (!isLiquidateEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LiquidateEvent object`)
+    }
+    return LiquidateEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LiquidateEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -247,6 +258,7 @@ export class LiquidateEvent implements StructClass {
     return LiquidateEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidateEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LiquidateEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLiquidateEvent(data.bcs.type)) {
@@ -263,13 +275,15 @@ export class LiquidateEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidateEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLiquidateEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LiquidateEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLiquidateEvent(object.type)) {
       throw new Error(`object at id ${id} is not a LiquidateEvent object`)
     }
-
-    return LiquidateEvent.fromBcs(res.bcsBytes)
+    return LiquidateEvent.fromBcs(object.content)
   }
 }
 
@@ -317,9 +331,11 @@ export type LiquidateEventV2JSON = {
 export class LiquidateEventV2 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::liquidate::LiquidateEventV2` = `${
-    getTypeOrigin('protocol', 'liquidate::LiquidateEventV2')
-  }::liquidate::LiquidateEventV2` as const
+  static get $typeName(): `${string}::liquidate::LiquidateEventV2` {
+    return `${
+      getTypeOrigin('protocol', 'liquidate::LiquidateEventV2')
+    }::liquidate::LiquidateEventV2` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -361,11 +377,15 @@ export class LiquidateEventV2 implements StructClass {
   static reified(): LiquidateEventV2Reified {
     const reifiedBcs = LiquidateEventV2.bcs
     return {
-      typeName: LiquidateEventV2.$typeName,
-      fullTypeName: composeSuiType(
-        LiquidateEventV2.$typeName,
-        ...[],
-      ) as `${string}::liquidate::LiquidateEventV2`,
+      get typeName() {
+        return LiquidateEventV2.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LiquidateEventV2.$typeName,
+          ...[],
+        ) as `${string}::liquidate::LiquidateEventV2`
+      },
       typeArgs: [] as [],
       isPhantom: LiquidateEventV2.$isPhantom,
       reifiedTypeArgs: [],
@@ -375,9 +395,11 @@ export class LiquidateEventV2 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidateEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidateEventV2.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LiquidateEventV2.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => LiquidateEventV2.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LiquidateEventV2.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => LiquidateEventV2.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => LiquidateEventV2.fetch(client, id),
       new: (fields: LiquidateEventV2Fields) => {
         return new LiquidateEventV2([], fields)
       },
@@ -509,6 +531,14 @@ export class LiquidateEventV2 implements StructClass {
     return LiquidateEventV2.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LiquidateEventV2 {
+    if (!isLiquidateEventV2(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LiquidateEventV2 object`)
+    }
+    return LiquidateEventV2.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidateEventV2.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LiquidateEventV2 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -519,6 +549,7 @@ export class LiquidateEventV2 implements StructClass {
     return LiquidateEventV2.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidateEventV2.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LiquidateEventV2 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLiquidateEventV2(data.bcs.type)) {
@@ -535,12 +566,14 @@ export class LiquidateEventV2 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidateEventV2> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLiquidateEventV2(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LiquidateEventV2> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLiquidateEventV2(object.type)) {
       throw new Error(`object at id ${id} is not a LiquidateEventV2 object`)
     }
-
-    return LiquidateEventV2.fromBcs(res.bcsBytes)
+    return LiquidateEventV2.fromBcs(object.content)
   }
 }

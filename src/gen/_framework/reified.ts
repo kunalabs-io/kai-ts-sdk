@@ -1,5 +1,6 @@
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiClient, SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromHex, toHex } from '@mysten/sui/utils'
 import { compressSuiType, FieldsWithTypes, parseTypeName } from './util'
 
@@ -57,9 +58,12 @@ export interface StructClassReified<T extends StructClass, Fields> {
   fromBcs(data: Uint8Array): T
   fromJSONField: (field: any) => T
   fromJSON: (json: Record<string, any>) => T
+  fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => T
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StructClassReified.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   fromSuiParsedData: (content: SuiParsedData) => T
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StructClassReified.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   fromSuiObjectData: (data: SuiObjectData) => T
-  fetch: (client: SuiClient, id: string) => Promise<T>
+  fetch: (client: ClientWithCoreApi, id: string) => Promise<T>
   new: (fields: Fields) => T
   kind: 'StructClassReified'
 }
@@ -120,7 +124,7 @@ export type ToPhantomTypeArgument<T extends PhantomReified<PhantomTypeArgument>>
 export type PhantomTypeArgument = string
 
 export interface PhantomReified<P> {
-  phantomType: P
+  readonly phantomType: P
   kind: 'PhantomReified'
 }
 
@@ -135,8 +139,15 @@ export function phantom(type: string | Reified<TypeArgument, any>): PhantomReifi
       kind: 'PhantomReified',
     }
   } else {
+    // Reified handle case: read `fullTypeName` lazily so phantom handles created
+    // before `setActiveEnv(...)` still reflect the current env on each access.
+    // Without this getter, `phantomType` would freeze the typeName at phantom-call time
+    // and leak the wrong address into vector/option type-arg strings produced via
+    // `extractType(...)`.
     return {
-      phantomType: type.fullTypeName,
+      get phantomType() {
+        return type.fullTypeName
+      },
       kind: 'PhantomReified',
     }
   }

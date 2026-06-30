@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== OptionU64 =============================== */
 
@@ -49,9 +44,9 @@ export type OptionU64JSON = {
 export class OptionU64 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::option_u64::OptionU64` = `${
-    getTypeOrigin('move-stl', 'option_u64::OptionU64')
-  }::option_u64::OptionU64` as const
+  static get $typeName(): `${string}::option_u64::OptionU64` {
+    return `${getTypeOrigin('move-stl', 'option_u64::OptionU64')}::option_u64::OptionU64` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +72,15 @@ export class OptionU64 implements StructClass {
   static reified(): OptionU64Reified {
     const reifiedBcs = OptionU64.bcs
     return {
-      typeName: OptionU64.$typeName,
-      fullTypeName: composeSuiType(
-        OptionU64.$typeName,
-        ...[],
-      ) as `${string}::option_u64::OptionU64`,
+      get typeName() {
+        return OptionU64.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OptionU64.$typeName,
+          ...[],
+        ) as `${string}::option_u64::OptionU64`
+      },
       typeArgs: [] as [],
       isPhantom: OptionU64.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +90,11 @@ export class OptionU64 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OptionU64.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OptionU64.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OptionU64.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => OptionU64.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => OptionU64.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => OptionU64.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => OptionU64.fetch(client, id),
       new: (fields: OptionU64Fields) => {
         return new OptionU64([], fields)
       },
@@ -179,6 +180,14 @@ export class OptionU64 implements StructClass {
     return OptionU64.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OptionU64 {
+    if (!isOptionU64(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OptionU64 object`)
+    }
+    return OptionU64.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OptionU64.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OptionU64 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -189,6 +198,7 @@ export class OptionU64 implements StructClass {
     return OptionU64.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OptionU64.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OptionU64 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOptionU64(data.bcs.type)) {
@@ -205,12 +215,14 @@ export class OptionU64 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<OptionU64> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOptionU64(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OptionU64> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOptionU64(object.type)) {
       throw new Error(`object at id ${id} is not a OptionU64 object`)
     }
-
-    return OptionU64.fromBcs(res.bcsBytes)
+    return OptionU64.fromBcs(object.content)
   }
 }

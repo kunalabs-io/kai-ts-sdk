@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Bytes32 } from '../bytes32/structs'
 
 /* ============================== GuardianSignature =============================== */
@@ -64,9 +59,11 @@ export type GuardianSignatureJSON = {
 export class GuardianSignature implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::guardian_signature::GuardianSignature` = `${
-    getTypeOrigin('wormhole', 'guardian_signature::GuardianSignature')
-  }::guardian_signature::GuardianSignature` as const
+  static get $typeName(): `${string}::guardian_signature::GuardianSignature` {
+    return `${
+      getTypeOrigin('wormhole', 'guardian_signature::GuardianSignature')
+    }::guardian_signature::GuardianSignature` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -96,11 +93,15 @@ export class GuardianSignature implements StructClass {
   static reified(): GuardianSignatureReified {
     const reifiedBcs = GuardianSignature.bcs
     return {
-      typeName: GuardianSignature.$typeName,
-      fullTypeName: composeSuiType(
-        GuardianSignature.$typeName,
-        ...[],
-      ) as `${string}::guardian_signature::GuardianSignature`,
+      get typeName() {
+        return GuardianSignature.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GuardianSignature.$typeName,
+          ...[],
+        ) as `${string}::guardian_signature::GuardianSignature`
+      },
       typeArgs: [] as [],
       isPhantom: GuardianSignature.$isPhantom,
       reifiedTypeArgs: [],
@@ -110,9 +111,11 @@ export class GuardianSignature implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GuardianSignature.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GuardianSignature.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GuardianSignature.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GuardianSignature.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GuardianSignature.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GuardianSignature.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GuardianSignature.fetch(client, id),
       new: (fields: GuardianSignatureFields) => {
         return new GuardianSignature([], fields)
       },
@@ -208,6 +211,14 @@ export class GuardianSignature implements StructClass {
     return GuardianSignature.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GuardianSignature {
+    if (!isGuardianSignature(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GuardianSignature object`)
+    }
+    return GuardianSignature.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GuardianSignature.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GuardianSignature {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -218,6 +229,7 @@ export class GuardianSignature implements StructClass {
     return GuardianSignature.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GuardianSignature.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GuardianSignature {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGuardianSignature(data.bcs.type)) {
@@ -234,12 +246,14 @@ export class GuardianSignature implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GuardianSignature> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGuardianSignature(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GuardianSignature> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGuardianSignature(object.type)) {
       throw new Error(`object at id ${id} is not a GuardianSignature object`)
     }
-
-    return GuardianSignature.fromBcs(res.bcsBytes)
+    return GuardianSignature.fromBcs(object.content)
   }
 }

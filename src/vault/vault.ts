@@ -17,7 +17,7 @@ import {
 } from '../gen/kai-sav/vault/functions'
 import { Amount } from '../amount'
 import { normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { fromBalance, intoBalance } from '../gen/sui/coin/functions'
 import { Vault, VaultReified } from '../gen/kai-sav/vault/structs'
 import { PhantomTypeArgument, ToPhantomTypeArgument } from '../gen/_framework/reified'
@@ -317,7 +317,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
    * @param strategies - Array of all strategies currently registered with the vault.
    */
   async withdrawToWalletT(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     tx: Transaction,
     walletAddress: string,
     amount: Amount,
@@ -329,7 +329,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
 
     const [state, addressYtBalance] = await Promise.all([
       this.fetch(client),
-      client.getBalance({ owner: walletAddress, coinType: this.YT.typeName }),
+      client.core.getBalance({ owner: walletAddress, coinType: this.YT.typeName }),
     ])
     let totalAvailableBalance = state.freeBalance.value
     for (const strategy of state.strategies.contents) {
@@ -340,7 +340,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
     const ytAmount = Amount.fromInt(
       min(
         (amount.int * ytSupply) / totalAvailableBalance + 1n,
-        BigInt(addressYtBalance.totalBalance)
+        BigInt(addressYtBalance.balance.balance)
       ),
       this.YT.decimals
     )
@@ -369,16 +369,19 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
    * @param strategies - Array of all strategies currently registered with the vault.
    */
   async withdrawToWalletAll(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     tx: Transaction,
     walletAddress: string,
     strategies: WithdrawableStrategy[]
   ): Promise<void> {
-    const ytBalance = await client.getBalance({ owner: walletAddress, coinType: this.YT.typeName })
+    const ytBalance = await client.core.getBalance({
+      owner: walletAddress,
+      coinType: this.YT.typeName,
+    })
     await this.withdrawToWalletYT(
       tx,
       walletAddress,
-      Amount.fromInt(BigInt(ytBalance.totalBalance), this.YT.decimals),
+      Amount.fromInt(BigInt(ytBalance.balance.balance), this.YT.decimals),
       strategies
     )
   }
@@ -402,7 +405,7 @@ export class VaultInfo<T extends PhantomTypeArgument, YT extends PhantomTypeArgu
    * @param client - The Sui client.
    * @returns The current `Vault` data.
    */
-  async fetch(client: SuiClient): Promise<Vault<T, YT>> {
+  async fetch(client: ClientWithCoreApi): Promise<Vault<T, YT>> {
     return await this.reified.fetch(client, this.id)
   }
 }

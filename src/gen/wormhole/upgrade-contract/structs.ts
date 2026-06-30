@@ -9,7 +9,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -24,13 +25,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { ID } from '../../sui/object/structs'
 import { Bytes32 } from '../bytes32/structs'
 
@@ -62,9 +57,11 @@ export type GovernanceWitnessJSON = {
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::upgrade_contract::GovernanceWitness` = `${
-    getTypeOrigin('wormhole', 'upgrade_contract::GovernanceWitness')
-  }::upgrade_contract::GovernanceWitness` as const
+  static get $typeName(): `${string}::upgrade_contract::GovernanceWitness` {
+    return `${
+      getTypeOrigin('wormhole', 'upgrade_contract::GovernanceWitness')
+    }::upgrade_contract::GovernanceWitness` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -88,11 +85,15 @@ export class GovernanceWitness implements StructClass {
   static reified(): GovernanceWitnessReified {
     const reifiedBcs = GovernanceWitness.bcs
     return {
-      typeName: GovernanceWitness.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceWitness.$typeName,
-        ...[],
-      ) as `${string}::upgrade_contract::GovernanceWitness`,
+      get typeName() {
+        return GovernanceWitness.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceWitness.$typeName,
+          ...[],
+        ) as `${string}::upgrade_contract::GovernanceWitness`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -102,9 +103,11 @@ export class GovernanceWitness implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceWitness.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -185,6 +188,14 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceWitness {
+    if (!isGovernanceWitness(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceWitness object`)
+    }
+    return GovernanceWitness.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceWitness {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -195,6 +206,7 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceWitness {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceWitness(data.bcs.type)) {
@@ -211,13 +223,15 @@ export class GovernanceWitness implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceWitness(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceWitness> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceWitness(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
-
-    return GovernanceWitness.fromBcs(res.bcsBytes)
+    return GovernanceWitness.fromBcs(object.content)
   }
 }
 
@@ -251,9 +265,11 @@ export type ContractUpgradedJSON = {
 export class ContractUpgraded implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::upgrade_contract::ContractUpgraded` = `${
-    getTypeOrigin('wormhole', 'upgrade_contract::ContractUpgraded')
-  }::upgrade_contract::ContractUpgraded` as const
+  static get $typeName(): `${string}::upgrade_contract::ContractUpgraded` {
+    return `${
+      getTypeOrigin('wormhole', 'upgrade_contract::ContractUpgraded')
+    }::upgrade_contract::ContractUpgraded` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -279,11 +295,15 @@ export class ContractUpgraded implements StructClass {
   static reified(): ContractUpgradedReified {
     const reifiedBcs = ContractUpgraded.bcs
     return {
-      typeName: ContractUpgraded.$typeName,
-      fullTypeName: composeSuiType(
-        ContractUpgraded.$typeName,
-        ...[],
-      ) as `${string}::upgrade_contract::ContractUpgraded`,
+      get typeName() {
+        return ContractUpgraded.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ContractUpgraded.$typeName,
+          ...[],
+        ) as `${string}::upgrade_contract::ContractUpgraded`
+      },
       typeArgs: [] as [],
       isPhantom: ContractUpgraded.$isPhantom,
       reifiedTypeArgs: [],
@@ -293,9 +313,11 @@ export class ContractUpgraded implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ContractUpgraded.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ContractUpgraded.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ContractUpgraded.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ContractUpgraded.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ContractUpgraded.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ContractUpgraded.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ContractUpgraded.fetch(client, id),
       new: (fields: ContractUpgradedFields) => {
         return new ContractUpgraded([], fields)
       },
@@ -381,6 +403,14 @@ export class ContractUpgraded implements StructClass {
     return ContractUpgraded.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ContractUpgraded {
+    if (!isContractUpgraded(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ContractUpgraded object`)
+    }
+    return ContractUpgraded.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ContractUpgraded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ContractUpgraded {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -391,6 +421,7 @@ export class ContractUpgraded implements StructClass {
     return ContractUpgraded.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ContractUpgraded.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ContractUpgraded {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isContractUpgraded(data.bcs.type)) {
@@ -407,13 +438,15 @@ export class ContractUpgraded implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ContractUpgraded> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isContractUpgraded(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ContractUpgraded> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isContractUpgraded(object.type)) {
       throw new Error(`object at id ${id} is not a ContractUpgraded object`)
     }
-
-    return ContractUpgraded.fromBcs(res.bcsBytes)
+    return ContractUpgraded.fromBcs(object.content)
   }
 }
 
@@ -445,9 +478,11 @@ export type UpgradeContractJSON = {
 export class UpgradeContract implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::upgrade_contract::UpgradeContract` = `${
-    getTypeOrigin('wormhole', 'upgrade_contract::UpgradeContract')
-  }::upgrade_contract::UpgradeContract` as const
+  static get $typeName(): `${string}::upgrade_contract::UpgradeContract` {
+    return `${
+      getTypeOrigin('wormhole', 'upgrade_contract::UpgradeContract')
+    }::upgrade_contract::UpgradeContract` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -471,11 +506,15 @@ export class UpgradeContract implements StructClass {
   static reified(): UpgradeContractReified {
     const reifiedBcs = UpgradeContract.bcs
     return {
-      typeName: UpgradeContract.$typeName,
-      fullTypeName: composeSuiType(
-        UpgradeContract.$typeName,
-        ...[],
-      ) as `${string}::upgrade_contract::UpgradeContract`,
+      get typeName() {
+        return UpgradeContract.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpgradeContract.$typeName,
+          ...[],
+        ) as `${string}::upgrade_contract::UpgradeContract`
+      },
       typeArgs: [] as [],
       isPhantom: UpgradeContract.$isPhantom,
       reifiedTypeArgs: [],
@@ -485,9 +524,11 @@ export class UpgradeContract implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpgradeContract.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpgradeContract.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpgradeContract.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UpgradeContract.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpgradeContract.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => UpgradeContract.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UpgradeContract.fetch(client, id),
       new: (fields: UpgradeContractFields) => {
         return new UpgradeContract([], fields)
       },
@@ -568,6 +609,14 @@ export class UpgradeContract implements StructClass {
     return UpgradeContract.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpgradeContract {
+    if (!isUpgradeContract(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpgradeContract object`)
+    }
+    return UpgradeContract.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpgradeContract.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpgradeContract {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -578,6 +627,7 @@ export class UpgradeContract implements StructClass {
     return UpgradeContract.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpgradeContract.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpgradeContract {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpgradeContract(data.bcs.type)) {
@@ -594,12 +644,14 @@ export class UpgradeContract implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpgradeContract> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpgradeContract(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpgradeContract> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpgradeContract(object.type)) {
       throw new Error(`object at id ${id} is not a UpgradeContract object`)
     }
-
-    return UpgradeContract.fromBcs(res.bcsBytes)
+    return UpgradeContract.fromBcs(object.content)
   }
 }

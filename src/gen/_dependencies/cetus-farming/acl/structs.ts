@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { LinkedTable } from '../../move-stl/linked-table/structs'
 
 /* ============================== ACL =============================== */
@@ -48,9 +43,9 @@ export type ACLJSON = {
 export class ACL implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::acl::ACL` = `${
-    getTypeOrigin('cetus-farming', 'acl::ACL')
-  }::acl::ACL` as const
+  static get $typeName(): `${string}::acl::ACL` {
+    return `${getTypeOrigin('cetus-farming', 'acl::ACL')}::acl::ACL` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -74,11 +69,15 @@ export class ACL implements StructClass {
   static reified(): ACLReified {
     const reifiedBcs = ACL.bcs
     return {
-      typeName: ACL.$typeName,
-      fullTypeName: composeSuiType(
-        ACL.$typeName,
-        ...[],
-      ) as `${string}::acl::ACL`,
+      get typeName() {
+        return ACL.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ACL.$typeName,
+          ...[],
+        ) as `${string}::acl::ACL`
+      },
       typeArgs: [] as [],
       isPhantom: ACL.$isPhantom,
       reifiedTypeArgs: [],
@@ -88,9 +87,10 @@ export class ACL implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ACL.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACL.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => ACL.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ACL.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACL.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ACL.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ACL.fetch(client, id),
       new: (fields: ACLFields) => {
         return new ACL([], fields)
       },
@@ -185,6 +185,14 @@ export class ACL implements StructClass {
     return ACL.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ACL {
+    if (!isACL(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ACL object`)
+    }
+    return ACL.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACL.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ACL {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -195,6 +203,7 @@ export class ACL implements StructClass {
     return ACL.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACL.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ACL {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isACL(data.bcs.type)) {
@@ -211,13 +220,15 @@ export class ACL implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ACL> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isACL(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ACL> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isACL(object.type)) {
       throw new Error(`object at id ${id} is not a ACL object`)
     }
-
-    return ACL.fromBcs(res.bcsBytes)
+    return ACL.fromBcs(object.content)
   }
 }
 
@@ -248,9 +259,9 @@ export type MemberJSON = {
 export class Member implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::acl::Member` = `${
-    getTypeOrigin('cetus-farming', 'acl::Member')
-  }::acl::Member` as const
+  static get $typeName(): `${string}::acl::Member` {
+    return `${getTypeOrigin('cetus-farming', 'acl::Member')}::acl::Member` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -276,11 +287,15 @@ export class Member implements StructClass {
   static reified(): MemberReified {
     const reifiedBcs = Member.bcs
     return {
-      typeName: Member.$typeName,
-      fullTypeName: composeSuiType(
-        Member.$typeName,
-        ...[],
-      ) as `${string}::acl::Member`,
+      get typeName() {
+        return Member.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Member.$typeName,
+          ...[],
+        ) as `${string}::acl::Member`
+      },
       typeArgs: [] as [],
       isPhantom: Member.$isPhantom,
       reifiedTypeArgs: [],
@@ -290,9 +305,10 @@ export class Member implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Member.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Member.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Member.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Member.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Member.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Member.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Member.fetch(client, id),
       new: (fields: MemberFields) => {
         return new Member([], fields)
       },
@@ -381,6 +397,14 @@ export class Member implements StructClass {
     return Member.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Member {
+    if (!isMember(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Member object`)
+    }
+    return Member.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Member.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Member {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -391,6 +415,7 @@ export class Member implements StructClass {
     return Member.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Member.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Member {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isMember(data.bcs.type)) {
@@ -407,12 +432,14 @@ export class Member implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Member> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isMember(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Member> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isMember(object.type)) {
       throw new Error(`object at id ${id} is not a Member object`)
     }
-
-    return Member.fromBcs(res.bcsBytes)
+    return Member.fromBcs(object.content)
   }
 }

@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== PythFeeRecipient =============================== */
 
@@ -55,9 +50,11 @@ export type PythFeeRecipientJSON = {
 export class PythFeeRecipient implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_fee_recipient::PythFeeRecipient` = `${
-    getTypeOrigin('pyth', 'set_fee_recipient::PythFeeRecipient')
-  }::set_fee_recipient::PythFeeRecipient` as const
+  static get $typeName(): `${string}::set_fee_recipient::PythFeeRecipient` {
+    return `${
+      getTypeOrigin('pyth', 'set_fee_recipient::PythFeeRecipient')
+    }::set_fee_recipient::PythFeeRecipient` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -81,11 +78,15 @@ export class PythFeeRecipient implements StructClass {
   static reified(): PythFeeRecipientReified {
     const reifiedBcs = PythFeeRecipient.bcs
     return {
-      typeName: PythFeeRecipient.$typeName,
-      fullTypeName: composeSuiType(
-        PythFeeRecipient.$typeName,
-        ...[],
-      ) as `${string}::set_fee_recipient::PythFeeRecipient`,
+      get typeName() {
+        return PythFeeRecipient.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PythFeeRecipient.$typeName,
+          ...[],
+        ) as `${string}::set_fee_recipient::PythFeeRecipient`
+      },
       typeArgs: [] as [],
       isPhantom: PythFeeRecipient.$isPhantom,
       reifiedTypeArgs: [],
@@ -95,9 +96,11 @@ export class PythFeeRecipient implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PythFeeRecipient.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythFeeRecipient.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PythFeeRecipient.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PythFeeRecipient.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythFeeRecipient.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PythFeeRecipient.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PythFeeRecipient.fetch(client, id),
       new: (fields: PythFeeRecipientFields) => {
         return new PythFeeRecipient([], fields)
       },
@@ -181,6 +184,14 @@ export class PythFeeRecipient implements StructClass {
     return PythFeeRecipient.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PythFeeRecipient {
+    if (!isPythFeeRecipient(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PythFeeRecipient object`)
+    }
+    return PythFeeRecipient.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythFeeRecipient.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PythFeeRecipient {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -191,6 +202,7 @@ export class PythFeeRecipient implements StructClass {
     return PythFeeRecipient.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythFeeRecipient.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PythFeeRecipient {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPythFeeRecipient(data.bcs.type)) {
@@ -207,12 +219,14 @@ export class PythFeeRecipient implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PythFeeRecipient> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPythFeeRecipient(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PythFeeRecipient> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPythFeeRecipient(object.type)) {
       throw new Error(`object at id ${id} is not a PythFeeRecipient object`)
     }
-
-    return PythFeeRecipient.fromBcs(res.bcsBytes)
+    return PythFeeRecipient.fromBcs(object.content)
   }
 }

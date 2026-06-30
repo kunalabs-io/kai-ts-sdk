@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -21,13 +22,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
 /* ============================== Bytes20 =============================== */
@@ -56,9 +51,9 @@ export type Bytes20JSON = {
 export class Bytes20 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::bytes20::Bytes20` = `${
-    getTypeOrigin('wormhole', 'bytes20::Bytes20')
-  }::bytes20::Bytes20` as const
+  static get $typeName(): `${string}::bytes20::Bytes20` {
+    return `${getTypeOrigin('wormhole', 'bytes20::Bytes20')}::bytes20::Bytes20` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -82,11 +77,15 @@ export class Bytes20 implements StructClass {
   static reified(): Bytes20Reified {
     const reifiedBcs = Bytes20.bcs
     return {
-      typeName: Bytes20.$typeName,
-      fullTypeName: composeSuiType(
-        Bytes20.$typeName,
-        ...[],
-      ) as `${string}::bytes20::Bytes20`,
+      get typeName() {
+        return Bytes20.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Bytes20.$typeName,
+          ...[],
+        ) as `${string}::bytes20::Bytes20`
+      },
       typeArgs: [] as [],
       isPhantom: Bytes20.$isPhantom,
       reifiedTypeArgs: [],
@@ -96,9 +95,11 @@ export class Bytes20 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Bytes20.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Bytes20.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Bytes20.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Bytes20.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Bytes20.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Bytes20.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Bytes20.fetch(client, id),
       new: (fields: Bytes20Fields) => {
         return new Bytes20([], fields)
       },
@@ -179,6 +180,14 @@ export class Bytes20 implements StructClass {
     return Bytes20.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Bytes20 {
+    if (!isBytes20(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Bytes20 object`)
+    }
+    return Bytes20.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Bytes20.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Bytes20 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -189,6 +198,7 @@ export class Bytes20 implements StructClass {
     return Bytes20.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Bytes20.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Bytes20 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBytes20(data.bcs.type)) {
@@ -205,12 +215,14 @@ export class Bytes20 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Bytes20> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBytes20(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Bytes20> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBytes20(object.type)) {
       throw new Error(`object at id ${id} is not a Bytes20 object`)
     }
-
-    return Bytes20.fromBcs(res.bcsBytes)
+    return Bytes20.fromBcs(object.content)
   }
 }

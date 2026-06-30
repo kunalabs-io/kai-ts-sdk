@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -67,9 +62,11 @@ export type CollateralWithdrawEventJSON = {
 export class CollateralWithdrawEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::withdraw_collateral::CollateralWithdrawEvent` = `${
-    getTypeOrigin('protocol', 'withdraw_collateral::CollateralWithdrawEvent')
-  }::withdraw_collateral::CollateralWithdrawEvent` as const
+  static get $typeName(): `${string}::withdraw_collateral::CollateralWithdrawEvent` {
+    return `${
+      getTypeOrigin('protocol', 'withdraw_collateral::CollateralWithdrawEvent')
+    }::withdraw_collateral::CollateralWithdrawEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -100,11 +97,15 @@ export class CollateralWithdrawEvent implements StructClass {
   static reified(): CollateralWithdrawEventReified {
     const reifiedBcs = CollateralWithdrawEvent.bcs
     return {
-      typeName: CollateralWithdrawEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CollateralWithdrawEvent.$typeName,
-        ...[],
-      ) as `${string}::withdraw_collateral::CollateralWithdrawEvent`,
+      get typeName() {
+        return CollateralWithdrawEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollateralWithdrawEvent.$typeName,
+          ...[],
+        ) as `${string}::withdraw_collateral::CollateralWithdrawEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CollateralWithdrawEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -115,11 +116,13 @@ export class CollateralWithdrawEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralWithdrawEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralWithdrawEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollateralWithdrawEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollateralWithdrawEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollateralWithdrawEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollateralWithdrawEvent.fetch(client, id),
       new: (fields: CollateralWithdrawEventFields) => {
         return new CollateralWithdrawEvent([], fields)
@@ -219,6 +222,14 @@ export class CollateralWithdrawEvent implements StructClass {
     return CollateralWithdrawEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollateralWithdrawEvent {
+    if (!isCollateralWithdrawEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollateralWithdrawEvent object`)
+    }
+    return CollateralWithdrawEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralWithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollateralWithdrawEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -231,6 +242,7 @@ export class CollateralWithdrawEvent implements StructClass {
     return CollateralWithdrawEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralWithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollateralWithdrawEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollateralWithdrawEvent(data.bcs.type)) {
@@ -247,12 +259,14 @@ export class CollateralWithdrawEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollateralWithdrawEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollateralWithdrawEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollateralWithdrawEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollateralWithdrawEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CollateralWithdrawEvent object`)
     }
-
-    return CollateralWithdrawEvent.fromBcs(res.bcsBytes)
+    return CollateralWithdrawEvent.fromBcs(object.content)
   }
 }

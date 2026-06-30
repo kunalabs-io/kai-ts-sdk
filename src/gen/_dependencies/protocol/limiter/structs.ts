@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { TypeName } from '../../../std/type-name/structs'
 
@@ -58,9 +53,9 @@ export type LimiterJSON = {
 export class Limiter implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::Limiter` = `${
-    getTypeOrigin('protocol', 'limiter::Limiter')
-  }::limiter::Limiter` as const
+  static get $typeName(): `${string}::limiter::Limiter` {
+    return `${getTypeOrigin('protocol', 'limiter::Limiter')}::limiter::Limiter` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -91,11 +86,15 @@ export class Limiter implements StructClass {
   static reified(): LimiterReified {
     const reifiedBcs = Limiter.bcs
     return {
-      typeName: Limiter.$typeName,
-      fullTypeName: composeSuiType(
-        Limiter.$typeName,
-        ...[],
-      ) as `${string}::limiter::Limiter`,
+      get typeName() {
+        return Limiter.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Limiter.$typeName,
+          ...[],
+        ) as `${string}::limiter::Limiter`
+      },
       typeArgs: [] as [],
       isPhantom: Limiter.$isPhantom,
       reifiedTypeArgs: [],
@@ -105,9 +104,11 @@ export class Limiter implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Limiter.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Limiter.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Limiter.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Limiter.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Limiter.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Limiter.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Limiter.fetch(client, id),
       new: (fields: LimiterFields) => {
         return new Limiter([], fields)
       },
@@ -212,6 +213,14 @@ export class Limiter implements StructClass {
     return Limiter.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Limiter {
+    if (!isLimiter(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Limiter object`)
+    }
+    return Limiter.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Limiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Limiter {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -222,6 +231,7 @@ export class Limiter implements StructClass {
     return Limiter.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Limiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Limiter {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiter(data.bcs.type)) {
@@ -238,13 +248,15 @@ export class Limiter implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Limiter> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiter(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Limiter> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiter(object.type)) {
       throw new Error(`object at id ${id} is not a Limiter object`)
     }
-
-    return Limiter.fromBcs(res.bcsBytes)
+    return Limiter.fromBcs(object.content)
   }
 }
 
@@ -273,9 +285,9 @@ export type LimitersJSON = {
 export class Limiters implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::Limiters` = `${
-    getTypeOrigin('protocol', 'limiter::Limiters')
-  }::limiter::Limiters` as const
+  static get $typeName(): `${string}::limiter::Limiters` {
+    return `${getTypeOrigin('protocol', 'limiter::Limiters')}::limiter::Limiters` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -299,11 +311,15 @@ export class Limiters implements StructClass {
   static reified(): LimitersReified {
     const reifiedBcs = Limiters.bcs
     return {
-      typeName: Limiters.$typeName,
-      fullTypeName: composeSuiType(
-        Limiters.$typeName,
-        ...[],
-      ) as `${string}::limiter::Limiters`,
+      get typeName() {
+        return Limiters.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Limiters.$typeName,
+          ...[],
+        ) as `${string}::limiter::Limiters`
+      },
       typeArgs: [] as [],
       isPhantom: Limiters.$isPhantom,
       reifiedTypeArgs: [],
@@ -313,9 +329,11 @@ export class Limiters implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Limiters.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Limiters.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Limiters.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Limiters.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Limiters.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Limiters.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Limiters.fetch(client, id),
       new: (fields: LimitersFields) => {
         return new Limiters([], fields)
       },
@@ -396,6 +414,14 @@ export class Limiters implements StructClass {
     return Limiters.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Limiters {
+    if (!isLimiters(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Limiters object`)
+    }
+    return Limiters.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Limiters.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Limiters {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -406,6 +432,7 @@ export class Limiters implements StructClass {
     return Limiters.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Limiters.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Limiters {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiters(data.bcs.type)) {
@@ -422,13 +449,15 @@ export class Limiters implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Limiters> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiters(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Limiters> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiters(object.type)) {
       throw new Error(`object at id ${id} is not a Limiters object`)
     }
-
-    return Limiters.fromBcs(res.bcsBytes)
+    return Limiters.fromBcs(object.content)
   }
 }
 
@@ -459,9 +488,9 @@ export type SegmentJSON = {
 export class Segment implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::Segment` = `${
-    getTypeOrigin('protocol', 'limiter::Segment')
-  }::limiter::Segment` as const
+  static get $typeName(): `${string}::limiter::Segment` {
+    return `${getTypeOrigin('protocol', 'limiter::Segment')}::limiter::Segment` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -487,11 +516,15 @@ export class Segment implements StructClass {
   static reified(): SegmentReified {
     const reifiedBcs = Segment.bcs
     return {
-      typeName: Segment.$typeName,
-      fullTypeName: composeSuiType(
-        Segment.$typeName,
-        ...[],
-      ) as `${string}::limiter::Segment`,
+      get typeName() {
+        return Segment.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Segment.$typeName,
+          ...[],
+        ) as `${string}::limiter::Segment`
+      },
       typeArgs: [] as [],
       isPhantom: Segment.$isPhantom,
       reifiedTypeArgs: [],
@@ -501,9 +534,11 @@ export class Segment implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Segment.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Segment.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Segment.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Segment.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Segment.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Segment.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Segment.fetch(client, id),
       new: (fields: SegmentFields) => {
         return new Segment([], fields)
       },
@@ -589,6 +624,14 @@ export class Segment implements StructClass {
     return Segment.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Segment {
+    if (!isSegment(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Segment object`)
+    }
+    return Segment.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Segment.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Segment {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -599,6 +642,7 @@ export class Segment implements StructClass {
     return Segment.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Segment.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Segment {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSegment(data.bcs.type)) {
@@ -615,13 +659,15 @@ export class Segment implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Segment> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSegment(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Segment> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSegment(object.type)) {
       throw new Error(`object at id ${id} is not a Segment object`)
     }
-
-    return Segment.fromBcs(res.bcsBytes)
+    return Segment.fromBcs(object.content)
   }
 }
 
@@ -662,9 +708,11 @@ export type LimiterUpdateLimitChangeCreatedEventJSON = {
 export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterUpdateLimitChangeCreatedEvent` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterUpdateLimitChangeCreatedEvent')
-  }::limiter::LimiterUpdateLimitChangeCreatedEvent` as const
+  static get $typeName(): `${string}::limiter::LimiterUpdateLimitChangeCreatedEvent` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterUpdateLimitChangeCreatedEvent')
+    }::limiter::LimiterUpdateLimitChangeCreatedEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -696,11 +744,15 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
   static reified(): LimiterUpdateLimitChangeCreatedEventReified {
     const reifiedBcs = LimiterUpdateLimitChangeCreatedEvent.bcs
     return {
-      typeName: LimiterUpdateLimitChangeCreatedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateLimitChangeCreatedEvent.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterUpdateLimitChangeCreatedEvent`,
+      get typeName() {
+        return LimiterUpdateLimitChangeCreatedEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterUpdateLimitChangeCreatedEvent.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterUpdateLimitChangeCreatedEvent`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterUpdateLimitChangeCreatedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -713,11 +765,13 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateLimitChangeCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChangeCreatedEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterUpdateLimitChangeCreatedEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterUpdateLimitChangeCreatedEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterUpdateLimitChangeCreatedEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterUpdateLimitChangeCreatedEvent.fetch(client, id),
       new: (fields: LimiterUpdateLimitChangeCreatedEventFields) => {
         return new LimiterUpdateLimitChangeCreatedEvent([], fields)
@@ -819,6 +873,18 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
     return LimiterUpdateLimitChangeCreatedEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): LimiterUpdateLimitChangeCreatedEvent {
+    if (!isLimiterUpdateLimitChangeCreatedEvent(obj.type)) {
+      throw new Error(
+        `object at ${obj.objectId} is not a LimiterUpdateLimitChangeCreatedEvent object`,
+      )
+    }
+    return LimiterUpdateLimitChangeCreatedEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateLimitChangeCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterUpdateLimitChangeCreatedEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -833,6 +899,7 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
     return LimiterUpdateLimitChangeCreatedEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateLimitChangeCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterUpdateLimitChangeCreatedEvent {
     if (data.bcs) {
       if (
@@ -852,15 +919,17 @@ export class LimiterUpdateLimitChangeCreatedEvent implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<LimiterUpdateLimitChangeCreatedEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterUpdateLimitChangeCreatedEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterUpdateLimitChangeCreatedEvent(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterUpdateLimitChangeCreatedEvent object`)
     }
-
-    return LimiterUpdateLimitChangeCreatedEvent.fromBcs(res.bcsBytes)
+    return LimiterUpdateLimitChangeCreatedEvent.fromBcs(object.content)
   }
 }
 
@@ -901,9 +970,11 @@ export type LimiterUpdateParamsChangeCreatedEventJSON = {
 export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterUpdateParamsChangeCreatedEvent` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterUpdateParamsChangeCreatedEvent')
-  }::limiter::LimiterUpdateParamsChangeCreatedEvent` as const
+  static get $typeName(): `${string}::limiter::LimiterUpdateParamsChangeCreatedEvent` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterUpdateParamsChangeCreatedEvent')
+    }::limiter::LimiterUpdateParamsChangeCreatedEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -935,11 +1006,15 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
   static reified(): LimiterUpdateParamsChangeCreatedEventReified {
     const reifiedBcs = LimiterUpdateParamsChangeCreatedEvent.bcs
     return {
-      typeName: LimiterUpdateParamsChangeCreatedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateParamsChangeCreatedEvent.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterUpdateParamsChangeCreatedEvent`,
+      get typeName() {
+        return LimiterUpdateParamsChangeCreatedEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterUpdateParamsChangeCreatedEvent.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterUpdateParamsChangeCreatedEvent`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterUpdateParamsChangeCreatedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -952,11 +1027,13 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateParamsChangeCreatedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChangeCreatedEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterUpdateParamsChangeCreatedEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterUpdateParamsChangeCreatedEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterUpdateParamsChangeCreatedEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterUpdateParamsChangeCreatedEvent.fetch(client, id),
       new: (fields: LimiterUpdateParamsChangeCreatedEventFields) => {
         return new LimiterUpdateParamsChangeCreatedEvent([], fields)
@@ -1058,6 +1135,18 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
     return LimiterUpdateParamsChangeCreatedEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): LimiterUpdateParamsChangeCreatedEvent {
+    if (!isLimiterUpdateParamsChangeCreatedEvent(obj.type)) {
+      throw new Error(
+        `object at ${obj.objectId} is not a LimiterUpdateParamsChangeCreatedEvent object`,
+      )
+    }
+    return LimiterUpdateParamsChangeCreatedEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateParamsChangeCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterUpdateParamsChangeCreatedEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1072,6 +1161,7 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
     return LimiterUpdateParamsChangeCreatedEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateParamsChangeCreatedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterUpdateParamsChangeCreatedEvent {
     if (data.bcs) {
       if (
@@ -1092,15 +1182,17 @@ export class LimiterUpdateParamsChangeCreatedEvent implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<LimiterUpdateParamsChangeCreatedEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterUpdateParamsChangeCreatedEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterUpdateParamsChangeCreatedEvent(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterUpdateParamsChangeCreatedEvent object`)
     }
-
-    return LimiterUpdateParamsChangeCreatedEvent.fromBcs(res.bcsBytes)
+    return LimiterUpdateParamsChangeCreatedEvent.fromBcs(object.content)
   }
 }
 
@@ -1137,9 +1229,11 @@ export type LimiterLimitChangeAppliedEventJSON = {
 export class LimiterLimitChangeAppliedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterLimitChangeAppliedEvent` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterLimitChangeAppliedEvent')
-  }::limiter::LimiterLimitChangeAppliedEvent` as const
+  static get $typeName(): `${string}::limiter::LimiterLimitChangeAppliedEvent` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterLimitChangeAppliedEvent')
+    }::limiter::LimiterLimitChangeAppliedEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1167,11 +1261,15 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
   static reified(): LimiterLimitChangeAppliedEventReified {
     const reifiedBcs = LimiterLimitChangeAppliedEvent.bcs
     return {
-      typeName: LimiterLimitChangeAppliedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterLimitChangeAppliedEvent.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterLimitChangeAppliedEvent`,
+      get typeName() {
+        return LimiterLimitChangeAppliedEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterLimitChangeAppliedEvent.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterLimitChangeAppliedEvent`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterLimitChangeAppliedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1184,11 +1282,13 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterLimitChangeAppliedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterLimitChangeAppliedEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterLimitChangeAppliedEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterLimitChangeAppliedEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterLimitChangeAppliedEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterLimitChangeAppliedEvent.fetch(client, id),
       new: (fields: LimiterLimitChangeAppliedEventFields) => {
         return new LimiterLimitChangeAppliedEvent([], fields)
@@ -1277,6 +1377,16 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
     return LimiterLimitChangeAppliedEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): LimiterLimitChangeAppliedEvent {
+    if (!isLimiterLimitChangeAppliedEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LimiterLimitChangeAppliedEvent object`)
+    }
+    return LimiterLimitChangeAppliedEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterLimitChangeAppliedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterLimitChangeAppliedEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1289,6 +1399,7 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
     return LimiterLimitChangeAppliedEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterLimitChangeAppliedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterLimitChangeAppliedEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiterLimitChangeAppliedEvent(data.bcs.type)) {
@@ -1306,15 +1417,17 @@ export class LimiterLimitChangeAppliedEvent implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<LimiterLimitChangeAppliedEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterLimitChangeAppliedEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterLimitChangeAppliedEvent(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterLimitChangeAppliedEvent object`)
     }
-
-    return LimiterLimitChangeAppliedEvent.fromBcs(res.bcsBytes)
+    return LimiterLimitChangeAppliedEvent.fromBcs(object.content)
   }
 }
 
@@ -1351,9 +1464,11 @@ export type LimiterParamsChangeAppliedEventJSON = {
 export class LimiterParamsChangeAppliedEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterParamsChangeAppliedEvent` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterParamsChangeAppliedEvent')
-  }::limiter::LimiterParamsChangeAppliedEvent` as const
+  static get $typeName(): `${string}::limiter::LimiterParamsChangeAppliedEvent` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterParamsChangeAppliedEvent')
+    }::limiter::LimiterParamsChangeAppliedEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1381,11 +1496,15 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
   static reified(): LimiterParamsChangeAppliedEventReified {
     const reifiedBcs = LimiterParamsChangeAppliedEvent.bcs
     return {
-      typeName: LimiterParamsChangeAppliedEvent.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterParamsChangeAppliedEvent.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterParamsChangeAppliedEvent`,
+      get typeName() {
+        return LimiterParamsChangeAppliedEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterParamsChangeAppliedEvent.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterParamsChangeAppliedEvent`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterParamsChangeAppliedEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1398,11 +1517,13 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterParamsChangeAppliedEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterParamsChangeAppliedEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterParamsChangeAppliedEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterParamsChangeAppliedEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterParamsChangeAppliedEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterParamsChangeAppliedEvent.fetch(client, id),
       new: (fields: LimiterParamsChangeAppliedEventFields) => {
         return new LimiterParamsChangeAppliedEvent([], fields)
@@ -1493,6 +1614,16 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
     return LimiterParamsChangeAppliedEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): LimiterParamsChangeAppliedEvent {
+    if (!isLimiterParamsChangeAppliedEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LimiterParamsChangeAppliedEvent object`)
+    }
+    return LimiterParamsChangeAppliedEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterParamsChangeAppliedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterParamsChangeAppliedEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1505,6 +1636,7 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
     return LimiterParamsChangeAppliedEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterParamsChangeAppliedEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterParamsChangeAppliedEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiterParamsChangeAppliedEvent(data.bcs.type)) {
@@ -1522,15 +1654,17 @@ export class LimiterParamsChangeAppliedEvent implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<LimiterParamsChangeAppliedEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterParamsChangeAppliedEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterParamsChangeAppliedEvent(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterParamsChangeAppliedEvent object`)
     }
-
-    return LimiterParamsChangeAppliedEvent.fromBcs(res.bcsBytes)
+    return LimiterParamsChangeAppliedEvent.fromBcs(object.content)
   }
 }
 
@@ -1567,9 +1701,11 @@ export type LimiterUpdateLimitChangeJSON = {
 export class LimiterUpdateLimitChange implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterUpdateLimitChange` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterUpdateLimitChange')
-  }::limiter::LimiterUpdateLimitChange` as const
+  static get $typeName(): `${string}::limiter::LimiterUpdateLimitChange` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterUpdateLimitChange')
+    }::limiter::LimiterUpdateLimitChange` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1596,11 +1732,15 @@ export class LimiterUpdateLimitChange implements StructClass {
   static reified(): LimiterUpdateLimitChangeReified {
     const reifiedBcs = LimiterUpdateLimitChange.bcs
     return {
-      typeName: LimiterUpdateLimitChange.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateLimitChange.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterUpdateLimitChange`,
+      get typeName() {
+        return LimiterUpdateLimitChange.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterUpdateLimitChange.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterUpdateLimitChange`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterUpdateLimitChange.$isPhantom,
       reifiedTypeArgs: [],
@@ -1611,11 +1751,13 @@ export class LimiterUpdateLimitChange implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateLimitChange.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateLimitChange.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterUpdateLimitChange.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterUpdateLimitChange.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterUpdateLimitChange.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterUpdateLimitChange.fetch(client, id),
       new: (fields: LimiterUpdateLimitChangeFields) => {
         return new LimiterUpdateLimitChange([], fields)
@@ -1702,6 +1844,14 @@ export class LimiterUpdateLimitChange implements StructClass {
     return LimiterUpdateLimitChange.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LimiterUpdateLimitChange {
+    if (!isLimiterUpdateLimitChange(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LimiterUpdateLimitChange object`)
+    }
+    return LimiterUpdateLimitChange.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateLimitChange.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterUpdateLimitChange {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1714,6 +1864,7 @@ export class LimiterUpdateLimitChange implements StructClass {
     return LimiterUpdateLimitChange.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateLimitChange.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterUpdateLimitChange {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiterUpdateLimitChange(data.bcs.type)) {
@@ -1730,13 +1881,15 @@ export class LimiterUpdateLimitChange implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LimiterUpdateLimitChange> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterUpdateLimitChange(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LimiterUpdateLimitChange> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterUpdateLimitChange(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterUpdateLimitChange object`)
     }
-
-    return LimiterUpdateLimitChange.fromBcs(res.bcsBytes)
+    return LimiterUpdateLimitChange.fromBcs(object.content)
   }
 }
 
@@ -1775,9 +1928,11 @@ export type LimiterUpdateParamsChangeJSON = {
 export class LimiterUpdateParamsChange implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::limiter::LimiterUpdateParamsChange` = `${
-    getTypeOrigin('protocol', 'limiter::LimiterUpdateParamsChange')
-  }::limiter::LimiterUpdateParamsChange` as const
+  static get $typeName(): `${string}::limiter::LimiterUpdateParamsChange` {
+    return `${
+      getTypeOrigin('protocol', 'limiter::LimiterUpdateParamsChange')
+    }::limiter::LimiterUpdateParamsChange` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1807,11 +1962,15 @@ export class LimiterUpdateParamsChange implements StructClass {
   static reified(): LimiterUpdateParamsChangeReified {
     const reifiedBcs = LimiterUpdateParamsChange.bcs
     return {
-      typeName: LimiterUpdateParamsChange.$typeName,
-      fullTypeName: composeSuiType(
-        LimiterUpdateParamsChange.$typeName,
-        ...[],
-      ) as `${string}::limiter::LimiterUpdateParamsChange`,
+      get typeName() {
+        return LimiterUpdateParamsChange.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LimiterUpdateParamsChange.$typeName,
+          ...[],
+        ) as `${string}::limiter::LimiterUpdateParamsChange`
+      },
       typeArgs: [] as [],
       isPhantom: LimiterUpdateParamsChange.$isPhantom,
       reifiedTypeArgs: [],
@@ -1822,11 +1981,13 @@ export class LimiterUpdateParamsChange implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LimiterUpdateParamsChange.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LimiterUpdateParamsChange.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LimiterUpdateParamsChange.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LimiterUpdateParamsChange.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LimiterUpdateParamsChange.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LimiterUpdateParamsChange.fetch(client, id),
       new: (fields: LimiterUpdateParamsChangeFields) => {
         return new LimiterUpdateParamsChange([], fields)
@@ -1922,6 +2083,14 @@ export class LimiterUpdateParamsChange implements StructClass {
     return LimiterUpdateParamsChange.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LimiterUpdateParamsChange {
+    if (!isLimiterUpdateParamsChange(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LimiterUpdateParamsChange object`)
+    }
+    return LimiterUpdateParamsChange.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateParamsChange.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LimiterUpdateParamsChange {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1934,6 +2103,7 @@ export class LimiterUpdateParamsChange implements StructClass {
     return LimiterUpdateParamsChange.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LimiterUpdateParamsChange.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LimiterUpdateParamsChange {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLimiterUpdateParamsChange(data.bcs.type)) {
@@ -1950,12 +2120,14 @@ export class LimiterUpdateParamsChange implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LimiterUpdateParamsChange> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLimiterUpdateParamsChange(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LimiterUpdateParamsChange> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLimiterUpdateParamsChange(object.type)) {
       throw new Error(`object at id ${id} is not a LimiterUpdateParamsChange object`)
     }
-
-    return LimiterUpdateParamsChange.fromBcs(res.bcsBytes)
+    return LimiterUpdateParamsChange.fromBcs(object.content)
   }
 }

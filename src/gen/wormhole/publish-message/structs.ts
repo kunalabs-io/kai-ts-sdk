@@ -25,7 +25,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -42,13 +43,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { ID } from '../../sui/object/structs'
 
@@ -100,9 +95,11 @@ export type WormholeMessageJSON = {
 export class WormholeMessage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::publish_message::WormholeMessage` = `${
-    getTypeOrigin('wormhole', 'publish_message::WormholeMessage')
-  }::publish_message::WormholeMessage` as const
+  static get $typeName(): `${string}::publish_message::WormholeMessage` {
+    return `${
+      getTypeOrigin('wormhole', 'publish_message::WormholeMessage')
+    }::publish_message::WormholeMessage` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -142,11 +139,15 @@ export class WormholeMessage implements StructClass {
   static reified(): WormholeMessageReified {
     const reifiedBcs = WormholeMessage.bcs
     return {
-      typeName: WormholeMessage.$typeName,
-      fullTypeName: composeSuiType(
-        WormholeMessage.$typeName,
-        ...[],
-      ) as `${string}::publish_message::WormholeMessage`,
+      get typeName() {
+        return WormholeMessage.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WormholeMessage.$typeName,
+          ...[],
+        ) as `${string}::publish_message::WormholeMessage`
+      },
       typeArgs: [] as [],
       isPhantom: WormholeMessage.$isPhantom,
       reifiedTypeArgs: [],
@@ -156,9 +157,11 @@ export class WormholeMessage implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WormholeMessage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WormholeMessage.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WormholeMessage.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => WormholeMessage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => WormholeMessage.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => WormholeMessage.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WormholeMessage.fetch(client, id),
       new: (fields: WormholeMessageFields) => {
         return new WormholeMessage([], fields)
       },
@@ -264,6 +267,14 @@ export class WormholeMessage implements StructClass {
     return WormholeMessage.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): WormholeMessage {
+    if (!isWormholeMessage(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WormholeMessage object`)
+    }
+    return WormholeMessage.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WormholeMessage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): WormholeMessage {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -274,6 +285,7 @@ export class WormholeMessage implements StructClass {
     return WormholeMessage.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WormholeMessage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): WormholeMessage {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWormholeMessage(data.bcs.type)) {
@@ -290,13 +302,15 @@ export class WormholeMessage implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<WormholeMessage> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWormholeMessage(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<WormholeMessage> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWormholeMessage(object.type)) {
       throw new Error(`object at id ${id} is not a WormholeMessage object`)
     }
-
-    return WormholeMessage.fromBcs(res.bcsBytes)
+    return WormholeMessage.fromBcs(object.content)
   }
 }
 
@@ -345,9 +359,11 @@ export type MessageTicketJSON = {
 export class MessageTicket implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::publish_message::MessageTicket` = `${
-    getTypeOrigin('wormhole', 'publish_message::MessageTicket')
-  }::publish_message::MessageTicket` as const
+  static get $typeName(): `${string}::publish_message::MessageTicket` {
+    return `${
+      getTypeOrigin('wormhole', 'publish_message::MessageTicket')
+    }::publish_message::MessageTicket` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -381,11 +397,15 @@ export class MessageTicket implements StructClass {
   static reified(): MessageTicketReified {
     const reifiedBcs = MessageTicket.bcs
     return {
-      typeName: MessageTicket.$typeName,
-      fullTypeName: composeSuiType(
-        MessageTicket.$typeName,
-        ...[],
-      ) as `${string}::publish_message::MessageTicket`,
+      get typeName() {
+        return MessageTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          MessageTicket.$typeName,
+          ...[],
+        ) as `${string}::publish_message::MessageTicket`
+      },
       typeArgs: [] as [],
       isPhantom: MessageTicket.$isPhantom,
       reifiedTypeArgs: [],
@@ -395,9 +415,11 @@ export class MessageTicket implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => MessageTicket.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => MessageTicket.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        MessageTicket.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => MessageTicket.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => MessageTicket.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => MessageTicket.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => MessageTicket.fetch(client, id),
       new: (fields: MessageTicketFields) => {
         return new MessageTicket([], fields)
       },
@@ -493,6 +515,14 @@ export class MessageTicket implements StructClass {
     return MessageTicket.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): MessageTicket {
+    if (!isMessageTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a MessageTicket object`)
+    }
+    return MessageTicket.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MessageTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): MessageTicket {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -503,6 +533,7 @@ export class MessageTicket implements StructClass {
     return MessageTicket.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link MessageTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): MessageTicket {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isMessageTicket(data.bcs.type)) {
@@ -519,12 +550,14 @@ export class MessageTicket implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<MessageTicket> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isMessageTicket(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<MessageTicket> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isMessageTicket(object.type)) {
       throw new Error(`object at id ${id} is not a MessageTicket object`)
     }
-
-    return MessageTicket.fromBcs(res.bcsBytes)
+    return MessageTicket.fromBcs(object.content)
   }
 }

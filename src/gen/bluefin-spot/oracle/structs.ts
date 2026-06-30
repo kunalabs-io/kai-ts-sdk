@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I64 } from '../../integer-mate/i64/structs'
 
@@ -58,9 +53,11 @@ export type ObservationManagerJSON = {
 export class ObservationManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::oracle::ObservationManager` = `${
-    getTypeOrigin('bluefin-spot', 'oracle::ObservationManager')
-  }::oracle::ObservationManager` as const
+  static get $typeName(): `${string}::oracle::ObservationManager` {
+    return `${
+      getTypeOrigin('bluefin-spot', 'oracle::ObservationManager')
+    }::oracle::ObservationManager` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +87,15 @@ export class ObservationManager implements StructClass {
   static reified(): ObservationManagerReified {
     const reifiedBcs = ObservationManager.bcs
     return {
-      typeName: ObservationManager.$typeName,
-      fullTypeName: composeSuiType(
-        ObservationManager.$typeName,
-        ...[],
-      ) as `${string}::oracle::ObservationManager`,
+      get typeName() {
+        return ObservationManager.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObservationManager.$typeName,
+          ...[],
+        ) as `${string}::oracle::ObservationManager`
+      },
       typeArgs: [] as [],
       isPhantom: ObservationManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,9 +105,11 @@ export class ObservationManager implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObservationManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObservationManager.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObservationManager.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObservationManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObservationManager.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ObservationManager.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObservationManager.fetch(client, id),
       new: (fields: ObservationManagerFields) => {
         return new ObservationManager([], fields)
       },
@@ -211,6 +214,14 @@ export class ObservationManager implements StructClass {
     return ObservationManager.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObservationManager {
+    if (!isObservationManager(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObservationManager object`)
+    }
+    return ObservationManager.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObservationManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObservationManager {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -221,6 +232,7 @@ export class ObservationManager implements StructClass {
     return ObservationManager.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObservationManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObservationManager {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObservationManager(data.bcs.type)) {
@@ -237,13 +249,15 @@ export class ObservationManager implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObservationManager> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObservationManager(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObservationManager> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObservationManager(object.type)) {
       throw new Error(`object at id ${id} is not a ObservationManager object`)
     }
-
-    return ObservationManager.fromBcs(res.bcsBytes)
+    return ObservationManager.fromBcs(object.content)
   }
 }
 
@@ -278,9 +292,9 @@ export type ObservationJSON = {
 export class Observation implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::oracle::Observation` = `${
-    getTypeOrigin('bluefin-spot', 'oracle::Observation')
-  }::oracle::Observation` as const
+  static get $typeName(): `${string}::oracle::Observation` {
+    return `${getTypeOrigin('bluefin-spot', 'oracle::Observation')}::oracle::Observation` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -310,11 +324,15 @@ export class Observation implements StructClass {
   static reified(): ObservationReified {
     const reifiedBcs = Observation.bcs
     return {
-      typeName: Observation.$typeName,
-      fullTypeName: composeSuiType(
-        Observation.$typeName,
-        ...[],
-      ) as `${string}::oracle::Observation`,
+      get typeName() {
+        return Observation.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Observation.$typeName,
+          ...[],
+        ) as `${string}::oracle::Observation`
+      },
       typeArgs: [] as [],
       isPhantom: Observation.$isPhantom,
       reifiedTypeArgs: [],
@@ -324,9 +342,11 @@ export class Observation implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Observation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Observation.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Observation.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Observation.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Observation.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Observation.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Observation.fetch(client, id),
       new: (fields: ObservationFields) => {
         return new Observation([], fields)
       },
@@ -431,6 +451,14 @@ export class Observation implements StructClass {
     return Observation.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Observation {
+    if (!isObservation(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Observation object`)
+    }
+    return Observation.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Observation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Observation {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -441,6 +469,7 @@ export class Observation implements StructClass {
     return Observation.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Observation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Observation {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObservation(data.bcs.type)) {
@@ -457,12 +486,14 @@ export class Observation implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Observation> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObservation(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Observation> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObservation(object.type)) {
       throw new Error(`object at id ${id} is not a Observation object`)
     }
-
-    return Observation.fromBcs(res.bcsBytes)
+    return Observation.fromBcs(object.content)
   }
 }

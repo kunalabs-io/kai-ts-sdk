@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { UID } from '../../../sui/object/structs'
 import { AcTableCap } from '../../x/ac-table/structs'
 import { InterestModels } from '../interest-model/structs'
@@ -53,9 +48,9 @@ export type APPJSON = {
 export class APP implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::app::APP` = `${
-    getTypeOrigin('protocol', 'app::APP')
-  }::app::APP` as const
+  static get $typeName(): `${string}::app::APP` {
+    return `${getTypeOrigin('protocol', 'app::APP')}::app::APP` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +74,15 @@ export class APP implements StructClass {
   static reified(): APPReified {
     const reifiedBcs = APP.bcs
     return {
-      typeName: APP.$typeName,
-      fullTypeName: composeSuiType(
-        APP.$typeName,
-        ...[],
-      ) as `${string}::app::APP`,
+      get typeName() {
+        return APP.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          APP.$typeName,
+          ...[],
+        ) as `${string}::app::APP`
+      },
       typeArgs: [] as [],
       isPhantom: APP.$isPhantom,
       reifiedTypeArgs: [],
@@ -93,9 +92,10 @@ export class APP implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => APP.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => APP.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => APP.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => APP.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => APP.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => APP.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => APP.fetch(client, id),
       new: (fields: APPFields) => {
         return new APP([], fields)
       },
@@ -176,6 +176,14 @@ export class APP implements StructClass {
     return APP.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): APP {
+    if (!isAPP(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a APP object`)
+    }
+    return APP.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link APP.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): APP {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -186,6 +194,7 @@ export class APP implements StructClass {
     return APP.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link APP.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): APP {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAPP(data.bcs.type)) {
@@ -202,13 +211,15 @@ export class APP implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<APP> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAPP(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<APP> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAPP(object.type)) {
       throw new Error(`object at id ${id} is not a APP object`)
     }
-
-    return APP.fromBcs(res.bcsBytes)
+    return APP.fromBcs(object.content)
   }
 }
 
@@ -247,9 +258,9 @@ export type AdminCapJSON = {
 export class AdminCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::app::AdminCap` = `${
-    getTypeOrigin('protocol', 'app::AdminCap')
-  }::app::AdminCap` as const
+  static get $typeName(): `${string}::app::AdminCap` {
+    return `${getTypeOrigin('protocol', 'app::AdminCap')}::app::AdminCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -283,11 +294,15 @@ export class AdminCap implements StructClass {
   static reified(): AdminCapReified {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[],
-      ) as `${string}::app::AdminCap`,
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[],
+        ) as `${string}::app::AdminCap`
+      },
       typeArgs: [] as [],
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -297,9 +312,11 @@ export class AdminCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, id),
       new: (fields: AdminCapFields) => {
         return new AdminCap([], fields)
       },
@@ -426,6 +443,14 @@ export class AdminCap implements StructClass {
     return AdminCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AdminCap {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+    return AdminCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AdminCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -436,6 +461,7 @@ export class AdminCap implements StructClass {
     return AdminCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AdminCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
@@ -452,12 +478,14 @@ export class AdminCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AdminCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AdminCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
-
-    return AdminCap.fromBcs(res.bcsBytes)
+    return AdminCap.fromBcs(object.content)
   }
 }

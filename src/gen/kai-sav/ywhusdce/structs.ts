@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== YWHUSDCE =============================== */
 
@@ -47,9 +42,9 @@ export type YWHUSDCEJSON = {
 export class YWHUSDCE implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ywhusdce::YWHUSDCE` = `${
-    getTypeOrigin('kai-sav', 'ywhusdce::YWHUSDCE')
-  }::ywhusdce::YWHUSDCE` as const
+  static get $typeName(): `${string}::ywhusdce::YWHUSDCE` {
+    return `${getTypeOrigin('kai-sav', 'ywhusdce::YWHUSDCE')}::ywhusdce::YWHUSDCE` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class YWHUSDCE implements StructClass {
   static reified(): YWHUSDCEReified {
     const reifiedBcs = YWHUSDCE.bcs
     return {
-      typeName: YWHUSDCE.$typeName,
-      fullTypeName: composeSuiType(
-        YWHUSDCE.$typeName,
-        ...[],
-      ) as `${string}::ywhusdce::YWHUSDCE`,
+      get typeName() {
+        return YWHUSDCE.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          YWHUSDCE.$typeName,
+          ...[],
+        ) as `${string}::ywhusdce::YWHUSDCE`
+      },
       typeArgs: [] as [],
       isPhantom: YWHUSDCE.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,11 @@ export class YWHUSDCE implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => YWHUSDCE.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => YWHUSDCE.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        YWHUSDCE.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => YWHUSDCE.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => YWHUSDCE.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => YWHUSDCE.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => YWHUSDCE.fetch(client, id),
       new: (fields: YWHUSDCEFields) => {
         return new YWHUSDCE([], fields)
       },
@@ -170,6 +171,14 @@ export class YWHUSDCE implements StructClass {
     return YWHUSDCE.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): YWHUSDCE {
+    if (!isYWHUSDCE(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a YWHUSDCE object`)
+    }
+    return YWHUSDCE.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link YWHUSDCE.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): YWHUSDCE {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +189,7 @@ export class YWHUSDCE implements StructClass {
     return YWHUSDCE.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link YWHUSDCE.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): YWHUSDCE {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isYWHUSDCE(data.bcs.type)) {
@@ -196,12 +206,14 @@ export class YWHUSDCE implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<YWHUSDCE> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isYWHUSDCE(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<YWHUSDCE> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isYWHUSDCE(object.type)) {
       throw new Error(`object at id ${id} is not a YWHUSDCE object`)
     }
-
-    return YWHUSDCE.fromBcs(res.bcsBytes)
+    return YWHUSDCE.fromBcs(object.content)
   }
 }

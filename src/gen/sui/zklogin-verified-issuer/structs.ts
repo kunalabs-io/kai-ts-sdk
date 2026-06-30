@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
   decodeFromFields,
@@ -13,13 +14,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { String } from '../../std/string/structs'
 import { UID } from '../object/structs'
 
@@ -91,11 +86,15 @@ export class VerifiedIssuer implements StructClass {
   static reified(): VerifiedIssuerReified {
     const reifiedBcs = VerifiedIssuer.bcs
     return {
-      typeName: VerifiedIssuer.$typeName,
-      fullTypeName: composeSuiType(
-        VerifiedIssuer.$typeName,
-        ...[],
-      ) as `0x2::zklogin_verified_issuer::VerifiedIssuer`,
+      get typeName() {
+        return VerifiedIssuer.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          VerifiedIssuer.$typeName,
+          ...[],
+        ) as `0x2::zklogin_verified_issuer::VerifiedIssuer`
+      },
       typeArgs: [] as [],
       isPhantom: VerifiedIssuer.$isPhantom,
       reifiedTypeArgs: [],
@@ -105,9 +104,11 @@ export class VerifiedIssuer implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => VerifiedIssuer.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VerifiedIssuer.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        VerifiedIssuer.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => VerifiedIssuer.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VerifiedIssuer.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => VerifiedIssuer.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => VerifiedIssuer.fetch(client, id),
       new: (fields: VerifiedIssuerFields) => {
         return new VerifiedIssuer([], fields)
       },
@@ -201,6 +202,14 @@ export class VerifiedIssuer implements StructClass {
     return VerifiedIssuer.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): VerifiedIssuer {
+    if (!isVerifiedIssuer(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a VerifiedIssuer object`)
+    }
+    return VerifiedIssuer.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VerifiedIssuer.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): VerifiedIssuer {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -211,6 +220,7 @@ export class VerifiedIssuer implements StructClass {
     return VerifiedIssuer.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VerifiedIssuer.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): VerifiedIssuer {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isVerifiedIssuer(data.bcs.type)) {
@@ -227,12 +237,14 @@ export class VerifiedIssuer implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<VerifiedIssuer> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVerifiedIssuer(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<VerifiedIssuer> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVerifiedIssuer(object.type)) {
       throw new Error(`object at id ${id} is not a VerifiedIssuer object`)
     }
-
-    return VerifiedIssuer.fromBcs(res.bcsBytes)
+    return VerifiedIssuer.fromBcs(object.content)
   }
 }

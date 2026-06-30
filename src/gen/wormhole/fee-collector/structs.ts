@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -21,13 +22,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 import { SUI } from '../../sui/sui/structs'
 
@@ -60,9 +55,11 @@ export type FeeCollectorJSON = {
 export class FeeCollector implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::fee_collector::FeeCollector` = `${
-    getTypeOrigin('wormhole', 'fee_collector::FeeCollector')
-  }::fee_collector::FeeCollector` as const
+  static get $typeName(): `${string}::fee_collector::FeeCollector` {
+    return `${
+      getTypeOrigin('wormhole', 'fee_collector::FeeCollector')
+    }::fee_collector::FeeCollector` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -88,11 +85,15 @@ export class FeeCollector implements StructClass {
   static reified(): FeeCollectorReified {
     const reifiedBcs = FeeCollector.bcs
     return {
-      typeName: FeeCollector.$typeName,
-      fullTypeName: composeSuiType(
-        FeeCollector.$typeName,
-        ...[],
-      ) as `${string}::fee_collector::FeeCollector`,
+      get typeName() {
+        return FeeCollector.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          FeeCollector.$typeName,
+          ...[],
+        ) as `${string}::fee_collector::FeeCollector`
+      },
       typeArgs: [] as [],
       isPhantom: FeeCollector.$isPhantom,
       reifiedTypeArgs: [],
@@ -102,9 +103,11 @@ export class FeeCollector implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => FeeCollector.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => FeeCollector.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        FeeCollector.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => FeeCollector.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => FeeCollector.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => FeeCollector.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => FeeCollector.fetch(client, id),
       new: (fields: FeeCollectorFields) => {
         return new FeeCollector([], fields)
       },
@@ -193,6 +196,14 @@ export class FeeCollector implements StructClass {
     return FeeCollector.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): FeeCollector {
+    if (!isFeeCollector(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a FeeCollector object`)
+    }
+    return FeeCollector.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FeeCollector.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): FeeCollector {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -203,6 +214,7 @@ export class FeeCollector implements StructClass {
     return FeeCollector.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FeeCollector.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): FeeCollector {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isFeeCollector(data.bcs.type)) {
@@ -219,12 +231,14 @@ export class FeeCollector implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<FeeCollector> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isFeeCollector(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<FeeCollector> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isFeeCollector(object.type)) {
       throw new Error(`object at id ${id} is not a FeeCollector object`)
     }
-
-    return FeeCollector.fromBcs(res.bcsBytes)
+    return FeeCollector.fromBcs(object.content)
   }
 }

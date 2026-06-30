@@ -7,7 +7,7 @@ import { BasePositionMonitor, PositionMonitorConfig } from './base-position-moni
 import { Logger } from 'pino'
 import { Histogram } from '@opentelemetry/api'
 import { LiqudationBackendClient } from '../client'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { normalizeSuiObjectId } from '@mysten/sui/utils'
 import * as metrics from '../metrics'
 import {
@@ -29,7 +29,7 @@ export class RpcPositionMonitor extends BasePositionMonitor {
     pollIntervalMs: number,
     logger: Logger,
     private backendClient: LiqudationBackendClient,
-    client: SuiClient,
+    client: ClientWithCoreApi,
     oracleService: OracleService,
     config?: PositionMonitorConfig
   ) {
@@ -69,19 +69,19 @@ export class RpcPositionMonitor extends BasePositionMonitor {
       normalizeSuiObjectId(info.id)
     )
 
-    const [configObjects, supplyPoolObjects] = await Promise.all([
-      this.client.multiGetObjects({
-        ids: configIds,
-        options: { showContent: true, showBcs: true },
+    const [configRes, supplyPoolRes] = await Promise.all([
+      this.client.core.getObjects({
+        objectIds: configIds,
+        include: { content: true },
       }),
-      this.client.multiGetObjects({
-        ids: supplyPoolIds,
-        options: { showContent: true },
+      this.client.core.getObjects({
+        objectIds: supplyPoolIds,
+        include: { content: true },
       }),
     ])
 
-    configObjects.forEach((obj, index) => {
-      if (!obj.data) {
+    configRes.objects.forEach((obj, index) => {
+      if (obj instanceof Error) {
         throw new Error(`No data found in response for a Position Config`)
       }
 
@@ -90,14 +90,14 @@ export class RpcPositionMonitor extends BasePositionMonitor {
         throw new Error(`No config info found for config ${configIds[index]}`)
       }
 
-      const config = PositionConfig.fromSuiObjectData(obj.data)
+      const config = PositionConfig.fromCoreObject(obj)
       if (config) {
         configs.set(configIds[index], config)
       }
     })
 
-    supplyPoolObjects.forEach((obj, index) => {
-      if (!obj.data) {
+    supplyPoolRes.objects.forEach((obj, index) => {
+      if (obj instanceof Error) {
         throw new Error(`No data found in response for a Supply Pool`)
       }
 
@@ -108,7 +108,7 @@ export class RpcPositionMonitor extends BasePositionMonitor {
         throw new Error(`No supply pool info found for supply pool ${supplyPoolIds[index]}`)
       }
 
-      const supplyPool = supplyPoolInfo.fromSuiObjectData(obj.data)
+      const supplyPool = supplyPoolInfo.fromCoreObject(obj)
       supplyPools.set(
         supplyPoolIds[index],
         supplyPool as SupplyPool<PhantomTypeArgument, PhantomTypeArgument>
@@ -179,18 +179,16 @@ export class RpcPositionMonitor extends BasePositionMonitor {
 
     for (let i = 0; i < ids.length; i += batchSize) {
       const batch = ids.slice(i, i + batchSize)
-      const batchRes = await this.client.multiGetObjects({
-        ids: batch,
-        options: {
-          showBcs: true,
-        },
+      const batchRes = await this.client.core.getObjects({
+        objectIds: batch,
+        include: { content: true },
       })
 
-      for (const obj of batchRes) {
-        if (!obj.data) {
+      for (const obj of batchRes.objects) {
+        if (obj instanceof Error) {
           throw new Error(`No data found in response for a Position`)
         }
-        results.push(Position.fromSuiObjectData(obj.data))
+        results.push(Position.fromCoreObject(obj))
       }
     }
 

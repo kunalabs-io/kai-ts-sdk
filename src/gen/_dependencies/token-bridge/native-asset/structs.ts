@@ -9,7 +9,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -33,10 +34,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Balance } from '../../../sui/balance/structs'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
@@ -77,9 +76,11 @@ export type NativeAssetJSON<C extends PhantomTypeArgument> = {
 export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::native_asset::NativeAsset` = `${
-    getTypeOrigin('token-bridge', 'native_asset::NativeAsset')
-  }::native_asset::NativeAsset` as const
+  static get $typeName(): `${string}::native_asset::NativeAsset` {
+    return `${
+      getTypeOrigin('token-bridge', 'native_asset::NativeAsset')
+    }::native_asset::NativeAsset` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -109,12 +110,18 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
   ): NativeAssetReified<ToPhantomTypeArgument<C>> {
     const reifiedBcs = NativeAsset.bcs
     return {
-      typeName: NativeAsset.$typeName,
-      fullTypeName: composeSuiType(
-        NativeAsset.$typeName,
-        ...[extractType(C)],
-      ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`,
-      typeArgs: [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>],
+      get typeName() {
+        return NativeAsset.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          NativeAsset.$typeName,
+          ...[extractType(C)],
+        ) as `${string}::native_asset::NativeAsset<${PhantomToTypeStr<ToPhantomTypeArgument<C>>}>`
+      },
+      get typeArgs() {
+        return [extractType(C)] as [PhantomToTypeStr<ToPhantomTypeArgument<C>>]
+      },
       isPhantom: NativeAsset.$isPhantom,
       reifiedTypeArgs: [C],
       fromFields: (fields: Record<string, any>) => NativeAsset.fromFields(C, fields),
@@ -123,9 +130,11 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => NativeAsset.fromJSONField(C, field),
       fromJSON: (json: Record<string, any>) => NativeAsset.fromJSON(C, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        NativeAsset.fromCoreObject(C, obj),
       fromSuiParsedData: (content: SuiParsedData) => NativeAsset.fromSuiParsedData(C, content),
       fromSuiObjectData: (content: SuiObjectData) => NativeAsset.fromSuiObjectData(C, content),
-      fetch: async (client: SupportedSuiClient, id: string) => NativeAsset.fetch(client, C, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => NativeAsset.fetch(client, C, id),
       new: (fields: NativeAssetFields<ToPhantomTypeArgument<C>>) => {
         return new NativeAsset([extractType(C)], fields)
       },
@@ -239,6 +248,34 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
     return NativeAsset.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<C extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: C,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): NativeAsset<ToPhantomTypeArgument<C>> {
+    if (!isNativeAsset(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a NativeAsset object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return NativeAsset.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NativeAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     content: SuiParsedData,
@@ -252,6 +289,7 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
     return NativeAsset.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NativeAsset.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<C extends PhantomReified<PhantomTypeArgument>>(
     typeArg: C,
     data: SuiObjectData,
@@ -288,16 +326,19 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<C extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: C,
     id: string,
   ): Promise<NativeAsset<ToPhantomTypeArgument<C>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isNativeAsset(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isNativeAsset(object.type)) {
       throw new Error(`object at id ${id} is not a NativeAsset object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -313,6 +354,6 @@ export class NativeAsset<C extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return NativeAsset.fromBcs(typeArg, res.bcsBytes)
+    return NativeAsset.fromBcs(typeArg, object.content)
   }
 }

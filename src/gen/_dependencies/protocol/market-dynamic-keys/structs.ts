@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 
 /* ============================== BorrowFeeKey =============================== */
@@ -51,9 +46,11 @@ export type BorrowFeeKeyJSON = {
 export class BorrowFeeKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::market_dynamic_keys::BorrowFeeKey` = `${
-    getTypeOrigin('protocol', 'market_dynamic_keys::BorrowFeeKey')
-  }::market_dynamic_keys::BorrowFeeKey` as const
+  static get $typeName(): `${string}::market_dynamic_keys::BorrowFeeKey` {
+    return `${
+      getTypeOrigin('protocol', 'market_dynamic_keys::BorrowFeeKey')
+    }::market_dynamic_keys::BorrowFeeKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +74,15 @@ export class BorrowFeeKey implements StructClass {
   static reified(): BorrowFeeKeyReified {
     const reifiedBcs = BorrowFeeKey.bcs
     return {
-      typeName: BorrowFeeKey.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowFeeKey.$typeName,
-        ...[],
-      ) as `${string}::market_dynamic_keys::BorrowFeeKey`,
+      get typeName() {
+        return BorrowFeeKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowFeeKey.$typeName,
+          ...[],
+        ) as `${string}::market_dynamic_keys::BorrowFeeKey`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowFeeKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +92,11 @@ export class BorrowFeeKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFeeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFeeKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowFeeKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowFeeKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowFeeKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowFeeKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowFeeKey.fetch(client, id),
       new: (fields: BorrowFeeKeyFields) => {
         return new BorrowFeeKey([], fields)
       },
@@ -174,6 +177,14 @@ export class BorrowFeeKey implements StructClass {
     return BorrowFeeKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowFeeKey {
+    if (!isBorrowFeeKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowFeeKey object`)
+    }
+    return BorrowFeeKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFeeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowFeeKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -184,6 +195,7 @@ export class BorrowFeeKey implements StructClass {
     return BorrowFeeKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFeeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowFeeKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowFeeKey(data.bcs.type)) {
@@ -200,13 +212,15 @@ export class BorrowFeeKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowFeeKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowFeeKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowFeeKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowFeeKey(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowFeeKey object`)
     }
-
-    return BorrowFeeKey.fromBcs(res.bcsBytes)
+    return BorrowFeeKey.fromBcs(object.content)
   }
 }
 
@@ -241,9 +255,11 @@ export type BorrowFeeRecipientKeyJSON = {
 export class BorrowFeeRecipientKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::market_dynamic_keys::BorrowFeeRecipientKey` = `${
-    getTypeOrigin('protocol', 'market_dynamic_keys::BorrowFeeRecipientKey')
-  }::market_dynamic_keys::BorrowFeeRecipientKey` as const
+  static get $typeName(): `${string}::market_dynamic_keys::BorrowFeeRecipientKey` {
+    return `${
+      getTypeOrigin('protocol', 'market_dynamic_keys::BorrowFeeRecipientKey')
+    }::market_dynamic_keys::BorrowFeeRecipientKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -267,11 +283,15 @@ export class BorrowFeeRecipientKey implements StructClass {
   static reified(): BorrowFeeRecipientKeyReified {
     const reifiedBcs = BorrowFeeRecipientKey.bcs
     return {
-      typeName: BorrowFeeRecipientKey.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowFeeRecipientKey.$typeName,
-        ...[],
-      ) as `${string}::market_dynamic_keys::BorrowFeeRecipientKey`,
+      get typeName() {
+        return BorrowFeeRecipientKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowFeeRecipientKey.$typeName,
+          ...[],
+        ) as `${string}::market_dynamic_keys::BorrowFeeRecipientKey`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowFeeRecipientKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -282,11 +302,13 @@ export class BorrowFeeRecipientKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFeeRecipientKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFeeRecipientKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowFeeRecipientKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BorrowFeeRecipientKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BorrowFeeRecipientKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BorrowFeeRecipientKey.fetch(client, id),
       new: (fields: BorrowFeeRecipientKeyFields) => {
         return new BorrowFeeRecipientKey([], fields)
@@ -368,6 +390,14 @@ export class BorrowFeeRecipientKey implements StructClass {
     return BorrowFeeRecipientKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowFeeRecipientKey {
+    if (!isBorrowFeeRecipientKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowFeeRecipientKey object`)
+    }
+    return BorrowFeeRecipientKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFeeRecipientKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowFeeRecipientKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -380,6 +410,7 @@ export class BorrowFeeRecipientKey implements StructClass {
     return BorrowFeeRecipientKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFeeRecipientKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowFeeRecipientKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowFeeRecipientKey(data.bcs.type)) {
@@ -396,13 +427,15 @@ export class BorrowFeeRecipientKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowFeeRecipientKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowFeeRecipientKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowFeeRecipientKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowFeeRecipientKey(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowFeeRecipientKey object`)
     }
-
-    return BorrowFeeRecipientKey.fromBcs(res.bcsBytes)
+    return BorrowFeeRecipientKey.fromBcs(object.content)
   }
 }
 
@@ -434,9 +467,11 @@ export type SupplyLimitKeyJSON = {
 export class SupplyLimitKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::market_dynamic_keys::SupplyLimitKey` = `${
-    getTypeOrigin('protocol', 'market_dynamic_keys::SupplyLimitKey')
-  }::market_dynamic_keys::SupplyLimitKey` as const
+  static get $typeName(): `${string}::market_dynamic_keys::SupplyLimitKey` {
+    return `${
+      getTypeOrigin('protocol', 'market_dynamic_keys::SupplyLimitKey')
+    }::market_dynamic_keys::SupplyLimitKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -460,11 +495,15 @@ export class SupplyLimitKey implements StructClass {
   static reified(): SupplyLimitKeyReified {
     const reifiedBcs = SupplyLimitKey.bcs
     return {
-      typeName: SupplyLimitKey.$typeName,
-      fullTypeName: composeSuiType(
-        SupplyLimitKey.$typeName,
-        ...[],
-      ) as `${string}::market_dynamic_keys::SupplyLimitKey`,
+      get typeName() {
+        return SupplyLimitKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SupplyLimitKey.$typeName,
+          ...[],
+        ) as `${string}::market_dynamic_keys::SupplyLimitKey`
+      },
       typeArgs: [] as [],
       isPhantom: SupplyLimitKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -474,9 +513,11 @@ export class SupplyLimitKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyLimitKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SupplyLimitKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SupplyLimitKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SupplyLimitKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SupplyLimitKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SupplyLimitKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SupplyLimitKey.fetch(client, id),
       new: (fields: SupplyLimitKeyFields) => {
         return new SupplyLimitKey([], fields)
       },
@@ -557,6 +598,14 @@ export class SupplyLimitKey implements StructClass {
     return SupplyLimitKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SupplyLimitKey {
+    if (!isSupplyLimitKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SupplyLimitKey object`)
+    }
+    return SupplyLimitKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SupplyLimitKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SupplyLimitKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -567,6 +616,7 @@ export class SupplyLimitKey implements StructClass {
     return SupplyLimitKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SupplyLimitKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SupplyLimitKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSupplyLimitKey(data.bcs.type)) {
@@ -583,12 +633,14 @@ export class SupplyLimitKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SupplyLimitKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSupplyLimitKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SupplyLimitKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSupplyLimitKey(object.type)) {
       throw new Error(`object at id ${id} is not a SupplyLimitKey object`)
     }
-
-    return SupplyLimitKey.fromBcs(res.bcsBytes)
+    return SupplyLimitKey.fromBcs(object.content)
   }
 }

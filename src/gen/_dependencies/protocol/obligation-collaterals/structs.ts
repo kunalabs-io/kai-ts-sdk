@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== Collateral =============================== */
 
@@ -50,9 +45,11 @@ export type CollateralJSON = {
 export class Collateral implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation_collaterals::Collateral` = `${
-    getTypeOrigin('protocol', 'obligation_collaterals::Collateral')
-  }::obligation_collaterals::Collateral` as const
+  static get $typeName(): `${string}::obligation_collaterals::Collateral` {
+    return `${
+      getTypeOrigin('protocol', 'obligation_collaterals::Collateral')
+    }::obligation_collaterals::Collateral` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -76,11 +73,15 @@ export class Collateral implements StructClass {
   static reified(): CollateralReified {
     const reifiedBcs = Collateral.bcs
     return {
-      typeName: Collateral.$typeName,
-      fullTypeName: composeSuiType(
-        Collateral.$typeName,
-        ...[],
-      ) as `${string}::obligation_collaterals::Collateral`,
+      get typeName() {
+        return Collateral.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Collateral.$typeName,
+          ...[],
+        ) as `${string}::obligation_collaterals::Collateral`
+      },
       typeArgs: [] as [],
       isPhantom: Collateral.$isPhantom,
       reifiedTypeArgs: [],
@@ -90,9 +91,11 @@ export class Collateral implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Collateral.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Collateral.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Collateral.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Collateral.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Collateral.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Collateral.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Collateral.fetch(client, id),
       new: (fields: CollateralFields) => {
         return new Collateral([], fields)
       },
@@ -173,6 +176,14 @@ export class Collateral implements StructClass {
     return Collateral.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Collateral {
+    if (!isCollateral(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Collateral object`)
+    }
+    return Collateral.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Collateral.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Collateral {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -183,6 +194,7 @@ export class Collateral implements StructClass {
     return Collateral.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Collateral.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Collateral {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollateral(data.bcs.type)) {
@@ -199,13 +211,15 @@ export class Collateral implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Collateral> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollateral(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Collateral> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollateral(object.type)) {
       throw new Error(`object at id ${id} is not a Collateral object`)
     }
-
-    return Collateral.fromBcs(res.bcsBytes)
+    return Collateral.fromBcs(object.content)
   }
 }
 
@@ -240,9 +254,11 @@ export type ObligationCollateralsJSON = {
 export class ObligationCollaterals implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation_collaterals::ObligationCollaterals` = `${
-    getTypeOrigin('protocol', 'obligation_collaterals::ObligationCollaterals')
-  }::obligation_collaterals::ObligationCollaterals` as const
+  static get $typeName(): `${string}::obligation_collaterals::ObligationCollaterals` {
+    return `${
+      getTypeOrigin('protocol', 'obligation_collaterals::ObligationCollaterals')
+    }::obligation_collaterals::ObligationCollaterals` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -266,11 +282,15 @@ export class ObligationCollaterals implements StructClass {
   static reified(): ObligationCollateralsReified {
     const reifiedBcs = ObligationCollaterals.bcs
     return {
-      typeName: ObligationCollaterals.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationCollaterals.$typeName,
-        ...[],
-      ) as `${string}::obligation_collaterals::ObligationCollaterals`,
+      get typeName() {
+        return ObligationCollaterals.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationCollaterals.$typeName,
+          ...[],
+        ) as `${string}::obligation_collaterals::ObligationCollaterals`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationCollaterals.$isPhantom,
       reifiedTypeArgs: [],
@@ -281,11 +301,13 @@ export class ObligationCollaterals implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationCollaterals.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationCollaterals.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationCollaterals.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ObligationCollaterals.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ObligationCollaterals.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ObligationCollaterals.fetch(client, id),
       new: (fields: ObligationCollateralsFields) => {
         return new ObligationCollaterals([], fields)
@@ -367,6 +389,14 @@ export class ObligationCollaterals implements StructClass {
     return ObligationCollaterals.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationCollaterals {
+    if (!isObligationCollaterals(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationCollaterals object`)
+    }
+    return ObligationCollaterals.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationCollaterals.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationCollaterals {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -379,6 +409,7 @@ export class ObligationCollaterals implements StructClass {
     return ObligationCollaterals.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationCollaterals.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationCollaterals {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationCollaterals(data.bcs.type)) {
@@ -395,12 +426,14 @@ export class ObligationCollaterals implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationCollaterals> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationCollaterals(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationCollaterals> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationCollaterals(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationCollaterals object`)
     }
-
-    return ObligationCollaterals.fromBcs(res.bcsBytes)
+    return ObligationCollaterals.fromBcs(object.content)
   }
 }

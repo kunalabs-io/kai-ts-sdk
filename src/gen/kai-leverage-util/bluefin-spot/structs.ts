@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -25,10 +26,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { FlashSwapReceipt } from '../../bluefin-spot/pool/structs'
@@ -87,9 +86,11 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::bluefin_spot::RebalanceReceipt` = `${
-    getTypeOrigin('kai-leverage-util', 'bluefin_spot::RebalanceReceipt')
-  }::bluefin_spot::RebalanceReceipt` as const
+  static get $typeName(): `${string}::bluefin_spot::RebalanceReceipt` {
+    return `${
+      getTypeOrigin('kai-leverage-util', 'bluefin_spot::RebalanceReceipt')
+    }::bluefin_spot::RebalanceReceipt` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -136,17 +137,23 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
   ): RebalanceReceiptReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
     const reifiedBcs = RebalanceReceipt.bcs
     return {
-      typeName: RebalanceReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceReceipt.$typeName,
-        ...[extractType(X), extractType(Y)],
-      ) as `${string}::bluefin_spot::RebalanceReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<X>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}>`,
-      typeArgs: [extractType(X), extractType(Y)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<X>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
-      ],
+      get typeName() {
+        return RebalanceReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RebalanceReceipt.$typeName,
+          ...[extractType(X), extractType(Y)],
+        ) as `${string}::bluefin_spot::RebalanceReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<X>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}>`
+      },
+      get typeArgs() {
+        return [extractType(X), extractType(Y)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<X>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
+        ]
+      },
       isPhantom: RebalanceReceipt.$isPhantom,
       reifiedTypeArgs: [X, Y],
       fromFields: (fields: Record<string, any>) => RebalanceReceipt.fromFields([X, Y], fields),
@@ -156,11 +163,13 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceReceipt.fromJSONField([X, Y], field),
       fromJSON: (json: Record<string, any>) => RebalanceReceipt.fromJSON([X, Y], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RebalanceReceipt.fromCoreObject([X, Y], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RebalanceReceipt.fromSuiParsedData([X, Y], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RebalanceReceipt.fromSuiObjectData([X, Y], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RebalanceReceipt.fetch(client, [X, Y], id),
       new: (fields: RebalanceReceiptFields<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>>) => {
         return new RebalanceReceipt([extractType(X), extractType(Y)], fields)
@@ -328,6 +337,37 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     return RebalanceReceipt.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    X extends PhantomReified<PhantomTypeArgument>,
+    Y extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [X, Y],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>> {
+    if (!isRebalanceReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RebalanceReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RebalanceReceipt.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -344,6 +384,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     return RebalanceReceipt.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -386,16 +427,19 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [X, Y],
     id: string,
   ): Promise<RebalanceReceipt<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRebalanceReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRebalanceReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a RebalanceReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -411,7 +455,7 @@ export class RebalanceReceipt<X extends PhantomTypeArgument, Y extends PhantomTy
       }
     }
 
-    return RebalanceReceipt.fromBcs(typeArgs, res.bcsBytes)
+    return RebalanceReceipt.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -462,9 +506,11 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::bluefin_spot::WrappedFlashSwapReceipt` = `${
-    getTypeOrigin('kai-leverage-util', 'bluefin_spot::WrappedFlashSwapReceipt')
-  }::bluefin_spot::WrappedFlashSwapReceipt` as const
+  static get $typeName(): `${string}::bluefin_spot::WrappedFlashSwapReceipt` {
+    return `${
+      getTypeOrigin('kai-leverage-util', 'bluefin_spot::WrappedFlashSwapReceipt')
+    }::bluefin_spot::WrappedFlashSwapReceipt` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -502,17 +548,23 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
   ): WrappedFlashSwapReceiptReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     const reifiedBcs = WrappedFlashSwapReceipt.bcs
     return {
-      typeName: WrappedFlashSwapReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        WrappedFlashSwapReceipt.$typeName,
-        ...[extractType(A), extractType(B)],
-      ) as `${string}::bluefin_spot::WrappedFlashSwapReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<A>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
-      typeArgs: [extractType(A), extractType(B)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<A>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<B>>,
-      ],
+      get typeName() {
+        return WrappedFlashSwapReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WrappedFlashSwapReceipt.$typeName,
+          ...[extractType(A), extractType(B)],
+        ) as `${string}::bluefin_spot::WrappedFlashSwapReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<A>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`
+      },
+      get typeArgs() {
+        return [extractType(A), extractType(B)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<A>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<B>>,
+        ]
+      },
       isPhantom: WrappedFlashSwapReceipt.$isPhantom,
       reifiedTypeArgs: [A, B],
       fromFields: (fields: Record<string, any>) =>
@@ -524,11 +576,13 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WrappedFlashSwapReceipt.fromJSONField([A, B], field),
       fromJSON: (json: Record<string, any>) => WrappedFlashSwapReceipt.fromJSON([A, B], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WrappedFlashSwapReceipt.fromCoreObject([A, B], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         WrappedFlashSwapReceipt.fromSuiParsedData([A, B], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WrappedFlashSwapReceipt.fromSuiObjectData([A, B], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         WrappedFlashSwapReceipt.fetch(client, [A, B], id),
       new: (
         fields: WrappedFlashSwapReceiptFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>,
@@ -670,6 +724,37 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     return WrappedFlashSwapReceipt.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (!isWrappedFlashSwapReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WrappedFlashSwapReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WrappedFlashSwapReceipt.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedFlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
@@ -688,6 +773,7 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     return WrappedFlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedFlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
@@ -730,16 +816,19 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [A, B],
     id: string,
   ): Promise<WrappedFlashSwapReceipt<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWrappedFlashSwapReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWrappedFlashSwapReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a WrappedFlashSwapReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -755,6 +844,6 @@ export class WrappedFlashSwapReceipt<A extends PhantomTypeArgument, B extends Ph
       }
     }
 
-    return WrappedFlashSwapReceipt.fromBcs(typeArgs, res.bcsBytes)
+    return WrappedFlashSwapReceipt.fromBcs(typeArgs, object.content)
   }
 }

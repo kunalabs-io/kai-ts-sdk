@@ -11,7 +11,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -28,13 +29,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
 import { NormalizedAmount } from '../normalized-amount/structs'
@@ -86,9 +81,11 @@ export type TransferWithPayloadJSON = {
 export class TransferWithPayload implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::transfer_with_payload::TransferWithPayload` = `${
-    getTypeOrigin('token-bridge', 'transfer_with_payload::TransferWithPayload')
-  }::transfer_with_payload::TransferWithPayload` as const
+  static get $typeName(): `${string}::transfer_with_payload::TransferWithPayload` {
+    return `${
+      getTypeOrigin('token-bridge', 'transfer_with_payload::TransferWithPayload')
+    }::transfer_with_payload::TransferWithPayload` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -124,11 +121,15 @@ export class TransferWithPayload implements StructClass {
   static reified(): TransferWithPayloadReified {
     const reifiedBcs = TransferWithPayload.bcs
     return {
-      typeName: TransferWithPayload.$typeName,
-      fullTypeName: composeSuiType(
-        TransferWithPayload.$typeName,
-        ...[],
-      ) as `${string}::transfer_with_payload::TransferWithPayload`,
+      get typeName() {
+        return TransferWithPayload.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferWithPayload.$typeName,
+          ...[],
+        ) as `${string}::transfer_with_payload::TransferWithPayload`
+      },
       typeArgs: [] as [],
       isPhantom: TransferWithPayload.$isPhantom,
       reifiedTypeArgs: [],
@@ -138,10 +139,11 @@ export class TransferWithPayload implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferWithPayload.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => TransferWithPayload.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferWithPayload.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => TransferWithPayload.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => TransferWithPayload.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        TransferWithPayload.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => TransferWithPayload.fetch(client, id),
       new: (fields: TransferWithPayloadFields) => {
         return new TransferWithPayload([], fields)
       },
@@ -252,6 +254,14 @@ export class TransferWithPayload implements StructClass {
     return TransferWithPayload.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): TransferWithPayload {
+    if (!isTransferWithPayload(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferWithPayload object`)
+    }
+    return TransferWithPayload.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferWithPayload.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): TransferWithPayload {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -262,6 +272,7 @@ export class TransferWithPayload implements StructClass {
     return TransferWithPayload.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferWithPayload.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): TransferWithPayload {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransferWithPayload(data.bcs.type)) {
@@ -278,12 +289,14 @@ export class TransferWithPayload implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<TransferWithPayload> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferWithPayload(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<TransferWithPayload> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferWithPayload(object.type)) {
       throw new Error(`object at id ${id} is not a TransferWithPayload object`)
     }
-
-    return TransferWithPayload.fromBcs(res.bcsBytes)
+    return TransferWithPayload.fromBcs(object.content)
   }
 }

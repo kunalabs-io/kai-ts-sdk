@@ -1,5 +1,5 @@
 import { Logger } from 'pino'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { ProtocolHandler, CetusProtocolHandler, BluefinProtocolHandler } from './handlers'
@@ -16,7 +16,7 @@ export abstract class BaseLiquidationExecutor implements LiquidationExecutor {
   private readonly bluefinHandler: BluefinProtocolHandler
 
   constructor(
-    protected readonly client: SuiClient,
+    protected readonly client: ClientWithCoreApi,
     protected logger: Logger
   ) {
     this.cetusHandler = new CetusProtocolHandler()

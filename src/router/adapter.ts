@@ -79,8 +79,6 @@ export interface GetPriceArgs<X extends PhantomTypeArgument, Y extends PhantomTy
 export interface Router {
   /** The identifier of the router */
   id: () => string
-  /** Initializes the router */
-  initialize: () => Promise<void>
   /** Swaps a balance of X for a balance of Y */
   swapBalance: (args: RouterSwapBalanceArgs) => Promise<RouterSwapBalanceResult>
   /** Swaps a coin of X for a coin of Y */

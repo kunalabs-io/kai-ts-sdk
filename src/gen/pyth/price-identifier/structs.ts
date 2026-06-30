@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
 /* ============================== PriceIdentifier =============================== */
@@ -53,9 +48,11 @@ export type PriceIdentifierJSON = {
 export class PriceIdentifier implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price_identifier::PriceIdentifier` = `${
-    getTypeOrigin('pyth', 'price_identifier::PriceIdentifier')
-  }::price_identifier::PriceIdentifier` as const
+  static get $typeName(): `${string}::price_identifier::PriceIdentifier` {
+    return `${
+      getTypeOrigin('pyth', 'price_identifier::PriceIdentifier')
+    }::price_identifier::PriceIdentifier` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +76,15 @@ export class PriceIdentifier implements StructClass {
   static reified(): PriceIdentifierReified {
     const reifiedBcs = PriceIdentifier.bcs
     return {
-      typeName: PriceIdentifier.$typeName,
-      fullTypeName: composeSuiType(
-        PriceIdentifier.$typeName,
-        ...[],
-      ) as `${string}::price_identifier::PriceIdentifier`,
+      get typeName() {
+        return PriceIdentifier.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceIdentifier.$typeName,
+          ...[],
+        ) as `${string}::price_identifier::PriceIdentifier`
+      },
       typeArgs: [] as [],
       isPhantom: PriceIdentifier.$isPhantom,
       reifiedTypeArgs: [],
@@ -93,9 +94,11 @@ export class PriceIdentifier implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceIdentifier.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceIdentifier.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceIdentifier.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PriceIdentifier.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PriceIdentifier.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PriceIdentifier.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PriceIdentifier.fetch(client, id),
       new: (fields: PriceIdentifierFields) => {
         return new PriceIdentifier([], fields)
       },
@@ -176,6 +179,14 @@ export class PriceIdentifier implements StructClass {
     return PriceIdentifier.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceIdentifier {
+    if (!isPriceIdentifier(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceIdentifier object`)
+    }
+    return PriceIdentifier.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceIdentifier.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PriceIdentifier {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -186,6 +197,7 @@ export class PriceIdentifier implements StructClass {
     return PriceIdentifier.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceIdentifier.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PriceIdentifier {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceIdentifier(data.bcs.type)) {
@@ -202,12 +214,14 @@ export class PriceIdentifier implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceIdentifier> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceIdentifier(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PriceIdentifier> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceIdentifier(object.type)) {
       throw new Error(`object at id ${id} is not a PriceIdentifier object`)
     }
-
-    return PriceIdentifier.fromBcs(res.bcsBytes)
+    return PriceIdentifier.fromBcs(object.content)
   }
 }

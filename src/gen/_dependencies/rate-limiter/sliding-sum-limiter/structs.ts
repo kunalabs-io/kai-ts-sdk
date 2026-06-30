@@ -5,6 +5,21 @@
  * configurable maximum sum limits. Uses Sui's Clock object for position tracking
  * and enforces limits by aborting when the maximum sum would be exceeded.
  *
+ * # Cap sizing
+ *
+ * The window slides in discrete bucket steps, not continuously. An adversarial
+ * caller timing a bucket boundary can extract up to ~2× `max_sum_limit` over
+ * approximately one window length: one full-cap call at the end of a bucket,
+ * then another at the moment that bucket rolls out of the window (`(N - 1) × W`
+ * later, where `N = bucket_count` and `W = bucket_width_ms`). The long-run
+ * sustained rate converges to `max_sum_limit / (N × W)`.
+ *
+ * Treat `max_sum_limit` as the worst single-window burst that can be absorbed,
+ * not as a long-term volume budget. Pick `N × W` (the total window length) to
+ * match the detection / response time on whatever activity is being limited:
+ * the burst that can occur before a response is bounded by ~2× cap, so the
+ * window length determines how long an attacker has to wait between bursts.
+ *
  * # Examples
  *
  * ```move
@@ -26,7 +41,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -42,13 +58,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Option } from '../../../std/option/structs'
 import { RingAggregator } from '../ring-aggregator/structs'
 
@@ -82,9 +92,11 @@ export type SlidingSumLimiterJSON = {
 export class SlidingSumLimiter implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::sliding_sum_limiter::SlidingSumLimiter` = `${
-    getTypeOrigin('rate-limiter', 'sliding_sum_limiter::SlidingSumLimiter')
-  }::sliding_sum_limiter::SlidingSumLimiter` as const
+  static get $typeName(): `${string}::sliding_sum_limiter::SlidingSumLimiter` {
+    return `${
+      getTypeOrigin('rate-limiter', 'sliding_sum_limiter::SlidingSumLimiter')
+    }::sliding_sum_limiter::SlidingSumLimiter` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -110,11 +122,15 @@ export class SlidingSumLimiter implements StructClass {
   static reified(): SlidingSumLimiterReified {
     const reifiedBcs = SlidingSumLimiter.bcs
     return {
-      typeName: SlidingSumLimiter.$typeName,
-      fullTypeName: composeSuiType(
-        SlidingSumLimiter.$typeName,
-        ...[],
-      ) as `${string}::sliding_sum_limiter::SlidingSumLimiter`,
+      get typeName() {
+        return SlidingSumLimiter.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SlidingSumLimiter.$typeName,
+          ...[],
+        ) as `${string}::sliding_sum_limiter::SlidingSumLimiter`
+      },
       typeArgs: [] as [],
       isPhantom: SlidingSumLimiter.$isPhantom,
       reifiedTypeArgs: [],
@@ -124,9 +140,11 @@ export class SlidingSumLimiter implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SlidingSumLimiter.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SlidingSumLimiter.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SlidingSumLimiter.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SlidingSumLimiter.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SlidingSumLimiter.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SlidingSumLimiter.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SlidingSumLimiter.fetch(client, id),
       new: (fields: SlidingSumLimiterFields) => {
         return new SlidingSumLimiter([], fields)
       },
@@ -215,6 +233,14 @@ export class SlidingSumLimiter implements StructClass {
     return SlidingSumLimiter.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SlidingSumLimiter {
+    if (!isSlidingSumLimiter(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SlidingSumLimiter object`)
+    }
+    return SlidingSumLimiter.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SlidingSumLimiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SlidingSumLimiter {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -225,6 +251,7 @@ export class SlidingSumLimiter implements StructClass {
     return SlidingSumLimiter.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SlidingSumLimiter.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SlidingSumLimiter {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSlidingSumLimiter(data.bcs.type)) {
@@ -241,12 +268,14 @@ export class SlidingSumLimiter implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SlidingSumLimiter> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSlidingSumLimiter(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SlidingSumLimiter> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSlidingSumLimiter(object.type)) {
       throw new Error(`object at id ${id} is not a SlidingSumLimiter object`)
     }
-
-    return SlidingSumLimiter.fromBcs(res.bcsBytes)
+    return SlidingSumLimiter.fromBcs(object.content)
   }
 }

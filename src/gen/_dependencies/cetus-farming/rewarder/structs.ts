@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { Bag } from '../../../sui/bag/structs'
 import { LinkedTable } from '../../../sui/linked-table/structs'
@@ -63,9 +58,11 @@ export type PoolRewarderInfoJSON = {
 export class PoolRewarderInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::PoolRewarderInfo` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::PoolRewarderInfo')
-  }::rewarder::PoolRewarderInfo` as const
+  static get $typeName(): `${string}::rewarder::PoolRewarderInfo` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::PoolRewarderInfo')
+    }::rewarder::PoolRewarderInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -97,11 +94,15 @@ export class PoolRewarderInfo implements StructClass {
   static reified(): PoolRewarderInfoReified {
     const reifiedBcs = PoolRewarderInfo.bcs
     return {
-      typeName: PoolRewarderInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PoolRewarderInfo.$typeName,
-        ...[],
-      ) as `${string}::rewarder::PoolRewarderInfo`,
+      get typeName() {
+        return PoolRewarderInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PoolRewarderInfo.$typeName,
+          ...[],
+        ) as `${string}::rewarder::PoolRewarderInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PoolRewarderInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -111,9 +112,11 @@ export class PoolRewarderInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolRewarderInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolRewarderInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PoolRewarderInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PoolRewarderInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PoolRewarderInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PoolRewarderInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PoolRewarderInfo.fetch(client, id),
       new: (fields: PoolRewarderInfoFields) => {
         return new PoolRewarderInfo([], fields)
       },
@@ -214,6 +217,14 @@ export class PoolRewarderInfo implements StructClass {
     return PoolRewarderInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PoolRewarderInfo {
+    if (!isPoolRewarderInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PoolRewarderInfo object`)
+    }
+    return PoolRewarderInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolRewarderInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PoolRewarderInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -224,6 +235,7 @@ export class PoolRewarderInfo implements StructClass {
     return PoolRewarderInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolRewarderInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PoolRewarderInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPoolRewarderInfo(data.bcs.type)) {
@@ -240,13 +252,15 @@ export class PoolRewarderInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PoolRewarderInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPoolRewarderInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PoolRewarderInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPoolRewarderInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PoolRewarderInfo object`)
     }
-
-    return PoolRewarderInfo.fromBcs(res.bcsBytes)
+    return PoolRewarderInfo.fromBcs(object.content)
   }
 }
 
@@ -287,9 +301,9 @@ export type RewarderJSON = {
 export class Rewarder implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::Rewarder` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::Rewarder')
-  }::rewarder::Rewarder` as const
+  static get $typeName(): `${string}::rewarder::Rewarder` {
+    return `${getTypeOrigin('cetus-farming', 'rewarder::Rewarder')}::rewarder::Rewarder` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -325,11 +339,15 @@ export class Rewarder implements StructClass {
   static reified(): RewarderReified {
     const reifiedBcs = Rewarder.bcs
     return {
-      typeName: Rewarder.$typeName,
-      fullTypeName: composeSuiType(
-        Rewarder.$typeName,
-        ...[],
-      ) as `${string}::rewarder::Rewarder`,
+      get typeName() {
+        return Rewarder.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Rewarder.$typeName,
+          ...[],
+        ) as `${string}::rewarder::Rewarder`
+      },
       typeArgs: [] as [],
       isPhantom: Rewarder.$isPhantom,
       reifiedTypeArgs: [],
@@ -339,9 +357,11 @@ export class Rewarder implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Rewarder.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Rewarder.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Rewarder.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Rewarder.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Rewarder.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Rewarder.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Rewarder.fetch(client, id),
       new: (fields: RewarderFields) => {
         return new Rewarder([], fields)
       },
@@ -461,6 +481,14 @@ export class Rewarder implements StructClass {
     return Rewarder.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Rewarder {
+    if (!isRewarder(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Rewarder object`)
+    }
+    return Rewarder.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Rewarder.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Rewarder {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -471,6 +499,7 @@ export class Rewarder implements StructClass {
     return Rewarder.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Rewarder.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Rewarder {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRewarder(data.bcs.type)) {
@@ -487,13 +516,15 @@ export class Rewarder implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Rewarder> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRewarder(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Rewarder> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRewarder(object.type)) {
       throw new Error(`object at id ${id} is not a Rewarder object`)
     }
-
-    return Rewarder.fromBcs(res.bcsBytes)
+    return Rewarder.fromBcs(object.content)
   }
 }
 
@@ -529,9 +560,11 @@ export type RewarderManagerJSON = {
 export class RewarderManager implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::RewarderManager` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::RewarderManager')
-  }::rewarder::RewarderManager` as const
+  static get $typeName(): `${string}::rewarder::RewarderManager` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::RewarderManager')
+    }::rewarder::RewarderManager` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -561,11 +594,15 @@ export class RewarderManager implements StructClass {
   static reified(): RewarderManagerReified {
     const reifiedBcs = RewarderManager.bcs
     return {
-      typeName: RewarderManager.$typeName,
-      fullTypeName: composeSuiType(
-        RewarderManager.$typeName,
-        ...[],
-      ) as `${string}::rewarder::RewarderManager`,
+      get typeName() {
+        return RewarderManager.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RewarderManager.$typeName,
+          ...[],
+        ) as `${string}::rewarder::RewarderManager`
+      },
       typeArgs: [] as [],
       isPhantom: RewarderManager.$isPhantom,
       reifiedTypeArgs: [],
@@ -575,9 +612,11 @@ export class RewarderManager implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RewarderManager.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RewarderManager.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RewarderManager.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RewarderManager.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RewarderManager.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RewarderManager.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RewarderManager.fetch(client, id),
       new: (fields: RewarderManagerFields) => {
         return new RewarderManager([], fields)
       },
@@ -691,6 +730,14 @@ export class RewarderManager implements StructClass {
     return RewarderManager.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RewarderManager {
+    if (!isRewarderManager(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RewarderManager object`)
+    }
+    return RewarderManager.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewarderManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RewarderManager {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -701,6 +748,7 @@ export class RewarderManager implements StructClass {
     return RewarderManager.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewarderManager.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RewarderManager {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRewarderManager(data.bcs.type)) {
@@ -717,13 +765,15 @@ export class RewarderManager implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RewarderManager> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRewarderManager(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RewarderManager> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRewarderManager(object.type)) {
       throw new Error(`object at id ${id} is not a RewarderManager object`)
     }
-
-    return RewarderManager.fromBcs(res.bcsBytes)
+    return RewarderManager.fromBcs(object.content)
   }
 }
 
@@ -758,9 +808,11 @@ export type InitRewarderManagerEventJSON = {
 export class InitRewarderManagerEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::InitRewarderManagerEvent` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::InitRewarderManagerEvent')
-  }::rewarder::InitRewarderManagerEvent` as const
+  static get $typeName(): `${string}::rewarder::InitRewarderManagerEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::InitRewarderManagerEvent')
+    }::rewarder::InitRewarderManagerEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -785,11 +837,15 @@ export class InitRewarderManagerEvent implements StructClass {
   static reified(): InitRewarderManagerEventReified {
     const reifiedBcs = InitRewarderManagerEvent.bcs
     return {
-      typeName: InitRewarderManagerEvent.$typeName,
-      fullTypeName: composeSuiType(
-        InitRewarderManagerEvent.$typeName,
-        ...[],
-      ) as `${string}::rewarder::InitRewarderManagerEvent`,
+      get typeName() {
+        return InitRewarderManagerEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          InitRewarderManagerEvent.$typeName,
+          ...[],
+        ) as `${string}::rewarder::InitRewarderManagerEvent`
+      },
       typeArgs: [] as [],
       isPhantom: InitRewarderManagerEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -800,11 +856,13 @@ export class InitRewarderManagerEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => InitRewarderManagerEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => InitRewarderManagerEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        InitRewarderManagerEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         InitRewarderManagerEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         InitRewarderManagerEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         InitRewarderManagerEvent.fetch(client, id),
       new: (fields: InitRewarderManagerEventFields) => {
         return new InitRewarderManagerEvent([], fields)
@@ -886,6 +944,14 @@ export class InitRewarderManagerEvent implements StructClass {
     return InitRewarderManagerEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): InitRewarderManagerEvent {
+    if (!isInitRewarderManagerEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a InitRewarderManagerEvent object`)
+    }
+    return InitRewarderManagerEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InitRewarderManagerEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): InitRewarderManagerEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -898,6 +964,7 @@ export class InitRewarderManagerEvent implements StructClass {
     return InitRewarderManagerEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link InitRewarderManagerEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): InitRewarderManagerEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInitRewarderManagerEvent(data.bcs.type)) {
@@ -914,13 +981,15 @@ export class InitRewarderManagerEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<InitRewarderManagerEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInitRewarderManagerEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<InitRewarderManagerEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInitRewarderManagerEvent(object.type)) {
       throw new Error(`object at id ${id} is not a InitRewarderManagerEvent object`)
     }
-
-    return InitRewarderManagerEvent.fromBcs(res.bcsBytes)
+    return InitRewarderManagerEvent.fromBcs(object.content)
   }
 }
 
@@ -954,9 +1023,11 @@ export type CreateRewarderEventJSON = {
 export class CreateRewarderEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::CreateRewarderEvent` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::CreateRewarderEvent')
-  }::rewarder::CreateRewarderEvent` as const
+  static get $typeName(): `${string}::rewarder::CreateRewarderEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::CreateRewarderEvent')
+    }::rewarder::CreateRewarderEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -982,11 +1053,15 @@ export class CreateRewarderEvent implements StructClass {
   static reified(): CreateRewarderEventReified {
     const reifiedBcs = CreateRewarderEvent.bcs
     return {
-      typeName: CreateRewarderEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CreateRewarderEvent.$typeName,
-        ...[],
-      ) as `${string}::rewarder::CreateRewarderEvent`,
+      get typeName() {
+        return CreateRewarderEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CreateRewarderEvent.$typeName,
+          ...[],
+        ) as `${string}::rewarder::CreateRewarderEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CreateRewarderEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -996,10 +1071,11 @@ export class CreateRewarderEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CreateRewarderEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreateRewarderEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CreateRewarderEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CreateRewarderEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CreateRewarderEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        CreateRewarderEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CreateRewarderEvent.fetch(client, id),
       new: (fields: CreateRewarderEventFields) => {
         return new CreateRewarderEvent([], fields)
       },
@@ -1085,6 +1161,14 @@ export class CreateRewarderEvent implements StructClass {
     return CreateRewarderEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CreateRewarderEvent {
+    if (!isCreateRewarderEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CreateRewarderEvent object`)
+    }
+    return CreateRewarderEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreateRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CreateRewarderEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1095,6 +1179,7 @@ export class CreateRewarderEvent implements StructClass {
     return CreateRewarderEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreateRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CreateRewarderEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCreateRewarderEvent(data.bcs.type)) {
@@ -1111,13 +1196,15 @@ export class CreateRewarderEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CreateRewarderEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCreateRewarderEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CreateRewarderEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCreateRewarderEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CreateRewarderEvent object`)
     }
-
-    return CreateRewarderEvent.fromBcs(res.bcsBytes)
+    return CreateRewarderEvent.fromBcs(object.content)
   }
 }
 
@@ -1151,9 +1238,11 @@ export type UpdateRewarderEventJSON = {
 export class UpdateRewarderEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::UpdateRewarderEvent` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::UpdateRewarderEvent')
-  }::rewarder::UpdateRewarderEvent` as const
+  static get $typeName(): `${string}::rewarder::UpdateRewarderEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::UpdateRewarderEvent')
+    }::rewarder::UpdateRewarderEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1179,11 +1268,15 @@ export class UpdateRewarderEvent implements StructClass {
   static reified(): UpdateRewarderEventReified {
     const reifiedBcs = UpdateRewarderEvent.bcs
     return {
-      typeName: UpdateRewarderEvent.$typeName,
-      fullTypeName: composeSuiType(
-        UpdateRewarderEvent.$typeName,
-        ...[],
-      ) as `${string}::rewarder::UpdateRewarderEvent`,
+      get typeName() {
+        return UpdateRewarderEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpdateRewarderEvent.$typeName,
+          ...[],
+        ) as `${string}::rewarder::UpdateRewarderEvent`
+      },
       typeArgs: [] as [],
       isPhantom: UpdateRewarderEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1193,10 +1286,11 @@ export class UpdateRewarderEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateRewarderEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateRewarderEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpdateRewarderEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UpdateRewarderEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateRewarderEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        UpdateRewarderEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UpdateRewarderEvent.fetch(client, id),
       new: (fields: UpdateRewarderEventFields) => {
         return new UpdateRewarderEvent([], fields)
       },
@@ -1282,6 +1376,14 @@ export class UpdateRewarderEvent implements StructClass {
     return UpdateRewarderEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpdateRewarderEvent {
+    if (!isUpdateRewarderEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpdateRewarderEvent object`)
+    }
+    return UpdateRewarderEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpdateRewarderEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1292,6 +1394,7 @@ export class UpdateRewarderEvent implements StructClass {
     return UpdateRewarderEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateRewarderEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpdateRewarderEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpdateRewarderEvent(data.bcs.type)) {
@@ -1308,13 +1411,15 @@ export class UpdateRewarderEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateRewarderEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpdateRewarderEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpdateRewarderEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpdateRewarderEvent(object.type)) {
       throw new Error(`object at id ${id} is not a UpdateRewarderEvent object`)
     }
-
-    return UpdateRewarderEvent.fromBcs(res.bcsBytes)
+    return UpdateRewarderEvent.fromBcs(object.content)
   }
 }
 
@@ -1348,9 +1453,11 @@ export type DepositEventJSON = {
 export class DepositEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::DepositEvent` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::DepositEvent')
-  }::rewarder::DepositEvent` as const
+  static get $typeName(): `${string}::rewarder::DepositEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::DepositEvent')
+    }::rewarder::DepositEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1378,11 +1485,15 @@ export class DepositEvent implements StructClass {
   static reified(): DepositEventReified {
     const reifiedBcs = DepositEvent.bcs
     return {
-      typeName: DepositEvent.$typeName,
-      fullTypeName: composeSuiType(
-        DepositEvent.$typeName,
-        ...[],
-      ) as `${string}::rewarder::DepositEvent`,
+      get typeName() {
+        return DepositEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DepositEvent.$typeName,
+          ...[],
+        ) as `${string}::rewarder::DepositEvent`
+      },
       typeArgs: [] as [],
       isPhantom: DepositEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1392,9 +1503,11 @@ export class DepositEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DepositEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DepositEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DepositEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DepositEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DepositEvent.fetch(client, id),
       new: (fields: DepositEventFields) => {
         return new DepositEvent([], fields)
       },
@@ -1485,6 +1598,14 @@ export class DepositEvent implements StructClass {
     return DepositEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DepositEvent {
+    if (!isDepositEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DepositEvent object`)
+    }
+    return DepositEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DepositEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1495,6 +1616,7 @@ export class DepositEvent implements StructClass {
     return DepositEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DepositEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDepositEvent(data.bcs.type)) {
@@ -1511,13 +1633,15 @@ export class DepositEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DepositEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDepositEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DepositEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDepositEvent(object.type)) {
       throw new Error(`object at id ${id} is not a DepositEvent object`)
     }
-
-    return DepositEvent.fromBcs(res.bcsBytes)
+    return DepositEvent.fromBcs(object.content)
   }
 }
 
@@ -1556,9 +1680,11 @@ export type EmergentWithdrawEventJSON = {
 export class EmergentWithdrawEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewarder::EmergentWithdrawEvent` = `${
-    getTypeOrigin('cetus-farming', 'rewarder::EmergentWithdrawEvent')
-  }::rewarder::EmergentWithdrawEvent` as const
+  static get $typeName(): `${string}::rewarder::EmergentWithdrawEvent` {
+    return `${
+      getTypeOrigin('cetus-farming', 'rewarder::EmergentWithdrawEvent')
+    }::rewarder::EmergentWithdrawEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1586,11 +1712,15 @@ export class EmergentWithdrawEvent implements StructClass {
   static reified(): EmergentWithdrawEventReified {
     const reifiedBcs = EmergentWithdrawEvent.bcs
     return {
-      typeName: EmergentWithdrawEvent.$typeName,
-      fullTypeName: composeSuiType(
-        EmergentWithdrawEvent.$typeName,
-        ...[],
-      ) as `${string}::rewarder::EmergentWithdrawEvent`,
+      get typeName() {
+        return EmergentWithdrawEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          EmergentWithdrawEvent.$typeName,
+          ...[],
+        ) as `${string}::rewarder::EmergentWithdrawEvent`
+      },
       typeArgs: [] as [],
       isPhantom: EmergentWithdrawEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1601,11 +1731,13 @@ export class EmergentWithdrawEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => EmergentWithdrawEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmergentWithdrawEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        EmergentWithdrawEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         EmergentWithdrawEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         EmergentWithdrawEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         EmergentWithdrawEvent.fetch(client, id),
       new: (fields: EmergentWithdrawEventFields) => {
         return new EmergentWithdrawEvent([], fields)
@@ -1697,6 +1829,14 @@ export class EmergentWithdrawEvent implements StructClass {
     return EmergentWithdrawEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): EmergentWithdrawEvent {
+    if (!isEmergentWithdrawEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a EmergentWithdrawEvent object`)
+    }
+    return EmergentWithdrawEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmergentWithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): EmergentWithdrawEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1709,6 +1849,7 @@ export class EmergentWithdrawEvent implements StructClass {
     return EmergentWithdrawEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmergentWithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): EmergentWithdrawEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEmergentWithdrawEvent(data.bcs.type)) {
@@ -1725,12 +1866,14 @@ export class EmergentWithdrawEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<EmergentWithdrawEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEmergentWithdrawEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<EmergentWithdrawEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEmergentWithdrawEvent(object.type)) {
       throw new Error(`object at id ${id} is not a EmergentWithdrawEvent object`)
     }
-
-    return EmergentWithdrawEvent.fromBcs(res.bcsBytes)
+    return EmergentWithdrawEvent.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== UpdateFee =============================== */
 
@@ -49,9 +44,11 @@ export type UpdateFeeJSON = {
 export class UpdateFee implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_update_fee::UpdateFee` = `${
-    getTypeOrigin('pyth', 'set_update_fee::UpdateFee')
-  }::set_update_fee::UpdateFee` as const
+  static get $typeName(): `${string}::set_update_fee::UpdateFee` {
+    return `${
+      getTypeOrigin('pyth', 'set_update_fee::UpdateFee')
+    }::set_update_fee::UpdateFee` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -77,11 +74,15 @@ export class UpdateFee implements StructClass {
   static reified(): UpdateFeeReified {
     const reifiedBcs = UpdateFee.bcs
     return {
-      typeName: UpdateFee.$typeName,
-      fullTypeName: composeSuiType(
-        UpdateFee.$typeName,
-        ...[],
-      ) as `${string}::set_update_fee::UpdateFee`,
+      get typeName() {
+        return UpdateFee.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UpdateFee.$typeName,
+          ...[],
+        ) as `${string}::set_update_fee::UpdateFee`
+      },
       typeArgs: [] as [],
       isPhantom: UpdateFee.$isPhantom,
       reifiedTypeArgs: [],
@@ -91,9 +92,11 @@ export class UpdateFee implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UpdateFee.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UpdateFee.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UpdateFee.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UpdateFee.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UpdateFee.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => UpdateFee.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UpdateFee.fetch(client, id),
       new: (fields: UpdateFeeFields) => {
         return new UpdateFee([], fields)
       },
@@ -179,6 +182,14 @@ export class UpdateFee implements StructClass {
     return UpdateFee.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UpdateFee {
+    if (!isUpdateFee(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UpdateFee object`)
+    }
+    return UpdateFee.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UpdateFee {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -189,6 +200,7 @@ export class UpdateFee implements StructClass {
     return UpdateFee.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UpdateFee.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UpdateFee {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUpdateFee(data.bcs.type)) {
@@ -205,12 +217,14 @@ export class UpdateFee implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UpdateFee> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUpdateFee(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UpdateFee> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUpdateFee(object.type)) {
       throw new Error(`object at id ${id} is not a UpdateFee object`)
     }
-
-    return UpdateFee.fromBcs(res.bcsBytes)
+    return UpdateFee.fromBcs(object.content)
   }
 }

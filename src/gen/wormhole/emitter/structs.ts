@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { ID, UID } from '../../sui/object/structs'
 
 /* ============================== EmitterCreated =============================== */
@@ -55,9 +50,11 @@ export type EmitterCreatedJSON = {
 export class EmitterCreated implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::emitter::EmitterCreated` = `${
-    getTypeOrigin('wormhole', 'emitter::EmitterCreated')
-  }::emitter::EmitterCreated` as const
+  static get $typeName(): `${string}::emitter::EmitterCreated` {
+    return `${
+      getTypeOrigin('wormhole', 'emitter::EmitterCreated')
+    }::emitter::EmitterCreated` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -81,11 +78,15 @@ export class EmitterCreated implements StructClass {
   static reified(): EmitterCreatedReified {
     const reifiedBcs = EmitterCreated.bcs
     return {
-      typeName: EmitterCreated.$typeName,
-      fullTypeName: composeSuiType(
-        EmitterCreated.$typeName,
-        ...[],
-      ) as `${string}::emitter::EmitterCreated`,
+      get typeName() {
+        return EmitterCreated.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          EmitterCreated.$typeName,
+          ...[],
+        ) as `${string}::emitter::EmitterCreated`
+      },
       typeArgs: [] as [],
       isPhantom: EmitterCreated.$isPhantom,
       reifiedTypeArgs: [],
@@ -95,9 +96,11 @@ export class EmitterCreated implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterCreated.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterCreated.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        EmitterCreated.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCreated.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterCreated.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => EmitterCreated.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => EmitterCreated.fetch(client, id),
       new: (fields: EmitterCreatedFields) => {
         return new EmitterCreated([], fields)
       },
@@ -178,6 +181,14 @@ export class EmitterCreated implements StructClass {
     return EmitterCreated.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): EmitterCreated {
+    if (!isEmitterCreated(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a EmitterCreated object`)
+    }
+    return EmitterCreated.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): EmitterCreated {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -188,6 +199,7 @@ export class EmitterCreated implements StructClass {
     return EmitterCreated.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterCreated.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): EmitterCreated {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEmitterCreated(data.bcs.type)) {
@@ -204,13 +216,15 @@ export class EmitterCreated implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterCreated> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEmitterCreated(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<EmitterCreated> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEmitterCreated(object.type)) {
       throw new Error(`object at id ${id} is not a EmitterCreated object`)
     }
-
-    return EmitterCreated.fromBcs(res.bcsBytes)
+    return EmitterCreated.fromBcs(object.content)
   }
 }
 
@@ -241,9 +255,11 @@ export type EmitterDestroyedJSON = {
 export class EmitterDestroyed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::emitter::EmitterDestroyed` = `${
-    getTypeOrigin('wormhole', 'emitter::EmitterDestroyed')
-  }::emitter::EmitterDestroyed` as const
+  static get $typeName(): `${string}::emitter::EmitterDestroyed` {
+    return `${
+      getTypeOrigin('wormhole', 'emitter::EmitterDestroyed')
+    }::emitter::EmitterDestroyed` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -267,11 +283,15 @@ export class EmitterDestroyed implements StructClass {
   static reified(): EmitterDestroyedReified {
     const reifiedBcs = EmitterDestroyed.bcs
     return {
-      typeName: EmitterDestroyed.$typeName,
-      fullTypeName: composeSuiType(
-        EmitterDestroyed.$typeName,
-        ...[],
-      ) as `${string}::emitter::EmitterDestroyed`,
+      get typeName() {
+        return EmitterDestroyed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          EmitterDestroyed.$typeName,
+          ...[],
+        ) as `${string}::emitter::EmitterDestroyed`
+      },
       typeArgs: [] as [],
       isPhantom: EmitterDestroyed.$isPhantom,
       reifiedTypeArgs: [],
@@ -281,9 +301,11 @@ export class EmitterDestroyed implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterDestroyed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterDestroyed.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        EmitterDestroyed.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => EmitterDestroyed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterDestroyed.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => EmitterDestroyed.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => EmitterDestroyed.fetch(client, id),
       new: (fields: EmitterDestroyedFields) => {
         return new EmitterDestroyed([], fields)
       },
@@ -364,6 +386,14 @@ export class EmitterDestroyed implements StructClass {
     return EmitterDestroyed.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): EmitterDestroyed {
+    if (!isEmitterDestroyed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a EmitterDestroyed object`)
+    }
+    return EmitterDestroyed.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterDestroyed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): EmitterDestroyed {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -374,6 +404,7 @@ export class EmitterDestroyed implements StructClass {
     return EmitterDestroyed.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterDestroyed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): EmitterDestroyed {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEmitterDestroyed(data.bcs.type)) {
@@ -390,13 +421,15 @@ export class EmitterDestroyed implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterDestroyed> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEmitterDestroyed(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<EmitterDestroyed> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEmitterDestroyed(object.type)) {
       throw new Error(`object at id ${id} is not a EmitterDestroyed object`)
     }
-
-    return EmitterDestroyed.fromBcs(res.bcsBytes)
+    return EmitterDestroyed.fromBcs(object.content)
   }
 }
 
@@ -433,9 +466,9 @@ export type EmitterCapJSON = {
 export class EmitterCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::emitter::EmitterCap` = `${
-    getTypeOrigin('wormhole', 'emitter::EmitterCap')
-  }::emitter::EmitterCap` as const
+  static get $typeName(): `${string}::emitter::EmitterCap` {
+    return `${getTypeOrigin('wormhole', 'emitter::EmitterCap')}::emitter::EmitterCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -462,11 +495,15 @@ export class EmitterCap implements StructClass {
   static reified(): EmitterCapReified {
     const reifiedBcs = EmitterCap.bcs
     return {
-      typeName: EmitterCap.$typeName,
-      fullTypeName: composeSuiType(
-        EmitterCap.$typeName,
-        ...[],
-      ) as `${string}::emitter::EmitterCap`,
+      get typeName() {
+        return EmitterCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          EmitterCap.$typeName,
+          ...[],
+        ) as `${string}::emitter::EmitterCap`
+      },
       typeArgs: [] as [],
       isPhantom: EmitterCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -476,9 +513,11 @@ export class EmitterCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => EmitterCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => EmitterCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        EmitterCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => EmitterCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => EmitterCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => EmitterCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => EmitterCap.fetch(client, id),
       new: (fields: EmitterCapFields) => {
         return new EmitterCap([], fields)
       },
@@ -564,6 +603,14 @@ export class EmitterCap implements StructClass {
     return EmitterCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): EmitterCap {
+    if (!isEmitterCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a EmitterCap object`)
+    }
+    return EmitterCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): EmitterCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -574,6 +621,7 @@ export class EmitterCap implements StructClass {
     return EmitterCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link EmitterCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): EmitterCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isEmitterCap(data.bcs.type)) {
@@ -590,12 +638,14 @@ export class EmitterCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<EmitterCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEmitterCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<EmitterCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEmitterCap(object.type)) {
       throw new Error(`object at id ${id} is not a EmitterCap object`)
     }
-
-    return EmitterCap.fromBcs(res.bcsBytes)
+    return EmitterCap.fromBcs(object.content)
   }
 }

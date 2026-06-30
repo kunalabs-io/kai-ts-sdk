@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== Random =============================== */
 
@@ -47,9 +42,9 @@ export type RandomJSON = {
 export class Random implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::random::Random` = `${
-    getTypeOrigin('move-stl', 'random::Random')
-  }::random::Random` as const
+  static get $typeName(): `${string}::random::Random` {
+    return `${getTypeOrigin('move-stl', 'random::Random')}::random::Random` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class Random implements StructClass {
   static reified(): RandomReified {
     const reifiedBcs = Random.bcs
     return {
-      typeName: Random.$typeName,
-      fullTypeName: composeSuiType(
-        Random.$typeName,
-        ...[],
-      ) as `${string}::random::Random`,
+      get typeName() {
+        return Random.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Random.$typeName,
+          ...[],
+        ) as `${string}::random::Random`
+      },
       typeArgs: [] as [],
       isPhantom: Random.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class Random implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Random.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Random.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Random.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Random.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Random.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Random.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Random.fetch(client, id),
       new: (fields: RandomFields) => {
         return new Random([], fields)
       },
@@ -170,6 +170,14 @@ export class Random implements StructClass {
     return Random.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Random {
+    if (!isRandom(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Random object`)
+    }
+    return Random.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Random.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Random {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class Random implements StructClass {
     return Random.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Random.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Random {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRandom(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class Random implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Random> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRandom(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Random> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRandom(object.type)) {
       throw new Error(`object at id ${id} is not a Random object`)
     }
-
-    return Random.fromBcs(res.bcsBytes)
+    return Random.fromBcs(object.content)
   }
 }

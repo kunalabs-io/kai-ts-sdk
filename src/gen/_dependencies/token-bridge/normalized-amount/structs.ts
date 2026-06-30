@@ -9,7 +9,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -24,13 +25,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== NormalizedAmount =============================== */
 
@@ -61,9 +56,11 @@ export type NormalizedAmountJSON = {
 export class NormalizedAmount implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::normalized_amount::NormalizedAmount` = `${
-    getTypeOrigin('token-bridge', 'normalized_amount::NormalizedAmount')
-  }::normalized_amount::NormalizedAmount` as const
+  static get $typeName(): `${string}::normalized_amount::NormalizedAmount` {
+    return `${
+      getTypeOrigin('token-bridge', 'normalized_amount::NormalizedAmount')
+    }::normalized_amount::NormalizedAmount` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -87,11 +84,15 @@ export class NormalizedAmount implements StructClass {
   static reified(): NormalizedAmountReified {
     const reifiedBcs = NormalizedAmount.bcs
     return {
-      typeName: NormalizedAmount.$typeName,
-      fullTypeName: composeSuiType(
-        NormalizedAmount.$typeName,
-        ...[],
-      ) as `${string}::normalized_amount::NormalizedAmount`,
+      get typeName() {
+        return NormalizedAmount.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          NormalizedAmount.$typeName,
+          ...[],
+        ) as `${string}::normalized_amount::NormalizedAmount`
+      },
       typeArgs: [] as [],
       isPhantom: NormalizedAmount.$isPhantom,
       reifiedTypeArgs: [],
@@ -101,9 +102,11 @@ export class NormalizedAmount implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => NormalizedAmount.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => NormalizedAmount.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        NormalizedAmount.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => NormalizedAmount.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => NormalizedAmount.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => NormalizedAmount.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => NormalizedAmount.fetch(client, id),
       new: (fields: NormalizedAmountFields) => {
         return new NormalizedAmount([], fields)
       },
@@ -184,6 +187,14 @@ export class NormalizedAmount implements StructClass {
     return NormalizedAmount.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): NormalizedAmount {
+    if (!isNormalizedAmount(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a NormalizedAmount object`)
+    }
+    return NormalizedAmount.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NormalizedAmount.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): NormalizedAmount {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -194,6 +205,7 @@ export class NormalizedAmount implements StructClass {
     return NormalizedAmount.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link NormalizedAmount.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): NormalizedAmount {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isNormalizedAmount(data.bcs.type)) {
@@ -210,12 +222,14 @@ export class NormalizedAmount implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<NormalizedAmount> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isNormalizedAmount(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<NormalizedAmount> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isNormalizedAmount(object.type)) {
       throw new Error(`object at id ${id} is not a NormalizedAmount object`)
     }
-
-    return NormalizedAmount.fromBcs(res.bcsBytes)
+    return NormalizedAmount.fromBcs(object.content)
   }
 }

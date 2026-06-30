@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -23,10 +24,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Balance } from '../../../sui/balance/structs'
 import { ID, UID } from '../../../sui/object/structs'
@@ -71,9 +70,11 @@ export type RewardsPoolJSON<RewardType extends PhantomTypeArgument> = {
 export class RewardsPool<RewardType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::rewards_pool::RewardsPool` = `${
-    getTypeOrigin('spool', 'rewards_pool::RewardsPool')
-  }::rewards_pool::RewardsPool` as const
+  static get $typeName(): `${string}::rewards_pool::RewardsPool` {
+    return `${
+      getTypeOrigin('spool', 'rewards_pool::RewardsPool')
+    }::rewards_pool::RewardsPool` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -112,14 +113,20 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
   ): RewardsPoolReified<ToPhantomTypeArgument<RewardType>> {
     const reifiedBcs = RewardsPool.bcs
     return {
-      typeName: RewardsPool.$typeName,
-      fullTypeName: composeSuiType(
-        RewardsPool.$typeName,
-        ...[extractType(RewardType)],
-      ) as `${string}::rewards_pool::RewardsPool<${PhantomToTypeStr<
-        ToPhantomTypeArgument<RewardType>
-      >}>`,
-      typeArgs: [extractType(RewardType)] as [PhantomToTypeStr<ToPhantomTypeArgument<RewardType>>],
+      get typeName() {
+        return RewardsPool.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RewardsPool.$typeName,
+          ...[extractType(RewardType)],
+        ) as `${string}::rewards_pool::RewardsPool<${PhantomToTypeStr<
+          ToPhantomTypeArgument<RewardType>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(RewardType)] as [PhantomToTypeStr<ToPhantomTypeArgument<RewardType>>]
+      },
       isPhantom: RewardsPool.$isPhantom,
       reifiedTypeArgs: [RewardType],
       fromFields: (fields: Record<string, any>) => RewardsPool.fromFields(RewardType, fields),
@@ -129,11 +136,13 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RewardsPool.fromJSONField(RewardType, field),
       fromJSON: (json: Record<string, any>) => RewardsPool.fromJSON(RewardType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RewardsPool.fromCoreObject(RewardType, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RewardsPool.fromSuiParsedData(RewardType, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RewardsPool.fromSuiObjectData(RewardType, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RewardsPool.fetch(client, RewardType, id),
       new: (fields: RewardsPoolFields<ToPhantomTypeArgument<RewardType>>) => {
         return new RewardsPool([extractType(RewardType)], fields)
@@ -266,6 +275,34 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
     return RewardsPool.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<RewardType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: RewardType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): RewardsPool<ToPhantomTypeArgument<RewardType>> {
+    if (!isRewardsPool(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RewardsPool object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return RewardsPool.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardsPool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<RewardType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: RewardType,
     content: SuiParsedData,
@@ -279,6 +316,7 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
     return RewardsPool.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RewardsPool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<RewardType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: RewardType,
     data: SuiObjectData,
@@ -315,16 +353,19 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
   }
 
   static async fetch<RewardType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: RewardType,
     id: string,
   ): Promise<RewardsPool<ToPhantomTypeArgument<RewardType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRewardsPool(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRewardsPool(object.type)) {
       throw new Error(`object at id ${id} is not a RewardsPool object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -340,6 +381,6 @@ export class RewardsPool<RewardType extends PhantomTypeArgument> implements Stru
       }
     }
 
-    return RewardsPool.fromBcs(typeArg, res.bcsBytes)
+    return RewardsPool.fromBcs(typeArg, object.content)
   }
 }

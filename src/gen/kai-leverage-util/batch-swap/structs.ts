@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -23,10 +24,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 import { ID } from '../../sui/object/structs'
@@ -79,9 +78,11 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::batch_swap::BatchSwap` = `${
-    getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwap')
-  }::batch_swap::BatchSwap` as const
+  static get $typeName(): `${string}::batch_swap::BatchSwap` {
+    return `${
+      getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwap')
+    }::batch_swap::BatchSwap` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -134,17 +135,23 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
   ): BatchSwapReified<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
     const reifiedBcs = BatchSwap.bcs
     return {
-      typeName: BatchSwap.$typeName,
-      fullTypeName: composeSuiType(
-        BatchSwap.$typeName,
-        ...[extractType(A), extractType(B)],
-      ) as `${string}::batch_swap::BatchSwap<${PhantomToTypeStr<
-        ToPhantomTypeArgument<A>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`,
-      typeArgs: [extractType(A), extractType(B)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<A>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<B>>,
-      ],
+      get typeName() {
+        return BatchSwap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BatchSwap.$typeName,
+          ...[extractType(A), extractType(B)],
+        ) as `${string}::batch_swap::BatchSwap<${PhantomToTypeStr<
+          ToPhantomTypeArgument<A>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<B>>}>`
+      },
+      get typeArgs() {
+        return [extractType(A), extractType(B)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<A>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<B>>,
+        ]
+      },
       isPhantom: BatchSwap.$isPhantom,
       reifiedTypeArgs: [A, B],
       fromFields: (fields: Record<string, any>) => BatchSwap.fromFields([A, B], fields),
@@ -153,9 +160,11 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchSwap.fromJSONField([A, B], field),
       fromJSON: (json: Record<string, any>) => BatchSwap.fromJSON([A, B], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BatchSwap.fromCoreObject([A, B], obj),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwap.fromSuiParsedData([A, B], content),
       fromSuiObjectData: (content: SuiObjectData) => BatchSwap.fromSuiObjectData([A, B], content),
-      fetch: async (client: SupportedSuiClient, id: string) => BatchSwap.fetch(client, [A, B], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BatchSwap.fetch(client, [A, B], id),
       new: (fields: BatchSwapFields<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>) => {
         return new BatchSwap([extractType(A), extractType(B)], fields)
       },
@@ -318,6 +327,37 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     return BatchSwap.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    A extends PhantomReified<PhantomTypeArgument>,
+    B extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [A, B],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>> {
+    if (!isBatchSwap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BatchSwap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BatchSwap.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchSwap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
@@ -334,6 +374,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     return BatchSwap.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchSwap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
@@ -376,16 +417,19 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
     A extends PhantomReified<PhantomTypeArgument>,
     B extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [A, B],
     id: string,
   ): Promise<BatchSwap<ToPhantomTypeArgument<A>, ToPhantomTypeArgument<B>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBatchSwap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBatchSwap(object.type)) {
       throw new Error(`object at id ${id} is not a BatchSwap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -401,7 +445,7 @@ export class BatchSwap<A extends PhantomTypeArgument, B extends PhantomTypeArgum
       }
     }
 
-    return BatchSwap.fromBcs(typeArgs, res.bcsBytes)
+    return BatchSwap.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -435,9 +479,11 @@ export type BatchSwapClaimJSON = {
 export class BatchSwapClaim implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::batch_swap::BatchSwapClaim` = `${
-    getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwapClaim')
-  }::batch_swap::BatchSwapClaim` as const
+  static get $typeName(): `${string}::batch_swap::BatchSwapClaim` {
+    return `${
+      getTypeOrigin('kai-leverage-util', 'batch_swap::BatchSwapClaim')
+    }::batch_swap::BatchSwapClaim` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -463,11 +509,15 @@ export class BatchSwapClaim implements StructClass {
   static reified(): BatchSwapClaimReified {
     const reifiedBcs = BatchSwapClaim.bcs
     return {
-      typeName: BatchSwapClaim.$typeName,
-      fullTypeName: composeSuiType(
-        BatchSwapClaim.$typeName,
-        ...[],
-      ) as `${string}::batch_swap::BatchSwapClaim`,
+      get typeName() {
+        return BatchSwapClaim.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BatchSwapClaim.$typeName,
+          ...[],
+        ) as `${string}::batch_swap::BatchSwapClaim`
+      },
       typeArgs: [] as [],
       isPhantom: BatchSwapClaim.$isPhantom,
       reifiedTypeArgs: [],
@@ -477,9 +527,11 @@ export class BatchSwapClaim implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchSwapClaim.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BatchSwapClaim.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BatchSwapClaim.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BatchSwapClaim.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BatchSwapClaim.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BatchSwapClaim.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BatchSwapClaim.fetch(client, id),
       new: (fields: BatchSwapClaimFields) => {
         return new BatchSwapClaim([], fields)
       },
@@ -565,6 +617,14 @@ export class BatchSwapClaim implements StructClass {
     return BatchSwapClaim.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BatchSwapClaim {
+    if (!isBatchSwapClaim(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BatchSwapClaim object`)
+    }
+    return BatchSwapClaim.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchSwapClaim.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BatchSwapClaim {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -575,6 +635,7 @@ export class BatchSwapClaim implements StructClass {
     return BatchSwapClaim.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchSwapClaim.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BatchSwapClaim {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBatchSwapClaim(data.bcs.type)) {
@@ -591,12 +652,14 @@ export class BatchSwapClaim implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BatchSwapClaim> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBatchSwapClaim(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BatchSwapClaim> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBatchSwapClaim(object.type)) {
       throw new Error(`object at id ${id} is not a BatchSwapClaim object`)
     }
-
-    return BatchSwapClaim.fromBcs(res.bcsBytes)
+    return BatchSwapClaim.fromBcs(object.content)
   }
 }

@@ -20,7 +20,8 @@ import {
 import { Price } from '../price'
 import { Amount } from '../amount'
 import { PositionDecimalMath } from './position-decimal-math'
-import { DryRunTransactionBlockResponse, SuiClient, SuiObjectData } from '@mysten/sui/client'
+import { SuiObjectData } from '@mysten/sui/jsonRpc'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import { COIN_INFO_MAP, CoinInfo, SUI } from '../coin-info'
 import Decimal from 'decimal.js'
 import { bluefinDecodeTick, cetusDecodeTick, ClmmPool } from './clmm-pool'
@@ -38,7 +39,7 @@ import {
   TransactionObjectArgument,
   TransactionResult,
 } from '@mysten/sui/transactions'
-import { CETUS_GLOBAL_CONFIG_ID, CETUS_REWARDER_GLOBAL_VAULT } from '../constants'
+import { getActiveProtocolInfra } from '../protocol-infra'
 import * as pyth from '../gen/kai-leverage/pyth/functions'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
 import * as bluefin from '../gen/kai-leverage/bluefin-spot/functions'
@@ -54,9 +55,8 @@ import { bcs } from '@mysten/sui/bcs'
 import { compressSuiType } from '../gen/_framework/util'
 import { Router } from '../router/adapter'
 import { max, min } from '../math'
-import { BLUEFIN_GLOBAL_CONFIG_ID } from '../constants'
 import { KaiRouterAdapter } from '../router/kai'
-import { getMinSwapAmountBatch } from '../router/util'
+import { getMinSwapAmountBatch } from '../price-source'
 import { PriceCache } from '../price-cache'
 import { createBalanceOfExactValue } from '../coin'
 import * as CetusRedemptionUtil from './cetus-redemption-util'
@@ -365,8 +365,12 @@ export interface ReduceArgs {
 }
 
 export interface DryRunReduceResult {
-  /** The full dry-run transaction response from the Sui client */
-  result: DryRunTransactionBlockResponse
+  /** The full simulate-transaction result from the Sui client */
+  result: SuiClientTypes.SimulateTransactionResult<{
+    effects: true
+    events: true
+    balanceChanges: true
+  }>
   /** The parsed reduction event info, including withdrawn and repaid amounts */
   reductionInfo: ReductionInfo | undefined
   /** The amount of X used (when negative) or received (when positive) for the swap */
@@ -610,6 +614,26 @@ export class Position<
   }
 
   /**
+   * Creates a new Position instance from a core-API object (returned by `client.core.getObject({ include: { content: true } })`).
+   *
+   * @param obj - The core-API object to create the Position instance from.
+   * @returns A new Position instance.
+   */
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>
+  ): Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> {
+    const configInfo = findConfigInfoForPositionBcs(obj.content, obj.type)
+    if (!configInfo) {
+      throw new Error(`No PositionConfigInfo found for type ${obj.type}.`)
+    }
+
+    return new Position({
+      configInfo,
+      data: configInfo.positionReified.fromCoreObject(obj),
+    })
+  }
+
+  /**
    * Fetches a Position instance.
    *
    * @param client - The Sui client.
@@ -617,20 +641,15 @@ export class Position<
    * @returns A Position instance.
    */
   static async fetch(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     id: string
   ): Promise<Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>> {
-    const res = await client.getObject({
-      id,
-      options: {
-        showBcs: true,
-      },
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
     })
-    if (!res.data) {
-      throw new Error(`No data found in response for Position ${id}.`)
-    }
 
-    return Position.fromSuiObjectData(res.data)
+    return Position.fromCoreObject(object)
   }
 
   /**
@@ -1333,7 +1352,7 @@ export class Position<
    * @returns The resulting amounts that are returned to the user.
    */
   async fetchReduceAmountsDevInspect(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     factor: Decimal,
     positionCapId: string
   ): Promise<{ gotX: Amount; gotY: Amount; gotDx: Amount; gotDy: Amount }> {
@@ -1374,7 +1393,7 @@ export class Position<
         supplyPoolX: this.configInfo.supplyPoolXInfo.id,
         supplyPoolY: this.configInfo.supplyPoolYInfo.id,
         cetusPool: this.configInfo.poolObjectId,
-        cetusGlobalConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusGlobalConfig: getActiveProtocolInfra().cetusGlobalConfig,
         factorX64,
         clock: SUI_CLOCK_OBJECT_ID,
       })
@@ -1387,7 +1406,7 @@ export class Position<
         supplyPoolX: this.configInfo.supplyPoolXInfo.id,
         supplyPoolY: this.configInfo.supplyPoolYInfo.id,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinGlobalConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinGlobalConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         factorX64,
         clock: SUI_CLOCK_OBJECT_ID,
       })
@@ -1409,19 +1428,18 @@ export class Position<
       clock: SUI_CLOCK_OBJECT_ID,
     })
 
-    const di = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
-      sender: normalizeSuiAddress('0x0'),
+    tx.setSender(normalizeSuiAddress('0x0'))
+    const sim = await client.core.simulateTransaction({
+      transaction: tx,
+      include: { commandResults: true },
+      checksEnabled: false,
     })
-    if (di.error) {
-      throw new Error(di.error)
-    }
 
-    const results = di.results!.slice(-4)
-    const gotXResult = bcs.U64.parse(Uint8Array.from(results[0].returnValues![0][0]))
-    const gotYResult = bcs.U64.parse(Uint8Array.from(results[1].returnValues![0][0]))
-    const gotDxResult = bcs.U64.parse(Uint8Array.from(results[2].returnValues![0][0]))
-    const gotDyResult = bcs.U64.parse(Uint8Array.from(results[3].returnValues![0][0]))
+    const results = sim.commandResults!.slice(-4)
+    const gotXResult = bcs.U64.parse(results[0].returnValues[0].bcs)
+    const gotYResult = bcs.U64.parse(results[1].returnValues[0].bcs)
+    const gotDxResult = bcs.U64.parse(results[2].returnValues[0].bcs)
+    const gotDyResult = bcs.U64.parse(results[3].returnValues[0].bcs)
 
     const ret = {
       gotX: Amount.fromInt(BigInt(gotXResult), this.X.decimals),
@@ -1457,7 +1475,7 @@ export class Position<
    *   - `repayDebtY`: Amount of Y debt to repay externally
    */
   async getReduceAmounts(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: GetReduceAmountsArgs
   ): Promise<GetReduceAmountsResult> {
@@ -1521,7 +1539,7 @@ export class Position<
    * @returns The resulting amounts that are returned to the user.
    */
   async reduce(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: ReduceArgs,
     sender: string
@@ -1618,7 +1636,7 @@ export class Position<
         supplyPoolX: this.configInfo.supplyPoolXInfo.id,
         supplyPoolY: this.configInfo.supplyPoolYInfo.id,
         cetusPool: this.configInfo.poolObjectId,
-        cetusGlobalConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusGlobalConfig: getActiveProtocolInfra().cetusGlobalConfig,
         factorX64,
         clock: SUI_CLOCK_OBJECT_ID,
       })
@@ -1631,7 +1649,7 @@ export class Position<
         supplyPoolX: this.configInfo.supplyPoolXInfo.id,
         supplyPoolY: this.configInfo.supplyPoolYInfo.id,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinGlobalConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinGlobalConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         factorX64,
         clock: SUI_CLOCK_OBJECT_ID,
       })
@@ -1836,42 +1854,36 @@ export class Position<
    * @returns The reduction info and the final amounts of X and Y in the position.
    */
   async dryRunReduce(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: ReduceArgs,
     sender: string
   ): Promise<DryRunReduceResult> {
     const tx = await this.reduce(client, router, args, sender)
 
-    const result = await client.dryRunTransactionBlock({
-      transactionBlock: await tx.build({ client }),
+    const result = await client.core.simulateTransaction({
+      transaction: tx,
+      include: { effects: true, events: true, balanceChanges: true },
     })
 
-    if (result.effects.status.error) {
-      throw new Error(result.effects.status.error)
+    if (result.$kind === 'FailedTransaction') {
+      throw new Error(result.FailedTransaction.status.error?.message ?? 'transaction failed')
     }
+    const txRes = result.Transaction
 
-    const reductionEvent = result.events.find(e => isReductionInfo(e.type))
-    const reductionInfo = reductionEvent
-      ? ReductionInfo.fromBcs(fromBase64(reductionEvent.bcs))
-      : undefined
-    const repayDebtEvent = result.events.find(e => isRepayDebtInfo(e.type))
-    const repayDebtInfo = repayDebtEvent
-      ? RepayDebtInfo.fromBcs(fromBase64(repayDebtEvent.bcs))
-      : undefined
+    const reductionEvent = txRes.events!.find(e => isReductionInfo(e.eventType))
+    const reductionInfo = reductionEvent ? ReductionInfo.fromBcs(reductionEvent.bcs) : undefined
+    const repayDebtEvent = txRes.events!.find(e => isRepayDebtInfo(e.eventType))
+    const repayDebtInfo = repayDebtEvent ? RepayDebtInfo.fromBcs(repayDebtEvent.bcs) : undefined
 
     let finalX = 0n
     let finalY = 0n
-    for (const balanceChange of result.balanceChanges) {
-      if (
-        typeof balanceChange.owner !== 'object' ||
-        !('AddressOwner' in balanceChange.owner) ||
-        normalizeSuiAddress(balanceChange.owner.AddressOwner) !== normalizeSuiAddress(sender)
-      ) {
+    for (const balanceChange of txRes.balanceChanges!) {
+      if (normalizeSuiAddress(balanceChange.address) !== normalizeSuiAddress(sender)) {
         continue
       }
 
-      const { storageRebate, storageCost, computationCost } = result.effects.gasUsed
+      const { storageRebate, storageCost, computationCost } = txRes.effects!.gasUsed
 
       let amount = BigInt(balanceChange.amount)
       if (compressSuiType(balanceChange.coinType) === SUI.typeName) {
@@ -2065,7 +2077,7 @@ export class Position<
         priceInfo,
         debtInfo: di,
         cetusPool: this.configInfo.poolObjectId,
-        cetusConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
         balanceX: xInBalance,
         balanceY: yInBalance,
         clock: SUI_CLOCK_OBJECT_ID,
@@ -2086,7 +2098,7 @@ export class Position<
         priceInfo,
         debtInfo: di,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         balanceX: xInBalance,
         balanceY: yInBalance,
         clock: SUI_CLOCK_OBJECT_ID,
@@ -2242,7 +2254,7 @@ export class Position<
    * @returns The intermediate result of rebalancing the position.
    */
   async devInspectLpUnclaimedRewards(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     opts?: { rewardCoins?: CoinInfo<PhantomTypeArgument>[]; env?: EnvConfig }
   ): Promise<DevInspectLpUnclaimedRewardsResult> {
     const ta = {
@@ -2278,7 +2290,7 @@ export class Position<
           config: this.configInfo.configId,
           receipt,
           cetusPool: this.configInfo.poolObjectId,
-          cetusConfig: CETUS_GLOBAL_CONFIG_ID,
+          cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
         },
         { env }
       )
@@ -2294,8 +2306,8 @@ export class Position<
             config: this.configInfo.configId,
             receipt,
             cetusPool: this.configInfo.poolObjectId,
-            cetusConfig: CETUS_GLOBAL_CONFIG_ID,
-            cetusVault: CETUS_REWARDER_GLOBAL_VAULT,
+            cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
+            cetusVault: getActiveProtocolInfra().cetusRewarderGlobalVault,
             clock: SUI_CLOCK_OBJECT_ID,
           },
           { env }
@@ -2311,7 +2323,7 @@ export class Position<
           config: this.configInfo.configId,
           receipt,
           bluefinPool: this.configInfo.poolObjectId,
-          bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+          bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
           clock: SUI_CLOCK_OBJECT_ID,
         },
         { env }
@@ -2328,7 +2340,7 @@ export class Position<
             config: this.configInfo.configId,
             receipt,
             bluefinPool: this.configInfo.poolObjectId,
-            bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+            bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
             clock: SUI_CLOCK_OBJECT_ID,
           },
           { env }
@@ -2353,18 +2365,18 @@ export class Position<
       seenRewards.add(compressSuiType(rewardCoin.typeName))
     }
 
-    const di = await client.devInspectTransactionBlock({
-      sender: `0x0000000000000000000000000000000000000000000000000000000000000000`,
-      transactionBlock: tx,
+    tx.setSender('0x0000000000000000000000000000000000000000000000000000000000000000')
+    const sim = await client.core.simulateTransaction({
+      transaction: tx,
+      include: { commandResults: true },
+      checksEnabled: false,
     })
-    if (di.error) {
-      throw new Error(di.error)
-    }
 
-    const valueResults = di.results!.slice(-2 - rewardResults.length)
+    const commandResults = sim.commandResults!
+    const valueResults = commandResults.slice(-2 - rewardResults.length)
 
-    const x = BigInt(bcs.u64().parse(Uint8Array.from(valueResults[0].returnValues![0][0])))
-    const y = BigInt(bcs.u64().parse(Uint8Array.from(valueResults[1].returnValues![0][0])))
+    const x = BigInt(bcs.u64().parse(valueResults[0].returnValues[0].bcs))
+    const y = BigInt(bcs.u64().parse(valueResults[1].returnValues[0].bcs))
     const ret: DevInspectLpUnclaimedRewardsResult = {
       x: Amount.fromInt(x, this.X.decimals),
       y: Amount.fromInt(y, this.Y.decimals),
@@ -2374,14 +2386,12 @@ export class Position<
 
     let i = 2
     for (const [rewardCoin] of rewardResults) {
-      const amt = BigInt(bcs.u64().parse(Uint8Array.from(valueResults[i].returnValues![0][0])))
+      const amt = BigInt(bcs.u64().parse(valueResults[i].returnValues[0].bcs))
       ret.rewards.set(rewardCoin, Amount.fromInt(amt, rewardCoin.decimals))
       i++
     }
 
-    const positionData = this.reified.fromBcs(
-      Uint8Array.from(di.results![0].mutableReferenceOutputs![0][1])
-    )
+    const positionData = this.reified.fromBcs(commandResults[0].mutatedReferences[0].bcs)
     for (const entry of positionData.ownerRewardStash.amounts.contents) {
       const coinType = compressSuiType(entry.key)
       const amount = entry.value
@@ -2413,7 +2423,7 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         cetusPool: this.configInfo.poolObjectId,
-        cetusConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
       })
     } else if (this.isBluefin()) {
       fees = bluefin.ownerCollectFee(tx, [this.X.typeName, this.Y.typeName], {
@@ -2421,7 +2431,7 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else {
@@ -2454,8 +2464,8 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         cetusPool: this.configInfo.poolObjectId,
-        cetusConfig: CETUS_GLOBAL_CONFIG_ID,
-        cetusVault: CETUS_REWARDER_GLOBAL_VAULT,
+        cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
+        cetusVault: getActiveProtocolInfra().cetusRewarderGlobalVault,
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else if (this.isBluefin()) {
@@ -2464,7 +2474,7 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else {
@@ -2509,7 +2519,7 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         cetusPool: this.configInfo.poolObjectId,
-        cetusConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusConfig: getActiveProtocolInfra().cetusGlobalConfig,
       })
     } else if (this.isBluefin()) {
       bluefin.deletePosition(tx, [this.X.typeName, this.Y.typeName], {
@@ -2517,7 +2527,7 @@ export class Position<
         config: this.configInfo.configId,
         cap: args.positionCapId,
         bluefinPool: this.configInfo.poolObjectId,
-        bluefinConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else {
@@ -2599,7 +2609,7 @@ export class Position<
    */
   async convertRewardsAndTransfer(
     tx: Transaction,
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: ConvertRewardsAndTransferArgs,
     sender: string
@@ -2711,7 +2721,7 @@ export class Position<
    * @returns the transaction object.
    */
   async withdrawAllRewardsConvertAndTransfer(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: WithdrawAllRewardsConvertAndTransferArgs,
     sender: string
@@ -2752,7 +2762,7 @@ export class Position<
    * @returns the transaction object.
    */
   async reduceAndMaybeDelete(
-    client: SuiClient,
+    client: ClientWithCoreApi,
     router: Router,
     args: ReduceAndMaybeDeleteArgs,
     sender: string
@@ -2819,7 +2829,11 @@ export class Position<
    * @param sender - The TX sender address which is used to receive any dust amounts from the conversion.
    * @returns the transaction object.
    */
-  async compound(client: SuiClient, args: CompoundArgs, sender: string): Promise<Transaction> {
+  async compound(
+    client: ClientWithCoreApi,
+    args: CompoundArgs,
+    sender: string
+  ): Promise<Transaction> {
     const rewards = await this.devInspectLpUnclaimedRewards(client)
 
     const priceCache = new PriceCache(60)

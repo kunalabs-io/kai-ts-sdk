@@ -1,6 +1,6 @@
 import { Position } from '../../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../../gen/_framework/reified'
-import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../../constants'
+import { getActiveProtocolInfra } from '../../../protocol-infra'
 import { ProtocolHandler } from './protocol-handler'
 import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/sui/transactions'
 import * as bluefin from '../../../gen/kai-leverage/bluefin-spot/functions'
@@ -27,7 +27,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
         supplyPoolX: position.configInfo.supplyPoolXInfo.id,
         supplyPoolY: position.configInfo.supplyPoolYInfo.id,
         bluefinPool: position.configInfo.poolObjectId,
-        bluefinGlobalConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinGlobalConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         clock: SUI_CLOCK_OBJECT_ID,
       }
     )

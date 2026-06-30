@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== I128 =============================== */
 
@@ -47,9 +42,9 @@ export type I128JSON = {
 export class I128 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::i128::I128` = `${
-    getTypeOrigin('integer-library', 'i128::I128')
-  }::i128::I128` as const
+  static get $typeName(): `${string}::i128::I128` {
+    return `${getTypeOrigin('integer-library', 'i128::I128')}::i128::I128` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class I128 implements StructClass {
   static reified(): I128Reified {
     const reifiedBcs = I128.bcs
     return {
-      typeName: I128.$typeName,
-      fullTypeName: composeSuiType(
-        I128.$typeName,
-        ...[],
-      ) as `${string}::i128::I128`,
+      get typeName() {
+        return I128.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          I128.$typeName,
+          ...[],
+        ) as `${string}::i128::I128`
+      },
       typeArgs: [] as [],
       isPhantom: I128.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class I128 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => I128.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => I128.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => I128.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => I128.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => I128.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => I128.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => I128.fetch(client, id),
       new: (fields: I128Fields) => {
         return new I128([], fields)
       },
@@ -170,6 +170,14 @@ export class I128 implements StructClass {
     return I128.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): I128 {
+    if (!isI128(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a I128 object`)
+    }
+    return I128.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I128.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): I128 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class I128 implements StructClass {
     return I128.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link I128.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): I128 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isI128(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class I128 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<I128> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isI128(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<I128> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isI128(object.type)) {
       throw new Error(`object at id ${id} is not a I128 object`)
     }
-
-    return I128.fromBcs(res.bcsBytes)
+    return I128.fromBcs(object.content)
   }
 }

@@ -7,7 +7,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -31,10 +32,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { ID } from '../object/structs'
@@ -95,12 +94,18 @@ export class Referent<T extends TypeArgument> implements StructClass {
   ): ReferentReified<ToTypeArgument<T>> {
     const reifiedBcs = Referent.bcs(toBcs(T))
     return {
-      typeName: Referent.$typeName,
-      fullTypeName: composeSuiType(
-        Referent.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::borrow::Referent<${ToTypeStr<ToTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
+      get typeName() {
+        return Referent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Referent.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::borrow::Referent<${ToTypeStr<ToTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>]
+      },
       isPhantom: Referent.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => Referent.fromFields(T, fields),
@@ -109,9 +114,11 @@ export class Referent<T extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Referent.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => Referent.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Referent.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => Referent.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => Referent.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Referent.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Referent.fetch(client, T, id),
       new: (fields: ReferentFields<ToTypeArgument<T>>) => {
         return new Referent([extractType(T)], fields)
       },
@@ -225,6 +232,34 @@ export class Referent<T extends TypeArgument> implements StructClass {
     return Referent.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Referent<ToTypeArgument<T>> {
+    if (!isReferent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Referent object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Referent.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Referent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     content: SuiParsedData,
@@ -238,6 +273,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
     return Referent.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Referent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     data: SuiObjectData,
@@ -274,16 +310,19 @@ export class Referent<T extends TypeArgument> implements StructClass {
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<Referent<ToTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isReferent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isReferent(object.type)) {
       throw new Error(`object at id ${id} is not a Referent object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -299,7 +338,7 @@ export class Referent<T extends TypeArgument> implements StructClass {
       }
     }
 
-    return Referent.fromBcs(typeArg, res.bcsBytes)
+    return Referent.fromBcs(typeArg, object.content)
   }
 }
 
@@ -357,11 +396,15 @@ export class Borrow implements StructClass {
   static reified(): BorrowReified {
     const reifiedBcs = Borrow.bcs
     return {
-      typeName: Borrow.$typeName,
-      fullTypeName: composeSuiType(
-        Borrow.$typeName,
-        ...[],
-      ) as `0x2::borrow::Borrow`,
+      get typeName() {
+        return Borrow.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Borrow.$typeName,
+          ...[],
+        ) as `0x2::borrow::Borrow`
+      },
       typeArgs: [] as [],
       isPhantom: Borrow.$isPhantom,
       reifiedTypeArgs: [],
@@ -371,9 +414,10 @@ export class Borrow implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Borrow.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Borrow.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Borrow.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Borrow.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Borrow.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Borrow.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Borrow.fetch(client, id),
       new: (fields: BorrowFields) => {
         return new Borrow([], fields)
       },
@@ -462,6 +506,14 @@ export class Borrow implements StructClass {
     return Borrow.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Borrow {
+    if (!isBorrow(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Borrow object`)
+    }
+    return Borrow.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Borrow.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Borrow {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -472,6 +524,7 @@ export class Borrow implements StructClass {
     return Borrow.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Borrow.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Borrow {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrow(data.bcs.type)) {
@@ -488,12 +541,14 @@ export class Borrow implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Borrow> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrow(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Borrow> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrow(object.type)) {
       throw new Error(`object at id ${id} is not a Borrow object`)
     }
-
-    return Borrow.fromBcs(res.bcsBytes)
+    return Borrow.fromBcs(object.content)
   }
 }

@@ -34,7 +34,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -60,10 +61,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 import { Balance } from '../../../sui/balance/structs'
@@ -124,9 +123,11 @@ export type TransferTicketJSON<CoinType extends PhantomTypeArgument> = {
 export class TransferTicket<CoinType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::transfer_tokens_with_payload::TransferTicket` = `${
-    getTypeOrigin('token-bridge', 'transfer_tokens_with_payload::TransferTicket')
-  }::transfer_tokens_with_payload::TransferTicket` as const
+  static get $typeName(): `${string}::transfer_tokens_with_payload::TransferTicket` {
+    return `${
+      getTypeOrigin('token-bridge', 'transfer_tokens_with_payload::TransferTicket')
+    }::transfer_tokens_with_payload::TransferTicket` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -170,14 +171,20 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
   ): TransferTicketReified<ToPhantomTypeArgument<CoinType>> {
     const reifiedBcs = TransferTicket.bcs
     return {
-      typeName: TransferTicket.$typeName,
-      fullTypeName: composeSuiType(
-        TransferTicket.$typeName,
-        ...[extractType(CoinType)],
-      ) as `${string}::transfer_tokens_with_payload::TransferTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinType>
-      >}>`,
-      typeArgs: [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>],
+      get typeName() {
+        return TransferTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TransferTicket.$typeName,
+          ...[extractType(CoinType)],
+        ) as `${string}::transfer_tokens_with_payload::TransferTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinType>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType)] as [PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>]
+      },
       isPhantom: TransferTicket.$isPhantom,
       reifiedTypeArgs: [CoinType],
       fromFields: (fields: Record<string, any>) => TransferTicket.fromFields(CoinType, fields),
@@ -187,11 +194,13 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TransferTicket.fromJSONField(CoinType, field),
       fromJSON: (json: Record<string, any>) => TransferTicket.fromJSON(CoinType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TransferTicket.fromCoreObject(CoinType, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         TransferTicket.fromSuiParsedData(CoinType, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TransferTicket.fromSuiObjectData(CoinType, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         TransferTicket.fetch(client, CoinType, id),
       new: (fields: TransferTicketFields<ToPhantomTypeArgument<CoinType>>) => {
         return new TransferTicket([extractType(CoinType)], fields)
@@ -331,6 +340,34 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
     return TransferTicket.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<CoinType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: CoinType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TransferTicket<ToPhantomTypeArgument<CoinType>> {
+    if (!isTransferTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TransferTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TransferTicket.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     content: SuiParsedData,
@@ -344,6 +381,7 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
     return TransferTicket.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TransferTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<CoinType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: CoinType,
     data: SuiObjectData,
@@ -380,16 +418,19 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
   }
 
   static async fetch<CoinType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: CoinType,
     id: string,
   ): Promise<TransferTicket<ToPhantomTypeArgument<CoinType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransferTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransferTicket(object.type)) {
       throw new Error(`object at id ${id} is not a TransferTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -405,6 +446,6 @@ export class TransferTicket<CoinType extends PhantomTypeArgument> implements Str
       }
     }
 
-    return TransferTicket.fromBcs(typeArg, res.bcsBytes)
+    return TransferTicket.fromBcs(typeArg, object.content)
   }
 }

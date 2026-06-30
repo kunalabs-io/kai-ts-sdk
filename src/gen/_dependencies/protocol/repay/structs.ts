@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -20,13 +21,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -63,9 +58,9 @@ export type RepayEventJSON = {
 export class RepayEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::repay::RepayEvent` = `${
-    getTypeOrigin('protocol', 'repay::RepayEvent')
-  }::repay::RepayEvent` as const
+  static get $typeName(): `${string}::repay::RepayEvent` {
+    return `${getTypeOrigin('protocol', 'repay::RepayEvent')}::repay::RepayEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -97,11 +92,15 @@ export class RepayEvent implements StructClass {
   static reified(): RepayEventReified {
     const reifiedBcs = RepayEvent.bcs
     return {
-      typeName: RepayEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RepayEvent.$typeName,
-        ...[],
-      ) as `${string}::repay::RepayEvent`,
+      get typeName() {
+        return RepayEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RepayEvent.$typeName,
+          ...[],
+        ) as `${string}::repay::RepayEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RepayEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -111,9 +110,11 @@ export class RepayEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RepayEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RepayEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RepayEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RepayEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RepayEvent.fetch(client, id),
       new: (fields: RepayEventFields) => {
         return new RepayEvent([], fields)
       },
@@ -217,6 +218,14 @@ export class RepayEvent implements StructClass {
     return RepayEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RepayEvent {
+    if (!isRepayEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RepayEvent object`)
+    }
+    return RepayEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RepayEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -227,6 +236,7 @@ export class RepayEvent implements StructClass {
     return RepayEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RepayEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRepayEvent(data.bcs.type)) {
@@ -243,12 +253,14 @@ export class RepayEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RepayEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRepayEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RepayEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRepayEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RepayEvent object`)
     }
-
-    return RepayEvent.fromBcs(res.bcsBytes)
+    return RepayEvent.fromBcs(object.content)
   }
 }

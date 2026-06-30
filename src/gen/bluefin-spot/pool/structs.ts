@@ -1,7 +1,8 @@
 /** Module: pool */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -27,10 +28,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
@@ -117,9 +116,9 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::Pool` = `${
-    getTypeOrigin('bluefin-spot', 'pool::Pool')
-  }::pool::Pool` as const
+  static get $typeName(): `${string}::pool::Pool` {
+    return `${getTypeOrigin('bluefin-spot', 'pool::Pool')}::pool::Pool` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -192,17 +191,23 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
   ): PoolReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
     const reifiedBcs = Pool.bcs
     return {
-      typeName: Pool.$typeName,
-      fullTypeName: composeSuiType(
-        Pool.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)],
-      ) as `${string}::pool::Pool<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinTypeA>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
+      get typeName() {
+        return Pool.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Pool.$typeName,
+          ...[extractType(CoinTypeA), extractType(CoinTypeB)],
+        ) as `${string}::pool::Pool<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinTypeA>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+        ]
+      },
       isPhantom: Pool.$isPhantom,
       reifiedTypeArgs: [CoinTypeA, CoinTypeB],
       fromFields: (fields: Record<string, any>) => Pool.fromFields([CoinTypeA, CoinTypeB], fields),
@@ -213,11 +218,13 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Pool.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) => Pool.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Pool.fromCoreObject([CoinTypeA, CoinTypeB], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         Pool.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         Pool.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         Pool.fetch(client, [CoinTypeA, CoinTypeB], id),
       new: (
         fields: PoolFields<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>,
@@ -455,6 +462,37 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     return Pool.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Pool<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isPool(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Pool object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Pool.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Pool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -471,6 +509,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     return Pool.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Pool.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -513,16 +552,19 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinTypeA, CoinTypeB],
     id: string,
   ): Promise<Pool<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPool(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPool(object.type)) {
       throw new Error(`object at id ${id} is not a Pool object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -538,7 +580,7 @@ export class Pool<CoinTypeA extends PhantomTypeArgument, CoinTypeB extends Phant
       }
     }
 
-    return Pool.fromBcs(typeArgs, res.bcsBytes)
+    return Pool.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -584,9 +626,9 @@ export type PoolRewardInfoJSON = {
 export class PoolRewardInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::PoolRewardInfo` = `${
-    getTypeOrigin('bluefin-spot', 'pool::PoolRewardInfo')
-  }::pool::PoolRewardInfo` as const
+  static get $typeName(): `${string}::pool::PoolRewardInfo` {
+    return `${getTypeOrigin('bluefin-spot', 'pool::PoolRewardInfo')}::pool::PoolRewardInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -626,11 +668,15 @@ export class PoolRewardInfo implements StructClass {
   static reified(): PoolRewardInfoReified {
     const reifiedBcs = PoolRewardInfo.bcs
     return {
-      typeName: PoolRewardInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PoolRewardInfo.$typeName,
-        ...[],
-      ) as `${string}::pool::PoolRewardInfo`,
+      get typeName() {
+        return PoolRewardInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PoolRewardInfo.$typeName,
+          ...[],
+        ) as `${string}::pool::PoolRewardInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PoolRewardInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -640,9 +686,11 @@ export class PoolRewardInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PoolRewardInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PoolRewardInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PoolRewardInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PoolRewardInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PoolRewardInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PoolRewardInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PoolRewardInfo.fetch(client, id),
       new: (fields: PoolRewardInfoFields) => {
         return new PoolRewardInfo([], fields)
       },
@@ -763,6 +811,14 @@ export class PoolRewardInfo implements StructClass {
     return PoolRewardInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PoolRewardInfo {
+    if (!isPoolRewardInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PoolRewardInfo object`)
+    }
+    return PoolRewardInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PoolRewardInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -773,6 +829,7 @@ export class PoolRewardInfo implements StructClass {
     return PoolRewardInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PoolRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PoolRewardInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPoolRewardInfo(data.bcs.type)) {
@@ -789,13 +846,15 @@ export class PoolRewardInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PoolRewardInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPoolRewardInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PoolRewardInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPoolRewardInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PoolRewardInfo object`)
     }
-
-    return PoolRewardInfo.fromBcs(res.bcsBytes)
+    return PoolRewardInfo.fromBcs(object.content)
   }
 }
 
@@ -855,9 +914,9 @@ export type SwapResultJSON = {
 export class SwapResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::SwapResult` = `${
-    getTypeOrigin('bluefin-spot', 'pool::SwapResult')
-  }::pool::SwapResult` as const
+  static get $typeName(): `${string}::pool::SwapResult` {
+    return `${getTypeOrigin('bluefin-spot', 'pool::SwapResult')}::pool::SwapResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -911,11 +970,15 @@ export class SwapResult implements StructClass {
   static reified(): SwapResultReified {
     const reifiedBcs = SwapResult.bcs
     return {
-      typeName: SwapResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapResult.$typeName,
-        ...[],
-      ) as `${string}::pool::SwapResult`,
+      get typeName() {
+        return SwapResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapResult.$typeName,
+          ...[],
+        ) as `${string}::pool::SwapResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -925,9 +988,11 @@ export class SwapResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapResult.fetch(client, id),
       new: (fields: SwapResultFields) => {
         return new SwapResult([], fields)
       },
@@ -1092,6 +1157,14 @@ export class SwapResult implements StructClass {
     return SwapResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapResult {
+    if (!isSwapResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapResult object`)
+    }
+    return SwapResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1102,6 +1175,7 @@ export class SwapResult implements StructClass {
     return SwapResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapResult(data.bcs.type)) {
@@ -1118,13 +1192,15 @@ export class SwapResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapResult object`)
     }
-
-    return SwapResult.fromBcs(res.bcsBytes)
+    return SwapResult.fromBcs(object.content)
   }
 }
 
@@ -1167,9 +1243,9 @@ export type SwapStepResultJSON = {
 export class SwapStepResult implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::SwapStepResult` = `${
-    getTypeOrigin('bluefin-spot', 'pool::SwapStepResult')
-  }::pool::SwapStepResult` as const
+  static get $typeName(): `${string}::pool::SwapStepResult` {
+    return `${getTypeOrigin('bluefin-spot', 'pool::SwapStepResult')}::pool::SwapStepResult` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1207,11 +1283,15 @@ export class SwapStepResult implements StructClass {
   static reified(): SwapStepResultReified {
     const reifiedBcs = SwapStepResult.bcs
     return {
-      typeName: SwapStepResult.$typeName,
-      fullTypeName: composeSuiType(
-        SwapStepResult.$typeName,
-        ...[],
-      ) as `${string}::pool::SwapStepResult`,
+      get typeName() {
+        return SwapStepResult.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwapStepResult.$typeName,
+          ...[],
+        ) as `${string}::pool::SwapStepResult`
+      },
       typeArgs: [] as [],
       isPhantom: SwapStepResult.$isPhantom,
       reifiedTypeArgs: [],
@@ -1221,9 +1301,11 @@ export class SwapStepResult implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwapStepResult.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwapStepResult.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwapStepResult.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SwapStepResult.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SwapStepResult.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SwapStepResult.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SwapStepResult.fetch(client, id),
       new: (fields: SwapStepResultFields) => {
         return new SwapStepResult([], fields)
       },
@@ -1339,6 +1421,14 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwapStepResult {
+    if (!isSwapStepResult(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwapStepResult object`)
+    }
+    return SwapStepResult.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwapStepResult {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1349,6 +1439,7 @@ export class SwapStepResult implements StructClass {
     return SwapStepResult.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwapStepResult.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwapStepResult {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwapStepResult(data.bcs.type)) {
@@ -1365,13 +1456,15 @@ export class SwapStepResult implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwapStepResult> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwapStepResult(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwapStepResult> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwapStepResult(object.type)) {
       throw new Error(`object at id ${id} is not a SwapStepResult object`)
     }
-
-    return SwapStepResult.fromBcs(res.bcsBytes)
+    return SwapStepResult.fromBcs(object.content)
   }
 }
 
@@ -1421,9 +1514,11 @@ export class FlashSwapReceipt<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pool::FlashSwapReceipt` = `${
-    getTypeOrigin('bluefin-spot', 'pool::FlashSwapReceipt')
-  }::pool::FlashSwapReceipt` as const
+  static get $typeName(): `${string}::pool::FlashSwapReceipt` {
+    return `${
+      getTypeOrigin('bluefin-spot', 'pool::FlashSwapReceipt')
+    }::pool::FlashSwapReceipt` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -1464,17 +1559,23 @@ export class FlashSwapReceipt<
   ): FlashSwapReceiptReified<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
     const reifiedBcs = FlashSwapReceipt.bcs
     return {
-      typeName: FlashSwapReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        FlashSwapReceipt.$typeName,
-        ...[extractType(CoinTypeA), extractType(CoinTypeB)],
-      ) as `${string}::pool::FlashSwapReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinTypeA>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`,
-      typeArgs: [extractType(CoinTypeA), extractType(CoinTypeB)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
-      ],
+      get typeName() {
+        return FlashSwapReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          FlashSwapReceipt.$typeName,
+          ...[extractType(CoinTypeA), extractType(CoinTypeB)],
+        ) as `${string}::pool::FlashSwapReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinTypeA>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinTypeA), extractType(CoinTypeB)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeA>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinTypeB>>,
+        ]
+      },
       isPhantom: FlashSwapReceipt.$isPhantom,
       reifiedTypeArgs: [CoinTypeA, CoinTypeB],
       fromFields: (fields: Record<string, any>) =>
@@ -1487,11 +1588,13 @@ export class FlashSwapReceipt<
       fromJSONField: (field: any) => FlashSwapReceipt.fromJSONField([CoinTypeA, CoinTypeB], field),
       fromJSON: (json: Record<string, any>) =>
         FlashSwapReceipt.fromJSON([CoinTypeA, CoinTypeB], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        FlashSwapReceipt.fromCoreObject([CoinTypeA, CoinTypeB], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         FlashSwapReceipt.fromSuiParsedData([CoinTypeA, CoinTypeB], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         FlashSwapReceipt.fromSuiObjectData([CoinTypeA, CoinTypeB], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         FlashSwapReceipt.fetch(client, [CoinTypeA, CoinTypeB], id),
       new: (
         fields: FlashSwapReceiptFields<
@@ -1632,6 +1735,37 @@ export class FlashSwapReceipt<
     return FlashSwapReceipt.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinTypeA extends PhantomReified<PhantomTypeArgument>,
+    CoinTypeB extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinTypeA, CoinTypeB],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>> {
+    if (!isFlashSwapReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a FlashSwapReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return FlashSwapReceipt.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -1648,6 +1782,7 @@ export class FlashSwapReceipt<
     return FlashSwapReceipt.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link FlashSwapReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
@@ -1690,16 +1825,19 @@ export class FlashSwapReceipt<
     CoinTypeA extends PhantomReified<PhantomTypeArgument>,
     CoinTypeB extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinTypeA, CoinTypeB],
     id: string,
   ): Promise<FlashSwapReceipt<ToPhantomTypeArgument<CoinTypeA>, ToPhantomTypeArgument<CoinTypeB>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isFlashSwapReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isFlashSwapReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a FlashSwapReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -1715,6 +1853,6 @@ export class FlashSwapReceipt<
       }
     }
 
-    return FlashSwapReceipt.fromBcs(typeArgs, res.bcsBytes)
+    return FlashSwapReceipt.fromBcs(typeArgs, object.content)
   }
 }

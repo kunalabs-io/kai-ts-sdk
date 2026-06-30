@@ -5,7 +5,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { MarketCoin } from '../../_dependencies/protocol/reserve/structs'
 import { SpoolAccount } from '../../_dependencies/spool/spool-account/structs'
@@ -25,13 +26,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Option } from '../../std/option/structs'
 import { Balance } from '../../sui/balance/structs'
 import { ID, UID } from '../../sui/object/structs'
@@ -64,9 +59,11 @@ export type AdminCapJSON = {
 export class AdminCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::scallop_whusdte::AdminCap` = `${
-    getTypeOrigin('kai-sav', 'scallop_whusdte::AdminCap')
-  }::scallop_whusdte::AdminCap` as const
+  static get $typeName(): `${string}::scallop_whusdte::AdminCap` {
+    return `${
+      getTypeOrigin('kai-sav', 'scallop_whusdte::AdminCap')
+    }::scallop_whusdte::AdminCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +87,15 @@ export class AdminCap implements StructClass {
   static reified(): AdminCapReified {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[],
-      ) as `${string}::scallop_whusdte::AdminCap`,
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[],
+        ) as `${string}::scallop_whusdte::AdminCap`
+      },
       typeArgs: [] as [],
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,9 +105,11 @@ export class AdminCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, id),
       new: (fields: AdminCapFields) => {
         return new AdminCap([], fields)
       },
@@ -187,6 +190,14 @@ export class AdminCap implements StructClass {
     return AdminCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AdminCap {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+    return AdminCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AdminCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -197,6 +208,7 @@ export class AdminCap implements StructClass {
     return AdminCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AdminCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
@@ -213,13 +225,15 @@ export class AdminCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AdminCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AdminCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
-
-    return AdminCap.fromBcs(res.bcsBytes)
+    return AdminCap.fromBcs(object.content)
   }
 }
 
@@ -263,9 +277,11 @@ export type StrategyJSON = {
 export class Strategy implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::scallop_whusdte::Strategy` = `${
-    getTypeOrigin('kai-sav', 'scallop_whusdte::Strategy')
-  }::scallop_whusdte::Strategy` as const
+  static get $typeName(): `${string}::scallop_whusdte::Strategy` {
+    return `${
+      getTypeOrigin('kai-sav', 'scallop_whusdte::Strategy')
+    }::scallop_whusdte::Strategy` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -303,11 +319,15 @@ export class Strategy implements StructClass {
   static reified(): StrategyReified {
     const reifiedBcs = Strategy.bcs
     return {
-      typeName: Strategy.$typeName,
-      fullTypeName: composeSuiType(
-        Strategy.$typeName,
-        ...[],
-      ) as `${string}::scallop_whusdte::Strategy`,
+      get typeName() {
+        return Strategy.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Strategy.$typeName,
+          ...[],
+        ) as `${string}::scallop_whusdte::Strategy`
+      },
       typeArgs: [] as [],
       isPhantom: Strategy.$isPhantom,
       reifiedTypeArgs: [],
@@ -317,9 +337,11 @@ export class Strategy implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Strategy.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Strategy.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Strategy.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Strategy.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Strategy.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Strategy.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Strategy.fetch(client, id),
       new: (fields: StrategyFields) => {
         return new Strategy([], fields)
       },
@@ -471,6 +493,14 @@ export class Strategy implements StructClass {
     return Strategy.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Strategy {
+    if (!isStrategy(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Strategy object`)
+    }
+    return Strategy.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Strategy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Strategy {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -481,6 +511,7 @@ export class Strategy implements StructClass {
     return Strategy.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Strategy.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Strategy {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isStrategy(data.bcs.type)) {
@@ -497,12 +528,14 @@ export class Strategy implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Strategy> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategy(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Strategy> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategy(object.type)) {
       throw new Error(`object at id ${id} is not a Strategy object`)
     }
-
-    return Strategy.fromBcs(res.bcsBytes)
+    return Strategy.fromBcs(object.content)
   }
 }

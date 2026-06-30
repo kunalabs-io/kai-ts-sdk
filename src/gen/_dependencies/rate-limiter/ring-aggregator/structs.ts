@@ -25,7 +25,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -42,13 +43,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
 
 /* ============================== RingAggregator =============================== */
@@ -85,9 +80,11 @@ export type RingAggregatorJSON = {
 export class RingAggregator implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ring_aggregator::RingAggregator` = `${
-    getTypeOrigin('rate-limiter', 'ring_aggregator::RingAggregator')
-  }::ring_aggregator::RingAggregator` as const
+  static get $typeName(): `${string}::ring_aggregator::RingAggregator` {
+    return `${
+      getTypeOrigin('rate-limiter', 'ring_aggregator::RingAggregator')
+    }::ring_aggregator::RingAggregator` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -117,11 +114,15 @@ export class RingAggregator implements StructClass {
   static reified(): RingAggregatorReified {
     const reifiedBcs = RingAggregator.bcs
     return {
-      typeName: RingAggregator.$typeName,
-      fullTypeName: composeSuiType(
-        RingAggregator.$typeName,
-        ...[],
-      ) as `${string}::ring_aggregator::RingAggregator`,
+      get typeName() {
+        return RingAggregator.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RingAggregator.$typeName,
+          ...[],
+        ) as `${string}::ring_aggregator::RingAggregator`
+      },
       typeArgs: [] as [],
       isPhantom: RingAggregator.$isPhantom,
       reifiedTypeArgs: [],
@@ -131,9 +132,11 @@ export class RingAggregator implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RingAggregator.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RingAggregator.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RingAggregator.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RingAggregator.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RingAggregator.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RingAggregator.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RingAggregator.fetch(client, id),
       new: (fields: RingAggregatorFields) => {
         return new RingAggregator([], fields)
       },
@@ -229,6 +232,14 @@ export class RingAggregator implements StructClass {
     return RingAggregator.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RingAggregator {
+    if (!isRingAggregator(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RingAggregator object`)
+    }
+    return RingAggregator.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RingAggregator.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RingAggregator {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -239,6 +250,7 @@ export class RingAggregator implements StructClass {
     return RingAggregator.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RingAggregator.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RingAggregator {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRingAggregator(data.bcs.type)) {
@@ -255,12 +267,14 @@ export class RingAggregator implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RingAggregator> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRingAggregator(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RingAggregator> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRingAggregator(object.type)) {
       throw new Error(`object at id ${id} is not a RingAggregator object`)
     }
-
-    return RingAggregator.fromBcs(res.bcsBytes)
+    return RingAggregator.fromBcs(object.content)
   }
 }

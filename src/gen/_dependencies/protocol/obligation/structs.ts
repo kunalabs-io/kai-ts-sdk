@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Option } from '../../../std/option/structs'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID, UID } from '../../../sui/object/structs'
@@ -77,9 +72,9 @@ export type ObligationJSON = {
 export class Obligation implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::Obligation` = `${
-    getTypeOrigin('protocol', 'obligation::Obligation')
-  }::obligation::Obligation` as const
+  static get $typeName(): `${string}::obligation::Obligation` {
+    return `${getTypeOrigin('protocol', 'obligation::Obligation')}::obligation::Obligation` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -125,11 +120,15 @@ export class Obligation implements StructClass {
   static reified(): ObligationReified {
     const reifiedBcs = Obligation.bcs
     return {
-      typeName: Obligation.$typeName,
-      fullTypeName: composeSuiType(
-        Obligation.$typeName,
-        ...[],
-      ) as `${string}::obligation::Obligation`,
+      get typeName() {
+        return Obligation.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Obligation.$typeName,
+          ...[],
+        ) as `${string}::obligation::Obligation`
+      },
       typeArgs: [] as [],
       isPhantom: Obligation.$isPhantom,
       reifiedTypeArgs: [],
@@ -139,9 +138,11 @@ export class Obligation implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Obligation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Obligation.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Obligation.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Obligation.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Obligation.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Obligation.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Obligation.fetch(client, id),
       new: (fields: ObligationFields) => {
         return new Obligation([], fields)
       },
@@ -323,6 +324,14 @@ export class Obligation implements StructClass {
     return Obligation.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Obligation {
+    if (!isObligation(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Obligation object`)
+    }
+    return Obligation.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Obligation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Obligation {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -333,6 +342,7 @@ export class Obligation implements StructClass {
     return Obligation.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Obligation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Obligation {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligation(data.bcs.type)) {
@@ -349,13 +359,15 @@ export class Obligation implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Obligation> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligation(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Obligation> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligation(object.type)) {
       throw new Error(`object at id ${id} is not a Obligation object`)
     }
-
-    return Obligation.fromBcs(res.bcsBytes)
+    return Obligation.fromBcs(object.content)
   }
 }
 
@@ -387,9 +399,11 @@ export type ObligationOwnershipJSON = {
 export class ObligationOwnership implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::ObligationOwnership` = `${
-    getTypeOrigin('protocol', 'obligation::ObligationOwnership')
-  }::obligation::ObligationOwnership` as const
+  static get $typeName(): `${string}::obligation::ObligationOwnership` {
+    return `${
+      getTypeOrigin('protocol', 'obligation::ObligationOwnership')
+    }::obligation::ObligationOwnership` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -413,11 +427,15 @@ export class ObligationOwnership implements StructClass {
   static reified(): ObligationOwnershipReified {
     const reifiedBcs = ObligationOwnership.bcs
     return {
-      typeName: ObligationOwnership.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationOwnership.$typeName,
-        ...[],
-      ) as `${string}::obligation::ObligationOwnership`,
+      get typeName() {
+        return ObligationOwnership.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationOwnership.$typeName,
+          ...[],
+        ) as `${string}::obligation::ObligationOwnership`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationOwnership.$isPhantom,
       reifiedTypeArgs: [],
@@ -427,10 +445,11 @@ export class ObligationOwnership implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationOwnership.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationOwnership.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationOwnership.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObligationOwnership.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObligationOwnership.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        ObligationOwnership.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObligationOwnership.fetch(client, id),
       new: (fields: ObligationOwnershipFields) => {
         return new ObligationOwnership([], fields)
       },
@@ -511,6 +530,14 @@ export class ObligationOwnership implements StructClass {
     return ObligationOwnership.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationOwnership {
+    if (!isObligationOwnership(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationOwnership object`)
+    }
+    return ObligationOwnership.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationOwnership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationOwnership {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -521,6 +548,7 @@ export class ObligationOwnership implements StructClass {
     return ObligationOwnership.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationOwnership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationOwnership {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationOwnership(data.bcs.type)) {
@@ -537,13 +565,15 @@ export class ObligationOwnership implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationOwnership> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationOwnership(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationOwnership> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationOwnership(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationOwnership object`)
     }
-
-    return ObligationOwnership.fromBcs(res.bcsBytes)
+    return ObligationOwnership.fromBcs(object.content)
   }
 }
 
@@ -575,9 +605,11 @@ export type ObligationKeyJSON = {
 export class ObligationKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::ObligationKey` = `${
-    getTypeOrigin('protocol', 'obligation::ObligationKey')
-  }::obligation::ObligationKey` as const
+  static get $typeName(): `${string}::obligation::ObligationKey` {
+    return `${
+      getTypeOrigin('protocol', 'obligation::ObligationKey')
+    }::obligation::ObligationKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -603,11 +635,15 @@ export class ObligationKey implements StructClass {
   static reified(): ObligationKeyReified {
     const reifiedBcs = ObligationKey.bcs
     return {
-      typeName: ObligationKey.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationKey.$typeName,
-        ...[],
-      ) as `${string}::obligation::ObligationKey`,
+      get typeName() {
+        return ObligationKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationKey.$typeName,
+          ...[],
+        ) as `${string}::obligation::ObligationKey`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -617,9 +653,11 @@ export class ObligationKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObligationKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObligationKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ObligationKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObligationKey.fetch(client, id),
       new: (fields: ObligationKeyFields) => {
         return new ObligationKey([], fields)
       },
@@ -714,6 +752,14 @@ export class ObligationKey implements StructClass {
     return ObligationKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationKey {
+    if (!isObligationKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationKey object`)
+    }
+    return ObligationKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -724,6 +770,7 @@ export class ObligationKey implements StructClass {
     return ObligationKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationKey(data.bcs.type)) {
@@ -740,13 +787,15 @@ export class ObligationKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationKey(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationKey object`)
     }
-
-    return ObligationKey.fromBcs(res.bcsBytes)
+    return ObligationKey.fromBcs(object.content)
   }
 }
 
@@ -786,9 +835,11 @@ export type ObligationRewardsPointRedeemedJSON = {
 export class ObligationRewardsPointRedeemed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::ObligationRewardsPointRedeemed` = `${
-    getTypeOrigin('protocol', 'obligation::ObligationRewardsPointRedeemed')
-  }::obligation::ObligationRewardsPointRedeemed` as const
+  static get $typeName(): `${string}::obligation::ObligationRewardsPointRedeemed` {
+    return `${
+      getTypeOrigin('protocol', 'obligation::ObligationRewardsPointRedeemed')
+    }::obligation::ObligationRewardsPointRedeemed` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -818,11 +869,15 @@ export class ObligationRewardsPointRedeemed implements StructClass {
   static reified(): ObligationRewardsPointRedeemedReified {
     const reifiedBcs = ObligationRewardsPointRedeemed.bcs
     return {
-      typeName: ObligationRewardsPointRedeemed.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationRewardsPointRedeemed.$typeName,
-        ...[],
-      ) as `${string}::obligation::ObligationRewardsPointRedeemed`,
+      get typeName() {
+        return ObligationRewardsPointRedeemed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationRewardsPointRedeemed.$typeName,
+          ...[],
+        ) as `${string}::obligation::ObligationRewardsPointRedeemed`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationRewardsPointRedeemed.$isPhantom,
       reifiedTypeArgs: [],
@@ -835,11 +890,13 @@ export class ObligationRewardsPointRedeemed implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationRewardsPointRedeemed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationRewardsPointRedeemed.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationRewardsPointRedeemed.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ObligationRewardsPointRedeemed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ObligationRewardsPointRedeemed.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ObligationRewardsPointRedeemed.fetch(client, id),
       new: (fields: ObligationRewardsPointRedeemedFields) => {
         return new ObligationRewardsPointRedeemed([], fields)
@@ -933,6 +990,16 @@ export class ObligationRewardsPointRedeemed implements StructClass {
     return ObligationRewardsPointRedeemed.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ObligationRewardsPointRedeemed {
+    if (!isObligationRewardsPointRedeemed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationRewardsPointRedeemed object`)
+    }
+    return ObligationRewardsPointRedeemed.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationRewardsPointRedeemed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationRewardsPointRedeemed {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -945,6 +1012,7 @@ export class ObligationRewardsPointRedeemed implements StructClass {
     return ObligationRewardsPointRedeemed.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationRewardsPointRedeemed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationRewardsPointRedeemed {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationRewardsPointRedeemed(data.bcs.type)) {
@@ -962,15 +1030,17 @@ export class ObligationRewardsPointRedeemed implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<ObligationRewardsPointRedeemed> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationRewardsPointRedeemed(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationRewardsPointRedeemed(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationRewardsPointRedeemed object`)
     }
-
-    return ObligationRewardsPointRedeemed.fromBcs(res.bcsBytes)
+    return ObligationRewardsPointRedeemed.fromBcs(object.content)
   }
 }
 
@@ -1012,9 +1082,11 @@ export type ObligationLockedJSON = {
 export class ObligationLocked implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::ObligationLocked` = `${
-    getTypeOrigin('protocol', 'obligation::ObligationLocked')
-  }::obligation::ObligationLocked` as const
+  static get $typeName(): `${string}::obligation::ObligationLocked` {
+    return `${
+      getTypeOrigin('protocol', 'obligation::ObligationLocked')
+    }::obligation::ObligationLocked` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1050,11 +1122,15 @@ export class ObligationLocked implements StructClass {
   static reified(): ObligationLockedReified {
     const reifiedBcs = ObligationLocked.bcs
     return {
-      typeName: ObligationLocked.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationLocked.$typeName,
-        ...[],
-      ) as `${string}::obligation::ObligationLocked`,
+      get typeName() {
+        return ObligationLocked.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationLocked.$typeName,
+          ...[],
+        ) as `${string}::obligation::ObligationLocked`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationLocked.$isPhantom,
       reifiedTypeArgs: [],
@@ -1064,9 +1140,11 @@ export class ObligationLocked implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationLocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationLocked.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationLocked.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObligationLocked.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObligationLocked.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ObligationLocked.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObligationLocked.fetch(client, id),
       new: (fields: ObligationLockedFields) => {
         return new ObligationLocked([], fields)
       },
@@ -1183,6 +1261,14 @@ export class ObligationLocked implements StructClass {
     return ObligationLocked.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationLocked {
+    if (!isObligationLocked(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationLocked object`)
+    }
+    return ObligationLocked.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationLocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationLocked {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1193,6 +1279,7 @@ export class ObligationLocked implements StructClass {
     return ObligationLocked.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationLocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationLocked {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationLocked(data.bcs.type)) {
@@ -1209,13 +1296,15 @@ export class ObligationLocked implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationLocked> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationLocked(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationLocked> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationLocked(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationLocked object`)
     }
-
-    return ObligationLocked.fromBcs(res.bcsBytes)
+    return ObligationLocked.fromBcs(object.content)
   }
 }
 
@@ -1249,9 +1338,11 @@ export type ObligationUnlockedJSON = {
 export class ObligationUnlocked implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::obligation::ObligationUnlocked` = `${
-    getTypeOrigin('protocol', 'obligation::ObligationUnlocked')
-  }::obligation::ObligationUnlocked` as const
+  static get $typeName(): `${string}::obligation::ObligationUnlocked` {
+    return `${
+      getTypeOrigin('protocol', 'obligation::ObligationUnlocked')
+    }::obligation::ObligationUnlocked` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1277,11 +1368,15 @@ export class ObligationUnlocked implements StructClass {
   static reified(): ObligationUnlockedReified {
     const reifiedBcs = ObligationUnlocked.bcs
     return {
-      typeName: ObligationUnlocked.$typeName,
-      fullTypeName: composeSuiType(
-        ObligationUnlocked.$typeName,
-        ...[],
-      ) as `${string}::obligation::ObligationUnlocked`,
+      get typeName() {
+        return ObligationUnlocked.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ObligationUnlocked.$typeName,
+          ...[],
+        ) as `${string}::obligation::ObligationUnlocked`
+      },
       typeArgs: [] as [],
       isPhantom: ObligationUnlocked.$isPhantom,
       reifiedTypeArgs: [],
@@ -1291,9 +1386,11 @@ export class ObligationUnlocked implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ObligationUnlocked.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ObligationUnlocked.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ObligationUnlocked.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ObligationUnlocked.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ObligationUnlocked.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ObligationUnlocked.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ObligationUnlocked.fetch(client, id),
       new: (fields: ObligationUnlockedFields) => {
         return new ObligationUnlocked([], fields)
       },
@@ -1379,6 +1476,14 @@ export class ObligationUnlocked implements StructClass {
     return ObligationUnlocked.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ObligationUnlocked {
+    if (!isObligationUnlocked(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ObligationUnlocked object`)
+    }
+    return ObligationUnlocked.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationUnlocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ObligationUnlocked {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1389,6 +1494,7 @@ export class ObligationUnlocked implements StructClass {
     return ObligationUnlocked.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ObligationUnlocked.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ObligationUnlocked {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isObligationUnlocked(data.bcs.type)) {
@@ -1405,12 +1511,14 @@ export class ObligationUnlocked implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ObligationUnlocked> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isObligationUnlocked(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ObligationUnlocked> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isObligationUnlocked(object.type)) {
       throw new Error(`object at id ${id} is not a ObligationUnlocked object`)
     }
-
-    return ObligationUnlocked.fromBcs(res.bcsBytes)
+    return ObligationUnlocked.fromBcs(object.content)
   }
 }

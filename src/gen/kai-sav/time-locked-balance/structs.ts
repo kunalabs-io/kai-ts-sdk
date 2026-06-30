@@ -11,7 +11,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -35,10 +36,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Balance } from '../../sui/balance/structs'
 
@@ -90,9 +89,11 @@ export type TimeLockedBalanceJSON<T extends PhantomTypeArgument> = {
 export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::time_locked_balance::TimeLockedBalance` = `${
-    getTypeOrigin('kai-sav', 'time_locked_balance::TimeLockedBalance')
-  }::time_locked_balance::TimeLockedBalance` as const
+  static get $typeName(): `${string}::time_locked_balance::TimeLockedBalance` {
+    return `${
+      getTypeOrigin('kai-sav', 'time_locked_balance::TimeLockedBalance')
+    }::time_locked_balance::TimeLockedBalance` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -132,14 +133,20 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
   ): TimeLockedBalanceReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = TimeLockedBalance.bcs
     return {
-      typeName: TimeLockedBalance.$typeName,
-      fullTypeName: composeSuiType(
-        TimeLockedBalance.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::time_locked_balance::TimeLockedBalance<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return TimeLockedBalance.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          TimeLockedBalance.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::time_locked_balance::TimeLockedBalance<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: TimeLockedBalance.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => TimeLockedBalance.fromFields(T, fields),
@@ -149,11 +156,13 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
       bcs: reifiedBcs,
       fromJSONField: (field: any) => TimeLockedBalance.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => TimeLockedBalance.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        TimeLockedBalance.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         TimeLockedBalance.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         TimeLockedBalance.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         TimeLockedBalance.fetch(client, T, id),
       new: (fields: TimeLockedBalanceFields<ToPhantomTypeArgument<T>>) => {
         return new TimeLockedBalance([extractType(T)], fields)
@@ -289,6 +298,34 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
     return TimeLockedBalance.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): TimeLockedBalance<ToPhantomTypeArgument<T>> {
+    if (!isTimeLockedBalance(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a TimeLockedBalance object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return TimeLockedBalance.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TimeLockedBalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -302,6 +339,7 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
     return TimeLockedBalance.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link TimeLockedBalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -338,16 +376,19 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<TimeLockedBalance<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTimeLockedBalance(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTimeLockedBalance(object.type)) {
       throw new Error(`object at id ${id} is not a TimeLockedBalance object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -363,6 +404,6 @@ export class TimeLockedBalance<T extends PhantomTypeArgument> implements StructC
       }
     }
 
-    return TimeLockedBalance.fromBcs(typeArg, res.bcsBytes)
+    return TimeLockedBalance.fromBcs(typeArg, object.content)
   }
 }

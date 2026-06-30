@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import {
   decodeFromFields,
@@ -13,13 +14,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { UID } from '../object/structs'
 import { VecSet } from '../vec-set/structs'
 
@@ -82,11 +77,15 @@ export class AddressAliasState implements StructClass {
   static reified(): AddressAliasStateReified {
     const reifiedBcs = AddressAliasState.bcs
     return {
-      typeName: AddressAliasState.$typeName,
-      fullTypeName: composeSuiType(
-        AddressAliasState.$typeName,
-        ...[],
-      ) as `0x2::address_alias::AddressAliasState`,
+      get typeName() {
+        return AddressAliasState.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddressAliasState.$typeName,
+          ...[],
+        ) as `0x2::address_alias::AddressAliasState`
+      },
       typeArgs: [] as [],
       isPhantom: AddressAliasState.$isPhantom,
       reifiedTypeArgs: [],
@@ -96,9 +95,11 @@ export class AddressAliasState implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddressAliasState.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddressAliasState.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddressAliasState.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddressAliasState.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddressAliasState.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddressAliasState.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddressAliasState.fetch(client, id),
       new: (fields: AddressAliasStateFields) => {
         return new AddressAliasState([], fields)
       },
@@ -184,6 +185,14 @@ export class AddressAliasState implements StructClass {
     return AddressAliasState.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddressAliasState {
+    if (!isAddressAliasState(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddressAliasState object`)
+    }
+    return AddressAliasState.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddressAliasState.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddressAliasState {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -194,6 +203,7 @@ export class AddressAliasState implements StructClass {
     return AddressAliasState.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddressAliasState.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddressAliasState {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddressAliasState(data.bcs.type)) {
@@ -210,13 +220,15 @@ export class AddressAliasState implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddressAliasState> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddressAliasState(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddressAliasState> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddressAliasState(object.type)) {
       throw new Error(`object at id ${id} is not a AddressAliasState object`)
     }
-
-    return AddressAliasState.fromBcs(res.bcsBytes)
+    return AddressAliasState.fromBcs(object.content)
   }
 }
 
@@ -281,11 +293,15 @@ export class AddressAliases implements StructClass {
   static reified(): AddressAliasesReified {
     const reifiedBcs = AddressAliases.bcs
     return {
-      typeName: AddressAliases.$typeName,
-      fullTypeName: composeSuiType(
-        AddressAliases.$typeName,
-        ...[],
-      ) as `0x2::address_alias::AddressAliases`,
+      get typeName() {
+        return AddressAliases.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddressAliases.$typeName,
+          ...[],
+        ) as `0x2::address_alias::AddressAliases`
+      },
       typeArgs: [] as [],
       isPhantom: AddressAliases.$isPhantom,
       reifiedTypeArgs: [],
@@ -295,9 +311,11 @@ export class AddressAliases implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddressAliases.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddressAliases.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddressAliases.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddressAliases.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddressAliases.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddressAliases.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddressAliases.fetch(client, id),
       new: (fields: AddressAliasesFields) => {
         return new AddressAliases([], fields)
       },
@@ -388,6 +406,14 @@ export class AddressAliases implements StructClass {
     return AddressAliases.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddressAliases {
+    if (!isAddressAliases(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddressAliases object`)
+    }
+    return AddressAliases.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddressAliases.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddressAliases {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -398,6 +424,7 @@ export class AddressAliases implements StructClass {
     return AddressAliases.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddressAliases.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddressAliases {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddressAliases(data.bcs.type)) {
@@ -414,13 +441,15 @@ export class AddressAliases implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddressAliases> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddressAliases(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddressAliases> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddressAliases(object.type)) {
       throw new Error(`object at id ${id} is not a AddressAliases object`)
     }
-
-    return AddressAliases.fromBcs(res.bcsBytes)
+    return AddressAliases.fromBcs(object.content)
   }
 }
 
@@ -475,11 +504,15 @@ export class AliasKey implements StructClass {
   static reified(): AliasKeyReified {
     const reifiedBcs = AliasKey.bcs
     return {
-      typeName: AliasKey.$typeName,
-      fullTypeName: composeSuiType(
-        AliasKey.$typeName,
-        ...[],
-      ) as `0x2::address_alias::AliasKey`,
+      get typeName() {
+        return AliasKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AliasKey.$typeName,
+          ...[],
+        ) as `0x2::address_alias::AliasKey`
+      },
       typeArgs: [] as [],
       isPhantom: AliasKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -489,9 +522,11 @@ export class AliasKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AliasKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AliasKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AliasKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AliasKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AliasKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AliasKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AliasKey.fetch(client, id),
       new: (fields: AliasKeyFields) => {
         return new AliasKey([], fields)
       },
@@ -575,6 +610,14 @@ export class AliasKey implements StructClass {
     return AliasKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AliasKey {
+    if (!isAliasKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AliasKey object`)
+    }
+    return AliasKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AliasKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AliasKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -585,6 +628,7 @@ export class AliasKey implements StructClass {
     return AliasKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AliasKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AliasKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAliasKey(data.bcs.type)) {
@@ -601,12 +645,14 @@ export class AliasKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AliasKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAliasKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AliasKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAliasKey(object.type)) {
       throw new Error(`object at id ${id} is not a AliasKey object`)
     }
-
-    return AliasKey.fromBcs(res.bcsBytes)
+    return AliasKey.fromBcs(object.content)
   }
 }

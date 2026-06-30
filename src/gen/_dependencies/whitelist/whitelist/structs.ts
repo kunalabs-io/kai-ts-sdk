@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ID } from '../../../sui/object/structs'
 
 /* ============================== WhitelistKey =============================== */
@@ -49,9 +44,11 @@ export type WhitelistKeyJSON = {
 export class WhitelistKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::WhitelistKey` = `${
-    getTypeOrigin('whitelist', 'whitelist::WhitelistKey')
-  }::whitelist::WhitelistKey` as const
+  static get $typeName(): `${string}::whitelist::WhitelistKey` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::WhitelistKey')
+    }::whitelist::WhitelistKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -75,11 +72,15 @@ export class WhitelistKey implements StructClass {
   static reified(): WhitelistKeyReified {
     const reifiedBcs = WhitelistKey.bcs
     return {
-      typeName: WhitelistKey.$typeName,
-      fullTypeName: composeSuiType(
-        WhitelistKey.$typeName,
-        ...[],
-      ) as `${string}::whitelist::WhitelistKey`,
+      get typeName() {
+        return WhitelistKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WhitelistKey.$typeName,
+          ...[],
+        ) as `${string}::whitelist::WhitelistKey`
+      },
       typeArgs: [] as [],
       isPhantom: WhitelistKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,9 +90,11 @@ export class WhitelistKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WhitelistKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => WhitelistKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => WhitelistKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => WhitelistKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WhitelistKey.fetch(client, id),
       new: (fields: WhitelistKeyFields) => {
         return new WhitelistKey([], fields)
       },
@@ -175,6 +178,14 @@ export class WhitelistKey implements StructClass {
     return WhitelistKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): WhitelistKey {
+    if (!isWhitelistKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WhitelistKey object`)
+    }
+    return WhitelistKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): WhitelistKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -185,6 +196,7 @@ export class WhitelistKey implements StructClass {
     return WhitelistKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): WhitelistKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWhitelistKey(data.bcs.type)) {
@@ -201,13 +213,15 @@ export class WhitelistKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<WhitelistKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWhitelistKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<WhitelistKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWhitelistKey(object.type)) {
       throw new Error(`object at id ${id} is not a WhitelistKey object`)
     }
-
-    return WhitelistKey.fromBcs(res.bcsBytes)
+    return WhitelistKey.fromBcs(object.content)
   }
 }
 
@@ -236,9 +250,11 @@ export type AllowAllKeyJSON = {
 export class AllowAllKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::AllowAllKey` = `${
-    getTypeOrigin('whitelist', 'whitelist::AllowAllKey')
-  }::whitelist::AllowAllKey` as const
+  static get $typeName(): `${string}::whitelist::AllowAllKey` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::AllowAllKey')
+    }::whitelist::AllowAllKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -262,11 +278,15 @@ export class AllowAllKey implements StructClass {
   static reified(): AllowAllKeyReified {
     const reifiedBcs = AllowAllKey.bcs
     return {
-      typeName: AllowAllKey.$typeName,
-      fullTypeName: composeSuiType(
-        AllowAllKey.$typeName,
-        ...[],
-      ) as `${string}::whitelist::AllowAllKey`,
+      get typeName() {
+        return AllowAllKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AllowAllKey.$typeName,
+          ...[],
+        ) as `${string}::whitelist::AllowAllKey`
+      },
       typeArgs: [] as [],
       isPhantom: AllowAllKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -276,9 +296,11 @@ export class AllowAllKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AllowAllKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AllowAllKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AllowAllKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AllowAllKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AllowAllKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AllowAllKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AllowAllKey.fetch(client, id),
       new: (fields: AllowAllKeyFields) => {
         return new AllowAllKey([], fields)
       },
@@ -359,6 +381,14 @@ export class AllowAllKey implements StructClass {
     return AllowAllKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AllowAllKey {
+    if (!isAllowAllKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AllowAllKey object`)
+    }
+    return AllowAllKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AllowAllKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AllowAllKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -369,6 +399,7 @@ export class AllowAllKey implements StructClass {
     return AllowAllKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AllowAllKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AllowAllKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAllowAllKey(data.bcs.type)) {
@@ -385,13 +416,15 @@ export class AllowAllKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AllowAllKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAllowAllKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AllowAllKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAllowAllKey(object.type)) {
       throw new Error(`object at id ${id} is not a AllowAllKey object`)
     }
-
-    return AllowAllKey.fromBcs(res.bcsBytes)
+    return AllowAllKey.fromBcs(object.content)
   }
 }
 
@@ -421,9 +454,11 @@ export type RejectAllKeyJSON = {
 export class RejectAllKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::RejectAllKey` = `${
-    getTypeOrigin('whitelist', 'whitelist::RejectAllKey')
-  }::whitelist::RejectAllKey` as const
+  static get $typeName(): `${string}::whitelist::RejectAllKey` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::RejectAllKey')
+    }::whitelist::RejectAllKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -447,11 +482,15 @@ export class RejectAllKey implements StructClass {
   static reified(): RejectAllKeyReified {
     const reifiedBcs = RejectAllKey.bcs
     return {
-      typeName: RejectAllKey.$typeName,
-      fullTypeName: composeSuiType(
-        RejectAllKey.$typeName,
-        ...[],
-      ) as `${string}::whitelist::RejectAllKey`,
+      get typeName() {
+        return RejectAllKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RejectAllKey.$typeName,
+          ...[],
+        ) as `${string}::whitelist::RejectAllKey`
+      },
       typeArgs: [] as [],
       isPhantom: RejectAllKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -461,9 +500,11 @@ export class RejectAllKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RejectAllKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RejectAllKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RejectAllKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RejectAllKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RejectAllKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RejectAllKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RejectAllKey.fetch(client, id),
       new: (fields: RejectAllKeyFields) => {
         return new RejectAllKey([], fields)
       },
@@ -544,6 +585,14 @@ export class RejectAllKey implements StructClass {
     return RejectAllKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RejectAllKey {
+    if (!isRejectAllKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RejectAllKey object`)
+    }
+    return RejectAllKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RejectAllKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RejectAllKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -554,6 +603,7 @@ export class RejectAllKey implements StructClass {
     return RejectAllKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RejectAllKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RejectAllKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRejectAllKey(data.bcs.type)) {
@@ -570,13 +620,15 @@ export class RejectAllKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RejectAllKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRejectAllKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RejectAllKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRejectAllKey(object.type)) {
       throw new Error(`object at id ${id} is not a RejectAllKey object`)
     }
-
-    return RejectAllKey.fromBcs(res.bcsBytes)
+    return RejectAllKey.fromBcs(object.content)
   }
 }
 
@@ -611,9 +663,11 @@ export type WhitelistAddEventJSON = {
 export class WhitelistAddEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::WhitelistAddEvent` = `${
-    getTypeOrigin('whitelist', 'whitelist::WhitelistAddEvent')
-  }::whitelist::WhitelistAddEvent` as const
+  static get $typeName(): `${string}::whitelist::WhitelistAddEvent` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::WhitelistAddEvent')
+    }::whitelist::WhitelistAddEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -639,11 +693,15 @@ export class WhitelistAddEvent implements StructClass {
   static reified(): WhitelistAddEventReified {
     const reifiedBcs = WhitelistAddEvent.bcs
     return {
-      typeName: WhitelistAddEvent.$typeName,
-      fullTypeName: composeSuiType(
-        WhitelistAddEvent.$typeName,
-        ...[],
-      ) as `${string}::whitelist::WhitelistAddEvent`,
+      get typeName() {
+        return WhitelistAddEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WhitelistAddEvent.$typeName,
+          ...[],
+        ) as `${string}::whitelist::WhitelistAddEvent`
+      },
       typeArgs: [] as [],
       isPhantom: WhitelistAddEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -653,9 +711,11 @@ export class WhitelistAddEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistAddEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistAddEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WhitelistAddEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => WhitelistAddEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => WhitelistAddEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => WhitelistAddEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WhitelistAddEvent.fetch(client, id),
       new: (fields: WhitelistAddEventFields) => {
         return new WhitelistAddEvent([], fields)
       },
@@ -744,6 +804,14 @@ export class WhitelistAddEvent implements StructClass {
     return WhitelistAddEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): WhitelistAddEvent {
+    if (!isWhitelistAddEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WhitelistAddEvent object`)
+    }
+    return WhitelistAddEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistAddEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): WhitelistAddEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -754,6 +822,7 @@ export class WhitelistAddEvent implements StructClass {
     return WhitelistAddEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistAddEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): WhitelistAddEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWhitelistAddEvent(data.bcs.type)) {
@@ -770,13 +839,15 @@ export class WhitelistAddEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<WhitelistAddEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWhitelistAddEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<WhitelistAddEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWhitelistAddEvent(object.type)) {
       throw new Error(`object at id ${id} is not a WhitelistAddEvent object`)
     }
-
-    return WhitelistAddEvent.fromBcs(res.bcsBytes)
+    return WhitelistAddEvent.fromBcs(object.content)
   }
 }
 
@@ -811,9 +882,11 @@ export type WhitelistRemoveEventJSON = {
 export class WhitelistRemoveEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::WhitelistRemoveEvent` = `${
-    getTypeOrigin('whitelist', 'whitelist::WhitelistRemoveEvent')
-  }::whitelist::WhitelistRemoveEvent` as const
+  static get $typeName(): `${string}::whitelist::WhitelistRemoveEvent` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::WhitelistRemoveEvent')
+    }::whitelist::WhitelistRemoveEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -839,11 +912,15 @@ export class WhitelistRemoveEvent implements StructClass {
   static reified(): WhitelistRemoveEventReified {
     const reifiedBcs = WhitelistRemoveEvent.bcs
     return {
-      typeName: WhitelistRemoveEvent.$typeName,
-      fullTypeName: composeSuiType(
-        WhitelistRemoveEvent.$typeName,
-        ...[],
-      ) as `${string}::whitelist::WhitelistRemoveEvent`,
+      get typeName() {
+        return WhitelistRemoveEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WhitelistRemoveEvent.$typeName,
+          ...[],
+        ) as `${string}::whitelist::WhitelistRemoveEvent`
+      },
       typeArgs: [] as [],
       isPhantom: WhitelistRemoveEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -854,11 +931,13 @@ export class WhitelistRemoveEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WhitelistRemoveEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => WhitelistRemoveEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WhitelistRemoveEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         WhitelistRemoveEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WhitelistRemoveEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         WhitelistRemoveEvent.fetch(client, id),
       new: (fields: WhitelistRemoveEventFields) => {
         return new WhitelistRemoveEvent([], fields)
@@ -948,6 +1027,14 @@ export class WhitelistRemoveEvent implements StructClass {
     return WhitelistRemoveEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): WhitelistRemoveEvent {
+    if (!isWhitelistRemoveEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WhitelistRemoveEvent object`)
+    }
+    return WhitelistRemoveEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistRemoveEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): WhitelistRemoveEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -960,6 +1047,7 @@ export class WhitelistRemoveEvent implements StructClass {
     return WhitelistRemoveEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WhitelistRemoveEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): WhitelistRemoveEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isWhitelistRemoveEvent(data.bcs.type)) {
@@ -976,13 +1064,15 @@ export class WhitelistRemoveEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<WhitelistRemoveEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWhitelistRemoveEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<WhitelistRemoveEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWhitelistRemoveEvent(object.type)) {
       throw new Error(`object at id ${id} is not a WhitelistRemoveEvent object`)
     }
-
-    return WhitelistRemoveEvent.fromBcs(res.bcsBytes)
+    return WhitelistRemoveEvent.fromBcs(object.content)
   }
 }
 
@@ -1013,9 +1103,11 @@ export type AllowAllEventJSON = {
 export class AllowAllEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::AllowAllEvent` = `${
-    getTypeOrigin('whitelist', 'whitelist::AllowAllEvent')
-  }::whitelist::AllowAllEvent` as const
+  static get $typeName(): `${string}::whitelist::AllowAllEvent` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::AllowAllEvent')
+    }::whitelist::AllowAllEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1039,11 +1131,15 @@ export class AllowAllEvent implements StructClass {
   static reified(): AllowAllEventReified {
     const reifiedBcs = AllowAllEvent.bcs
     return {
-      typeName: AllowAllEvent.$typeName,
-      fullTypeName: composeSuiType(
-        AllowAllEvent.$typeName,
-        ...[],
-      ) as `${string}::whitelist::AllowAllEvent`,
+      get typeName() {
+        return AllowAllEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AllowAllEvent.$typeName,
+          ...[],
+        ) as `${string}::whitelist::AllowAllEvent`
+      },
       typeArgs: [] as [],
       isPhantom: AllowAllEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1053,9 +1149,11 @@ export class AllowAllEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AllowAllEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AllowAllEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AllowAllEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AllowAllEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AllowAllEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AllowAllEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AllowAllEvent.fetch(client, id),
       new: (fields: AllowAllEventFields) => {
         return new AllowAllEvent([], fields)
       },
@@ -1136,6 +1234,14 @@ export class AllowAllEvent implements StructClass {
     return AllowAllEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AllowAllEvent {
+    if (!isAllowAllEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AllowAllEvent object`)
+    }
+    return AllowAllEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AllowAllEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AllowAllEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1146,6 +1252,7 @@ export class AllowAllEvent implements StructClass {
     return AllowAllEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AllowAllEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AllowAllEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAllowAllEvent(data.bcs.type)) {
@@ -1162,13 +1269,15 @@ export class AllowAllEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AllowAllEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAllowAllEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AllowAllEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAllowAllEvent(object.type)) {
       throw new Error(`object at id ${id} is not a AllowAllEvent object`)
     }
-
-    return AllowAllEvent.fromBcs(res.bcsBytes)
+    return AllowAllEvent.fromBcs(object.content)
   }
 }
 
@@ -1199,9 +1308,11 @@ export type RejectAllEventJSON = {
 export class RejectAllEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::RejectAllEvent` = `${
-    getTypeOrigin('whitelist', 'whitelist::RejectAllEvent')
-  }::whitelist::RejectAllEvent` as const
+  static get $typeName(): `${string}::whitelist::RejectAllEvent` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::RejectAllEvent')
+    }::whitelist::RejectAllEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1225,11 +1336,15 @@ export class RejectAllEvent implements StructClass {
   static reified(): RejectAllEventReified {
     const reifiedBcs = RejectAllEvent.bcs
     return {
-      typeName: RejectAllEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RejectAllEvent.$typeName,
-        ...[],
-      ) as `${string}::whitelist::RejectAllEvent`,
+      get typeName() {
+        return RejectAllEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RejectAllEvent.$typeName,
+          ...[],
+        ) as `${string}::whitelist::RejectAllEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RejectAllEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1239,9 +1354,11 @@ export class RejectAllEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RejectAllEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RejectAllEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RejectAllEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RejectAllEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RejectAllEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RejectAllEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RejectAllEvent.fetch(client, id),
       new: (fields: RejectAllEventFields) => {
         return new RejectAllEvent([], fields)
       },
@@ -1322,6 +1439,14 @@ export class RejectAllEvent implements StructClass {
     return RejectAllEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RejectAllEvent {
+    if (!isRejectAllEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RejectAllEvent object`)
+    }
+    return RejectAllEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RejectAllEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RejectAllEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1332,6 +1457,7 @@ export class RejectAllEvent implements StructClass {
     return RejectAllEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RejectAllEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RejectAllEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRejectAllEvent(data.bcs.type)) {
@@ -1348,13 +1474,15 @@ export class RejectAllEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RejectAllEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRejectAllEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RejectAllEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRejectAllEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RejectAllEvent object`)
     }
-
-    return RejectAllEvent.fromBcs(res.bcsBytes)
+    return RejectAllEvent.fromBcs(object.content)
   }
 }
 
@@ -1390,9 +1518,11 @@ export type SwitchToWhitelistModeEventJSON = {
 export class SwitchToWhitelistModeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::whitelist::SwitchToWhitelistModeEvent` = `${
-    getTypeOrigin('whitelist', 'whitelist::SwitchToWhitelistModeEvent')
-  }::whitelist::SwitchToWhitelistModeEvent` as const
+  static get $typeName(): `${string}::whitelist::SwitchToWhitelistModeEvent` {
+    return `${
+      getTypeOrigin('whitelist', 'whitelist::SwitchToWhitelistModeEvent')
+    }::whitelist::SwitchToWhitelistModeEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1418,11 +1548,15 @@ export class SwitchToWhitelistModeEvent implements StructClass {
   static reified(): SwitchToWhitelistModeEventReified {
     const reifiedBcs = SwitchToWhitelistModeEvent.bcs
     return {
-      typeName: SwitchToWhitelistModeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SwitchToWhitelistModeEvent.$typeName,
-        ...[],
-      ) as `${string}::whitelist::SwitchToWhitelistModeEvent`,
+      get typeName() {
+        return SwitchToWhitelistModeEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SwitchToWhitelistModeEvent.$typeName,
+          ...[],
+        ) as `${string}::whitelist::SwitchToWhitelistModeEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SwitchToWhitelistModeEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -1433,11 +1567,13 @@ export class SwitchToWhitelistModeEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SwitchToWhitelistModeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SwitchToWhitelistModeEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SwitchToWhitelistModeEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         SwitchToWhitelistModeEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         SwitchToWhitelistModeEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         SwitchToWhitelistModeEvent.fetch(client, id),
       new: (fields: SwitchToWhitelistModeEventFields) => {
         return new SwitchToWhitelistModeEvent([], fields)
@@ -1520,6 +1656,14 @@ export class SwitchToWhitelistModeEvent implements StructClass {
     return SwitchToWhitelistModeEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SwitchToWhitelistModeEvent {
+    if (!isSwitchToWhitelistModeEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SwitchToWhitelistModeEvent object`)
+    }
+    return SwitchToWhitelistModeEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwitchToWhitelistModeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SwitchToWhitelistModeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1532,6 +1676,7 @@ export class SwitchToWhitelistModeEvent implements StructClass {
     return SwitchToWhitelistModeEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SwitchToWhitelistModeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SwitchToWhitelistModeEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSwitchToWhitelistModeEvent(data.bcs.type)) {
@@ -1548,12 +1693,14 @@ export class SwitchToWhitelistModeEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SwitchToWhitelistModeEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSwitchToWhitelistModeEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SwitchToWhitelistModeEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSwitchToWhitelistModeEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SwitchToWhitelistModeEvent object`)
     }
-
-    return SwitchToWhitelistModeEvent.fromBcs(res.bcsBytes)
+    return SwitchToWhitelistModeEvent.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -15,13 +16,7 @@ import {
   ToTypeStr,
   ToTypeStr as ToPhantom,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { WitTable } from '../../x/wit-table/structs'
 
@@ -56,9 +51,11 @@ export type BaseAssetActiveStatesJSON = {
 export class BaseAssetActiveStates implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::asset_active_state::BaseAssetActiveStates` = `${
-    getTypeOrigin('protocol', 'asset_active_state::BaseAssetActiveStates')
-  }::asset_active_state::BaseAssetActiveStates` as const
+  static get $typeName(): `${string}::asset_active_state::BaseAssetActiveStates` {
+    return `${
+      getTypeOrigin('protocol', 'asset_active_state::BaseAssetActiveStates')
+    }::asset_active_state::BaseAssetActiveStates` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -82,11 +79,15 @@ export class BaseAssetActiveStates implements StructClass {
   static reified(): BaseAssetActiveStatesReified {
     const reifiedBcs = BaseAssetActiveStates.bcs
     return {
-      typeName: BaseAssetActiveStates.$typeName,
-      fullTypeName: composeSuiType(
-        BaseAssetActiveStates.$typeName,
-        ...[],
-      ) as `${string}::asset_active_state::BaseAssetActiveStates`,
+      get typeName() {
+        return BaseAssetActiveStates.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BaseAssetActiveStates.$typeName,
+          ...[],
+        ) as `${string}::asset_active_state::BaseAssetActiveStates`
+      },
       typeArgs: [] as [],
       isPhantom: BaseAssetActiveStates.$isPhantom,
       reifiedTypeArgs: [],
@@ -97,11 +98,13 @@ export class BaseAssetActiveStates implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BaseAssetActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BaseAssetActiveStates.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BaseAssetActiveStates.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BaseAssetActiveStates.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BaseAssetActiveStates.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BaseAssetActiveStates.fetch(client, id),
       new: (fields: BaseAssetActiveStatesFields) => {
         return new BaseAssetActiveStates([], fields)
@@ -183,6 +186,14 @@ export class BaseAssetActiveStates implements StructClass {
     return BaseAssetActiveStates.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BaseAssetActiveStates {
+    if (!isBaseAssetActiveStates(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BaseAssetActiveStates object`)
+    }
+    return BaseAssetActiveStates.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BaseAssetActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BaseAssetActiveStates {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -195,6 +206,7 @@ export class BaseAssetActiveStates implements StructClass {
     return BaseAssetActiveStates.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BaseAssetActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BaseAssetActiveStates {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBaseAssetActiveStates(data.bcs.type)) {
@@ -211,13 +223,15 @@ export class BaseAssetActiveStates implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BaseAssetActiveStates> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBaseAssetActiveStates(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BaseAssetActiveStates> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBaseAssetActiveStates(object.type)) {
       throw new Error(`object at id ${id} is not a BaseAssetActiveStates object`)
     }
-
-    return BaseAssetActiveStates.fromBcs(res.bcsBytes)
+    return BaseAssetActiveStates.fromBcs(object.content)
   }
 }
 
@@ -252,9 +266,11 @@ export type CollateralActiveStatesJSON = {
 export class CollateralActiveStates implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::asset_active_state::CollateralActiveStates` = `${
-    getTypeOrigin('protocol', 'asset_active_state::CollateralActiveStates')
-  }::asset_active_state::CollateralActiveStates` as const
+  static get $typeName(): `${string}::asset_active_state::CollateralActiveStates` {
+    return `${
+      getTypeOrigin('protocol', 'asset_active_state::CollateralActiveStates')
+    }::asset_active_state::CollateralActiveStates` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -278,11 +294,15 @@ export class CollateralActiveStates implements StructClass {
   static reified(): CollateralActiveStatesReified {
     const reifiedBcs = CollateralActiveStates.bcs
     return {
-      typeName: CollateralActiveStates.$typeName,
-      fullTypeName: composeSuiType(
-        CollateralActiveStates.$typeName,
-        ...[],
-      ) as `${string}::asset_active_state::CollateralActiveStates`,
+      get typeName() {
+        return CollateralActiveStates.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollateralActiveStates.$typeName,
+          ...[],
+        ) as `${string}::asset_active_state::CollateralActiveStates`
+      },
       typeArgs: [] as [],
       isPhantom: CollateralActiveStates.$isPhantom,
       reifiedTypeArgs: [],
@@ -293,11 +313,13 @@ export class CollateralActiveStates implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollateralActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CollateralActiveStates.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollateralActiveStates.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollateralActiveStates.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollateralActiveStates.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollateralActiveStates.fetch(client, id),
       new: (fields: CollateralActiveStatesFields) => {
         return new CollateralActiveStates([], fields)
@@ -379,6 +401,14 @@ export class CollateralActiveStates implements StructClass {
     return CollateralActiveStates.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CollateralActiveStates {
+    if (!isCollateralActiveStates(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollateralActiveStates object`)
+    }
+    return CollateralActiveStates.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CollateralActiveStates {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -391,6 +421,7 @@ export class CollateralActiveStates implements StructClass {
     return CollateralActiveStates.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollateralActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CollateralActiveStates {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCollateralActiveStates(data.bcs.type)) {
@@ -407,13 +438,15 @@ export class CollateralActiveStates implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CollateralActiveStates> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollateralActiveStates(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CollateralActiveStates> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollateralActiveStates(object.type)) {
       throw new Error(`object at id ${id} is not a CollateralActiveStates object`)
     }
-
-    return CollateralActiveStates.fromBcs(res.bcsBytes)
+    return CollateralActiveStates.fromBcs(object.content)
   }
 }
 
@@ -447,9 +480,11 @@ export type AssetActiveStatesJSON = {
 export class AssetActiveStates implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::asset_active_state::AssetActiveStates` = `${
-    getTypeOrigin('protocol', 'asset_active_state::AssetActiveStates')
-  }::asset_active_state::AssetActiveStates` as const
+  static get $typeName(): `${string}::asset_active_state::AssetActiveStates` {
+    return `${
+      getTypeOrigin('protocol', 'asset_active_state::AssetActiveStates')
+    }::asset_active_state::AssetActiveStates` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -475,11 +510,15 @@ export class AssetActiveStates implements StructClass {
   static reified(): AssetActiveStatesReified {
     const reifiedBcs = AssetActiveStates.bcs
     return {
-      typeName: AssetActiveStates.$typeName,
-      fullTypeName: composeSuiType(
-        AssetActiveStates.$typeName,
-        ...[],
-      ) as `${string}::asset_active_state::AssetActiveStates`,
+      get typeName() {
+        return AssetActiveStates.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AssetActiveStates.$typeName,
+          ...[],
+        ) as `${string}::asset_active_state::AssetActiveStates`
+      },
       typeArgs: [] as [],
       isPhantom: AssetActiveStates.$isPhantom,
       reifiedTypeArgs: [],
@@ -489,9 +528,11 @@ export class AssetActiveStates implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AssetActiveStates.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AssetActiveStates.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AssetActiveStates.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AssetActiveStates.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AssetActiveStates.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AssetActiveStates.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AssetActiveStates.fetch(client, id),
       new: (fields: AssetActiveStatesFields) => {
         return new AssetActiveStates([], fields)
       },
@@ -619,6 +660,14 @@ export class AssetActiveStates implements StructClass {
     return AssetActiveStates.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AssetActiveStates {
+    if (!isAssetActiveStates(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AssetActiveStates object`)
+    }
+    return AssetActiveStates.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AssetActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AssetActiveStates {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -629,6 +678,7 @@ export class AssetActiveStates implements StructClass {
     return AssetActiveStates.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AssetActiveStates.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AssetActiveStates {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAssetActiveStates(data.bcs.type)) {
@@ -645,12 +695,14 @@ export class AssetActiveStates implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AssetActiveStates> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAssetActiveStates(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AssetActiveStates> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAssetActiveStates(object.type)) {
       throw new Error(`object at id ${id} is not a AssetActiveStates object`)
     }
-
-    return AssetActiveStates.fromBcs(res.bcsBytes)
+    return AssetActiveStates.fromBcs(object.content)
   }
 }

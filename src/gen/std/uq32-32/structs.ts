@@ -8,7 +8,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import {
   decodeFromFields,
@@ -22,13 +23,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== UQ32_32 =============================== */
 
@@ -85,11 +80,15 @@ export class UQ32_32 implements StructClass {
   static reified(): UQ32_32Reified {
     const reifiedBcs = UQ32_32.bcs
     return {
-      typeName: UQ32_32.$typeName,
-      fullTypeName: composeSuiType(
-        UQ32_32.$typeName,
-        ...[],
-      ) as `0x1::uq32_32::UQ32_32`,
+      get typeName() {
+        return UQ32_32.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          UQ32_32.$typeName,
+          ...[],
+        ) as `0x1::uq32_32::UQ32_32`
+      },
       typeArgs: [] as [],
       isPhantom: UQ32_32.$isPhantom,
       reifiedTypeArgs: [],
@@ -99,9 +98,11 @@ export class UQ32_32 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => UQ32_32.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => UQ32_32.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        UQ32_32.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => UQ32_32.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => UQ32_32.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => UQ32_32.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => UQ32_32.fetch(client, id),
       new: (fields: UQ32_32Fields) => {
         return new UQ32_32([], fields)
       },
@@ -182,6 +183,14 @@ export class UQ32_32 implements StructClass {
     return UQ32_32.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): UQ32_32 {
+    if (!isUQ32_32(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a UQ32_32 object`)
+    }
+    return UQ32_32.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UQ32_32.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): UQ32_32 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -192,6 +201,7 @@ export class UQ32_32 implements StructClass {
     return UQ32_32.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link UQ32_32.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): UQ32_32 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isUQ32_32(data.bcs.type)) {
@@ -208,12 +218,14 @@ export class UQ32_32 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<UQ32_32> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isUQ32_32(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<UQ32_32> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isUQ32_32(object.type)) {
       throw new Error(`object at id ${id} is not a UQ32_32 object`)
     }
-
-    return UQ32_32.fromBcs(res.bcsBytes)
+    return UQ32_32.fromBcs(object.content)
   }
 }

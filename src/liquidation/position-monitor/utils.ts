@@ -4,19 +4,21 @@ import { SupplyPool } from '../../lp/supply-pool'
 import { CoinInfo } from '../../coin-info'
 import { Price } from '../../price'
 import { PositionConfig } from '../../lp/config'
-import { PriceFeed, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
-import { PYTH_STATE_ID } from '../pyth'
+import { PriceUpdate, SuiPriceServiceConnection } from '@pythnetwork/pyth-sui-js'
+import { PYTH_STATE_ID } from '../../protocol-infra'
 import { State } from '../../gen/pyth/state/structs'
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { Decimal } from 'decimal.js'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
 import { Amount } from '../../amount'
 import { OracleService } from '../../oracle'
 
+type ParsedPriceFeed = NonNullable<PriceUpdate['parsed']>[number]
+
 export interface PriceFeedUpdateInfo {
   feedIds: string[]
   priceInfoObjectIds: string[]
-  priceFeeds: PriceFeed[]
+  priceFeeds: ParsedPriceFeed[]
   priceFeedsUpdateData: Buffer[]
   baseUpdateFee: bigint
 }
@@ -44,7 +46,7 @@ interface CalcPositionMarginLevelParams {
   position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
   supplyPoolX: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>
   supplyPoolY: SupplyPool<PhantomTypeArgument, PhantomTypeArgument>
-  allPriceFeeds: PriceFeed[]
+  allPriceFeeds: ParsedPriceFeed[]
 }
 
 export function isPositionActive(
@@ -62,7 +64,7 @@ export function isPositionActive(
 export async function getPriceFeedUpdateInfo(
   positions: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>[],
   pythConnection: SuiPriceServiceConnection,
-  client: SuiClient
+  client: ClientWithCoreApi
 ): Promise<PriceFeedUpdateInfo> {
   const needPriceFeedSet = new Set<string>()
   const priceFeedToPioMap = new Map<string, string>()
@@ -83,31 +85,23 @@ export async function getPriceFeedUpdateInfo(
   const priceFeedIds = Array.from(needPriceFeedSet)
   const priceInfoObjectIds = priceFeedIds.map(pf => priceFeedToPioMap.get(pf)!)
 
-  const [priceFeedsRes, priceFeedsUpdateData, pythStateRes] = await Promise.all([
-    pythConnection.getLatestPriceFeeds(priceFeedIds),
+  const [priceUpdate, priceFeedsUpdateData, pythState] = await Promise.all([
+    pythConnection.getLatestPriceUpdates(priceFeedIds, { parsed: true }),
     pythConnection.getPriceFeedsUpdateData(priceFeedIds),
-    client.getObject({
-      id: PYTH_STATE_ID,
-      options: { showBcs: true },
-    }),
+    State.fetch(client, PYTH_STATE_ID),
   ])
 
-  if (priceFeedsRes === undefined) {
+  const priceFeedsRes = priceUpdate.parsed
+  if (priceFeedsRes == null) {
     throw new Error('Pyth price feeds response is undefined')
   }
-
-  if (pythStateRes.error || !pythStateRes.data) {
-    throw new Error(`Failed to get pyth state: ${pythStateRes.error}`)
-  }
-
-  const pythBaseUpdateFee = State.fromSuiObjectData(pythStateRes.data).baseUpdateFee
 
   return {
     feedIds: priceFeedIds,
     priceFeeds: priceFeedsRes,
     priceFeedsUpdateData,
     priceInfoObjectIds,
-    baseUpdateFee: pythBaseUpdateFee,
+    baseUpdateFee: pythState.baseUpdateFee,
   }
 }
 
@@ -196,16 +190,16 @@ export function priceFromPythFeedPrice<
   Y extends PhantomTypeArgument,
 >(
   x: {
-    feed: PriceFeed
+    feed: ParsedPriceFeed
     info: CoinInfo<X>
   },
   y: {
-    feed: PriceFeed
+    feed: ParsedPriceFeed
     info: CoinInfo<Y>
   }
 ): Price<X, Y> {
-  const getPrice = (feed: PriceFeed) => {
-    const price = feed.getPriceUnchecked()
+  const getPrice = (feed: ParsedPriceFeed) => {
+    const price = feed.price
     return new Decimal(price.price).mul(new Decimal(10).pow(price.expo))
   }
 
@@ -249,7 +243,7 @@ export function calcPositionMarginLevel({
 
 export function calcPositionAssetValue(
   position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
-  allPriceFeeds: PriceFeed[],
+  allPriceFeeds: ParsedPriceFeed[],
   assetValueCoin: CoinInfo<PhantomTypeArgument>,
   prices: {
     x: Price<PhantomTypeArgument, PhantomTypeArgument> | undefined

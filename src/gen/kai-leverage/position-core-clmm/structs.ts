@@ -22,7 +22,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -50,10 +51,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
@@ -93,9 +92,11 @@ export type ACreateConfigJSON = {
 export class ACreateConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ACreateConfig` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ACreateConfig')
-  }::position_core_clmm::ACreateConfig` as const
+  static get $typeName(): `${string}::position_core_clmm::ACreateConfig` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ACreateConfig')
+    }::position_core_clmm::ACreateConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -119,11 +120,15 @@ export class ACreateConfig implements StructClass {
   static reified(): ACreateConfigReified {
     const reifiedBcs = ACreateConfig.bcs
     return {
-      typeName: ACreateConfig.$typeName,
-      fullTypeName: composeSuiType(
-        ACreateConfig.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ACreateConfig`,
+      get typeName() {
+        return ACreateConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ACreateConfig.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ACreateConfig`
+      },
       typeArgs: [] as [],
       isPhantom: ACreateConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -133,9 +138,11 @@ export class ACreateConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ACreateConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACreateConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ACreateConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ACreateConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ACreateConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ACreateConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ACreateConfig.fetch(client, id),
       new: (fields: ACreateConfigFields) => {
         return new ACreateConfig([], fields)
       },
@@ -216,6 +223,14 @@ export class ACreateConfig implements StructClass {
     return ACreateConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ACreateConfig {
+    if (!isACreateConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ACreateConfig object`)
+    }
+    return ACreateConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACreateConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ACreateConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -226,6 +241,7 @@ export class ACreateConfig implements StructClass {
     return ACreateConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACreateConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ACreateConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isACreateConfig(data.bcs.type)) {
@@ -242,13 +258,15 @@ export class ACreateConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ACreateConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isACreateConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ACreateConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isACreateConfig(object.type)) {
       throw new Error(`object at id ${id} is not a ACreateConfig object`)
     }
-
-    return ACreateConfig.fromBcs(res.bcsBytes)
+    return ACreateConfig.fromBcs(object.content)
   }
 }
 
@@ -281,9 +299,11 @@ export type AModifyConfigJSON = {
 export class AModifyConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::AModifyConfig` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::AModifyConfig')
-  }::position_core_clmm::AModifyConfig` as const
+  static get $typeName(): `${string}::position_core_clmm::AModifyConfig` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AModifyConfig')
+    }::position_core_clmm::AModifyConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -307,11 +327,15 @@ export class AModifyConfig implements StructClass {
   static reified(): AModifyConfigReified {
     const reifiedBcs = AModifyConfig.bcs
     return {
-      typeName: AModifyConfig.$typeName,
-      fullTypeName: composeSuiType(
-        AModifyConfig.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::AModifyConfig`,
+      get typeName() {
+        return AModifyConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AModifyConfig.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::AModifyConfig`
+      },
       typeArgs: [] as [],
       isPhantom: AModifyConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -321,9 +345,11 @@ export class AModifyConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AModifyConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AModifyConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AModifyConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AModifyConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AModifyConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AModifyConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AModifyConfig.fetch(client, id),
       new: (fields: AModifyConfigFields) => {
         return new AModifyConfig([], fields)
       },
@@ -404,6 +430,14 @@ export class AModifyConfig implements StructClass {
     return AModifyConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AModifyConfig {
+    if (!isAModifyConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AModifyConfig object`)
+    }
+    return AModifyConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AModifyConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AModifyConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -414,6 +448,7 @@ export class AModifyConfig implements StructClass {
     return AModifyConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AModifyConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AModifyConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAModifyConfig(data.bcs.type)) {
@@ -430,13 +465,15 @@ export class AModifyConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AModifyConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAModifyConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AModifyConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAModifyConfig(object.type)) {
       throw new Error(`object at id ${id} is not a AModifyConfig object`)
     }
-
-    return AModifyConfig.fromBcs(res.bcsBytes)
+    return AModifyConfig.fromBcs(object.content)
   }
 }
 
@@ -469,9 +506,11 @@ export type AMigrateJSON = {
 export class AMigrate implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::AMigrate` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::AMigrate')
-  }::position_core_clmm::AMigrate` as const
+  static get $typeName(): `${string}::position_core_clmm::AMigrate` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AMigrate')
+    }::position_core_clmm::AMigrate` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -495,11 +534,15 @@ export class AMigrate implements StructClass {
   static reified(): AMigrateReified {
     const reifiedBcs = AMigrate.bcs
     return {
-      typeName: AMigrate.$typeName,
-      fullTypeName: composeSuiType(
-        AMigrate.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::AMigrate`,
+      get typeName() {
+        return AMigrate.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AMigrate.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::AMigrate`
+      },
       typeArgs: [] as [],
       isPhantom: AMigrate.$isPhantom,
       reifiedTypeArgs: [],
@@ -509,9 +552,11 @@ export class AMigrate implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AMigrate.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AMigrate.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AMigrate.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AMigrate.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AMigrate.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AMigrate.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AMigrate.fetch(client, id),
       new: (fields: AMigrateFields) => {
         return new AMigrate([], fields)
       },
@@ -592,6 +637,14 @@ export class AMigrate implements StructClass {
     return AMigrate.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AMigrate {
+    if (!isAMigrate(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AMigrate object`)
+    }
+    return AMigrate.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AMigrate.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AMigrate {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -602,6 +655,7 @@ export class AMigrate implements StructClass {
     return AMigrate.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AMigrate.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AMigrate {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAMigrate(data.bcs.type)) {
@@ -618,13 +672,15 @@ export class AMigrate implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AMigrate> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAMigrate(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AMigrate> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAMigrate(object.type)) {
       throw new Error(`object at id ${id} is not a AMigrate object`)
     }
-
-    return AMigrate.fromBcs(res.bcsBytes)
+    return AMigrate.fromBcs(object.content)
   }
 }
 
@@ -657,9 +713,11 @@ export type ADeleverageJSON = {
 export class ADeleverage implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ADeleverage` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ADeleverage')
-  }::position_core_clmm::ADeleverage` as const
+  static get $typeName(): `${string}::position_core_clmm::ADeleverage` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ADeleverage')
+    }::position_core_clmm::ADeleverage` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -683,11 +741,15 @@ export class ADeleverage implements StructClass {
   static reified(): ADeleverageReified {
     const reifiedBcs = ADeleverage.bcs
     return {
-      typeName: ADeleverage.$typeName,
-      fullTypeName: composeSuiType(
-        ADeleverage.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ADeleverage`,
+      get typeName() {
+        return ADeleverage.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ADeleverage.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ADeleverage`
+      },
       typeArgs: [] as [],
       isPhantom: ADeleverage.$isPhantom,
       reifiedTypeArgs: [],
@@ -697,9 +759,11 @@ export class ADeleverage implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ADeleverage.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ADeleverage.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ADeleverage.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ADeleverage.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ADeleverage.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ADeleverage.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ADeleverage.fetch(client, id),
       new: (fields: ADeleverageFields) => {
         return new ADeleverage([], fields)
       },
@@ -780,6 +844,14 @@ export class ADeleverage implements StructClass {
     return ADeleverage.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ADeleverage {
+    if (!isADeleverage(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ADeleverage object`)
+    }
+    return ADeleverage.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ADeleverage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ADeleverage {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -790,6 +862,7 @@ export class ADeleverage implements StructClass {
     return ADeleverage.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ADeleverage.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ADeleverage {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isADeleverage(data.bcs.type)) {
@@ -806,13 +879,15 @@ export class ADeleverage implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ADeleverage> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isADeleverage(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ADeleverage> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isADeleverage(object.type)) {
       throw new Error(`object at id ${id} is not a ADeleverage object`)
     }
-
-    return ADeleverage.fromBcs(res.bcsBytes)
+    return ADeleverage.fromBcs(object.content)
   }
 }
 
@@ -845,9 +920,11 @@ export type ARebalanceJSON = {
 export class ARebalance implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ARebalance` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ARebalance')
-  }::position_core_clmm::ARebalance` as const
+  static get $typeName(): `${string}::position_core_clmm::ARebalance` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ARebalance')
+    }::position_core_clmm::ARebalance` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -871,11 +948,15 @@ export class ARebalance implements StructClass {
   static reified(): ARebalanceReified {
     const reifiedBcs = ARebalance.bcs
     return {
-      typeName: ARebalance.$typeName,
-      fullTypeName: composeSuiType(
-        ARebalance.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ARebalance`,
+      get typeName() {
+        return ARebalance.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ARebalance.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ARebalance`
+      },
       typeArgs: [] as [],
       isPhantom: ARebalance.$isPhantom,
       reifiedTypeArgs: [],
@@ -885,9 +966,11 @@ export class ARebalance implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ARebalance.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ARebalance.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ARebalance.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ARebalance.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ARebalance.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ARebalance.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ARebalance.fetch(client, id),
       new: (fields: ARebalanceFields) => {
         return new ARebalance([], fields)
       },
@@ -968,6 +1051,14 @@ export class ARebalance implements StructClass {
     return ARebalance.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ARebalance {
+    if (!isARebalance(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ARebalance object`)
+    }
+    return ARebalance.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ARebalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ARebalance {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -978,6 +1069,7 @@ export class ARebalance implements StructClass {
     return ARebalance.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ARebalance.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ARebalance {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isARebalance(data.bcs.type)) {
@@ -994,13 +1086,15 @@ export class ARebalance implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ARebalance> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isARebalance(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ARebalance> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isARebalance(object.type)) {
       throw new Error(`object at id ${id} is not a ARebalance object`)
     }
-
-    return ARebalance.fromBcs(res.bcsBytes)
+    return ARebalance.fromBcs(object.content)
   }
 }
 
@@ -1033,9 +1127,11 @@ export type ACollectProtocolFeesJSON = {
 export class ACollectProtocolFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ACollectProtocolFees` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ACollectProtocolFees')
-  }::position_core_clmm::ACollectProtocolFees` as const
+  static get $typeName(): `${string}::position_core_clmm::ACollectProtocolFees` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ACollectProtocolFees')
+    }::position_core_clmm::ACollectProtocolFees` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1059,11 +1155,15 @@ export class ACollectProtocolFees implements StructClass {
   static reified(): ACollectProtocolFeesReified {
     const reifiedBcs = ACollectProtocolFees.bcs
     return {
-      typeName: ACollectProtocolFees.$typeName,
-      fullTypeName: composeSuiType(
-        ACollectProtocolFees.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ACollectProtocolFees`,
+      get typeName() {
+        return ACollectProtocolFees.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ACollectProtocolFees.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ACollectProtocolFees`
+      },
       typeArgs: [] as [],
       isPhantom: ACollectProtocolFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -1074,11 +1174,13 @@ export class ACollectProtocolFees implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ACollectProtocolFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ACollectProtocolFees.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ACollectProtocolFees.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ACollectProtocolFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ACollectProtocolFees.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ACollectProtocolFees.fetch(client, id),
       new: (fields: ACollectProtocolFeesFields) => {
         return new ACollectProtocolFees([], fields)
@@ -1160,6 +1262,14 @@ export class ACollectProtocolFees implements StructClass {
     return ACollectProtocolFees.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ACollectProtocolFees {
+    if (!isACollectProtocolFees(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ACollectProtocolFees object`)
+    }
+    return ACollectProtocolFees.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACollectProtocolFees.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ACollectProtocolFees {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1172,6 +1282,7 @@ export class ACollectProtocolFees implements StructClass {
     return ACollectProtocolFees.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ACollectProtocolFees.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ACollectProtocolFees {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isACollectProtocolFees(data.bcs.type)) {
@@ -1188,13 +1299,15 @@ export class ACollectProtocolFees implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ACollectProtocolFees> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isACollectProtocolFees(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ACollectProtocolFees> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isACollectProtocolFees(object.type)) {
       throw new Error(`object at id ${id} is not a ACollectProtocolFees object`)
     }
-
-    return ACollectProtocolFees.fromBcs(res.bcsBytes)
+    return ACollectProtocolFees.fromBcs(object.content)
   }
 }
 
@@ -1227,9 +1340,11 @@ export type ARepayBadDebtJSON = {
 export class ARepayBadDebt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ARepayBadDebt` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ARepayBadDebt')
-  }::position_core_clmm::ARepayBadDebt` as const
+  static get $typeName(): `${string}::position_core_clmm::ARepayBadDebt` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ARepayBadDebt')
+    }::position_core_clmm::ARepayBadDebt` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1253,11 +1368,15 @@ export class ARepayBadDebt implements StructClass {
   static reified(): ARepayBadDebtReified {
     const reifiedBcs = ARepayBadDebt.bcs
     return {
-      typeName: ARepayBadDebt.$typeName,
-      fullTypeName: composeSuiType(
-        ARepayBadDebt.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ARepayBadDebt`,
+      get typeName() {
+        return ARepayBadDebt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ARepayBadDebt.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ARepayBadDebt`
+      },
       typeArgs: [] as [],
       isPhantom: ARepayBadDebt.$isPhantom,
       reifiedTypeArgs: [],
@@ -1267,9 +1386,11 @@ export class ARepayBadDebt implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ARepayBadDebt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ARepayBadDebt.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ARepayBadDebt.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ARepayBadDebt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ARepayBadDebt.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ARepayBadDebt.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ARepayBadDebt.fetch(client, id),
       new: (fields: ARepayBadDebtFields) => {
         return new ARepayBadDebt([], fields)
       },
@@ -1350,6 +1471,14 @@ export class ARepayBadDebt implements StructClass {
     return ARepayBadDebt.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ARepayBadDebt {
+    if (!isARepayBadDebt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ARepayBadDebt object`)
+    }
+    return ARepayBadDebt.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ARepayBadDebt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ARepayBadDebt {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1360,6 +1489,7 @@ export class ARepayBadDebt implements StructClass {
     return ARepayBadDebt.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ARepayBadDebt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ARepayBadDebt {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isARepayBadDebt(data.bcs.type)) {
@@ -1376,13 +1506,15 @@ export class ARepayBadDebt implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ARepayBadDebt> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isARepayBadDebt(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ARepayBadDebt> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isARepayBadDebt(object.type)) {
       throw new Error(`object at id ${id} is not a ARepayBadDebt object`)
     }
-
-    return ARepayBadDebt.fromBcs(res.bcsBytes)
+    return ARepayBadDebt.fromBcs(object.content)
   }
 }
 
@@ -1456,9 +1588,11 @@ export class CreatePositionTicket<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::CreatePositionTicket` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::CreatePositionTicket')
-  }::position_core_clmm::CreatePositionTicket` as const
+  static get $typeName(): `${string}::position_core_clmm::CreatePositionTicket` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::CreatePositionTicket')
+    }::position_core_clmm::CreatePositionTicket` as const
+  }
   static readonly $numTypeParams = 3
   static readonly $isPhantom = [true, true, false] as const
 
@@ -1521,18 +1655,24 @@ export class CreatePositionTicket<
   > {
     const reifiedBcs = CreatePositionTicket.bcs(toBcs(I32))
     return {
-      typeName: CreatePositionTicket.$typeName,
-      fullTypeName: composeSuiType(
-        CreatePositionTicket.$typeName,
-        ...[extractType(X), extractType(Y), extractType(I32)],
-      ) as `${string}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<X>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<I32>>}>`,
-      typeArgs: [extractType(X), extractType(Y), extractType(I32)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<X>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
-        ToTypeStr<ToTypeArgument<I32>>,
-      ],
+      get typeName() {
+        return CreatePositionTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CreatePositionTicket.$typeName,
+          ...[extractType(X), extractType(Y), extractType(I32)],
+        ) as `${string}::position_core_clmm::CreatePositionTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<X>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<I32>>}>`
+      },
+      get typeArgs() {
+        return [extractType(X), extractType(Y), extractType(I32)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<X>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
+          ToTypeStr<ToTypeArgument<I32>>,
+        ]
+      },
       isPhantom: CreatePositionTicket.$isPhantom,
       reifiedTypeArgs: [X, Y, I32],
       fromFields: (fields: Record<string, any>) =>
@@ -1544,11 +1684,13 @@ export class CreatePositionTicket<
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CreatePositionTicket.fromJSONField([X, Y, I32], field),
       fromJSON: (json: Record<string, any>) => CreatePositionTicket.fromJSON([X, Y, I32], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CreatePositionTicket.fromCoreObject([X, Y, I32], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CreatePositionTicket.fromSuiParsedData([X, Y, I32], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CreatePositionTicket.fromSuiObjectData([X, Y, I32], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CreatePositionTicket.fetch(client, [X, Y, I32], id),
       new: (
         fields: CreatePositionTicketFields<
@@ -1743,6 +1885,38 @@ export class CreatePositionTicket<
     return CreatePositionTicket.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    X extends PhantomReified<PhantomTypeArgument>,
+    Y extends PhantomReified<PhantomTypeArgument>,
+    I32 extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [X, Y, I32],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>> {
+    if (!isCreatePositionTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CreatePositionTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 3) {
+      throw new Error(
+        `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return CreatePositionTicket.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreatePositionTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -1762,6 +1936,7 @@ export class CreatePositionTicket<
     return CreatePositionTicket.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreatePositionTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -1806,18 +1981,21 @@ export class CreatePositionTicket<
     Y extends PhantomReified<PhantomTypeArgument>,
     I32 extends Reified<TypeArgument, any>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [X, Y, I32],
     id: string,
   ): Promise<
     CreatePositionTicket<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<I32>>
   > {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCreatePositionTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCreatePositionTicket(object.type)) {
       throw new Error(`object at id ${id} is not a CreatePositionTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 3) {
       throw new Error(
         `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
@@ -1833,7 +2011,7 @@ export class CreatePositionTicket<
       }
     }
 
-    return CreatePositionTicket.fromBcs(typeArgs, res.bcsBytes)
+    return CreatePositionTicket.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -1904,9 +2082,11 @@ export class Position<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::Position` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::Position')
-  }::position_core_clmm::Position` as const
+  static get $typeName(): `${string}::position_core_clmm::Position` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::Position')
+    }::position_core_clmm::Position` as const
+  }
   static readonly $numTypeParams = 3
   static readonly $isPhantom = [true, true, false] as const
 
@@ -1963,18 +2143,24 @@ export class Position<
   ): PositionReified<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
     const reifiedBcs = Position.bcs(toBcs(LP))
     return {
-      typeName: Position.$typeName,
-      fullTypeName: composeSuiType(
-        Position.$typeName,
-        ...[extractType(X), extractType(Y), extractType(LP)],
-      ) as `${string}::position_core_clmm::Position<${PhantomToTypeStr<
-        ToPhantomTypeArgument<X>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<LP>>}>`,
-      typeArgs: [extractType(X), extractType(Y), extractType(LP)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<X>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
-        ToTypeStr<ToTypeArgument<LP>>,
-      ],
+      get typeName() {
+        return Position.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Position.$typeName,
+          ...[extractType(X), extractType(Y), extractType(LP)],
+        ) as `${string}::position_core_clmm::Position<${PhantomToTypeStr<
+          ToPhantomTypeArgument<X>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Y>>}, ${ToTypeStr<ToTypeArgument<LP>>}>`
+      },
+      get typeArgs() {
+        return [extractType(X), extractType(Y), extractType(LP)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<X>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<Y>>,
+          ToTypeStr<ToTypeArgument<LP>>,
+        ]
+      },
       isPhantom: Position.$isPhantom,
       reifiedTypeArgs: [X, Y, LP],
       fromFields: (fields: Record<string, any>) => Position.fromFields([X, Y, LP], fields),
@@ -1984,11 +2170,13 @@ export class Position<
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Position.fromJSONField([X, Y, LP], field),
       fromJSON: (json: Record<string, any>) => Position.fromJSON([X, Y, LP], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Position.fromCoreObject([X, Y, LP], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         Position.fromSuiParsedData([X, Y, LP], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         Position.fromSuiObjectData([X, Y, LP], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         Position.fetch(client, [X, Y, LP], id),
       new: (
         fields: PositionFields<
@@ -2176,6 +2364,38 @@ export class Position<
     return Position.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    X extends PhantomReified<PhantomTypeArgument>,
+    Y extends PhantomReified<PhantomTypeArgument>,
+    LP extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [X, Y, LP],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>> {
+    if (!isPosition(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Position object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 3) {
+      throw new Error(
+        `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Position.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Position.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -2193,6 +2413,7 @@ export class Position<
     return Position.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Position.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     X extends PhantomReified<PhantomTypeArgument>,
     Y extends PhantomReified<PhantomTypeArgument>,
@@ -2237,16 +2458,19 @@ export class Position<
     Y extends PhantomReified<PhantomTypeArgument>,
     LP extends Reified<TypeArgument, any>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [X, Y, LP],
     id: string,
   ): Promise<Position<ToPhantomTypeArgument<X>, ToPhantomTypeArgument<Y>, ToTypeArgument<LP>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPosition(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPosition(object.type)) {
       throw new Error(`object at id ${id} is not a Position object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 3) {
       throw new Error(
         `type argument mismatch: expected 3 type arguments but got '${gotTypeArgs.length}'`,
@@ -2262,7 +2486,7 @@ export class Position<
       }
     }
 
-    return Position.fromBcs(typeArgs, res.bcsBytes)
+    return Position.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -2297,9 +2521,11 @@ export type PositionCapJSON = {
 export class PositionCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::PositionCap` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCap')
-  }::position_core_clmm::PositionCap` as const
+  static get $typeName(): `${string}::position_core_clmm::PositionCap` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCap')
+    }::position_core_clmm::PositionCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2325,11 +2551,15 @@ export class PositionCap implements StructClass {
   static reified(): PositionCapReified {
     const reifiedBcs = PositionCap.bcs
     return {
-      typeName: PositionCap.$typeName,
-      fullTypeName: composeSuiType(
-        PositionCap.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::PositionCap`,
+      get typeName() {
+        return PositionCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PositionCap.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::PositionCap`
+      },
       typeArgs: [] as [],
       isPhantom: PositionCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -2339,9 +2569,11 @@ export class PositionCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PositionCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PositionCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PositionCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PositionCap.fetch(client, id),
       new: (fields: PositionCapFields) => {
         return new PositionCap([], fields)
       },
@@ -2427,6 +2659,14 @@ export class PositionCap implements StructClass {
     return PositionCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PositionCap {
+    if (!isPositionCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PositionCap object`)
+    }
+    return PositionCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PositionCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2437,6 +2677,7 @@ export class PositionCap implements StructClass {
     return PositionCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PositionCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPositionCap(data.bcs.type)) {
@@ -2453,13 +2694,15 @@ export class PositionCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPositionCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PositionCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPositionCap(object.type)) {
       throw new Error(`object at id ${id} is not a PositionCap object`)
     }
-
-    return PositionCap.fromBcs(res.bcsBytes)
+    return PositionCap.fromBcs(object.content)
   }
 }
 
@@ -2494,9 +2737,11 @@ export type PythConfigJSON = {
 export class PythConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::PythConfig` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::PythConfig')
-  }::position_core_clmm::PythConfig` as const
+  static get $typeName(): `${string}::position_core_clmm::PythConfig` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PythConfig')
+    }::position_core_clmm::PythConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2522,11 +2767,15 @@ export class PythConfig implements StructClass {
   static reified(): PythConfigReified {
     const reifiedBcs = PythConfig.bcs
     return {
-      typeName: PythConfig.$typeName,
-      fullTypeName: composeSuiType(
-        PythConfig.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::PythConfig`,
+      get typeName() {
+        return PythConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PythConfig.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::PythConfig`
+      },
       typeArgs: [] as [],
       isPhantom: PythConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -2536,9 +2785,11 @@ export class PythConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PythConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PythConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PythConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PythConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PythConfig.fetch(client, id),
       new: (fields: PythConfigFields) => {
         return new PythConfig([], fields)
       },
@@ -2633,6 +2884,14 @@ export class PythConfig implements StructClass {
     return PythConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PythConfig {
+    if (!isPythConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PythConfig object`)
+    }
+    return PythConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PythConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2643,6 +2902,7 @@ export class PythConfig implements StructClass {
     return PythConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PythConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPythConfig(data.bcs.type)) {
@@ -2659,13 +2919,15 @@ export class PythConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PythConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPythConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PythConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPythConfig(object.type)) {
       throw new Error(`object at id ${id} is not a PythConfig object`)
     }
-
-    return PythConfig.fromBcs(res.bcsBytes)
+    return PythConfig.fromBcs(object.content)
   }
 }
 
@@ -2799,9 +3061,11 @@ export type PositionConfigJSON = {
 export class PositionConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::PositionConfig` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionConfig')
-  }::position_core_clmm::PositionConfig` as const
+  static get $typeName(): `${string}::position_core_clmm::PositionConfig` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionConfig')
+    }::position_core_clmm::PositionConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2920,11 +3184,15 @@ export class PositionConfig implements StructClass {
   static reified(): PositionConfigReified {
     const reifiedBcs = PositionConfig.bcs
     return {
-      typeName: PositionConfig.$typeName,
-      fullTypeName: composeSuiType(
-        PositionConfig.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::PositionConfig`,
+      get typeName() {
+        return PositionConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PositionConfig.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::PositionConfig`
+      },
       typeArgs: [] as [],
       isPhantom: PositionConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -2934,9 +3202,11 @@ export class PositionConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PositionConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PositionConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PositionConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PositionConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PositionConfig.fetch(client, id),
       new: (fields: PositionConfigFields) => {
         return new PositionConfig([], fields)
       },
@@ -3116,6 +3386,14 @@ export class PositionConfig implements StructClass {
     return PositionConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PositionConfig {
+    if (!isPositionConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PositionConfig object`)
+    }
+    return PositionConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PositionConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3126,6 +3404,7 @@ export class PositionConfig implements StructClass {
     return PositionConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PositionConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPositionConfig(data.bcs.type)) {
@@ -3142,13 +3421,15 @@ export class PositionConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPositionConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PositionConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPositionConfig(object.type)) {
       throw new Error(`object at id ${id} is not a PositionConfig object`)
     }
-
-    return PositionConfig.fromBcs(res.bcsBytes)
+    return PositionConfig.fromBcs(object.content)
   }
 }
 
@@ -3183,9 +3464,11 @@ export type LiquidationDisabledKeyJSON = {
 export class LiquidationDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::LiquidationDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationDisabledKey')
-  }::position_core_clmm::LiquidationDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::LiquidationDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationDisabledKey')
+    }::position_core_clmm::LiquidationDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3209,11 +3492,15 @@ export class LiquidationDisabledKey implements StructClass {
   static reified(): LiquidationDisabledKeyReified {
     const reifiedBcs = LiquidationDisabledKey.bcs
     return {
-      typeName: LiquidationDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        LiquidationDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::LiquidationDisabledKey`,
+      get typeName() {
+        return LiquidationDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LiquidationDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::LiquidationDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: LiquidationDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3224,11 +3511,13 @@ export class LiquidationDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidationDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidationDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LiquidationDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         LiquidationDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         LiquidationDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         LiquidationDisabledKey.fetch(client, id),
       new: (fields: LiquidationDisabledKeyFields) => {
         return new LiquidationDisabledKey([], fields)
@@ -3310,6 +3599,14 @@ export class LiquidationDisabledKey implements StructClass {
     return LiquidationDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LiquidationDisabledKey {
+    if (!isLiquidationDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LiquidationDisabledKey object`)
+    }
+    return LiquidationDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidationDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LiquidationDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3322,6 +3619,7 @@ export class LiquidationDisabledKey implements StructClass {
     return LiquidationDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidationDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LiquidationDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLiquidationDisabledKey(data.bcs.type)) {
@@ -3338,13 +3636,15 @@ export class LiquidationDisabledKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidationDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLiquidationDisabledKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LiquidationDisabledKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLiquidationDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a LiquidationDisabledKey object`)
     }
-
-    return LiquidationDisabledKey.fromBcs(res.bcsBytes)
+    return LiquidationDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -3376,9 +3676,11 @@ export type ReductionDisabledKeyJSON = {
 export class ReductionDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ReductionDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionDisabledKey')
-  }::position_core_clmm::ReductionDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::ReductionDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionDisabledKey')
+    }::position_core_clmm::ReductionDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3402,11 +3704,15 @@ export class ReductionDisabledKey implements StructClass {
   static reified(): ReductionDisabledKeyReified {
     const reifiedBcs = ReductionDisabledKey.bcs
     return {
-      typeName: ReductionDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        ReductionDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ReductionDisabledKey`,
+      get typeName() {
+        return ReductionDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ReductionDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ReductionDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: ReductionDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3417,11 +3723,13 @@ export class ReductionDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReductionDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ReductionDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ReductionDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ReductionDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ReductionDisabledKey.fetch(client, id),
       new: (fields: ReductionDisabledKeyFields) => {
         return new ReductionDisabledKey([], fields)
@@ -3503,6 +3811,14 @@ export class ReductionDisabledKey implements StructClass {
     return ReductionDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ReductionDisabledKey {
+    if (!isReductionDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ReductionDisabledKey object`)
+    }
+    return ReductionDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ReductionDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3515,6 +3831,7 @@ export class ReductionDisabledKey implements StructClass {
     return ReductionDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ReductionDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isReductionDisabledKey(data.bcs.type)) {
@@ -3531,13 +3848,15 @@ export class ReductionDisabledKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ReductionDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isReductionDisabledKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ReductionDisabledKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isReductionDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a ReductionDisabledKey object`)
     }
-
-    return ReductionDisabledKey.fromBcs(res.bcsBytes)
+    return ReductionDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -3572,9 +3891,11 @@ export type AddLiquidityDisabledKeyJSON = {
 export class AddLiquidityDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::AddLiquidityDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityDisabledKey')
-  }::position_core_clmm::AddLiquidityDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::AddLiquidityDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityDisabledKey')
+    }::position_core_clmm::AddLiquidityDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3599,11 +3920,15 @@ export class AddLiquidityDisabledKey implements StructClass {
   static reified(): AddLiquidityDisabledKeyReified {
     const reifiedBcs = AddLiquidityDisabledKey.bcs
     return {
-      typeName: AddLiquidityDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        AddLiquidityDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::AddLiquidityDisabledKey`,
+      get typeName() {
+        return AddLiquidityDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddLiquidityDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::AddLiquidityDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: AddLiquidityDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3614,11 +3939,13 @@ export class AddLiquidityDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddLiquidityDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         AddLiquidityDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AddLiquidityDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         AddLiquidityDisabledKey.fetch(client, id),
       new: (fields: AddLiquidityDisabledKeyFields) => {
         return new AddLiquidityDisabledKey([], fields)
@@ -3700,6 +4027,14 @@ export class AddLiquidityDisabledKey implements StructClass {
     return AddLiquidityDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddLiquidityDisabledKey {
+    if (!isAddLiquidityDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddLiquidityDisabledKey object`)
+    }
+    return AddLiquidityDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddLiquidityDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3712,6 +4047,7 @@ export class AddLiquidityDisabledKey implements StructClass {
     return AddLiquidityDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddLiquidityDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddLiquidityDisabledKey(data.bcs.type)) {
@@ -3728,13 +4064,15 @@ export class AddLiquidityDisabledKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddLiquidityDisabledKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddLiquidityDisabledKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddLiquidityDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityDisabledKey object`)
     }
-
-    return AddLiquidityDisabledKey.fromBcs(res.bcsBytes)
+    return AddLiquidityDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -3769,9 +4107,11 @@ export type OwnerCollectFeeDisabledKeyJSON = {
 export class OwnerCollectFeeDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectFeeDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeDisabledKey')
-  }::position_core_clmm::OwnerCollectFeeDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::OwnerCollectFeeDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeDisabledKey')
+    }::position_core_clmm::OwnerCollectFeeDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3797,11 +4137,15 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
   static reified(): OwnerCollectFeeDisabledKeyReified {
     const reifiedBcs = OwnerCollectFeeDisabledKey.bcs
     return {
-      typeName: OwnerCollectFeeDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerCollectFeeDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::OwnerCollectFeeDisabledKey`,
+      get typeName() {
+        return OwnerCollectFeeDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OwnerCollectFeeDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::OwnerCollectFeeDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: OwnerCollectFeeDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -3812,11 +4156,13 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectFeeDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectFeeDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OwnerCollectFeeDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         OwnerCollectFeeDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectFeeDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         OwnerCollectFeeDisabledKey.fetch(client, id),
       new: (fields: OwnerCollectFeeDisabledKeyFields) => {
         return new OwnerCollectFeeDisabledKey([], fields)
@@ -3899,6 +4245,14 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     return OwnerCollectFeeDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OwnerCollectFeeDisabledKey {
+    if (!isOwnerCollectFeeDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OwnerCollectFeeDisabledKey object`)
+    }
+    return OwnerCollectFeeDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectFeeDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OwnerCollectFeeDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3911,6 +4265,7 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     return OwnerCollectFeeDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectFeeDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OwnerCollectFeeDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectFeeDisabledKey(data.bcs.type)) {
@@ -3927,13 +4282,15 @@ export class OwnerCollectFeeDisabledKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<OwnerCollectFeeDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnerCollectFeeDisabledKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OwnerCollectFeeDisabledKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnerCollectFeeDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectFeeDisabledKey object`)
     }
-
-    return OwnerCollectFeeDisabledKey.fromBcs(res.bcsBytes)
+    return OwnerCollectFeeDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -3968,9 +4325,11 @@ export type OwnerCollectRewardDisabledKeyJSON = {
 export class OwnerCollectRewardDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectRewardDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardDisabledKey')
-  }::position_core_clmm::OwnerCollectRewardDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::OwnerCollectRewardDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardDisabledKey')
+    }::position_core_clmm::OwnerCollectRewardDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3996,11 +4355,15 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
   static reified(): OwnerCollectRewardDisabledKeyReified {
     const reifiedBcs = OwnerCollectRewardDisabledKey.bcs
     return {
-      typeName: OwnerCollectRewardDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerCollectRewardDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::OwnerCollectRewardDisabledKey`,
+      get typeName() {
+        return OwnerCollectRewardDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OwnerCollectRewardDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::OwnerCollectRewardDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: OwnerCollectRewardDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -4012,11 +4375,13 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectRewardDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectRewardDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OwnerCollectRewardDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         OwnerCollectRewardDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectRewardDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         OwnerCollectRewardDisabledKey.fetch(client, id),
       new: (fields: OwnerCollectRewardDisabledKeyFields) => {
         return new OwnerCollectRewardDisabledKey([], fields)
@@ -4099,6 +4464,16 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     return OwnerCollectRewardDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): OwnerCollectRewardDisabledKey {
+    if (!isOwnerCollectRewardDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OwnerCollectRewardDisabledKey object`)
+    }
+    return OwnerCollectRewardDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectRewardDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OwnerCollectRewardDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4111,6 +4486,7 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
     return OwnerCollectRewardDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectRewardDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OwnerCollectRewardDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectRewardDisabledKey(data.bcs.type)) {
@@ -4128,15 +4504,17 @@ export class OwnerCollectRewardDisabledKey implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<OwnerCollectRewardDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnerCollectRewardDisabledKey(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnerCollectRewardDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectRewardDisabledKey object`)
     }
-
-    return OwnerCollectRewardDisabledKey.fromBcs(res.bcsBytes)
+    return OwnerCollectRewardDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -4171,9 +4549,11 @@ export type DeletePositionDisabledKeyJSON = {
 export class DeletePositionDisabledKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeletePositionDisabledKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionDisabledKey')
-  }::position_core_clmm::DeletePositionDisabledKey` as const
+  static get $typeName(): `${string}::position_core_clmm::DeletePositionDisabledKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionDisabledKey')
+    }::position_core_clmm::DeletePositionDisabledKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4199,11 +4579,15 @@ export class DeletePositionDisabledKey implements StructClass {
   static reified(): DeletePositionDisabledKeyReified {
     const reifiedBcs = DeletePositionDisabledKey.bcs
     return {
-      typeName: DeletePositionDisabledKey.$typeName,
-      fullTypeName: composeSuiType(
-        DeletePositionDisabledKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeletePositionDisabledKey`,
+      get typeName() {
+        return DeletePositionDisabledKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeletePositionDisabledKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeletePositionDisabledKey`
+      },
       typeArgs: [] as [],
       isPhantom: DeletePositionDisabledKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -4214,11 +4598,13 @@ export class DeletePositionDisabledKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletePositionDisabledKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletePositionDisabledKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeletePositionDisabledKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         DeletePositionDisabledKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletePositionDisabledKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         DeletePositionDisabledKey.fetch(client, id),
       new: (fields: DeletePositionDisabledKeyFields) => {
         return new DeletePositionDisabledKey([], fields)
@@ -4301,6 +4687,14 @@ export class DeletePositionDisabledKey implements StructClass {
     return DeletePositionDisabledKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DeletePositionDisabledKey {
+    if (!isDeletePositionDisabledKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeletePositionDisabledKey object`)
+    }
+    return DeletePositionDisabledKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletePositionDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeletePositionDisabledKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4313,6 +4707,7 @@ export class DeletePositionDisabledKey implements StructClass {
     return DeletePositionDisabledKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletePositionDisabledKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeletePositionDisabledKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeletePositionDisabledKey(data.bcs.type)) {
@@ -4329,13 +4724,15 @@ export class DeletePositionDisabledKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DeletePositionDisabledKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeletePositionDisabledKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeletePositionDisabledKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeletePositionDisabledKey(object.type)) {
       throw new Error(`object at id ${id} is not a DeletePositionDisabledKey object`)
     }
-
-    return DeletePositionDisabledKey.fromBcs(res.bcsBytes)
+    return DeletePositionDisabledKey.fromBcs(object.content)
   }
 }
 
@@ -4370,9 +4767,11 @@ export type PositionCreateWithdrawLimiterKeyJSON = {
 export class PositionCreateWithdrawLimiterKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreateWithdrawLimiterKey')
-  }::position_core_clmm::PositionCreateWithdrawLimiterKey` as const
+  static get $typeName(): `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreateWithdrawLimiterKey')
+    }::position_core_clmm::PositionCreateWithdrawLimiterKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4398,11 +4797,15 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
   static reified(): PositionCreateWithdrawLimiterKeyReified {
     const reifiedBcs = PositionCreateWithdrawLimiterKey.bcs
     return {
-      typeName: PositionCreateWithdrawLimiterKey.$typeName,
-      fullTypeName: composeSuiType(
-        PositionCreateWithdrawLimiterKey.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey`,
+      get typeName() {
+        return PositionCreateWithdrawLimiterKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PositionCreateWithdrawLimiterKey.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::PositionCreateWithdrawLimiterKey`
+      },
       typeArgs: [] as [],
       isPhantom: PositionCreateWithdrawLimiterKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -4415,11 +4818,13 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionCreateWithdrawLimiterKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionCreateWithdrawLimiterKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PositionCreateWithdrawLimiterKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PositionCreateWithdrawLimiterKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PositionCreateWithdrawLimiterKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PositionCreateWithdrawLimiterKey.fetch(client, id),
       new: (fields: PositionCreateWithdrawLimiterKeyFields) => {
         return new PositionCreateWithdrawLimiterKey([], fields)
@@ -4505,6 +4910,16 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
     return PositionCreateWithdrawLimiterKey.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): PositionCreateWithdrawLimiterKey {
+    if (!isPositionCreateWithdrawLimiterKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PositionCreateWithdrawLimiterKey object`)
+    }
+    return PositionCreateWithdrawLimiterKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCreateWithdrawLimiterKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PositionCreateWithdrawLimiterKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4517,6 +4932,7 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
     return PositionCreateWithdrawLimiterKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCreateWithdrawLimiterKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PositionCreateWithdrawLimiterKey {
     if (data.bcs) {
       if (
@@ -4536,15 +4952,17 @@ export class PositionCreateWithdrawLimiterKey implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<PositionCreateWithdrawLimiterKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPositionCreateWithdrawLimiterKey(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPositionCreateWithdrawLimiterKey(object.type)) {
       throw new Error(`object at id ${id} is not a PositionCreateWithdrawLimiterKey object`)
     }
-
-    return PositionCreateWithdrawLimiterKey.fromBcs(res.bcsBytes)
+    return PositionCreateWithdrawLimiterKey.fromBcs(object.content)
   }
 }
 
@@ -4582,9 +5000,11 @@ export type DeleverageTicketJSON = {
 export class DeleverageTicket implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeleverageTicket` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageTicket')
-  }::position_core_clmm::DeleverageTicket` as const
+  static get $typeName(): `${string}::position_core_clmm::DeleverageTicket` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageTicket')
+    }::position_core_clmm::DeleverageTicket` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -4614,11 +5034,15 @@ export class DeleverageTicket implements StructClass {
   static reified(): DeleverageTicketReified {
     const reifiedBcs = DeleverageTicket.bcs
     return {
-      typeName: DeleverageTicket.$typeName,
-      fullTypeName: composeSuiType(
-        DeleverageTicket.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeleverageTicket`,
+      get typeName() {
+        return DeleverageTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeleverageTicket.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeleverageTicket`
+      },
       typeArgs: [] as [],
       isPhantom: DeleverageTicket.$isPhantom,
       reifiedTypeArgs: [],
@@ -4628,9 +5052,11 @@ export class DeleverageTicket implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeleverageTicket.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeleverageTicket.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeleverageTicket.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageTicket.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeleverageTicket.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DeleverageTicket.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DeleverageTicket.fetch(client, id),
       new: (fields: DeleverageTicketFields) => {
         return new DeleverageTicket([], fields)
       },
@@ -4726,6 +5152,14 @@ export class DeleverageTicket implements StructClass {
     return DeleverageTicket.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DeleverageTicket {
+    if (!isDeleverageTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeleverageTicket object`)
+    }
+    return DeleverageTicket.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeleverageTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeleverageTicket {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -4736,6 +5170,7 @@ export class DeleverageTicket implements StructClass {
     return DeleverageTicket.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeleverageTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeleverageTicket {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeleverageTicket(data.bcs.type)) {
@@ -4752,13 +5187,15 @@ export class DeleverageTicket implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DeleverageTicket> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeleverageTicket(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeleverageTicket> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeleverageTicket(object.type)) {
       throw new Error(`object at id ${id} is not a DeleverageTicket object`)
     }
-
-    return DeleverageTicket.fromBcs(res.bcsBytes)
+    return DeleverageTicket.fromBcs(object.content)
   }
 }
 
@@ -4810,9 +5247,11 @@ export class ReductionRepaymentTicket<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ReductionRepaymentTicket` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionRepaymentTicket')
-  }::position_core_clmm::ReductionRepaymentTicket` as const
+  static get $typeName(): `${string}::position_core_clmm::ReductionRepaymentTicket` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionRepaymentTicket')
+    }::position_core_clmm::ReductionRepaymentTicket` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -4855,17 +5294,23 @@ export class ReductionRepaymentTicket<
   ): ReductionRepaymentTicketReified<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
     const reifiedBcs = ReductionRepaymentTicket.bcs
     return {
-      typeName: ReductionRepaymentTicket.$typeName,
-      fullTypeName: composeSuiType(
-        ReductionRepaymentTicket.$typeName,
-        ...[extractType(SX), extractType(SY)],
-      ) as `${string}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<SX>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<SY>>}>`,
-      typeArgs: [extractType(SX), extractType(SY)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<SX>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<SY>>,
-      ],
+      get typeName() {
+        return ReductionRepaymentTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ReductionRepaymentTicket.$typeName,
+          ...[extractType(SX), extractType(SY)],
+        ) as `${string}::position_core_clmm::ReductionRepaymentTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<SX>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<SY>>}>`
+      },
+      get typeArgs() {
+        return [extractType(SX), extractType(SY)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<SX>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<SY>>,
+        ]
+      },
       isPhantom: ReductionRepaymentTicket.$isPhantom,
       reifiedTypeArgs: [SX, SY],
       fromFields: (fields: Record<string, any>) =>
@@ -4877,11 +5322,13 @@ export class ReductionRepaymentTicket<
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionRepaymentTicket.fromJSONField([SX, SY], field),
       fromJSON: (json: Record<string, any>) => ReductionRepaymentTicket.fromJSON([SX, SY], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ReductionRepaymentTicket.fromCoreObject([SX, SY], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ReductionRepaymentTicket.fromSuiParsedData([SX, SY], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ReductionRepaymentTicket.fromSuiObjectData([SX, SY], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ReductionRepaymentTicket.fetch(client, [SX, SY], id),
       new: (
         fields: ReductionRepaymentTicketFields<
@@ -5022,6 +5469,37 @@ export class ReductionRepaymentTicket<
     return ReductionRepaymentTicket.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    SX extends PhantomReified<PhantomTypeArgument>,
+    SY extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [SX, SY],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>> {
+    if (!isReductionRepaymentTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ReductionRepaymentTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return ReductionRepaymentTicket.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionRepaymentTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     SX extends PhantomReified<PhantomTypeArgument>,
     SY extends PhantomReified<PhantomTypeArgument>,
@@ -5040,6 +5518,7 @@ export class ReductionRepaymentTicket<
     return ReductionRepaymentTicket.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionRepaymentTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     SX extends PhantomReified<PhantomTypeArgument>,
     SY extends PhantomReified<PhantomTypeArgument>,
@@ -5082,16 +5561,19 @@ export class ReductionRepaymentTicket<
     SX extends PhantomReified<PhantomTypeArgument>,
     SY extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [SX, SY],
     id: string,
   ): Promise<ReductionRepaymentTicket<ToPhantomTypeArgument<SX>, ToPhantomTypeArgument<SY>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isReductionRepaymentTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isReductionRepaymentTicket(object.type)) {
       throw new Error(`object at id ${id} is not a ReductionRepaymentTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -5107,7 +5589,7 @@ export class ReductionRepaymentTicket<
       }
     }
 
-    return ReductionRepaymentTicket.fromBcs(typeArgs, res.bcsBytes)
+    return ReductionRepaymentTicket.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -5190,9 +5672,11 @@ export type RebalanceReceiptJSON = {
 export class RebalanceReceipt implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::RebalanceReceipt` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceReceipt')
-  }::position_core_clmm::RebalanceReceipt` as const
+  static get $typeName(): `${string}::position_core_clmm::RebalanceReceipt` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceReceipt')
+    }::position_core_clmm::RebalanceReceipt` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5260,11 +5744,15 @@ export class RebalanceReceipt implements StructClass {
   static reified(): RebalanceReceiptReified {
     const reifiedBcs = RebalanceReceipt.bcs
     return {
-      typeName: RebalanceReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceReceipt.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::RebalanceReceipt`,
+      get typeName() {
+        return RebalanceReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RebalanceReceipt.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::RebalanceReceipt`
+      },
       typeArgs: [] as [],
       isPhantom: RebalanceReceipt.$isPhantom,
       reifiedTypeArgs: [],
@@ -5274,9 +5762,11 @@ export class RebalanceReceipt implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceReceipt.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceReceipt.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RebalanceReceipt.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceReceipt.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceReceipt.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RebalanceReceipt.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RebalanceReceipt.fetch(client, id),
       new: (fields: RebalanceReceiptFields) => {
         return new RebalanceReceipt([], fields)
       },
@@ -5453,6 +5943,14 @@ export class RebalanceReceipt implements StructClass {
     return RebalanceReceipt.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RebalanceReceipt {
+    if (!isRebalanceReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RebalanceReceipt object`)
+    }
+    return RebalanceReceipt.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RebalanceReceipt {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5463,6 +5961,7 @@ export class RebalanceReceipt implements StructClass {
     return RebalanceReceipt.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RebalanceReceipt {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRebalanceReceipt(data.bcs.type)) {
@@ -5479,13 +5978,15 @@ export class RebalanceReceipt implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceReceipt> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRebalanceReceipt(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RebalanceReceipt> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRebalanceReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a RebalanceReceipt object`)
     }
-
-    return RebalanceReceipt.fromBcs(res.bcsBytes)
+    return RebalanceReceipt.fromBcs(object.content)
   }
 }
 
@@ -5532,9 +6033,11 @@ export type DeletedPositionCollectedFeesJSON = {
 export class DeletedPositionCollectedFees implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeletedPositionCollectedFees` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFees')
-  }::position_core_clmm::DeletedPositionCollectedFees` as const
+  static get $typeName(): `${string}::position_core_clmm::DeletedPositionCollectedFees` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFees')
+    }::position_core_clmm::DeletedPositionCollectedFees` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5564,11 +6067,15 @@ export class DeletedPositionCollectedFees implements StructClass {
   static reified(): DeletedPositionCollectedFeesReified {
     const reifiedBcs = DeletedPositionCollectedFees.bcs
     return {
-      typeName: DeletedPositionCollectedFees.$typeName,
-      fullTypeName: composeSuiType(
-        DeletedPositionCollectedFees.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeletedPositionCollectedFees`,
+      get typeName() {
+        return DeletedPositionCollectedFees.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeletedPositionCollectedFees.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeletedPositionCollectedFees`
+      },
       typeArgs: [] as [],
       isPhantom: DeletedPositionCollectedFees.$isPhantom,
       reifiedTypeArgs: [],
@@ -5580,11 +6087,13 @@ export class DeletedPositionCollectedFees implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletedPositionCollectedFees.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletedPositionCollectedFees.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeletedPositionCollectedFees.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         DeletedPositionCollectedFees.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletedPositionCollectedFees.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         DeletedPositionCollectedFees.fetch(client, id),
       new: (fields: DeletedPositionCollectedFeesFields) => {
         return new DeletedPositionCollectedFees([], fields)
@@ -5677,6 +6186,16 @@ export class DeletedPositionCollectedFees implements StructClass {
     return DeletedPositionCollectedFees.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DeletedPositionCollectedFees {
+    if (!isDeletedPositionCollectedFees(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeletedPositionCollectedFees object`)
+    }
+    return DeletedPositionCollectedFees.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletedPositionCollectedFees.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeletedPositionCollectedFees {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5689,6 +6208,7 @@ export class DeletedPositionCollectedFees implements StructClass {
     return DeletedPositionCollectedFees.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletedPositionCollectedFees.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeletedPositionCollectedFees {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeletedPositionCollectedFees(data.bcs.type)) {
@@ -5705,16 +6225,15 @@ export class DeletedPositionCollectedFees implements StructClass {
     )
   }
 
-  static async fetch(
-    client: SupportedSuiClient,
-    id: string,
-  ): Promise<DeletedPositionCollectedFees> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeletedPositionCollectedFees(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeletedPositionCollectedFees> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeletedPositionCollectedFees(object.type)) {
       throw new Error(`object at id ${id} is not a DeletedPositionCollectedFees object`)
     }
-
-    return DeletedPositionCollectedFees.fromBcs(res.bcsBytes)
+    return DeletedPositionCollectedFees.fromBcs(object.content)
   }
 }
 
@@ -5776,9 +6295,11 @@ export type PositionCreationInfoJSON = {
 export class PositionCreationInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::PositionCreationInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreationInfo')
-  }::position_core_clmm::PositionCreationInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::PositionCreationInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::PositionCreationInfo')
+    }::position_core_clmm::PositionCreationInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -5824,11 +6345,15 @@ export class PositionCreationInfo implements StructClass {
   static reified(): PositionCreationInfoReified {
     const reifiedBcs = PositionCreationInfo.bcs
     return {
-      typeName: PositionCreationInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PositionCreationInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::PositionCreationInfo`,
+      get typeName() {
+        return PositionCreationInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PositionCreationInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::PositionCreationInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PositionCreationInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -5839,11 +6364,13 @@ export class PositionCreationInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PositionCreationInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PositionCreationInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PositionCreationInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         PositionCreationInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         PositionCreationInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         PositionCreationInfo.fetch(client, id),
       new: (fields: PositionCreationInfoFields) => {
         return new PositionCreationInfo([], fields)
@@ -5980,6 +6507,14 @@ export class PositionCreationInfo implements StructClass {
     return PositionCreationInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PositionCreationInfo {
+    if (!isPositionCreationInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PositionCreationInfo object`)
+    }
+    return PositionCreationInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCreationInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PositionCreationInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -5992,6 +6527,7 @@ export class PositionCreationInfo implements StructClass {
     return PositionCreationInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PositionCreationInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PositionCreationInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPositionCreationInfo(data.bcs.type)) {
@@ -6008,13 +6544,15 @@ export class PositionCreationInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PositionCreationInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPositionCreationInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PositionCreationInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPositionCreationInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PositionCreationInfo object`)
     }
-
-    return PositionCreationInfo.fromBcs(res.bcsBytes)
+    return PositionCreationInfo.fromBcs(object.content)
   }
 }
 
@@ -6078,9 +6616,11 @@ export type DeleverageInfoJSON = {
 export class DeleverageInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeleverageInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageInfo')
-  }::position_core_clmm::DeleverageInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::DeleverageInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeleverageInfo')
+    }::position_core_clmm::DeleverageInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6135,11 +6675,15 @@ export class DeleverageInfo implements StructClass {
   static reified(): DeleverageInfoReified {
     const reifiedBcs = DeleverageInfo.bcs
     return {
-      typeName: DeleverageInfo.$typeName,
-      fullTypeName: composeSuiType(
-        DeleverageInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeleverageInfo`,
+      get typeName() {
+        return DeleverageInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeleverageInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeleverageInfo`
+      },
       typeArgs: [] as [],
       isPhantom: DeleverageInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6149,9 +6693,11 @@ export class DeleverageInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeleverageInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeleverageInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeleverageInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DeleverageInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeleverageInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DeleverageInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DeleverageInfo.fetch(client, id),
       new: (fields: DeleverageInfoFields) => {
         return new DeleverageInfo([], fields)
       },
@@ -6272,6 +6818,14 @@ export class DeleverageInfo implements StructClass {
     return DeleverageInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DeleverageInfo {
+    if (!isDeleverageInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeleverageInfo object`)
+    }
+    return DeleverageInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeleverageInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeleverageInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6282,6 +6836,7 @@ export class DeleverageInfo implements StructClass {
     return DeleverageInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeleverageInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeleverageInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeleverageInfo(data.bcs.type)) {
@@ -6298,13 +6853,15 @@ export class DeleverageInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DeleverageInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeleverageInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeleverageInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeleverageInfo(object.type)) {
       throw new Error(`object at id ${id} is not a DeleverageInfo object`)
     }
-
-    return DeleverageInfo.fromBcs(res.bcsBytes)
+    return DeleverageInfo.fromBcs(object.content)
   }
 }
 
@@ -6362,9 +6919,11 @@ export type LiquidationInfoJSON = {
 export class LiquidationInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::LiquidationInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationInfo')
-  }::position_core_clmm::LiquidationInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::LiquidationInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::LiquidationInfo')
+    }::position_core_clmm::LiquidationInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6413,11 +6972,15 @@ export class LiquidationInfo implements StructClass {
   static reified(): LiquidationInfoReified {
     const reifiedBcs = LiquidationInfo.bcs
     return {
-      typeName: LiquidationInfo.$typeName,
-      fullTypeName: composeSuiType(
-        LiquidationInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::LiquidationInfo`,
+      get typeName() {
+        return LiquidationInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LiquidationInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::LiquidationInfo`
+      },
       typeArgs: [] as [],
       isPhantom: LiquidationInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6427,9 +6990,11 @@ export class LiquidationInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LiquidationInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LiquidationInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LiquidationInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => LiquidationInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LiquidationInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => LiquidationInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => LiquidationInfo.fetch(client, id),
       new: (fields: LiquidationInfoFields) => {
         return new LiquidationInfo([], fields)
       },
@@ -6550,6 +7115,14 @@ export class LiquidationInfo implements StructClass {
     return LiquidationInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LiquidationInfo {
+    if (!isLiquidationInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LiquidationInfo object`)
+    }
+    return LiquidationInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidationInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LiquidationInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6560,6 +7133,7 @@ export class LiquidationInfo implements StructClass {
     return LiquidationInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LiquidationInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LiquidationInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLiquidationInfo(data.bcs.type)) {
@@ -6576,13 +7150,15 @@ export class LiquidationInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LiquidationInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLiquidationInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LiquidationInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLiquidationInfo(object.type)) {
       throw new Error(`object at id ${id} is not a LiquidationInfo object`)
     }
-
-    return LiquidationInfo.fromBcs(res.bcsBytes)
+    return LiquidationInfo.fromBcs(object.content)
   }
 }
 
@@ -6641,9 +7217,11 @@ export type ReductionInfoJSON = {
 export class ReductionInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::ReductionInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionInfo')
-  }::position_core_clmm::ReductionInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::ReductionInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::ReductionInfo')
+    }::position_core_clmm::ReductionInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6694,11 +7272,15 @@ export class ReductionInfo implements StructClass {
   static reified(): ReductionInfoReified {
     const reifiedBcs = ReductionInfo.bcs
     return {
-      typeName: ReductionInfo.$typeName,
-      fullTypeName: composeSuiType(
-        ReductionInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::ReductionInfo`,
+      get typeName() {
+        return ReductionInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ReductionInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::ReductionInfo`
+      },
       typeArgs: [] as [],
       isPhantom: ReductionInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6708,9 +7290,11 @@ export class ReductionInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ReductionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReductionInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ReductionInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ReductionInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ReductionInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ReductionInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ReductionInfo.fetch(client, id),
       new: (fields: ReductionInfoFields) => {
         return new ReductionInfo([], fields)
       },
@@ -6841,6 +7425,14 @@ export class ReductionInfo implements StructClass {
     return ReductionInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ReductionInfo {
+    if (!isReductionInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ReductionInfo object`)
+    }
+    return ReductionInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ReductionInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -6851,6 +7443,7 @@ export class ReductionInfo implements StructClass {
     return ReductionInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReductionInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ReductionInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isReductionInfo(data.bcs.type)) {
@@ -6867,13 +7460,15 @@ export class ReductionInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ReductionInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isReductionInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ReductionInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isReductionInfo(object.type)) {
       throw new Error(`object at id ${id} is not a ReductionInfo object`)
     }
-
-    return ReductionInfo.fromBcs(res.bcsBytes)
+    return ReductionInfo.fromBcs(object.content)
   }
 }
 
@@ -6913,9 +7508,11 @@ export type AddCollateralInfoJSON = {
 export class AddCollateralInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::AddCollateralInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::AddCollateralInfo')
-  }::position_core_clmm::AddCollateralInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::AddCollateralInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddCollateralInfo')
+    }::position_core_clmm::AddCollateralInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -6946,11 +7543,15 @@ export class AddCollateralInfo implements StructClass {
   static reified(): AddCollateralInfoReified {
     const reifiedBcs = AddCollateralInfo.bcs
     return {
-      typeName: AddCollateralInfo.$typeName,
-      fullTypeName: composeSuiType(
-        AddCollateralInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::AddCollateralInfo`,
+      get typeName() {
+        return AddCollateralInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddCollateralInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::AddCollateralInfo`
+      },
       typeArgs: [] as [],
       isPhantom: AddCollateralInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -6960,9 +7561,11 @@ export class AddCollateralInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddCollateralInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddCollateralInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddCollateralInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddCollateralInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddCollateralInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddCollateralInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddCollateralInfo.fetch(client, id),
       new: (fields: AddCollateralInfoFields) => {
         return new AddCollateralInfo([], fields)
       },
@@ -7053,6 +7656,14 @@ export class AddCollateralInfo implements StructClass {
     return AddCollateralInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddCollateralInfo {
+    if (!isAddCollateralInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddCollateralInfo object`)
+    }
+    return AddCollateralInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddCollateralInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddCollateralInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -7063,6 +7674,7 @@ export class AddCollateralInfo implements StructClass {
     return AddCollateralInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddCollateralInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddCollateralInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddCollateralInfo(data.bcs.type)) {
@@ -7079,13 +7691,15 @@ export class AddCollateralInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddCollateralInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddCollateralInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddCollateralInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddCollateralInfo(object.type)) {
       throw new Error(`object at id ${id} is not a AddCollateralInfo object`)
     }
-
-    return AddCollateralInfo.fromBcs(res.bcsBytes)
+    return AddCollateralInfo.fromBcs(object.content)
   }
 }
 
@@ -7131,9 +7745,11 @@ export type AddLiquidityInfoJSON = {
 export class AddLiquidityInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::AddLiquidityInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityInfo')
-  }::position_core_clmm::AddLiquidityInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::AddLiquidityInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::AddLiquidityInfo')
+    }::position_core_clmm::AddLiquidityInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -7170,11 +7786,15 @@ export class AddLiquidityInfo implements StructClass {
   static reified(): AddLiquidityInfoReified {
     const reifiedBcs = AddLiquidityInfo.bcs
     return {
-      typeName: AddLiquidityInfo.$typeName,
-      fullTypeName: composeSuiType(
-        AddLiquidityInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::AddLiquidityInfo`,
+      get typeName() {
+        return AddLiquidityInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AddLiquidityInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::AddLiquidityInfo`
+      },
       typeArgs: [] as [],
       isPhantom: AddLiquidityInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -7184,9 +7804,11 @@ export class AddLiquidityInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AddLiquidityInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AddLiquidityInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AddLiquidityInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AddLiquidityInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AddLiquidityInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AddLiquidityInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AddLiquidityInfo.fetch(client, id),
       new: (fields: AddLiquidityInfoFields) => {
         return new AddLiquidityInfo([], fields)
       },
@@ -7287,6 +7909,14 @@ export class AddLiquidityInfo implements StructClass {
     return AddLiquidityInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AddLiquidityInfo {
+    if (!isAddLiquidityInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AddLiquidityInfo object`)
+    }
+    return AddLiquidityInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AddLiquidityInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -7297,6 +7927,7 @@ export class AddLiquidityInfo implements StructClass {
     return AddLiquidityInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AddLiquidityInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AddLiquidityInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAddLiquidityInfo(data.bcs.type)) {
@@ -7313,13 +7944,15 @@ export class AddLiquidityInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AddLiquidityInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAddLiquidityInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AddLiquidityInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAddLiquidityInfo(object.type)) {
       throw new Error(`object at id ${id} is not a AddLiquidityInfo object`)
     }
-
-    return AddLiquidityInfo.fromBcs(res.bcsBytes)
+    return AddLiquidityInfo.fromBcs(object.content)
   }
 }
 
@@ -7359,9 +7992,11 @@ export type RepayDebtInfoJSON = {
 export class RepayDebtInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::RepayDebtInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::RepayDebtInfo')
-  }::position_core_clmm::RepayDebtInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::RepayDebtInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RepayDebtInfo')
+    }::position_core_clmm::RepayDebtInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -7392,11 +8027,15 @@ export class RepayDebtInfo implements StructClass {
   static reified(): RepayDebtInfoReified {
     const reifiedBcs = RepayDebtInfo.bcs
     return {
-      typeName: RepayDebtInfo.$typeName,
-      fullTypeName: composeSuiType(
-        RepayDebtInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::RepayDebtInfo`,
+      get typeName() {
+        return RepayDebtInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RepayDebtInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::RepayDebtInfo`
+      },
       typeArgs: [] as [],
       isPhantom: RepayDebtInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -7406,9 +8045,11 @@ export class RepayDebtInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayDebtInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayDebtInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RepayDebtInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RepayDebtInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RepayDebtInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RepayDebtInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RepayDebtInfo.fetch(client, id),
       new: (fields: RepayDebtInfoFields) => {
         return new RepayDebtInfo([], fields)
       },
@@ -7499,6 +8140,14 @@ export class RepayDebtInfo implements StructClass {
     return RepayDebtInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RepayDebtInfo {
+    if (!isRepayDebtInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RepayDebtInfo object`)
+    }
+    return RepayDebtInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayDebtInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RepayDebtInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -7509,6 +8158,7 @@ export class RepayDebtInfo implements StructClass {
     return RepayDebtInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayDebtInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RepayDebtInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRepayDebtInfo(data.bcs.type)) {
@@ -7525,13 +8175,15 @@ export class RepayDebtInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RepayDebtInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRepayDebtInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RepayDebtInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRepayDebtInfo(object.type)) {
       throw new Error(`object at id ${id} is not a RepayDebtInfo object`)
     }
-
-    return RepayDebtInfo.fromBcs(res.bcsBytes)
+    return RepayDebtInfo.fromBcs(object.content)
   }
 }
 
@@ -7577,9 +8229,11 @@ export type OwnerCollectFeeInfoJSON = {
 export class OwnerCollectFeeInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectFeeInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeInfo')
-  }::position_core_clmm::OwnerCollectFeeInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::OwnerCollectFeeInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectFeeInfo')
+    }::position_core_clmm::OwnerCollectFeeInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -7616,11 +8270,15 @@ export class OwnerCollectFeeInfo implements StructClass {
   static reified(): OwnerCollectFeeInfoReified {
     const reifiedBcs = OwnerCollectFeeInfo.bcs
     return {
-      typeName: OwnerCollectFeeInfo.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerCollectFeeInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::OwnerCollectFeeInfo`,
+      get typeName() {
+        return OwnerCollectFeeInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OwnerCollectFeeInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::OwnerCollectFeeInfo`
+      },
       typeArgs: [] as [],
       isPhantom: OwnerCollectFeeInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -7630,10 +8288,11 @@ export class OwnerCollectFeeInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectFeeInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => OwnerCollectFeeInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OwnerCollectFeeInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => OwnerCollectFeeInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => OwnerCollectFeeInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        OwnerCollectFeeInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => OwnerCollectFeeInfo.fetch(client, id),
       new: (fields: OwnerCollectFeeInfoFields) => {
         return new OwnerCollectFeeInfo([], fields)
       },
@@ -7734,6 +8393,14 @@ export class OwnerCollectFeeInfo implements StructClass {
     return OwnerCollectFeeInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OwnerCollectFeeInfo {
+    if (!isOwnerCollectFeeInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OwnerCollectFeeInfo object`)
+    }
+    return OwnerCollectFeeInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectFeeInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): OwnerCollectFeeInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -7744,6 +8411,7 @@ export class OwnerCollectFeeInfo implements StructClass {
     return OwnerCollectFeeInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectFeeInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): OwnerCollectFeeInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isOwnerCollectFeeInfo(data.bcs.type)) {
@@ -7760,13 +8428,15 @@ export class OwnerCollectFeeInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<OwnerCollectFeeInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnerCollectFeeInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OwnerCollectFeeInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnerCollectFeeInfo(object.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectFeeInfo object`)
     }
-
-    return OwnerCollectFeeInfo.fromBcs(res.bcsBytes)
+    return OwnerCollectFeeInfo.fromBcs(object.content)
   }
 }
 
@@ -7810,9 +8480,11 @@ export type OwnerCollectRewardInfoJSON<T extends PhantomTypeArgument> = {
 export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::OwnerCollectRewardInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardInfo')
-  }::position_core_clmm::OwnerCollectRewardInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::OwnerCollectRewardInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerCollectRewardInfo')
+    }::position_core_clmm::OwnerCollectRewardInfo` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -7847,14 +8519,20 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
   ): OwnerCollectRewardInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = OwnerCollectRewardInfo.bcs
     return {
-      typeName: OwnerCollectRewardInfo.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerCollectRewardInfo.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return OwnerCollectRewardInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OwnerCollectRewardInfo.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::position_core_clmm::OwnerCollectRewardInfo<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: OwnerCollectRewardInfo.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => OwnerCollectRewardInfo.fromFields(T, fields),
@@ -7864,11 +8542,13 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerCollectRewardInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => OwnerCollectRewardInfo.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OwnerCollectRewardInfo.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         OwnerCollectRewardInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerCollectRewardInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         OwnerCollectRewardInfo.fetch(client, T, id),
       new: (fields: OwnerCollectRewardInfoFields<ToPhantomTypeArgument<T>>) => {
         return new OwnerCollectRewardInfo([extractType(T)], fields)
@@ -7983,6 +8663,34 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
     return OwnerCollectRewardInfo.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): OwnerCollectRewardInfo<ToPhantomTypeArgument<T>> {
+    if (!isOwnerCollectRewardInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OwnerCollectRewardInfo object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return OwnerCollectRewardInfo.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -7998,6 +8706,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
     return OwnerCollectRewardInfo.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerCollectRewardInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -8034,16 +8743,19 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<OwnerCollectRewardInfo<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnerCollectRewardInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnerCollectRewardInfo(object.type)) {
       throw new Error(`object at id ${id} is not a OwnerCollectRewardInfo object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -8059,7 +8771,7 @@ export class OwnerCollectRewardInfo<T extends PhantomTypeArgument> implements St
       }
     }
 
-    return OwnerCollectRewardInfo.fromBcs(typeArg, res.bcsBytes)
+    return OwnerCollectRewardInfo.fromBcs(typeArg, object.content)
   }
 }
 
@@ -8100,9 +8812,11 @@ export type OwnerTakeStashedRewardsInfoJSON<T extends PhantomTypeArgument> = {
 export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerTakeStashedRewardsInfo')
-  }::position_core_clmm::OwnerTakeStashedRewardsInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OwnerTakeStashedRewardsInfo')
+    }::position_core_clmm::OwnerTakeStashedRewardsInfo` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -8138,14 +8852,20 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
   ): OwnerTakeStashedRewardsInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = OwnerTakeStashedRewardsInfo.bcs
     return {
-      typeName: OwnerTakeStashedRewardsInfo.$typeName,
-      fullTypeName: composeSuiType(
-        OwnerTakeStashedRewardsInfo.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return OwnerTakeStashedRewardsInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OwnerTakeStashedRewardsInfo.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::position_core_clmm::OwnerTakeStashedRewardsInfo<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: OwnerTakeStashedRewardsInfo.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) =>
@@ -8157,11 +8877,13 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
       bcs: reifiedBcs,
       fromJSONField: (field: any) => OwnerTakeStashedRewardsInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => OwnerTakeStashedRewardsInfo.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OwnerTakeStashedRewardsInfo.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         OwnerTakeStashedRewardsInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         OwnerTakeStashedRewardsInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         OwnerTakeStashedRewardsInfo.fetch(client, T, id),
       new: (fields: OwnerTakeStashedRewardsInfoFields<ToPhantomTypeArgument<T>>) => {
         return new OwnerTakeStashedRewardsInfo([extractType(T)], fields)
@@ -8275,6 +8997,34 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
     return OwnerTakeStashedRewardsInfo.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>> {
+    if (!isOwnerTakeStashedRewardsInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OwnerTakeStashedRewardsInfo object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerTakeStashedRewardsInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -8290,6 +9040,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
     return OwnerTakeStashedRewardsInfo.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OwnerTakeStashedRewardsInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -8326,16 +9077,19 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<OwnerTakeStashedRewardsInfo<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnerTakeStashedRewardsInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnerTakeStashedRewardsInfo(object.type)) {
       throw new Error(`object at id ${id} is not a OwnerTakeStashedRewardsInfo object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -8351,7 +9105,7 @@ export class OwnerTakeStashedRewardsInfo<T extends PhantomTypeArgument> implemen
       }
     }
 
-    return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, res.bcsBytes)
+    return OwnerTakeStashedRewardsInfo.fromBcs(typeArg, object.content)
   }
 }
 
@@ -8388,9 +9142,11 @@ export type DeletePositionInfoJSON = {
 export class DeletePositionInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeletePositionInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionInfo')
-  }::position_core_clmm::DeletePositionInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::DeletePositionInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletePositionInfo')
+    }::position_core_clmm::DeletePositionInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -8418,11 +9174,15 @@ export class DeletePositionInfo implements StructClass {
   static reified(): DeletePositionInfoReified {
     const reifiedBcs = DeletePositionInfo.bcs
     return {
-      typeName: DeletePositionInfo.$typeName,
-      fullTypeName: composeSuiType(
-        DeletePositionInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeletePositionInfo`,
+      get typeName() {
+        return DeletePositionInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeletePositionInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeletePositionInfo`
+      },
       typeArgs: [] as [],
       isPhantom: DeletePositionInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -8432,9 +9192,11 @@ export class DeletePositionInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletePositionInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletePositionInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeletePositionInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DeletePositionInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeletePositionInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DeletePositionInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DeletePositionInfo.fetch(client, id),
       new: (fields: DeletePositionInfoFields) => {
         return new DeletePositionInfo([], fields)
       },
@@ -8520,6 +9282,14 @@ export class DeletePositionInfo implements StructClass {
     return DeletePositionInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DeletePositionInfo {
+    if (!isDeletePositionInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeletePositionInfo object`)
+    }
+    return DeletePositionInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletePositionInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeletePositionInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -8530,6 +9300,7 @@ export class DeletePositionInfo implements StructClass {
     return DeletePositionInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletePositionInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeletePositionInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeletePositionInfo(data.bcs.type)) {
@@ -8546,13 +9317,15 @@ export class DeletePositionInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DeletePositionInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeletePositionInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeletePositionInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeletePositionInfo(object.type)) {
       throw new Error(`object at id ${id} is not a DeletePositionInfo object`)
     }
-
-    return DeletePositionInfo.fromBcs(res.bcsBytes)
+    return DeletePositionInfo.fromBcs(object.content)
   }
 }
 
@@ -8631,9 +9404,11 @@ export type RebalanceInfoJSON = {
 export class RebalanceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::RebalanceInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceInfo')
-  }::position_core_clmm::RebalanceInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::RebalanceInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::RebalanceInfo')
+    }::position_core_clmm::RebalanceInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -8703,11 +9478,15 @@ export class RebalanceInfo implements StructClass {
   static reified(): RebalanceInfoReified {
     const reifiedBcs = RebalanceInfo.bcs
     return {
-      typeName: RebalanceInfo.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::RebalanceInfo`,
+      get typeName() {
+        return RebalanceInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RebalanceInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::RebalanceInfo`
+      },
       typeArgs: [] as [],
       isPhantom: RebalanceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -8717,9 +9496,11 @@ export class RebalanceInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RebalanceInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RebalanceInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RebalanceInfo.fetch(client, id),
       new: (fields: RebalanceInfoFields) => {
         return new RebalanceInfo([], fields)
       },
@@ -8896,6 +9677,14 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RebalanceInfo {
+    if (!isRebalanceInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RebalanceInfo object`)
+    }
+    return RebalanceInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -8906,6 +9695,7 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
@@ -8922,13 +9712,15 @@ export class RebalanceInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRebalanceInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RebalanceInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRebalanceInfo(object.type)) {
       throw new Error(`object at id ${id} is not a RebalanceInfo object`)
     }
-
-    return RebalanceInfo.fromBcs(res.bcsBytes)
+    return RebalanceInfo.fromBcs(object.content)
   }
 }
 
@@ -8969,9 +9761,11 @@ export type CollectProtocolFeesInfoJSON<T extends PhantomTypeArgument> = {
 export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::CollectProtocolFeesInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::CollectProtocolFeesInfo')
-  }::position_core_clmm::CollectProtocolFeesInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::CollectProtocolFeesInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::CollectProtocolFeesInfo')
+    }::position_core_clmm::CollectProtocolFeesInfo` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -9003,14 +9797,20 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
   ): CollectProtocolFeesInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = CollectProtocolFeesInfo.bcs
     return {
-      typeName: CollectProtocolFeesInfo.$typeName,
-      fullTypeName: composeSuiType(
-        CollectProtocolFeesInfo.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return CollectProtocolFeesInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CollectProtocolFeesInfo.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::position_core_clmm::CollectProtocolFeesInfo<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: CollectProtocolFeesInfo.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => CollectProtocolFeesInfo.fromFields(T, fields),
@@ -9020,11 +9820,13 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CollectProtocolFeesInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => CollectProtocolFeesInfo.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CollectProtocolFeesInfo.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CollectProtocolFeesInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CollectProtocolFeesInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CollectProtocolFeesInfo.fetch(client, T, id),
       new: (fields: CollectProtocolFeesInfoFields<ToPhantomTypeArgument<T>>) => {
         return new CollectProtocolFeesInfo([extractType(T)], fields)
@@ -9134,6 +9936,34 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
     return CollectProtocolFeesInfo.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): CollectProtocolFeesInfo<ToPhantomTypeArgument<T>> {
+    if (!isCollectProtocolFeesInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CollectProtocolFeesInfo object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return CollectProtocolFeesInfo.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectProtocolFeesInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -9149,6 +9979,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
     return CollectProtocolFeesInfo.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CollectProtocolFeesInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -9185,16 +10016,19 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<CollectProtocolFeesInfo<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCollectProtocolFeesInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCollectProtocolFeesInfo(object.type)) {
       throw new Error(`object at id ${id} is not a CollectProtocolFeesInfo object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -9210,7 +10044,7 @@ export class CollectProtocolFeesInfo<T extends PhantomTypeArgument> implements S
       }
     }
 
-    return CollectProtocolFeesInfo.fromBcs(typeArg, res.bcsBytes)
+    return CollectProtocolFeesInfo.fromBcs(typeArg, object.content)
   }
 }
 
@@ -9250,9 +10084,11 @@ export type DeletedPositionCollectedFeesInfoJSON = {
 export class DeletedPositionCollectedFeesInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFeesInfo')
-  }::position_core_clmm::DeletedPositionCollectedFeesInfo` as const
+  static get $typeName(): `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::DeletedPositionCollectedFeesInfo')
+    }::position_core_clmm::DeletedPositionCollectedFeesInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -9282,11 +10118,15 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
   static reified(): DeletedPositionCollectedFeesInfoReified {
     const reifiedBcs = DeletedPositionCollectedFeesInfo.bcs
     return {
-      typeName: DeletedPositionCollectedFeesInfo.$typeName,
-      fullTypeName: composeSuiType(
-        DeletedPositionCollectedFeesInfo.$typeName,
-        ...[],
-      ) as `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo`,
+      get typeName() {
+        return DeletedPositionCollectedFeesInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeletedPositionCollectedFeesInfo.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::DeletedPositionCollectedFeesInfo`
+      },
       typeArgs: [] as [],
       isPhantom: DeletedPositionCollectedFeesInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -9299,11 +10139,13 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeletedPositionCollectedFeesInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeletedPositionCollectedFeesInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeletedPositionCollectedFeesInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         DeletedPositionCollectedFeesInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         DeletedPositionCollectedFeesInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         DeletedPositionCollectedFeesInfo.fetch(client, id),
       new: (fields: DeletedPositionCollectedFeesInfoFields) => {
         return new DeletedPositionCollectedFeesInfo([], fields)
@@ -9397,6 +10239,16 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     return DeletedPositionCollectedFeesInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DeletedPositionCollectedFeesInfo {
+    if (!isDeletedPositionCollectedFeesInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeletedPositionCollectedFeesInfo object`)
+    }
+    return DeletedPositionCollectedFeesInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletedPositionCollectedFeesInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeletedPositionCollectedFeesInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -9409,6 +10261,7 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
     return DeletedPositionCollectedFeesInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeletedPositionCollectedFeesInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeletedPositionCollectedFeesInfo {
     if (data.bcs) {
       if (
@@ -9428,15 +10281,17 @@ export class DeletedPositionCollectedFeesInfo implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<DeletedPositionCollectedFeesInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeletedPositionCollectedFeesInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeletedPositionCollectedFeesInfo(object.type)) {
       throw new Error(`object at id ${id} is not a DeletedPositionCollectedFeesInfo object`)
     }
-
-    return DeletedPositionCollectedFeesInfo.fromBcs(res.bcsBytes)
+    return DeletedPositionCollectedFeesInfo.fromBcs(object.content)
   }
 }
 
@@ -9480,9 +10335,11 @@ export type BadDebtRepaidJSON<ST extends PhantomTypeArgument> = {
 export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::position_core_clmm::BadDebtRepaid` = `${
-    getTypeOrigin('kai-leverage', 'position_core_clmm::BadDebtRepaid')
-  }::position_core_clmm::BadDebtRepaid` as const
+  static get $typeName(): `${string}::position_core_clmm::BadDebtRepaid` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::BadDebtRepaid')
+    }::position_core_clmm::BadDebtRepaid` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -9515,14 +10372,20 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
   ): BadDebtRepaidReified<ToPhantomTypeArgument<ST>> {
     const reifiedBcs = BadDebtRepaid.bcs
     return {
-      typeName: BadDebtRepaid.$typeName,
-      fullTypeName: composeSuiType(
-        BadDebtRepaid.$typeName,
-        ...[extractType(ST)],
-      ) as `${string}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<
-        ToPhantomTypeArgument<ST>
-      >}>`,
-      typeArgs: [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>],
+      get typeName() {
+        return BadDebtRepaid.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BadDebtRepaid.$typeName,
+          ...[extractType(ST)],
+        ) as `${string}::position_core_clmm::BadDebtRepaid<${PhantomToTypeStr<
+          ToPhantomTypeArgument<ST>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(ST)] as [PhantomToTypeStr<ToPhantomTypeArgument<ST>>]
+      },
       isPhantom: BadDebtRepaid.$isPhantom,
       reifiedTypeArgs: [ST],
       fromFields: (fields: Record<string, any>) => BadDebtRepaid.fromFields(ST, fields),
@@ -9531,9 +10394,11 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BadDebtRepaid.fromJSONField(ST, field),
       fromJSON: (json: Record<string, any>) => BadDebtRepaid.fromJSON(ST, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BadDebtRepaid.fromCoreObject(ST, obj),
       fromSuiParsedData: (content: SuiParsedData) => BadDebtRepaid.fromSuiParsedData(ST, content),
       fromSuiObjectData: (content: SuiObjectData) => BadDebtRepaid.fromSuiObjectData(ST, content),
-      fetch: async (client: SupportedSuiClient, id: string) => BadDebtRepaid.fetch(client, ST, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BadDebtRepaid.fetch(client, ST, id),
       new: (fields: BadDebtRepaidFields<ToPhantomTypeArgument<ST>>) => {
         return new BadDebtRepaid([extractType(ST)], fields)
       },
@@ -9647,6 +10512,34 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
     return BadDebtRepaid.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<ST extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: ST,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): BadDebtRepaid<ToPhantomTypeArgument<ST>> {
+    if (!isBadDebtRepaid(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BadDebtRepaid object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BadDebtRepaid.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BadDebtRepaid.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
     content: SuiParsedData,
@@ -9660,6 +10553,7 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
     return BadDebtRepaid.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BadDebtRepaid.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<ST extends PhantomReified<PhantomTypeArgument>>(
     typeArg: ST,
     data: SuiObjectData,
@@ -9696,16 +10590,19 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
   }
 
   static async fetch<ST extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: ST,
     id: string,
   ): Promise<BadDebtRepaid<ToPhantomTypeArgument<ST>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBadDebtRepaid(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBadDebtRepaid(object.type)) {
       throw new Error(`object at id ${id} is not a BadDebtRepaid object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -9721,6 +10618,6 @@ export class BadDebtRepaid<ST extends PhantomTypeArgument> implements StructClas
       }
     }
 
-    return BadDebtRepaid.fromBcs(typeArg, res.bcsBytes)
+    return BadDebtRepaid.fromBcs(typeArg, object.content)
   }
 }

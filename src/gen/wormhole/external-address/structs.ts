@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Bytes32 } from '../bytes32/structs'
 
 /* ============================== ExternalAddress =============================== */
@@ -57,9 +52,11 @@ export type ExternalAddressJSON = {
 export class ExternalAddress implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::external_address::ExternalAddress` = `${
-    getTypeOrigin('wormhole', 'external_address::ExternalAddress')
-  }::external_address::ExternalAddress` as const
+  static get $typeName(): `${string}::external_address::ExternalAddress` {
+    return `${
+      getTypeOrigin('wormhole', 'external_address::ExternalAddress')
+    }::external_address::ExternalAddress` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -83,11 +80,15 @@ export class ExternalAddress implements StructClass {
   static reified(): ExternalAddressReified {
     const reifiedBcs = ExternalAddress.bcs
     return {
-      typeName: ExternalAddress.$typeName,
-      fullTypeName: composeSuiType(
-        ExternalAddress.$typeName,
-        ...[],
-      ) as `${string}::external_address::ExternalAddress`,
+      get typeName() {
+        return ExternalAddress.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ExternalAddress.$typeName,
+          ...[],
+        ) as `${string}::external_address::ExternalAddress`
+      },
       typeArgs: [] as [],
       isPhantom: ExternalAddress.$isPhantom,
       reifiedTypeArgs: [],
@@ -97,9 +98,11 @@ export class ExternalAddress implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ExternalAddress.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ExternalAddress.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ExternalAddress.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ExternalAddress.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ExternalAddress.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ExternalAddress.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ExternalAddress.fetch(client, id),
       new: (fields: ExternalAddressFields) => {
         return new ExternalAddress([], fields)
       },
@@ -180,6 +183,14 @@ export class ExternalAddress implements StructClass {
     return ExternalAddress.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ExternalAddress {
+    if (!isExternalAddress(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ExternalAddress object`)
+    }
+    return ExternalAddress.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExternalAddress.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ExternalAddress {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -190,6 +201,7 @@ export class ExternalAddress implements StructClass {
     return ExternalAddress.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ExternalAddress.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ExternalAddress {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isExternalAddress(data.bcs.type)) {
@@ -206,12 +218,14 @@ export class ExternalAddress implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ExternalAddress> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isExternalAddress(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ExternalAddress> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isExternalAddress(object.type)) {
       throw new Error(`object at id ${id} is not a ExternalAddress object`)
     }
-
-    return ExternalAddress.fromBcs(res.bcsBytes)
+    return ExternalAddress.fromBcs(object.content)
   }
 }

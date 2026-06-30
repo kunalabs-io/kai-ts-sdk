@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 
 /* ============================== DeployerCap =============================== */
@@ -58,9 +53,9 @@ export type DeployerCapJSON = {
 export class DeployerCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::setup::DeployerCap` = `${
-    getTypeOrigin('wormhole', 'setup::DeployerCap')
-  }::setup::DeployerCap` as const
+  static get $typeName(): `${string}::setup::DeployerCap` {
+    return `${getTypeOrigin('wormhole', 'setup::DeployerCap')}::setup::DeployerCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -84,11 +79,15 @@ export class DeployerCap implements StructClass {
   static reified(): DeployerCapReified {
     const reifiedBcs = DeployerCap.bcs
     return {
-      typeName: DeployerCap.$typeName,
-      fullTypeName: composeSuiType(
-        DeployerCap.$typeName,
-        ...[],
-      ) as `${string}::setup::DeployerCap`,
+      get typeName() {
+        return DeployerCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DeployerCap.$typeName,
+          ...[],
+        ) as `${string}::setup::DeployerCap`
+      },
       typeArgs: [] as [],
       isPhantom: DeployerCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -98,9 +97,11 @@ export class DeployerCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DeployerCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DeployerCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DeployerCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DeployerCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DeployerCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DeployerCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DeployerCap.fetch(client, id),
       new: (fields: DeployerCapFields) => {
         return new DeployerCap([], fields)
       },
@@ -181,6 +182,14 @@ export class DeployerCap implements StructClass {
     return DeployerCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DeployerCap {
+    if (!isDeployerCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DeployerCap object`)
+    }
+    return DeployerCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeployerCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DeployerCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -191,6 +200,7 @@ export class DeployerCap implements StructClass {
     return DeployerCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DeployerCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DeployerCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDeployerCap(data.bcs.type)) {
@@ -207,12 +217,14 @@ export class DeployerCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DeployerCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDeployerCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DeployerCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDeployerCap(object.type)) {
       throw new Error(`object at id ${id} is not a DeployerCap object`)
     }
-
-    return DeployerCap.fromBcs(res.bcsBytes)
+    return DeployerCap.fromBcs(object.content)
   }
 }

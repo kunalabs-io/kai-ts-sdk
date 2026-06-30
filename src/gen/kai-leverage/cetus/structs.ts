@@ -8,7 +8,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -23,13 +24,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== AHandleExploitedPosition =============================== */
 
@@ -62,9 +57,11 @@ export type AHandleExploitedPositionJSON = {
 export class AHandleExploitedPosition implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::cetus::AHandleExploitedPosition` = `${
-    getTypeOrigin('kai-leverage', 'cetus::AHandleExploitedPosition')
-  }::cetus::AHandleExploitedPosition` as const
+  static get $typeName(): `${string}::cetus::AHandleExploitedPosition` {
+    return `${
+      getTypeOrigin('kai-leverage', 'cetus::AHandleExploitedPosition')
+    }::cetus::AHandleExploitedPosition` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -89,11 +86,15 @@ export class AHandleExploitedPosition implements StructClass {
   static reified(): AHandleExploitedPositionReified {
     const reifiedBcs = AHandleExploitedPosition.bcs
     return {
-      typeName: AHandleExploitedPosition.$typeName,
-      fullTypeName: composeSuiType(
-        AHandleExploitedPosition.$typeName,
-        ...[],
-      ) as `${string}::cetus::AHandleExploitedPosition`,
+      get typeName() {
+        return AHandleExploitedPosition.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AHandleExploitedPosition.$typeName,
+          ...[],
+        ) as `${string}::cetus::AHandleExploitedPosition`
+      },
       typeArgs: [] as [],
       isPhantom: AHandleExploitedPosition.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,11 +105,13 @@ export class AHandleExploitedPosition implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AHandleExploitedPosition.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AHandleExploitedPosition.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AHandleExploitedPosition.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         AHandleExploitedPosition.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AHandleExploitedPosition.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         AHandleExploitedPosition.fetch(client, id),
       new: (fields: AHandleExploitedPositionFields) => {
         return new AHandleExploitedPosition([], fields)
@@ -190,6 +193,14 @@ export class AHandleExploitedPosition implements StructClass {
     return AHandleExploitedPosition.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AHandleExploitedPosition {
+    if (!isAHandleExploitedPosition(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AHandleExploitedPosition object`)
+    }
+    return AHandleExploitedPosition.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AHandleExploitedPosition.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AHandleExploitedPosition {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -202,6 +213,7 @@ export class AHandleExploitedPosition implements StructClass {
     return AHandleExploitedPosition.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AHandleExploitedPosition.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AHandleExploitedPosition {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAHandleExploitedPosition(data.bcs.type)) {
@@ -218,12 +230,14 @@ export class AHandleExploitedPosition implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AHandleExploitedPosition> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAHandleExploitedPosition(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AHandleExploitedPosition> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAHandleExploitedPosition(object.type)) {
       throw new Error(`object at id ${id} is not a AHandleExploitedPosition object`)
     }
-
-    return AHandleExploitedPosition.fromBcs(res.bcsBytes)
+    return AHandleExploitedPosition.fromBcs(object.content)
   }
 }

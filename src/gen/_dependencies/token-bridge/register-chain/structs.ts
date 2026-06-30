@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
 
 /* ============================== GovernanceWitness =============================== */
@@ -56,9 +51,11 @@ export type GovernanceWitnessJSON = {
 export class GovernanceWitness implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::register_chain::GovernanceWitness` = `${
-    getTypeOrigin('token-bridge', 'register_chain::GovernanceWitness')
-  }::register_chain::GovernanceWitness` as const
+  static get $typeName(): `${string}::register_chain::GovernanceWitness` {
+    return `${
+      getTypeOrigin('token-bridge', 'register_chain::GovernanceWitness')
+    }::register_chain::GovernanceWitness` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -82,11 +79,15 @@ export class GovernanceWitness implements StructClass {
   static reified(): GovernanceWitnessReified {
     const reifiedBcs = GovernanceWitness.bcs
     return {
-      typeName: GovernanceWitness.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceWitness.$typeName,
-        ...[],
-      ) as `${string}::register_chain::GovernanceWitness`,
+      get typeName() {
+        return GovernanceWitness.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceWitness.$typeName,
+          ...[],
+        ) as `${string}::register_chain::GovernanceWitness`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceWitness.$isPhantom,
       reifiedTypeArgs: [],
@@ -96,9 +97,11 @@ export class GovernanceWitness implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceWitness.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceWitness.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceWitness.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceWitness.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceWitness.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GovernanceWitness.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GovernanceWitness.fetch(client, id),
       new: (fields: GovernanceWitnessFields) => {
         return new GovernanceWitness([], fields)
       },
@@ -179,6 +182,14 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceWitness {
+    if (!isGovernanceWitness(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceWitness object`)
+    }
+    return GovernanceWitness.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceWitness {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -189,6 +200,7 @@ export class GovernanceWitness implements StructClass {
     return GovernanceWitness.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceWitness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceWitness {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceWitness(data.bcs.type)) {
@@ -205,13 +217,15 @@ export class GovernanceWitness implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceWitness> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceWitness(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceWitness> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceWitness(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceWitness object`)
     }
-
-    return GovernanceWitness.fromBcs(res.bcsBytes)
+    return GovernanceWitness.fromBcs(object.content)
   }
 }
 
@@ -245,9 +259,11 @@ export type RegisterChainJSON = {
 export class RegisterChain implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::register_chain::RegisterChain` = `${
-    getTypeOrigin('token-bridge', 'register_chain::RegisterChain')
-  }::register_chain::RegisterChain` as const
+  static get $typeName(): `${string}::register_chain::RegisterChain` {
+    return `${
+      getTypeOrigin('token-bridge', 'register_chain::RegisterChain')
+    }::register_chain::RegisterChain` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -273,11 +289,15 @@ export class RegisterChain implements StructClass {
   static reified(): RegisterChainReified {
     const reifiedBcs = RegisterChain.bcs
     return {
-      typeName: RegisterChain.$typeName,
-      fullTypeName: composeSuiType(
-        RegisterChain.$typeName,
-        ...[],
-      ) as `${string}::register_chain::RegisterChain`,
+      get typeName() {
+        return RegisterChain.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RegisterChain.$typeName,
+          ...[],
+        ) as `${string}::register_chain::RegisterChain`
+      },
       typeArgs: [] as [],
       isPhantom: RegisterChain.$isPhantom,
       reifiedTypeArgs: [],
@@ -287,9 +307,11 @@ export class RegisterChain implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RegisterChain.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RegisterChain.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RegisterChain.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RegisterChain.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RegisterChain.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RegisterChain.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RegisterChain.fetch(client, id),
       new: (fields: RegisterChainFields) => {
         return new RegisterChain([], fields)
       },
@@ -378,6 +400,14 @@ export class RegisterChain implements StructClass {
     return RegisterChain.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RegisterChain {
+    if (!isRegisterChain(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RegisterChain object`)
+    }
+    return RegisterChain.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RegisterChain.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RegisterChain {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -388,6 +418,7 @@ export class RegisterChain implements StructClass {
     return RegisterChain.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RegisterChain.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RegisterChain {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRegisterChain(data.bcs.type)) {
@@ -404,12 +435,14 @@ export class RegisterChain implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RegisterChain> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRegisterChain(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RegisterChain> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRegisterChain(object.type)) {
       throw new Error(`object at id ${id} is not a RegisterChain object`)
     }
-
-    return RegisterChain.fromBcs(res.bcsBytes)
+    return RegisterChain.fromBcs(object.content)
   }
 }

@@ -1,7 +1,7 @@
 import { Amount } from './amount'
 import { extractType, phantom, PhantomReified, PhantomTypeArgument } from './gen/_framework/reified'
 import { compressSuiType } from './gen/_framework/util'
-import { CoinMetadata } from '@mysten/sui/client'
+import type { SuiClientTypes } from '@mysten/sui/client'
 
 export interface CoinInfoConstructorArgs<T extends PhantomTypeArgument> {
   reified: PhantomReified<T>
@@ -46,7 +46,7 @@ export class CoinInfo<T extends PhantomTypeArgument> {
    * @returns A CoinInfo instance.
    */
   static fromCoinMetadata(
-    coinMetadata: CoinMetadata,
+    coinMetadata: SuiClientTypes.CoinMetadata,
     coinType: string
   ): CoinInfo<PhantomTypeArgument> {
     return new CoinInfo({

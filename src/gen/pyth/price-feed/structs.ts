@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { PriceIdentifier } from '../price-identifier/structs'
 import { Price } from '../price/structs'
 
@@ -57,9 +52,9 @@ export type PriceFeedJSON = {
 export class PriceFeed implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price_feed::PriceFeed` = `${
-    getTypeOrigin('pyth', 'price_feed::PriceFeed')
-  }::price_feed::PriceFeed` as const
+  static get $typeName(): `${string}::price_feed::PriceFeed` {
+    return `${getTypeOrigin('pyth', 'price_feed::PriceFeed')}::price_feed::PriceFeed` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +85,15 @@ export class PriceFeed implements StructClass {
   static reified(): PriceFeedReified {
     const reifiedBcs = PriceFeed.bcs
     return {
-      typeName: PriceFeed.$typeName,
-      fullTypeName: composeSuiType(
-        PriceFeed.$typeName,
-        ...[],
-      ) as `${string}::price_feed::PriceFeed`,
+      get typeName() {
+        return PriceFeed.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriceFeed.$typeName,
+          ...[],
+        ) as `${string}::price_feed::PriceFeed`
+      },
       typeArgs: [] as [],
       isPhantom: PriceFeed.$isPhantom,
       reifiedTypeArgs: [],
@@ -104,9 +103,11 @@ export class PriceFeed implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriceFeed.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PriceFeed.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriceFeed.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PriceFeed.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PriceFeed.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PriceFeed.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PriceFeed.fetch(client, id),
       new: (fields: PriceFeedFields) => {
         return new PriceFeed([], fields)
       },
@@ -200,6 +201,14 @@ export class PriceFeed implements StructClass {
     return PriceFeed.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PriceFeed {
+    if (!isPriceFeed(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriceFeed object`)
+    }
+    return PriceFeed.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceFeed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PriceFeed {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -210,6 +219,7 @@ export class PriceFeed implements StructClass {
     return PriceFeed.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriceFeed.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PriceFeed {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPriceFeed(data.bcs.type)) {
@@ -226,12 +236,14 @@ export class PriceFeed implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PriceFeed> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriceFeed(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PriceFeed> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriceFeed(object.type)) {
       throw new Error(`object at id ${id} is not a PriceFeed object`)
     }
-
-    return PriceFeed.fromBcs(res.bcsBytes)
+    return PriceFeed.fromBcs(object.content)
   }
 }

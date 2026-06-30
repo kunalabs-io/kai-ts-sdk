@@ -1,4 +1,4 @@
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
 import { normalizeSuiAddress } from '@mysten/sui/utils'
 import { Transaction } from '@mysten/sui/transactions'
@@ -29,10 +29,11 @@ export function configIsAffected(
 }
 
 export async function positionIsCut(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>
 ): Promise<boolean> {
   const tx = new Transaction()
+  tx.setSender(normalizeSuiAddress('0x0'))
 
   const typeArguments = [position.X.typeName, position.Y.typeName] as [string, string]
   isAttackedPosition(tx, typeArguments, {
@@ -40,16 +41,17 @@ export async function positionIsCut(
     positionId: position.data.lpPosition.id,
   })
 
-  const res = await client.devInspectTransactionBlock({
-    transactionBlock: tx,
-    sender: normalizeSuiAddress('0x0'),
+  const sim = await client.core.simulateTransaction({
+    transaction: tx,
+    include: { commandResults: true },
+    checksEnabled: false,
   })
 
-  return bcs.bool().parse(Uint8Array.from(res.results![0].returnValues![0][0]))
+  return bcs.bool().parse(sim.commandResults![0].returnValues[0].bcs)
 }
 
 export async function getCetusRedemptionAmount(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   position: Position<PhantomTypeArgument, PhantomTypeArgument, CetusPosition>
 ): Promise<Amount> {
   const vesterPackageId = '0x9d2f067d3b9d19ac0f8d2e5c2c393b1760232083e42005b2e5df39c06064d522'
@@ -65,14 +67,16 @@ export async function getCetusRedemptionAmount(
       tx.pure.id(position.data.lpPosition.id),
     ],
   })
+  tx.setSender(normalizeSuiAddress('0x0'))
 
   try {
-    const res = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
-      sender: normalizeSuiAddress('0x0'),
+    const sim = await client.core.simulateTransaction({
+      transaction: tx,
+      include: { commandResults: true },
+      checksEnabled: false,
     })
 
-    const data = Uint8Array.from(res.results![0].returnValues![0][0])
+    const data = sim.commandResults![0].returnValues[0].bcs
 
     const ID = bcs.fixedArray(32, bcs.u8())
     const PositionVesting = bcs.struct('PositionVesting', {

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -23,10 +24,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { ID, UID } from '../../../sui/object/structs'
 
@@ -62,9 +61,9 @@ export type OwnershipJSON<T extends PhantomTypeArgument> = {
 export class Ownership<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ownership::Ownership` = `${
-    getTypeOrigin('x', 'ownership::Ownership')
-  }::ownership::Ownership` as const
+  static get $typeName(): `${string}::ownership::Ownership` {
+    return `${getTypeOrigin('x', 'ownership::Ownership')}::ownership::Ownership` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -92,12 +91,18 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
   ): OwnershipReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = Ownership.bcs
     return {
-      typeName: Ownership.$typeName,
-      fullTypeName: composeSuiType(
-        Ownership.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::ownership::Ownership<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return Ownership.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Ownership.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::ownership::Ownership<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: Ownership.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => Ownership.fromFields(T, fields),
@@ -106,9 +111,11 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Ownership.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => Ownership.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Ownership.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => Ownership.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => Ownership.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Ownership.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Ownership.fetch(client, T, id),
       new: (fields: OwnershipFields<ToPhantomTypeArgument<T>>) => {
         return new Ownership([extractType(T)], fields)
       },
@@ -217,6 +224,34 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
     return Ownership.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Ownership<ToPhantomTypeArgument<T>> {
+    if (!isOwnership(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Ownership object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Ownership.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Ownership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -230,6 +265,7 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
     return Ownership.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Ownership.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -266,16 +302,19 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<Ownership<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isOwnership(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOwnership(object.type)) {
       throw new Error(`object at id ${id} is not a Ownership object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -291,6 +330,6 @@ export class Ownership<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return Ownership.fromBcs(typeArg, res.bcsBytes)
+    return Ownership.fromBcs(typeArg, object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -24,10 +25,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
@@ -94,15 +93,23 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
   ): VecMapReified<ToTypeArgument<K>, ToTypeArgument<V>> {
     const reifiedBcs = VecMap.bcs(toBcs(K), toBcs(V))
     return {
-      typeName: VecMap.$typeName,
-      fullTypeName: composeSuiType(
-        VecMap.$typeName,
-        ...[extractType(K), extractType(V)],
-      ) as `0x2::vec_map::VecMap<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<ToTypeArgument<V>>}>`,
-      typeArgs: [extractType(K), extractType(V)] as [
-        ToTypeStr<ToTypeArgument<K>>,
-        ToTypeStr<ToTypeArgument<V>>,
-      ],
+      get typeName() {
+        return VecMap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          VecMap.$typeName,
+          ...[extractType(K), extractType(V)],
+        ) as `0x2::vec_map::VecMap<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<
+          ToTypeArgument<V>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(K), extractType(V)] as [
+          ToTypeStr<ToTypeArgument<K>>,
+          ToTypeStr<ToTypeArgument<V>>,
+        ]
+      },
       isPhantom: VecMap.$isPhantom,
       reifiedTypeArgs: [K, V],
       fromFields: (fields: Record<string, any>) => VecMap.fromFields([K, V], fields),
@@ -111,9 +118,11 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
       bcs: reifiedBcs,
       fromJSONField: (field: any) => VecMap.fromJSONField([K, V], field),
       fromJSON: (json: Record<string, any>) => VecMap.fromJSON([K, V], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        VecMap.fromCoreObject([K, V], obj),
       fromSuiParsedData: (content: SuiParsedData) => VecMap.fromSuiParsedData([K, V], content),
       fromSuiObjectData: (content: SuiObjectData) => VecMap.fromSuiObjectData([K, V], content),
-      fetch: async (client: SupportedSuiClient, id: string) => VecMap.fetch(client, [K, V], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => VecMap.fetch(client, [K, V], id),
       new: (fields: VecMapFields<ToTypeArgument<K>, ToTypeArgument<V>>) => {
         return new VecMap([extractType(K), extractType(V)], fields)
       },
@@ -234,6 +243,34 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
     return VecMap.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): VecMap<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (!isVecMap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a VecMap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return VecMap.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VecMap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -250,6 +287,7 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
     return VecMap.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VecMap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -289,16 +327,19 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
   }
 
   static async fetch<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [K, V],
     id: string,
   ): Promise<VecMap<ToTypeArgument<K>, ToTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVecMap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVecMap(object.type)) {
       throw new Error(`object at id ${id} is not a VecMap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -314,7 +355,7 @@ export class VecMap<K extends TypeArgument, V extends TypeArgument> implements S
       }
     }
 
-    return VecMap.fromBcs(typeArgs, res.bcsBytes)
+    return VecMap.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -378,15 +419,21 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
   ): EntryReified<ToTypeArgument<K>, ToTypeArgument<V>> {
     const reifiedBcs = Entry.bcs(toBcs(K), toBcs(V))
     return {
-      typeName: Entry.$typeName,
-      fullTypeName: composeSuiType(
-        Entry.$typeName,
-        ...[extractType(K), extractType(V)],
-      ) as `0x2::vec_map::Entry<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<ToTypeArgument<V>>}>`,
-      typeArgs: [extractType(K), extractType(V)] as [
-        ToTypeStr<ToTypeArgument<K>>,
-        ToTypeStr<ToTypeArgument<V>>,
-      ],
+      get typeName() {
+        return Entry.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Entry.$typeName,
+          ...[extractType(K), extractType(V)],
+        ) as `0x2::vec_map::Entry<${ToTypeStr<ToTypeArgument<K>>}, ${ToTypeStr<ToTypeArgument<V>>}>`
+      },
+      get typeArgs() {
+        return [extractType(K), extractType(V)] as [
+          ToTypeStr<ToTypeArgument<K>>,
+          ToTypeStr<ToTypeArgument<V>>,
+        ]
+      },
       isPhantom: Entry.$isPhantom,
       reifiedTypeArgs: [K, V],
       fromFields: (fields: Record<string, any>) => Entry.fromFields([K, V], fields),
@@ -395,9 +442,11 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Entry.fromJSONField([K, V], field),
       fromJSON: (json: Record<string, any>) => Entry.fromJSON([K, V], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Entry.fromCoreObject([K, V], obj),
       fromSuiParsedData: (content: SuiParsedData) => Entry.fromSuiParsedData([K, V], content),
       fromSuiObjectData: (content: SuiObjectData) => Entry.fromSuiObjectData([K, V], content),
-      fetch: async (client: SupportedSuiClient, id: string) => Entry.fetch(client, [K, V], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Entry.fetch(client, [K, V], id),
       new: (fields: EntryFields<ToTypeArgument<K>, ToTypeArgument<V>>) => {
         return new Entry([extractType(K), extractType(V)], fields)
       },
@@ -511,6 +560,34 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
     return Entry.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
+    typeArgs: [K, V],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Entry<ToTypeArgument<K>, ToTypeArgument<V>> {
+    if (!isEntry(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Entry object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Entry.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Entry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -527,6 +604,7 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
     return Entry.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Entry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     K extends Reified<TypeArgument, any>,
     V extends Reified<TypeArgument, any>,
@@ -566,16 +644,19 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
   }
 
   static async fetch<K extends Reified<TypeArgument, any>, V extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [K, V],
     id: string,
   ): Promise<Entry<ToTypeArgument<K>, ToTypeArgument<V>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEntry(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEntry(object.type)) {
       throw new Error(`object at id ${id} is not a Entry object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -591,6 +672,6 @@ export class Entry<K extends TypeArgument, V extends TypeArgument> implements St
       }
     }
 
-    return Entry.fromBcs(typeArgs, res.bcsBytes)
+    return Entry.fromBcs(typeArgs, object.content)
   }
 }

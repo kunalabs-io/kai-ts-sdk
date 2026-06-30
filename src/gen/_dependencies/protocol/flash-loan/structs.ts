@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 
 /* ============================== BorrowFlashLoanEvent =============================== */
@@ -60,9 +55,11 @@ export type BorrowFlashLoanEventJSON = {
 export class BorrowFlashLoanEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::flash_loan::BorrowFlashLoanEvent` = `${
-    getTypeOrigin('protocol', 'flash_loan::BorrowFlashLoanEvent')
-  }::flash_loan::BorrowFlashLoanEvent` as const
+  static get $typeName(): `${string}::flash_loan::BorrowFlashLoanEvent` {
+    return `${
+      getTypeOrigin('protocol', 'flash_loan::BorrowFlashLoanEvent')
+    }::flash_loan::BorrowFlashLoanEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -90,11 +87,15 @@ export class BorrowFlashLoanEvent implements StructClass {
   static reified(): BorrowFlashLoanEventReified {
     const reifiedBcs = BorrowFlashLoanEvent.bcs
     return {
-      typeName: BorrowFlashLoanEvent.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowFlashLoanEvent.$typeName,
-        ...[],
-      ) as `${string}::flash_loan::BorrowFlashLoanEvent`,
+      get typeName() {
+        return BorrowFlashLoanEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowFlashLoanEvent.$typeName,
+          ...[],
+        ) as `${string}::flash_loan::BorrowFlashLoanEvent`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowFlashLoanEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -105,11 +106,13 @@ export class BorrowFlashLoanEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFlashLoanEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFlashLoanEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowFlashLoanEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BorrowFlashLoanEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BorrowFlashLoanEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BorrowFlashLoanEvent.fetch(client, id),
       new: (fields: BorrowFlashLoanEventFields) => {
         return new BorrowFlashLoanEvent([], fields)
@@ -204,6 +207,14 @@ export class BorrowFlashLoanEvent implements StructClass {
     return BorrowFlashLoanEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowFlashLoanEvent {
+    if (!isBorrowFlashLoanEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowFlashLoanEvent object`)
+    }
+    return BorrowFlashLoanEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowFlashLoanEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -216,6 +227,7 @@ export class BorrowFlashLoanEvent implements StructClass {
     return BorrowFlashLoanEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowFlashLoanEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowFlashLoanEvent(data.bcs.type)) {
@@ -232,13 +244,15 @@ export class BorrowFlashLoanEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowFlashLoanEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowFlashLoanEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowFlashLoanEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowFlashLoanEvent(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowFlashLoanEvent object`)
     }
-
-    return BorrowFlashLoanEvent.fromBcs(res.bcsBytes)
+    return BorrowFlashLoanEvent.fromBcs(object.content)
   }
 }
 
@@ -274,9 +288,11 @@ export type RepayFlashLoanEventJSON = {
 export class RepayFlashLoanEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::flash_loan::RepayFlashLoanEvent` = `${
-    getTypeOrigin('protocol', 'flash_loan::RepayFlashLoanEvent')
-  }::flash_loan::RepayFlashLoanEvent` as const
+  static get $typeName(): `${string}::flash_loan::RepayFlashLoanEvent` {
+    return `${
+      getTypeOrigin('protocol', 'flash_loan::RepayFlashLoanEvent')
+    }::flash_loan::RepayFlashLoanEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -304,11 +320,15 @@ export class RepayFlashLoanEvent implements StructClass {
   static reified(): RepayFlashLoanEventReified {
     const reifiedBcs = RepayFlashLoanEvent.bcs
     return {
-      typeName: RepayFlashLoanEvent.$typeName,
-      fullTypeName: composeSuiType(
-        RepayFlashLoanEvent.$typeName,
-        ...[],
-      ) as `${string}::flash_loan::RepayFlashLoanEvent`,
+      get typeName() {
+        return RepayFlashLoanEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RepayFlashLoanEvent.$typeName,
+          ...[],
+        ) as `${string}::flash_loan::RepayFlashLoanEvent`
+      },
       typeArgs: [] as [],
       isPhantom: RepayFlashLoanEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -318,10 +338,11 @@ export class RepayFlashLoanEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayFlashLoanEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayFlashLoanEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RepayFlashLoanEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RepayFlashLoanEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RepayFlashLoanEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        RepayFlashLoanEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RepayFlashLoanEvent.fetch(client, id),
       new: (fields: RepayFlashLoanEventFields) => {
         return new RepayFlashLoanEvent([], fields)
       },
@@ -415,6 +436,14 @@ export class RepayFlashLoanEvent implements StructClass {
     return RepayFlashLoanEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RepayFlashLoanEvent {
+    if (!isRepayFlashLoanEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RepayFlashLoanEvent object`)
+    }
+    return RepayFlashLoanEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayFlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RepayFlashLoanEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -425,6 +454,7 @@ export class RepayFlashLoanEvent implements StructClass {
     return RepayFlashLoanEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayFlashLoanEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RepayFlashLoanEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRepayFlashLoanEvent(data.bcs.type)) {
@@ -441,13 +471,15 @@ export class RepayFlashLoanEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RepayFlashLoanEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRepayFlashLoanEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RepayFlashLoanEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRepayFlashLoanEvent(object.type)) {
       throw new Error(`object at id ${id} is not a RepayFlashLoanEvent object`)
     }
-
-    return RepayFlashLoanEvent.fromBcs(res.bcsBytes)
+    return RepayFlashLoanEvent.fromBcs(object.content)
   }
 }
 
@@ -492,9 +524,11 @@ export type BorrowFlashLoanV2EventJSON = {
 export class BorrowFlashLoanV2Event implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::flash_loan::BorrowFlashLoanV2Event` = `${
-    getTypeOrigin('protocol', 'flash_loan::BorrowFlashLoanV2Event')
-  }::flash_loan::BorrowFlashLoanV2Event` as const
+  static get $typeName(): `${string}::flash_loan::BorrowFlashLoanV2Event` {
+    return `${
+      getTypeOrigin('protocol', 'flash_loan::BorrowFlashLoanV2Event')
+    }::flash_loan::BorrowFlashLoanV2Event` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -528,11 +562,15 @@ export class BorrowFlashLoanV2Event implements StructClass {
   static reified(): BorrowFlashLoanV2EventReified {
     const reifiedBcs = BorrowFlashLoanV2Event.bcs
     return {
-      typeName: BorrowFlashLoanV2Event.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowFlashLoanV2Event.$typeName,
-        ...[],
-      ) as `${string}::flash_loan::BorrowFlashLoanV2Event`,
+      get typeName() {
+        return BorrowFlashLoanV2Event.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowFlashLoanV2Event.$typeName,
+          ...[],
+        ) as `${string}::flash_loan::BorrowFlashLoanV2Event`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowFlashLoanV2Event.$isPhantom,
       reifiedTypeArgs: [],
@@ -543,11 +581,13 @@ export class BorrowFlashLoanV2Event implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowFlashLoanV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowFlashLoanV2Event.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowFlashLoanV2Event.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BorrowFlashLoanV2Event.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BorrowFlashLoanV2Event.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BorrowFlashLoanV2Event.fetch(client, id),
       new: (fields: BorrowFlashLoanV2EventFields) => {
         return new BorrowFlashLoanV2Event([], fields)
@@ -660,6 +700,14 @@ export class BorrowFlashLoanV2Event implements StructClass {
     return BorrowFlashLoanV2Event.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowFlashLoanV2Event {
+    if (!isBorrowFlashLoanV2Event(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowFlashLoanV2Event object`)
+    }
+    return BorrowFlashLoanV2Event.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFlashLoanV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowFlashLoanV2Event {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -672,6 +720,7 @@ export class BorrowFlashLoanV2Event implements StructClass {
     return BorrowFlashLoanV2Event.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowFlashLoanV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowFlashLoanV2Event {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowFlashLoanV2Event(data.bcs.type)) {
@@ -688,13 +737,15 @@ export class BorrowFlashLoanV2Event implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowFlashLoanV2Event> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowFlashLoanV2Event(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowFlashLoanV2Event> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowFlashLoanV2Event(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowFlashLoanV2Event object`)
     }
-
-    return BorrowFlashLoanV2Event.fromBcs(res.bcsBytes)
+    return BorrowFlashLoanV2Event.fromBcs(object.content)
   }
 }
 
@@ -735,9 +786,11 @@ export type RepayFlashLoanV2EventJSON = {
 export class RepayFlashLoanV2Event implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::flash_loan::RepayFlashLoanV2Event` = `${
-    getTypeOrigin('protocol', 'flash_loan::RepayFlashLoanV2Event')
-  }::flash_loan::RepayFlashLoanV2Event` as const
+  static get $typeName(): `${string}::flash_loan::RepayFlashLoanV2Event` {
+    return `${
+      getTypeOrigin('protocol', 'flash_loan::RepayFlashLoanV2Event')
+    }::flash_loan::RepayFlashLoanV2Event` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -767,11 +820,15 @@ export class RepayFlashLoanV2Event implements StructClass {
   static reified(): RepayFlashLoanV2EventReified {
     const reifiedBcs = RepayFlashLoanV2Event.bcs
     return {
-      typeName: RepayFlashLoanV2Event.$typeName,
-      fullTypeName: composeSuiType(
-        RepayFlashLoanV2Event.$typeName,
-        ...[],
-      ) as `${string}::flash_loan::RepayFlashLoanV2Event`,
+      get typeName() {
+        return RepayFlashLoanV2Event.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RepayFlashLoanV2Event.$typeName,
+          ...[],
+        ) as `${string}::flash_loan::RepayFlashLoanV2Event`
+      },
       typeArgs: [] as [],
       isPhantom: RepayFlashLoanV2Event.$isPhantom,
       reifiedTypeArgs: [],
@@ -782,11 +839,13 @@ export class RepayFlashLoanV2Event implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RepayFlashLoanV2Event.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RepayFlashLoanV2Event.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RepayFlashLoanV2Event.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         RepayFlashLoanV2Event.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         RepayFlashLoanV2Event.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         RepayFlashLoanV2Event.fetch(client, id),
       new: (fields: RepayFlashLoanV2EventFields) => {
         return new RepayFlashLoanV2Event([], fields)
@@ -886,6 +945,14 @@ export class RepayFlashLoanV2Event implements StructClass {
     return RepayFlashLoanV2Event.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RepayFlashLoanV2Event {
+    if (!isRepayFlashLoanV2Event(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RepayFlashLoanV2Event object`)
+    }
+    return RepayFlashLoanV2Event.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayFlashLoanV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RepayFlashLoanV2Event {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -898,6 +965,7 @@ export class RepayFlashLoanV2Event implements StructClass {
     return RepayFlashLoanV2Event.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RepayFlashLoanV2Event.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RepayFlashLoanV2Event {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRepayFlashLoanV2Event(data.bcs.type)) {
@@ -914,12 +982,14 @@ export class RepayFlashLoanV2Event implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RepayFlashLoanV2Event> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRepayFlashLoanV2Event(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RepayFlashLoanV2Event> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRepayFlashLoanV2Event(object.type)) {
       throw new Error(`object at id ${id} is not a RepayFlashLoanV2Event object`)
     }
-
-    return RepayFlashLoanV2Event.fromBcs(res.bcsBytes)
+    return RepayFlashLoanV2Event.fromBcs(object.content)
   }
 }

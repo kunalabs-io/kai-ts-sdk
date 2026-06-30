@@ -30,7 +30,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -54,10 +55,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { TreasuryCap } from '../../../sui/coin/structs'
 import { UID } from '../../../sui/object/structs'
@@ -112,9 +111,11 @@ export class WrappedAssetSetup<
 > implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::create_wrapped::WrappedAssetSetup` = `${
-    getTypeOrigin('token-bridge', 'create_wrapped::WrappedAssetSetup')
-  }::create_wrapped::WrappedAssetSetup` as const
+  static get $typeName(): `${string}::create_wrapped::WrappedAssetSetup` {
+    return `${
+      getTypeOrigin('token-bridge', 'create_wrapped::WrappedAssetSetup')
+    }::create_wrapped::WrappedAssetSetup` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -153,17 +154,23 @@ export class WrappedAssetSetup<
   ): WrappedAssetSetupReified<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
     const reifiedBcs = WrappedAssetSetup.bcs
     return {
-      typeName: WrappedAssetSetup.$typeName,
-      fullTypeName: composeSuiType(
-        WrappedAssetSetup.$typeName,
-        ...[extractType(CoinType), extractType(Version)],
-      ) as `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinType>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Version>>}>`,
-      typeArgs: [extractType(CoinType), extractType(Version)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<Version>>,
-      ],
+      get typeName() {
+        return WrappedAssetSetup.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WrappedAssetSetup.$typeName,
+          ...[extractType(CoinType), extractType(Version)],
+        ) as `${string}::create_wrapped::WrappedAssetSetup<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinType>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<Version>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType), extractType(Version)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<Version>>,
+        ]
+      },
       isPhantom: WrappedAssetSetup.$isPhantom,
       reifiedTypeArgs: [CoinType, Version],
       fromFields: (fields: Record<string, any>) =>
@@ -176,11 +183,13 @@ export class WrappedAssetSetup<
       fromJSONField: (field: any) => WrappedAssetSetup.fromJSONField([CoinType, Version], field),
       fromJSON: (json: Record<string, any>) =>
         WrappedAssetSetup.fromJSON([CoinType, Version], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WrappedAssetSetup.fromCoreObject([CoinType, Version], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         WrappedAssetSetup.fromSuiParsedData([CoinType, Version], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WrappedAssetSetup.fromSuiObjectData([CoinType, Version], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         WrappedAssetSetup.fetch(client, [CoinType, Version], id),
       new: (
         fields: WrappedAssetSetupFields<
@@ -319,6 +328,37 @@ export class WrappedAssetSetup<
     return WrappedAssetSetup.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Version extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [CoinType, Version],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>> {
+    if (!isWrappedAssetSetup(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WrappedAssetSetup object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WrappedAssetSetup.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedAssetSetup.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Version extends PhantomReified<PhantomTypeArgument>,
@@ -335,6 +375,7 @@ export class WrappedAssetSetup<
     return WrappedAssetSetup.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WrappedAssetSetup.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Version extends PhantomReified<PhantomTypeArgument>,
@@ -377,16 +418,19 @@ export class WrappedAssetSetup<
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Version extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinType, Version],
     id: string,
   ): Promise<WrappedAssetSetup<ToPhantomTypeArgument<CoinType>, ToPhantomTypeArgument<Version>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWrappedAssetSetup(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWrappedAssetSetup(object.type)) {
       throw new Error(`object at id ${id} is not a WrappedAssetSetup object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -402,6 +446,6 @@ export class WrappedAssetSetup<
       }
     }
 
-    return WrappedAssetSetup.fromBcs(typeArgs, res.bcsBytes)
+    return WrappedAssetSetup.fromBcs(typeArgs, object.content)
   }
 }

@@ -4,7 +4,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -19,13 +20,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -62,9 +57,9 @@ export type BorrowEventJSON = {
 export class BorrowEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow::BorrowEvent` = `${
-    getTypeOrigin('protocol', 'borrow::BorrowEvent')
-  }::borrow::BorrowEvent` as const
+  static get $typeName(): `${string}::borrow::BorrowEvent` {
+    return `${getTypeOrigin('protocol', 'borrow::BorrowEvent')}::borrow::BorrowEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -96,11 +91,15 @@ export class BorrowEvent implements StructClass {
   static reified(): BorrowEventReified {
     const reifiedBcs = BorrowEvent.bcs
     return {
-      typeName: BorrowEvent.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowEvent.$typeName,
-        ...[],
-      ) as `${string}::borrow::BorrowEvent`,
+      get typeName() {
+        return BorrowEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowEvent.$typeName,
+          ...[],
+        ) as `${string}::borrow::BorrowEvent`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -110,9 +109,11 @@ export class BorrowEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowEvent.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowEvent.fetch(client, id),
       new: (fields: BorrowEventFields) => {
         return new BorrowEvent([], fields)
       },
@@ -216,6 +217,14 @@ export class BorrowEvent implements StructClass {
     return BorrowEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowEvent {
+    if (!isBorrowEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowEvent object`)
+    }
+    return BorrowEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -226,6 +235,7 @@ export class BorrowEvent implements StructClass {
     return BorrowEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowEvent(data.bcs.type)) {
@@ -242,13 +252,15 @@ export class BorrowEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowEvent(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowEvent object`)
     }
-
-    return BorrowEvent.fromBcs(res.bcsBytes)
+    return BorrowEvent.fromBcs(object.content)
   }
 }
 
@@ -287,9 +299,9 @@ export type BorrowEventV2JSON = {
 export class BorrowEventV2 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow::BorrowEventV2` = `${
-    getTypeOrigin('protocol', 'borrow::BorrowEventV2')
-  }::borrow::BorrowEventV2` as const
+  static get $typeName(): `${string}::borrow::BorrowEventV2` {
+    return `${getTypeOrigin('protocol', 'borrow::BorrowEventV2')}::borrow::BorrowEventV2` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -323,11 +335,15 @@ export class BorrowEventV2 implements StructClass {
   static reified(): BorrowEventV2Reified {
     const reifiedBcs = BorrowEventV2.bcs
     return {
-      typeName: BorrowEventV2.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowEventV2.$typeName,
-        ...[],
-      ) as `${string}::borrow::BorrowEventV2`,
+      get typeName() {
+        return BorrowEventV2.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowEventV2.$typeName,
+          ...[],
+        ) as `${string}::borrow::BorrowEventV2`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowEventV2.$isPhantom,
       reifiedTypeArgs: [],
@@ -337,9 +353,11 @@ export class BorrowEventV2 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEventV2.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEventV2.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowEventV2.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEventV2.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowEventV2.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowEventV2.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowEventV2.fetch(client, id),
       new: (fields: BorrowEventV2Fields) => {
         return new BorrowEventV2([], fields)
       },
@@ -448,6 +466,14 @@ export class BorrowEventV2 implements StructClass {
     return BorrowEventV2.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowEventV2 {
+    if (!isBorrowEventV2(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowEventV2 object`)
+    }
+    return BorrowEventV2.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEventV2.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowEventV2 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -458,6 +484,7 @@ export class BorrowEventV2 implements StructClass {
     return BorrowEventV2.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEventV2.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowEventV2 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowEventV2(data.bcs.type)) {
@@ -474,13 +501,15 @@ export class BorrowEventV2 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowEventV2> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowEventV2(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowEventV2> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowEventV2(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowEventV2 object`)
     }
-
-    return BorrowEventV2.fromBcs(res.bcsBytes)
+    return BorrowEventV2.fromBcs(object.content)
   }
 }
 
@@ -523,9 +552,9 @@ export type BorrowEventV3JSON = {
 export class BorrowEventV3 implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow::BorrowEventV3` = `${
-    getTypeOrigin('protocol', 'borrow::BorrowEventV3')
-  }::borrow::BorrowEventV3` as const
+  static get $typeName(): `${string}::borrow::BorrowEventV3` {
+    return `${getTypeOrigin('protocol', 'borrow::BorrowEventV3')}::borrow::BorrowEventV3` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -563,11 +592,15 @@ export class BorrowEventV3 implements StructClass {
   static reified(): BorrowEventV3Reified {
     const reifiedBcs = BorrowEventV3.bcs
     return {
-      typeName: BorrowEventV3.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowEventV3.$typeName,
-        ...[],
-      ) as `${string}::borrow::BorrowEventV3`,
+      get typeName() {
+        return BorrowEventV3.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowEventV3.$typeName,
+          ...[],
+        ) as `${string}::borrow::BorrowEventV3`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowEventV3.$isPhantom,
       reifiedTypeArgs: [],
@@ -577,9 +610,11 @@ export class BorrowEventV3 implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowEventV3.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowEventV3.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowEventV3.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowEventV3.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowEventV3.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowEventV3.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowEventV3.fetch(client, id),
       new: (fields: BorrowEventV3Fields) => {
         return new BorrowEventV3([], fields)
       },
@@ -698,6 +733,14 @@ export class BorrowEventV3 implements StructClass {
     return BorrowEventV3.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowEventV3 {
+    if (!isBorrowEventV3(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowEventV3 object`)
+    }
+    return BorrowEventV3.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEventV3.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowEventV3 {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -708,6 +751,7 @@ export class BorrowEventV3 implements StructClass {
     return BorrowEventV3.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowEventV3.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowEventV3 {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowEventV3(data.bcs.type)) {
@@ -724,12 +768,14 @@ export class BorrowEventV3 implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowEventV3> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowEventV3(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowEventV3> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowEventV3(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowEventV3 object`)
     }
-
-    return BorrowEventV3.fromBcs(res.bcsBytes)
+    return BorrowEventV3.fromBcs(object.content)
   }
 }

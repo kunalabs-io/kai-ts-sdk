@@ -1,4 +1,4 @@
-import { PaginatedObjectsResponse, SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import { PositionCap } from '../gen/kai-leverage/position-core-clmm/structs'
 import { normalizeSuiObjectId } from '@mysten/sui/utils'
 import { Position } from './position'
@@ -10,7 +10,7 @@ export interface GetAllWalletPositionsResponse {
     positionCapId: string
   }[]
   hasNextPage: boolean
-  nextCursor?: PaginatedObjectsResponse['nextCursor']
+  nextCursor: string | null
 }
 
 /**
@@ -22,51 +22,45 @@ export interface GetAllWalletPositionsResponse {
  * @returns The `Position` objects owned by the wallet address
  */
 export async function getAllWalletPositions(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   walletAddress: string,
   cursor?: string
 ): Promise<GetAllWalletPositionsResponse> {
-  const res = await client.getOwnedObjects({
+  const res = await client.core.listOwnedObjects({
     owner: walletAddress,
-    filter: {
-      StructType: PositionCap.$typeName,
-    },
-    options: {
-      showBcs: true,
+    type: PositionCap.$typeName,
+    include: {
+      content: true,
     },
     cursor,
   })
 
   const positionIdToCapMap = new Map<string, PositionCap>()
 
-  for (const obj of res.data) {
-    if (!obj.data) {
-      throw new Error(`No data found in response for a PositionCap`)
-    }
-
-    const positionCap = PositionCap.fromSuiObjectData(obj.data)
+  for (const obj of res.objects) {
+    const positionCap = PositionCap.fromCoreObject(obj)
     positionIdToCapMap.set(positionCap.positionId, positionCap)
   }
 
-  const positionsRes = await client.multiGetObjects({
-    ids: Array.from(positionIdToCapMap.keys()),
-    options: {
-      showBcs: true,
+  const positionsRes = await client.core.getObjects({
+    objectIds: Array.from(positionIdToCapMap.keys()),
+    include: {
+      content: true,
     },
   })
 
   const ret: GetAllWalletPositionsResponse = {
     data: [],
     hasNextPage: res.hasNextPage,
-    nextCursor: res.nextCursor,
+    nextCursor: res.cursor,
   }
 
-  for (const obj of positionsRes) {
-    if (!obj.data) {
-      throw new Error(`No data found in response for a Position`)
+  for (const obj of positionsRes.objects) {
+    if (obj instanceof Error) {
+      throw obj
     }
 
-    const position = Position.fromSuiObjectData(obj.data)
+    const position = Position.fromCoreObject(obj)
 
     ret.data.push({
       position,
@@ -87,39 +81,34 @@ export async function getAllWalletPositions(
  * @returns The `PositionCap` object, or `null` if it is not found
  */
 export async function findPositionCapForWalletPosition(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   positionId: string,
   walletAddress: string
 ): Promise<PositionCap | null> {
   const normalizedPositionId = normalizeSuiObjectId(positionId)
 
   let hasNextPage = true
-  let nextCursor = undefined
+  let nextCursor: string | null | undefined = undefined
   while (hasNextPage) {
-    const res = await client.getOwnedObjects({
-      owner: walletAddress,
-      options: {
-        showBcs: true,
-      },
-      filter: {
-        StructType: PositionCap.$typeName,
-      },
-      cursor: nextCursor,
-    })
+    const res: SuiClientTypes.ListOwnedObjectsResponse<{ content: true }> =
+      await client.core.listOwnedObjects({
+        owner: walletAddress,
+        include: {
+          content: true,
+        },
+        type: PositionCap.$typeName,
+        cursor: nextCursor,
+      })
 
-    for (const obj of res.data) {
-      if (!obj.data) {
-        throw new Error(`No data found in response for a PositionCap`)
-      }
-
-      const positionCap = PositionCap.fromSuiObjectData(obj.data)
+    for (const obj of res.objects) {
+      const positionCap = PositionCap.fromCoreObject(obj)
       if (normalizeSuiObjectId(positionCap.positionId) === normalizedPositionId) {
         return positionCap
       }
     }
 
     hasNextPage = res.hasNextPage
-    nextCursor = res.nextCursor
+    nextCursor = res.cursor
   }
 
   return null

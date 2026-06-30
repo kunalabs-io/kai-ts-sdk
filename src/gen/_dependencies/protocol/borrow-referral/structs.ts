@@ -7,7 +7,8 @@
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -35,10 +36,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { Balance } from '../../../sui/balance/structs'
@@ -97,9 +96,11 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_referral::BorrowReferral` = `${
-    getTypeOrigin('protocol', 'borrow_referral::BorrowReferral')
-  }::borrow_referral::BorrowReferral` as const
+  static get $typeName(): `${string}::borrow_referral::BorrowReferral` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_referral::BorrowReferral')
+    }::borrow_referral::BorrowReferral` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, false] as const
 
@@ -146,17 +147,23 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
   ): BorrowReferralReified<ToPhantomTypeArgument<CoinType>, ToTypeArgument<Witness>> {
     const reifiedBcs = BorrowReferral.bcs(toBcs(Witness))
     return {
-      typeName: BorrowReferral.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowReferral.$typeName,
-        ...[extractType(CoinType), extractType(Witness)],
-      ) as `${string}::borrow_referral::BorrowReferral<${PhantomToTypeStr<
-        ToPhantomTypeArgument<CoinType>
-      >}, ${ToTypeStr<ToTypeArgument<Witness>>}>`,
-      typeArgs: [extractType(CoinType), extractType(Witness)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>,
-        ToTypeStr<ToTypeArgument<Witness>>,
-      ],
+      get typeName() {
+        return BorrowReferral.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowReferral.$typeName,
+          ...[extractType(CoinType), extractType(Witness)],
+        ) as `${string}::borrow_referral::BorrowReferral<${PhantomToTypeStr<
+          ToPhantomTypeArgument<CoinType>
+        >}, ${ToTypeStr<ToTypeArgument<Witness>>}>`
+      },
+      get typeArgs() {
+        return [extractType(CoinType), extractType(Witness)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<CoinType>>,
+          ToTypeStr<ToTypeArgument<Witness>>,
+        ]
+      },
       isPhantom: BorrowReferral.$isPhantom,
       reifiedTypeArgs: [CoinType, Witness],
       fromFields: (fields: Record<string, any>) =>
@@ -168,11 +175,13 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowReferral.fromJSONField([CoinType, Witness], field),
       fromJSON: (json: Record<string, any>) => BorrowReferral.fromJSON([CoinType, Witness], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowReferral.fromCoreObject([CoinType, Witness], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BorrowReferral.fromSuiParsedData([CoinType, Witness], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BorrowReferral.fromSuiObjectData([CoinType, Witness], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BorrowReferral.fetch(client, [CoinType, Witness], id),
       new: (
         fields: BorrowReferralFields<ToPhantomTypeArgument<CoinType>, ToTypeArgument<Witness>>,
@@ -329,6 +338,37 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
     return BorrowReferral.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    CoinType extends PhantomReified<PhantomTypeArgument>,
+    Witness extends Reified<TypeArgument, any>,
+  >(
+    typeArgs: [CoinType, Witness],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): BorrowReferral<ToPhantomTypeArgument<CoinType>, ToTypeArgument<Witness>> {
+    if (!isBorrowReferral(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowReferral object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BorrowReferral.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowReferral.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Witness extends Reified<TypeArgument, any>,
@@ -345,6 +385,7 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
     return BorrowReferral.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowReferral.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Witness extends Reified<TypeArgument, any>,
@@ -387,16 +428,19 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
     CoinType extends PhantomReified<PhantomTypeArgument>,
     Witness extends Reified<TypeArgument, any>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [CoinType, Witness],
     id: string,
   ): Promise<BorrowReferral<ToPhantomTypeArgument<CoinType>, ToTypeArgument<Witness>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowReferral(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowReferral(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowReferral object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -412,7 +456,7 @@ export class BorrowReferral<CoinType extends PhantomTypeArgument, Witness extend
       }
     }
 
-    return BorrowReferral.fromBcs(typeArgs, res.bcsBytes)
+    return BorrowReferral.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -448,9 +492,11 @@ export type BorrowReferralCfgKeyJSON<Cfg extends PhantomTypeArgument> = {
 export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_referral::BorrowReferralCfgKey` = `${
-    getTypeOrigin('protocol', 'borrow_referral::BorrowReferralCfgKey')
-  }::borrow_referral::BorrowReferralCfgKey` as const
+  static get $typeName(): `${string}::borrow_referral::BorrowReferralCfgKey` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_referral::BorrowReferralCfgKey')
+    }::borrow_referral::BorrowReferralCfgKey` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -478,14 +524,20 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
   ): BorrowReferralCfgKeyReified<ToPhantomTypeArgument<Cfg>> {
     const reifiedBcs = BorrowReferralCfgKey.bcs
     return {
-      typeName: BorrowReferralCfgKey.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowReferralCfgKey.$typeName,
-        ...[extractType(Cfg)],
-      ) as `${string}::borrow_referral::BorrowReferralCfgKey<${PhantomToTypeStr<
-        ToPhantomTypeArgument<Cfg>
-      >}>`,
-      typeArgs: [extractType(Cfg)] as [PhantomToTypeStr<ToPhantomTypeArgument<Cfg>>],
+      get typeName() {
+        return BorrowReferralCfgKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowReferralCfgKey.$typeName,
+          ...[extractType(Cfg)],
+        ) as `${string}::borrow_referral::BorrowReferralCfgKey<${PhantomToTypeStr<
+          ToPhantomTypeArgument<Cfg>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(Cfg)] as [PhantomToTypeStr<ToPhantomTypeArgument<Cfg>>]
+      },
       isPhantom: BorrowReferralCfgKey.$isPhantom,
       reifiedTypeArgs: [Cfg],
       fromFields: (fields: Record<string, any>) => BorrowReferralCfgKey.fromFields(Cfg, fields),
@@ -495,11 +547,13 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowReferralCfgKey.fromJSONField(Cfg, field),
       fromJSON: (json: Record<string, any>) => BorrowReferralCfgKey.fromJSON(Cfg, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowReferralCfgKey.fromCoreObject(Cfg, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BorrowReferralCfgKey.fromSuiParsedData(Cfg, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BorrowReferralCfgKey.fromSuiObjectData(Cfg, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BorrowReferralCfgKey.fetch(client, Cfg, id),
       new: (fields: BorrowReferralCfgKeyFields<ToPhantomTypeArgument<Cfg>>) => {
         return new BorrowReferralCfgKey([extractType(Cfg)], fields)
@@ -604,6 +658,34 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
     return BorrowReferralCfgKey.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<Cfg extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: Cfg,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): BorrowReferralCfgKey<ToPhantomTypeArgument<Cfg>> {
+    if (!isBorrowReferralCfgKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowReferralCfgKey object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return BorrowReferralCfgKey.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowReferralCfgKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<Cfg extends PhantomReified<PhantomTypeArgument>>(
     typeArg: Cfg,
     content: SuiParsedData,
@@ -619,6 +701,7 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
     return BorrowReferralCfgKey.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowReferralCfgKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<Cfg extends PhantomReified<PhantomTypeArgument>>(
     typeArg: Cfg,
     data: SuiObjectData,
@@ -655,16 +738,19 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
   }
 
   static async fetch<Cfg extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: Cfg,
     id: string,
   ): Promise<BorrowReferralCfgKey<ToPhantomTypeArgument<Cfg>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowReferralCfgKey(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowReferralCfgKey(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowReferralCfgKey object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -680,7 +766,7 @@ export class BorrowReferralCfgKey<Cfg extends PhantomTypeArgument> implements St
       }
     }
 
-    return BorrowReferralCfgKey.fromBcs(typeArg, res.bcsBytes)
+    return BorrowReferralCfgKey.fromBcs(typeArg, object.content)
   }
 }
 
@@ -710,9 +796,11 @@ export type BorrowedKeyJSON = {
 export class BorrowedKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_referral::BorrowedKey` = `${
-    getTypeOrigin('protocol', 'borrow_referral::BorrowedKey')
-  }::borrow_referral::BorrowedKey` as const
+  static get $typeName(): `${string}::borrow_referral::BorrowedKey` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_referral::BorrowedKey')
+    }::borrow_referral::BorrowedKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -736,11 +824,15 @@ export class BorrowedKey implements StructClass {
   static reified(): BorrowedKeyReified {
     const reifiedBcs = BorrowedKey.bcs
     return {
-      typeName: BorrowedKey.$typeName,
-      fullTypeName: composeSuiType(
-        BorrowedKey.$typeName,
-        ...[],
-      ) as `${string}::borrow_referral::BorrowedKey`,
+      get typeName() {
+        return BorrowedKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BorrowedKey.$typeName,
+          ...[],
+        ) as `${string}::borrow_referral::BorrowedKey`
+      },
       typeArgs: [] as [],
       isPhantom: BorrowedKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -750,9 +842,11 @@ export class BorrowedKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BorrowedKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BorrowedKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BorrowedKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => BorrowedKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => BorrowedKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => BorrowedKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => BorrowedKey.fetch(client, id),
       new: (fields: BorrowedKeyFields) => {
         return new BorrowedKey([], fields)
       },
@@ -833,6 +927,14 @@ export class BorrowedKey implements StructClass {
     return BorrowedKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BorrowedKey {
+    if (!isBorrowedKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BorrowedKey object`)
+    }
+    return BorrowedKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowedKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BorrowedKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -843,6 +945,7 @@ export class BorrowedKey implements StructClass {
     return BorrowedKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BorrowedKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BorrowedKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBorrowedKey(data.bcs.type)) {
@@ -859,13 +962,15 @@ export class BorrowedKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BorrowedKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBorrowedKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BorrowedKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBorrowedKey(object.type)) {
       throw new Error(`object at id ${id} is not a BorrowedKey object`)
     }
-
-    return BorrowedKey.fromBcs(res.bcsBytes)
+    return BorrowedKey.fromBcs(object.content)
   }
 }
 
@@ -897,9 +1002,11 @@ export type ReferralFeeKeyJSON = {
 export class ReferralFeeKey implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_referral::ReferralFeeKey` = `${
-    getTypeOrigin('protocol', 'borrow_referral::ReferralFeeKey')
-  }::borrow_referral::ReferralFeeKey` as const
+  static get $typeName(): `${string}::borrow_referral::ReferralFeeKey` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_referral::ReferralFeeKey')
+    }::borrow_referral::ReferralFeeKey` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -923,11 +1030,15 @@ export class ReferralFeeKey implements StructClass {
   static reified(): ReferralFeeKeyReified {
     const reifiedBcs = ReferralFeeKey.bcs
     return {
-      typeName: ReferralFeeKey.$typeName,
-      fullTypeName: composeSuiType(
-        ReferralFeeKey.$typeName,
-        ...[],
-      ) as `${string}::borrow_referral::ReferralFeeKey`,
+      get typeName() {
+        return ReferralFeeKey.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ReferralFeeKey.$typeName,
+          ...[],
+        ) as `${string}::borrow_referral::ReferralFeeKey`
+      },
       typeArgs: [] as [],
       isPhantom: ReferralFeeKey.$isPhantom,
       reifiedTypeArgs: [],
@@ -937,9 +1048,11 @@ export class ReferralFeeKey implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ReferralFeeKey.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ReferralFeeKey.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ReferralFeeKey.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ReferralFeeKey.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ReferralFeeKey.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ReferralFeeKey.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ReferralFeeKey.fetch(client, id),
       new: (fields: ReferralFeeKeyFields) => {
         return new ReferralFeeKey([], fields)
       },
@@ -1020,6 +1133,14 @@ export class ReferralFeeKey implements StructClass {
     return ReferralFeeKey.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ReferralFeeKey {
+    if (!isReferralFeeKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ReferralFeeKey object`)
+    }
+    return ReferralFeeKey.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReferralFeeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ReferralFeeKey {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1030,6 +1151,7 @@ export class ReferralFeeKey implements StructClass {
     return ReferralFeeKey.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ReferralFeeKey.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ReferralFeeKey {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isReferralFeeKey(data.bcs.type)) {
@@ -1046,13 +1168,15 @@ export class ReferralFeeKey implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ReferralFeeKey> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isReferralFeeKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ReferralFeeKey> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isReferralFeeKey(object.type)) {
       throw new Error(`object at id ${id} is not a ReferralFeeKey object`)
     }
-
-    return ReferralFeeKey.fromBcs(res.bcsBytes)
+    return ReferralFeeKey.fromBcs(object.content)
   }
 }
 
@@ -1089,9 +1213,11 @@ export type AuthorizedWitnessListJSON = {
 export class AuthorizedWitnessList implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::borrow_referral::AuthorizedWitnessList` = `${
-    getTypeOrigin('protocol', 'borrow_referral::AuthorizedWitnessList')
-  }::borrow_referral::AuthorizedWitnessList` as const
+  static get $typeName(): `${string}::borrow_referral::AuthorizedWitnessList` {
+    return `${
+      getTypeOrigin('protocol', 'borrow_referral::AuthorizedWitnessList')
+    }::borrow_referral::AuthorizedWitnessList` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1117,11 +1243,15 @@ export class AuthorizedWitnessList implements StructClass {
   static reified(): AuthorizedWitnessListReified {
     const reifiedBcs = AuthorizedWitnessList.bcs
     return {
-      typeName: AuthorizedWitnessList.$typeName,
-      fullTypeName: composeSuiType(
-        AuthorizedWitnessList.$typeName,
-        ...[],
-      ) as `${string}::borrow_referral::AuthorizedWitnessList`,
+      get typeName() {
+        return AuthorizedWitnessList.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AuthorizedWitnessList.$typeName,
+          ...[],
+        ) as `${string}::borrow_referral::AuthorizedWitnessList`
+      },
       typeArgs: [] as [],
       isPhantom: AuthorizedWitnessList.$isPhantom,
       reifiedTypeArgs: [],
@@ -1132,11 +1262,13 @@ export class AuthorizedWitnessList implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AuthorizedWitnessList.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AuthorizedWitnessList.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AuthorizedWitnessList.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         AuthorizedWitnessList.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         AuthorizedWitnessList.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         AuthorizedWitnessList.fetch(client, id),
       new: (fields: AuthorizedWitnessListFields) => {
         return new AuthorizedWitnessList([], fields)
@@ -1226,6 +1358,14 @@ export class AuthorizedWitnessList implements StructClass {
     return AuthorizedWitnessList.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AuthorizedWitnessList {
+    if (!isAuthorizedWitnessList(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AuthorizedWitnessList object`)
+    }
+    return AuthorizedWitnessList.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AuthorizedWitnessList.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AuthorizedWitnessList {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1238,6 +1378,7 @@ export class AuthorizedWitnessList implements StructClass {
     return AuthorizedWitnessList.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AuthorizedWitnessList.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AuthorizedWitnessList {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAuthorizedWitnessList(data.bcs.type)) {
@@ -1254,12 +1395,14 @@ export class AuthorizedWitnessList implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AuthorizedWitnessList> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAuthorizedWitnessList(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AuthorizedWitnessList> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAuthorizedWitnessList(object.type)) {
       throw new Error(`object at id ${id} is not a AuthorizedWitnessList object`)
     }
-
-    return AuthorizedWitnessList.fromBcs(res.bcsBytes)
+    return AuthorizedWitnessList.fromBcs(object.content)
   }
 }

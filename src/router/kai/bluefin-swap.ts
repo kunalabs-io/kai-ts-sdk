@@ -12,7 +12,7 @@ import { CoinInfo } from '../../coin-info'
 import { PhantomTypeArgument } from '../../gen/_framework/reified'
 import * as bluefinSpot from '../../gen/bluefin-spot/pool/functions'
 import { PoolInfo } from './pool-info'
-import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../constants'
+import { BLUEFIN_GLOBAL_CONFIG_ID } from '../../protocol-infra'
 
 function getSqrtPriceLimit(a2b: boolean) {
   return a2b ? 4295048017n : 79226673515401279992447579054n

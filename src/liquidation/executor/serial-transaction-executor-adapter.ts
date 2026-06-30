@@ -1,10 +1,11 @@
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
-import { SuiClient, SuiTransactionBlockResponseOptions } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import { Signer } from '@mysten/sui/cryptography'
+import { toBase64 } from '@mysten/sui/utils'
 import { TransactionExecutor, ExecutionResult } from './transaction-executor'
 
 export interface SerialTransactionExecutorAdapterParams {
-  client: SuiClient
+  client: ClientWithCoreApi
   signer: Signer
   defaultGasBudget?: bigint
 }
@@ -31,10 +32,24 @@ export class SerialTransactionExecutorAdapter implements TransactionExecutor {
 
   async executeTransaction(
     transaction: Transaction | Uint8Array,
-    options?: SuiTransactionBlockResponseOptions,
+    _options?: SuiClientTypes.TransactionInclude,
     additionalSignatures?: string[]
   ): Promise<ExecutionResult> {
-    return this.executor.executeTransaction(transaction, options, additionalSignatures)
+    // The underlying v2 executor forwards the include mask to core.executeTransaction,
+    // so requesting effects+events populates them directly — no JSON-RPC re-fetch needed.
+    const res = await this.executor.executeTransaction(
+      transaction,
+      { effects: true, events: true },
+      additionalSignatures
+    )
+    const tx = res.Transaction ?? res.FailedTransaction
+    const effectsBytes = tx.effects?.bcs ?? new Uint8Array()
+
+    return {
+      digest: tx.digest,
+      effects: toBase64(effectsBytes),
+      data: tx,
+    }
   }
 
   async buildTransaction(transaction: Transaction): Promise<Uint8Array> {

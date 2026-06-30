@@ -21,7 +21,7 @@ export function new_(
   })
 }
 
-/** Create `ExternalAddress` of all zeros.` */
+/** Create `ExternalAddress` of all zeros. */
 export function default_(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('wormhole', options?.env)}::external_address::default`,
@@ -53,7 +53,7 @@ export function toBytes(
   })
 }
 
-/** Destroy 'ExternalAddress` for underlying data. */
+/** Destroy `ExternalAddress` for underlying data. */
 export function toBytes32(
   tx: Transaction,
   ext: TransactionObjectInput,

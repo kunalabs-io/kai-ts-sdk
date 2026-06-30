@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -23,10 +24,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 
 /* ============================== WitnessGenerator =============================== */
@@ -60,9 +59,9 @@ export type WitnessGeneratorJSON<T extends PhantomTypeArgument> = {
 export class WitnessGenerator<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::witness::WitnessGenerator` = `${
-    getTypeOrigin('x', 'witness::WitnessGenerator')
-  }::witness::WitnessGenerator` as const
+  static get $typeName(): `${string}::witness::WitnessGenerator` {
+    return `${getTypeOrigin('x', 'witness::WitnessGenerator')}::witness::WitnessGenerator` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -88,12 +87,18 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
   ): WitnessGeneratorReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = WitnessGenerator.bcs
     return {
-      typeName: WitnessGenerator.$typeName,
-      fullTypeName: composeSuiType(
-        WitnessGenerator.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return WitnessGenerator.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WitnessGenerator.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::witness::WitnessGenerator<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: WitnessGenerator.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => WitnessGenerator.fromFields(T, fields),
@@ -102,10 +107,11 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WitnessGenerator.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => WitnessGenerator.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WitnessGenerator.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => WitnessGenerator.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => WitnessGenerator.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
-        WitnessGenerator.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WitnessGenerator.fetch(client, T, id),
       new: (fields: WitnessGeneratorFields<ToPhantomTypeArgument<T>>) => {
         return new WitnessGenerator([extractType(T)], fields)
       },
@@ -209,6 +215,34 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
     return WitnessGenerator.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WitnessGenerator<ToPhantomTypeArgument<T>> {
+    if (!isWitnessGenerator(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WitnessGenerator object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WitnessGenerator.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WitnessGenerator.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -222,6 +256,7 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
     return WitnessGenerator.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WitnessGenerator.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -258,16 +293,19 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<WitnessGenerator<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWitnessGenerator(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWitnessGenerator(object.type)) {
       throw new Error(`object at id ${id} is not a WitnessGenerator object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -283,7 +321,7 @@ export class WitnessGenerator<T extends PhantomTypeArgument> implements StructCl
       }
     }
 
-    return WitnessGenerator.fromBcs(typeArg, res.bcsBytes)
+    return WitnessGenerator.fromBcs(typeArg, object.content)
   }
 }
 
@@ -313,9 +351,9 @@ export type WitnessJSON<T extends PhantomTypeArgument> = {
 export class Witness<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::witness::Witness` = `${
-    getTypeOrigin('x', 'witness::Witness')
-  }::witness::Witness` as const
+  static get $typeName(): `${string}::witness::Witness` {
+    return `${getTypeOrigin('x', 'witness::Witness')}::witness::Witness` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -341,12 +379,18 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
   ): WitnessReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = Witness.bcs
     return {
-      typeName: Witness.$typeName,
-      fullTypeName: composeSuiType(
-        Witness.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::witness::Witness<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return Witness.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Witness.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::witness::Witness<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: Witness.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => Witness.fromFields(T, fields),
@@ -355,9 +399,11 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Witness.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => Witness.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Witness.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => Witness.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => Witness.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Witness.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Witness.fetch(client, T, id),
       new: (fields: WitnessFields<ToPhantomTypeArgument<T>>) => {
         return new Witness([extractType(T)], fields)
       },
@@ -461,6 +507,34 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
     return Witness.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Witness<ToPhantomTypeArgument<T>> {
+    if (!isWitness(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Witness object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Witness.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Witness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -474,6 +548,7 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
     return Witness.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Witness.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -510,16 +585,19 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<Witness<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWitness(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWitness(object.type)) {
       throw new Error(`object at id ${id} is not a Witness object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -535,6 +613,6 @@ export class Witness<T extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return Witness.fromBcs(typeArg, res.bcsBytes)
+    return Witness.fromBcs(typeArg, object.content)
   }
 }

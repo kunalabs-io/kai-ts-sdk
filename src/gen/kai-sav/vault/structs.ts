@@ -8,7 +8,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -34,10 +35,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Option } from '../../std/option/structs'
@@ -80,9 +79,9 @@ export type DepositEventJSON<YT extends PhantomTypeArgument> = {
 export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::DepositEvent` = `${
-    getTypeOrigin('kai-sav', 'vault::DepositEvent')
-  }::vault::DepositEvent` as const
+  static get $typeName(): `${string}::vault::DepositEvent` {
+    return `${getTypeOrigin('kai-sav', 'vault::DepositEvent')}::vault::DepositEvent` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -110,12 +109,18 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
   ): DepositEventReified<ToPhantomTypeArgument<YT>> {
     const reifiedBcs = DepositEvent.bcs
     return {
-      typeName: DepositEvent.$typeName,
-      fullTypeName: composeSuiType(
-        DepositEvent.$typeName,
-        ...[extractType(YT)],
-      ) as `${string}::vault::DepositEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      get typeName() {
+        return DepositEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DepositEvent.$typeName,
+          ...[extractType(YT)],
+        ) as `${string}::vault::DepositEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>]
+      },
       isPhantom: DepositEvent.$isPhantom,
       reifiedTypeArgs: [YT],
       fromFields: (fields: Record<string, any>) => DepositEvent.fromFields(YT, fields),
@@ -124,9 +129,11 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DepositEvent.fromJSONField(YT, field),
       fromJSON: (json: Record<string, any>) => DepositEvent.fromJSON(YT, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DepositEvent.fromCoreObject(YT, obj),
       fromSuiParsedData: (content: SuiParsedData) => DepositEvent.fromSuiParsedData(YT, content),
       fromSuiObjectData: (content: SuiObjectData) => DepositEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SupportedSuiClient, id: string) => DepositEvent.fetch(client, YT, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DepositEvent.fetch(client, YT, id),
       new: (fields: DepositEventFields<ToPhantomTypeArgument<YT>>) => {
         return new DepositEvent([extractType(YT)], fields)
       },
@@ -235,6 +242,34 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
     return DepositEvent.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DepositEvent<ToPhantomTypeArgument<YT>> {
+    if (!isDepositEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DepositEvent object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DepositEvent.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData,
@@ -248,6 +283,7 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
     return DepositEvent.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DepositEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData,
@@ -284,16 +320,19 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
   }
 
   static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: YT,
     id: string,
   ): Promise<DepositEvent<ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDepositEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDepositEvent(object.type)) {
       throw new Error(`object at id ${id} is not a DepositEvent object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -309,7 +348,7 @@ export class DepositEvent<YT extends PhantomTypeArgument> implements StructClass
       }
     }
 
-    return DepositEvent.fromBcs(typeArg, res.bcsBytes)
+    return DepositEvent.fromBcs(typeArg, object.content)
   }
 }
 
@@ -346,9 +385,9 @@ export type WithdrawEventJSON<YT extends PhantomTypeArgument> = {
 export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::WithdrawEvent` = `${
-    getTypeOrigin('kai-sav', 'vault::WithdrawEvent')
-  }::vault::WithdrawEvent` as const
+  static get $typeName(): `${string}::vault::WithdrawEvent` {
+    return `${getTypeOrigin('kai-sav', 'vault::WithdrawEvent')}::vault::WithdrawEvent` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -376,12 +415,18 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
   ): WithdrawEventReified<ToPhantomTypeArgument<YT>> {
     const reifiedBcs = WithdrawEvent.bcs
     return {
-      typeName: WithdrawEvent.$typeName,
-      fullTypeName: composeSuiType(
-        WithdrawEvent.$typeName,
-        ...[extractType(YT)],
-      ) as `${string}::vault::WithdrawEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      get typeName() {
+        return WithdrawEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WithdrawEvent.$typeName,
+          ...[extractType(YT)],
+        ) as `${string}::vault::WithdrawEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>]
+      },
       isPhantom: WithdrawEvent.$isPhantom,
       reifiedTypeArgs: [YT],
       fromFields: (fields: Record<string, any>) => WithdrawEvent.fromFields(YT, fields),
@@ -390,9 +435,11 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WithdrawEvent.fromJSONField(YT, field),
       fromJSON: (json: Record<string, any>) => WithdrawEvent.fromJSON(YT, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WithdrawEvent.fromCoreObject(YT, obj),
       fromSuiParsedData: (content: SuiParsedData) => WithdrawEvent.fromSuiParsedData(YT, content),
       fromSuiObjectData: (content: SuiObjectData) => WithdrawEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SupportedSuiClient, id: string) => WithdrawEvent.fetch(client, YT, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => WithdrawEvent.fetch(client, YT, id),
       new: (fields: WithdrawEventFields<ToPhantomTypeArgument<YT>>) => {
         return new WithdrawEvent([extractType(YT)], fields)
       },
@@ -501,6 +548,34 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
     return WithdrawEvent.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WithdrawEvent<ToPhantomTypeArgument<YT>> {
+    if (!isWithdrawEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WithdrawEvent object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WithdrawEvent.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData,
@@ -514,6 +589,7 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
     return WithdrawEvent.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WithdrawEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData,
@@ -550,16 +626,19 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
   }
 
   static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: YT,
     id: string,
   ): Promise<WithdrawEvent<ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWithdrawEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWithdrawEvent(object.type)) {
       throw new Error(`object at id ${id} is not a WithdrawEvent object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -575,7 +654,7 @@ export class WithdrawEvent<YT extends PhantomTypeArgument> implements StructClas
       }
     }
 
-    return WithdrawEvent.fromBcs(typeArg, res.bcsBytes)
+    return WithdrawEvent.fromBcs(typeArg, object.content)
   }
 }
 
@@ -614,9 +693,11 @@ export type StrategyProfitEventJSON<YT extends PhantomTypeArgument> = {
 export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::StrategyProfitEvent` = `${
-    getTypeOrigin('kai-sav', 'vault::StrategyProfitEvent')
-  }::vault::StrategyProfitEvent` as const
+  static get $typeName(): `${string}::vault::StrategyProfitEvent` {
+    return `${
+      getTypeOrigin('kai-sav', 'vault::StrategyProfitEvent')
+    }::vault::StrategyProfitEvent` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -646,12 +727,18 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
   ): StrategyProfitEventReified<ToPhantomTypeArgument<YT>> {
     const reifiedBcs = StrategyProfitEvent.bcs
     return {
-      typeName: StrategyProfitEvent.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyProfitEvent.$typeName,
-        ...[extractType(YT)],
-      ) as `${string}::vault::StrategyProfitEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      get typeName() {
+        return StrategyProfitEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StrategyProfitEvent.$typeName,
+          ...[extractType(YT)],
+        ) as `${string}::vault::StrategyProfitEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>]
+      },
       isPhantom: StrategyProfitEvent.$isPhantom,
       reifiedTypeArgs: [YT],
       fromFields: (fields: Record<string, any>) => StrategyProfitEvent.fromFields(YT, fields),
@@ -661,11 +748,13 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StrategyProfitEvent.fromJSONField(YT, field),
       fromJSON: (json: Record<string, any>) => StrategyProfitEvent.fromJSON(YT, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StrategyProfitEvent.fromCoreObject(YT, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         StrategyProfitEvent.fromSuiParsedData(YT, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         StrategyProfitEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         StrategyProfitEvent.fetch(client, YT, id),
       new: (fields: StrategyProfitEventFields<ToPhantomTypeArgument<YT>>) => {
         return new StrategyProfitEvent([extractType(YT)], fields)
@@ -780,6 +869,34 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
     return StrategyProfitEvent.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): StrategyProfitEvent<ToPhantomTypeArgument<YT>> {
+    if (!isStrategyProfitEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StrategyProfitEvent object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return StrategyProfitEvent.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyProfitEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData,
@@ -793,6 +910,7 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
     return StrategyProfitEvent.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyProfitEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData,
@@ -829,16 +947,19 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
   }
 
   static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: YT,
     id: string,
   ): Promise<StrategyProfitEvent<ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategyProfitEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategyProfitEvent(object.type)) {
       throw new Error(`object at id ${id} is not a StrategyProfitEvent object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -854,7 +975,7 @@ export class StrategyProfitEvent<YT extends PhantomTypeArgument> implements Stru
       }
     }
 
-    return StrategyProfitEvent.fromBcs(typeArg, res.bcsBytes)
+    return StrategyProfitEvent.fromBcs(typeArg, object.content)
   }
 }
 
@@ -893,9 +1014,11 @@ export type StrategyLossEventJSON<YT extends PhantomTypeArgument> = {
 export class StrategyLossEvent<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::StrategyLossEvent` = `${
-    getTypeOrigin('kai-sav', 'vault::StrategyLossEvent')
-  }::vault::StrategyLossEvent` as const
+  static get $typeName(): `${string}::vault::StrategyLossEvent` {
+    return `${
+      getTypeOrigin('kai-sav', 'vault::StrategyLossEvent')
+    }::vault::StrategyLossEvent` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -925,12 +1048,18 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
   ): StrategyLossEventReified<ToPhantomTypeArgument<YT>> {
     const reifiedBcs = StrategyLossEvent.bcs
     return {
-      typeName: StrategyLossEvent.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyLossEvent.$typeName,
-        ...[extractType(YT)],
-      ) as `${string}::vault::StrategyLossEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      get typeName() {
+        return StrategyLossEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StrategyLossEvent.$typeName,
+          ...[extractType(YT)],
+        ) as `${string}::vault::StrategyLossEvent<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>]
+      },
       isPhantom: StrategyLossEvent.$isPhantom,
       reifiedTypeArgs: [YT],
       fromFields: (fields: Record<string, any>) => StrategyLossEvent.fromFields(YT, fields),
@@ -940,11 +1069,13 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StrategyLossEvent.fromJSONField(YT, field),
       fromJSON: (json: Record<string, any>) => StrategyLossEvent.fromJSON(YT, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StrategyLossEvent.fromCoreObject(YT, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         StrategyLossEvent.fromSuiParsedData(YT, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         StrategyLossEvent.fromSuiObjectData(YT, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         StrategyLossEvent.fetch(client, YT, id),
       new: (fields: StrategyLossEventFields<ToPhantomTypeArgument<YT>>) => {
         return new StrategyLossEvent([extractType(YT)], fields)
@@ -1059,6 +1190,34 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
     return StrategyLossEvent.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): StrategyLossEvent<ToPhantomTypeArgument<YT>> {
+    if (!isStrategyLossEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StrategyLossEvent object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return StrategyLossEvent.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyLossEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData,
@@ -1072,6 +1231,7 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
     return StrategyLossEvent.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyLossEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData,
@@ -1108,16 +1268,19 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
   }
 
   static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: YT,
     id: string,
   ): Promise<StrategyLossEvent<ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategyLossEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategyLossEvent(object.type)) {
       throw new Error(`object at id ${id} is not a StrategyLossEvent object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1133,7 +1296,7 @@ export class StrategyLossEvent<YT extends PhantomTypeArgument> implements Struct
       }
     }
 
-    return StrategyLossEvent.fromBcs(typeArg, res.bcsBytes)
+    return StrategyLossEvent.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1166,9 +1329,9 @@ export type AdminCapJSON<YT extends PhantomTypeArgument> = {
 export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::AdminCap` = `${
-    getTypeOrigin('kai-sav', 'vault::AdminCap')
-  }::vault::AdminCap` as const
+  static get $typeName(): `${string}::vault::AdminCap` {
+    return `${getTypeOrigin('kai-sav', 'vault::AdminCap')}::vault::AdminCap` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -1194,12 +1357,18 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
   ): AdminCapReified<ToPhantomTypeArgument<YT>> {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[extractType(YT)],
-      ) as `${string}::vault::AdminCap<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>],
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[extractType(YT)],
+        ) as `${string}::vault::AdminCap<${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(YT)] as [PhantomToTypeStr<ToPhantomTypeArgument<YT>>]
+      },
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [YT],
       fromFields: (fields: Record<string, any>) => AdminCap.fromFields(YT, fields),
@@ -1208,9 +1377,11 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(YT, field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(YT, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(YT, obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(YT, content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(YT, content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, YT, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, YT, id),
       new: (fields: AdminCapFields<ToPhantomTypeArgument<YT>>) => {
         return new AdminCap([extractType(YT)], fields)
       },
@@ -1314,6 +1485,34 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
     return AdminCap.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<YT extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: YT,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): AdminCap<ToPhantomTypeArgument<YT>> {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return AdminCap.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     content: SuiParsedData,
@@ -1327,6 +1526,7 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
     return AdminCap.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<YT extends PhantomReified<PhantomTypeArgument>>(
     typeArg: YT,
     data: SuiObjectData,
@@ -1363,16 +1563,19 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
   }
 
   static async fetch<YT extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: YT,
     id: string,
   ): Promise<AdminCap<ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -1388,7 +1591,7 @@ export class AdminCap<YT extends PhantomTypeArgument> implements StructClass {
       }
     }
 
-    return AdminCap.fromBcs(typeArg, res.bcsBytes)
+    return AdminCap.fromBcs(typeArg, object.content)
   }
 }
 
@@ -1421,9 +1624,9 @@ export type VaultAccessJSON = {
 export class VaultAccess implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::VaultAccess` = `${
-    getTypeOrigin('kai-sav', 'vault::VaultAccess')
-  }::vault::VaultAccess` as const
+  static get $typeName(): `${string}::vault::VaultAccess` {
+    return `${getTypeOrigin('kai-sav', 'vault::VaultAccess')}::vault::VaultAccess` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -1447,11 +1650,15 @@ export class VaultAccess implements StructClass {
   static reified(): VaultAccessReified {
     const reifiedBcs = VaultAccess.bcs
     return {
-      typeName: VaultAccess.$typeName,
-      fullTypeName: composeSuiType(
-        VaultAccess.$typeName,
-        ...[],
-      ) as `${string}::vault::VaultAccess`,
+      get typeName() {
+        return VaultAccess.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          VaultAccess.$typeName,
+          ...[],
+        ) as `${string}::vault::VaultAccess`
+      },
       typeArgs: [] as [],
       isPhantom: VaultAccess.$isPhantom,
       reifiedTypeArgs: [],
@@ -1461,9 +1668,11 @@ export class VaultAccess implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => VaultAccess.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => VaultAccess.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        VaultAccess.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => VaultAccess.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => VaultAccess.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => VaultAccess.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => VaultAccess.fetch(client, id),
       new: (fields: VaultAccessFields) => {
         return new VaultAccess([], fields)
       },
@@ -1544,6 +1753,14 @@ export class VaultAccess implements StructClass {
     return VaultAccess.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): VaultAccess {
+    if (!isVaultAccess(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a VaultAccess object`)
+    }
+    return VaultAccess.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VaultAccess.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): VaultAccess {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1554,6 +1771,7 @@ export class VaultAccess implements StructClass {
     return VaultAccess.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link VaultAccess.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): VaultAccess {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isVaultAccess(data.bcs.type)) {
@@ -1570,13 +1788,15 @@ export class VaultAccess implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<VaultAccess> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVaultAccess(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<VaultAccess> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVaultAccess(object.type)) {
       throw new Error(`object at id ${id} is not a VaultAccess object`)
     }
-
-    return VaultAccess.fromBcs(res.bcsBytes)
+    return VaultAccess.fromBcs(object.content)
   }
 }
 
@@ -1625,9 +1845,11 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::StrategyRemovalTicket` = `${
-    getTypeOrigin('kai-sav', 'vault::StrategyRemovalTicket')
-  }::vault::StrategyRemovalTicket` as const
+  static get $typeName(): `${string}::vault::StrategyRemovalTicket` {
+    return `${
+      getTypeOrigin('kai-sav', 'vault::StrategyRemovalTicket')
+    }::vault::StrategyRemovalTicket` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -1664,17 +1886,23 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
   ): StrategyRemovalTicketReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
     const reifiedBcs = StrategyRemovalTicket.bcs
     return {
-      typeName: StrategyRemovalTicket.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyRemovalTicket.$typeName,
-        ...[extractType(T), extractType(YT)],
-      ) as `${string}::vault::StrategyRemovalTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(T), extractType(YT)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
-      ],
+      get typeName() {
+        return StrategyRemovalTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StrategyRemovalTicket.$typeName,
+          ...[extractType(T), extractType(YT)],
+        ) as `${string}::vault::StrategyRemovalTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T), extractType(YT)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
+        ]
+      },
       isPhantom: StrategyRemovalTicket.$isPhantom,
       reifiedTypeArgs: [T, YT],
       fromFields: (fields: Record<string, any>) =>
@@ -1686,11 +1914,13 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StrategyRemovalTicket.fromJSONField([T, YT], field),
       fromJSON: (json: Record<string, any>) => StrategyRemovalTicket.fromJSON([T, YT], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StrategyRemovalTicket.fromCoreObject([T, YT], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         StrategyRemovalTicket.fromSuiParsedData([T, YT], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         StrategyRemovalTicket.fromSuiObjectData([T, YT], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         StrategyRemovalTicket.fetch(client, [T, YT], id),
       new: (
         fields: StrategyRemovalTicketFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>,
@@ -1826,6 +2056,37 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
     return StrategyRemovalTicket.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): StrategyRemovalTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (!isStrategyRemovalTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StrategyRemovalTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return StrategyRemovalTicket.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyRemovalTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -1844,6 +2105,7 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
     return StrategyRemovalTicket.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyRemovalTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -1886,16 +2148,19 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [T, YT],
     id: string,
   ): Promise<StrategyRemovalTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategyRemovalTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategyRemovalTicket(object.type)) {
       throw new Error(`object at id ${id} is not a StrategyRemovalTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -1911,7 +2176,7 @@ export class StrategyRemovalTicket<T extends PhantomTypeArgument, YT extends Pha
       }
     }
 
-    return StrategyRemovalTicket.fromBcs(typeArgs, res.bcsBytes)
+    return StrategyRemovalTicket.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -1950,9 +2215,11 @@ export type StrategyWithdrawInfoJSON<T extends PhantomTypeArgument> = {
 export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::StrategyWithdrawInfo` = `${
-    getTypeOrigin('kai-sav', 'vault::StrategyWithdrawInfo')
-  }::vault::StrategyWithdrawInfo` as const
+  static get $typeName(): `${string}::vault::StrategyWithdrawInfo` {
+    return `${
+      getTypeOrigin('kai-sav', 'vault::StrategyWithdrawInfo')
+    }::vault::StrategyWithdrawInfo` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -1982,12 +2249,18 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
   ): StrategyWithdrawInfoReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = StrategyWithdrawInfo.bcs
     return {
-      typeName: StrategyWithdrawInfo.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyWithdrawInfo.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::vault::StrategyWithdrawInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return StrategyWithdrawInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StrategyWithdrawInfo.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::vault::StrategyWithdrawInfo<${PhantomToTypeStr<ToPhantomTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: StrategyWithdrawInfo.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => StrategyWithdrawInfo.fromFields(T, fields),
@@ -1997,11 +2270,13 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StrategyWithdrawInfo.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => StrategyWithdrawInfo.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StrategyWithdrawInfo.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         StrategyWithdrawInfo.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         StrategyWithdrawInfo.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         StrategyWithdrawInfo.fetch(client, T, id),
       new: (fields: StrategyWithdrawInfoFields<ToPhantomTypeArgument<T>>) => {
         return new StrategyWithdrawInfo([extractType(T)], fields)
@@ -2119,6 +2394,34 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
     return StrategyWithdrawInfo.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): StrategyWithdrawInfo<ToPhantomTypeArgument<T>> {
+    if (!isStrategyWithdrawInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StrategyWithdrawInfo object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return StrategyWithdrawInfo.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyWithdrawInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -2134,6 +2437,7 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
     return StrategyWithdrawInfo.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyWithdrawInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -2170,16 +2474,19 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<StrategyWithdrawInfo<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategyWithdrawInfo(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategyWithdrawInfo(object.type)) {
       throw new Error(`object at id ${id} is not a StrategyWithdrawInfo object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -2195,7 +2502,7 @@ export class StrategyWithdrawInfo<T extends PhantomTypeArgument> implements Stru
       }
     }
 
-    return StrategyWithdrawInfo.fromBcs(typeArg, res.bcsBytes)
+    return StrategyWithdrawInfo.fromBcs(typeArg, object.content)
   }
 }
 
@@ -2238,9 +2545,9 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::WithdrawTicket` = `${
-    getTypeOrigin('kai-sav', 'vault::WithdrawTicket')
-  }::vault::WithdrawTicket` as const
+  static get $typeName(): `${string}::vault::WithdrawTicket` {
+    return `${getTypeOrigin('kai-sav', 'vault::WithdrawTicket')}::vault::WithdrawTicket` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -2279,17 +2586,23 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
   ): WithdrawTicketReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
     const reifiedBcs = WithdrawTicket.bcs
     return {
-      typeName: WithdrawTicket.$typeName,
-      fullTypeName: composeSuiType(
-        WithdrawTicket.$typeName,
-        ...[extractType(T), extractType(YT)],
-      ) as `${string}::vault::WithdrawTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(T), extractType(YT)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
-      ],
+      get typeName() {
+        return WithdrawTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          WithdrawTicket.$typeName,
+          ...[extractType(T), extractType(YT)],
+        ) as `${string}::vault::WithdrawTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T), extractType(YT)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
+        ]
+      },
       isPhantom: WithdrawTicket.$isPhantom,
       reifiedTypeArgs: [T, YT],
       fromFields: (fields: Record<string, any>) => WithdrawTicket.fromFields([T, YT], fields),
@@ -2299,11 +2612,13 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
       bcs: reifiedBcs,
       fromJSONField: (field: any) => WithdrawTicket.fromJSONField([T, YT], field),
       fromJSON: (json: Record<string, any>) => WithdrawTicket.fromJSON([T, YT], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        WithdrawTicket.fromCoreObject([T, YT], obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         WithdrawTicket.fromSuiParsedData([T, YT], content),
       fromSuiObjectData: (content: SuiObjectData) =>
         WithdrawTicket.fromSuiObjectData([T, YT], content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         WithdrawTicket.fetch(client, [T, YT], id),
       new: (fields: WithdrawTicketFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>) => {
         return new WithdrawTicket([extractType(T), extractType(YT)], fields)
@@ -2451,6 +2766,37 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
     return WithdrawTicket.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (!isWithdrawTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a WithdrawTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return WithdrawTicket.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WithdrawTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -2467,6 +2813,7 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
     return WithdrawTicket.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link WithdrawTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -2509,16 +2856,19 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [T, YT],
     id: string,
   ): Promise<WithdrawTicket<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isWithdrawTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isWithdrawTicket(object.type)) {
       throw new Error(`object at id ${id} is not a WithdrawTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -2534,7 +2884,7 @@ export class WithdrawTicket<T extends PhantomTypeArgument, YT extends PhantomTyp
       }
     }
 
-    return WithdrawTicket.fromBcs(typeArgs, res.bcsBytes)
+    return WithdrawTicket.fromBcs(typeArgs, object.content)
   }
 }
 
@@ -2575,9 +2925,9 @@ export type RebalanceInfoJSON = {
 export class RebalanceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::RebalanceInfo` = `${
-    getTypeOrigin('kai-sav', 'vault::RebalanceInfo')
-  }::vault::RebalanceInfo` as const
+  static get $typeName(): `${string}::vault::RebalanceInfo` {
+    return `${getTypeOrigin('kai-sav', 'vault::RebalanceInfo')}::vault::RebalanceInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2612,11 +2962,15 @@ export class RebalanceInfo implements StructClass {
   static reified(): RebalanceInfoReified {
     const reifiedBcs = RebalanceInfo.bcs
     return {
-      typeName: RebalanceInfo.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceInfo.$typeName,
-        ...[],
-      ) as `${string}::vault::RebalanceInfo`,
+      get typeName() {
+        return RebalanceInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RebalanceInfo.$typeName,
+          ...[],
+        ) as `${string}::vault::RebalanceInfo`
+      },
       typeArgs: [] as [],
       isPhantom: RebalanceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -2626,9 +2980,11 @@ export class RebalanceInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RebalanceInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RebalanceInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RebalanceInfo.fetch(client, id),
       new: (fields: RebalanceInfoFields) => {
         return new RebalanceInfo([], fields)
       },
@@ -2714,6 +3070,14 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RebalanceInfo {
+    if (!isRebalanceInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RebalanceInfo object`)
+    }
+    return RebalanceInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RebalanceInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2724,6 +3088,7 @@ export class RebalanceInfo implements StructClass {
     return RebalanceInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RebalanceInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRebalanceInfo(data.bcs.type)) {
@@ -2740,13 +3105,15 @@ export class RebalanceInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRebalanceInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RebalanceInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRebalanceInfo(object.type)) {
       throw new Error(`object at id ${id} is not a RebalanceInfo object`)
     }
-
-    return RebalanceInfo.fromBcs(res.bcsBytes)
+    return RebalanceInfo.fromBcs(object.content)
   }
 }
 
@@ -2776,9 +3143,11 @@ export type RebalanceAmountsJSON = {
 export class RebalanceAmounts implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::RebalanceAmounts` = `${
-    getTypeOrigin('kai-sav', 'vault::RebalanceAmounts')
-  }::vault::RebalanceAmounts` as const
+  static get $typeName(): `${string}::vault::RebalanceAmounts` {
+    return `${
+      getTypeOrigin('kai-sav', 'vault::RebalanceAmounts')
+    }::vault::RebalanceAmounts` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -2802,11 +3171,15 @@ export class RebalanceAmounts implements StructClass {
   static reified(): RebalanceAmountsReified {
     const reifiedBcs = RebalanceAmounts.bcs
     return {
-      typeName: RebalanceAmounts.$typeName,
-      fullTypeName: composeSuiType(
-        RebalanceAmounts.$typeName,
-        ...[],
-      ) as `${string}::vault::RebalanceAmounts`,
+      get typeName() {
+        return RebalanceAmounts.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          RebalanceAmounts.$typeName,
+          ...[],
+        ) as `${string}::vault::RebalanceAmounts`
+      },
       typeArgs: [] as [],
       isPhantom: RebalanceAmounts.$isPhantom,
       reifiedTypeArgs: [],
@@ -2816,9 +3189,11 @@ export class RebalanceAmounts implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => RebalanceAmounts.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => RebalanceAmounts.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        RebalanceAmounts.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => RebalanceAmounts.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => RebalanceAmounts.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => RebalanceAmounts.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => RebalanceAmounts.fetch(client, id),
       new: (fields: RebalanceAmountsFields) => {
         return new RebalanceAmounts([], fields)
       },
@@ -2905,6 +3280,14 @@ export class RebalanceAmounts implements StructClass {
     return RebalanceAmounts.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): RebalanceAmounts {
+    if (!isRebalanceAmounts(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a RebalanceAmounts object`)
+    }
+    return RebalanceAmounts.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceAmounts.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): RebalanceAmounts {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -2915,6 +3298,7 @@ export class RebalanceAmounts implements StructClass {
     return RebalanceAmounts.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link RebalanceAmounts.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): RebalanceAmounts {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isRebalanceAmounts(data.bcs.type)) {
@@ -2931,13 +3315,15 @@ export class RebalanceAmounts implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<RebalanceAmounts> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isRebalanceAmounts(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<RebalanceAmounts> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isRebalanceAmounts(object.type)) {
       throw new Error(`object at id ${id} is not a RebalanceAmounts object`)
     }
-
-    return RebalanceAmounts.fromBcs(res.bcsBytes)
+    return RebalanceAmounts.fromBcs(object.content)
   }
 }
 
@@ -2971,9 +3357,9 @@ export type StrategyStateJSON = {
 export class StrategyState implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::StrategyState` = `${
-    getTypeOrigin('kai-sav', 'vault::StrategyState')
-  }::vault::StrategyState` as const
+  static get $typeName(): `${string}::vault::StrategyState` {
+    return `${getTypeOrigin('kai-sav', 'vault::StrategyState')}::vault::StrategyState` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -3001,11 +3387,15 @@ export class StrategyState implements StructClass {
   static reified(): StrategyStateReified {
     const reifiedBcs = StrategyState.bcs
     return {
-      typeName: StrategyState.$typeName,
-      fullTypeName: composeSuiType(
-        StrategyState.$typeName,
-        ...[],
-      ) as `${string}::vault::StrategyState`,
+      get typeName() {
+        return StrategyState.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          StrategyState.$typeName,
+          ...[],
+        ) as `${string}::vault::StrategyState`
+      },
       typeArgs: [] as [],
       isPhantom: StrategyState.$isPhantom,
       reifiedTypeArgs: [],
@@ -3015,9 +3405,11 @@ export class StrategyState implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => StrategyState.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => StrategyState.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        StrategyState.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => StrategyState.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => StrategyState.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => StrategyState.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => StrategyState.fetch(client, id),
       new: (fields: StrategyStateFields) => {
         return new StrategyState([], fields)
       },
@@ -3108,6 +3500,14 @@ export class StrategyState implements StructClass {
     return StrategyState.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): StrategyState {
+    if (!isStrategyState(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a StrategyState object`)
+    }
+    return StrategyState.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyState.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): StrategyState {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -3118,6 +3518,7 @@ export class StrategyState implements StructClass {
     return StrategyState.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link StrategyState.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): StrategyState {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isStrategyState(data.bcs.type)) {
@@ -3134,13 +3535,15 @@ export class StrategyState implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<StrategyState> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isStrategyState(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<StrategyState> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isStrategyState(object.type)) {
       throw new Error(`object at id ${id} is not a StrategyState object`)
     }
-
-    return StrategyState.fromBcs(res.bcsBytes)
+    return StrategyState.fromBcs(object.content)
   }
 }
 
@@ -3207,9 +3610,9 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
 {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::vault::Vault` = `${
-    getTypeOrigin('kai-sav', 'vault::Vault')
-  }::vault::Vault` as const
+  static get $typeName(): `${string}::vault::Vault` {
+    return `${getTypeOrigin('kai-sav', 'vault::Vault')}::vault::Vault` as const
+  }
   static readonly $numTypeParams = 2
   static readonly $isPhantom = [true, true] as const
 
@@ -3274,17 +3677,23 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
   ): VaultReified<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
     const reifiedBcs = Vault.bcs
     return {
-      typeName: Vault.$typeName,
-      fullTypeName: composeSuiType(
-        Vault.$typeName,
-        ...[extractType(T), extractType(YT)],
-      ) as `${string}::vault::Vault<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`,
-      typeArgs: [extractType(T), extractType(YT)] as [
-        PhantomToTypeStr<ToPhantomTypeArgument<T>>,
-        PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
-      ],
+      get typeName() {
+        return Vault.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Vault.$typeName,
+          ...[extractType(T), extractType(YT)],
+        ) as `${string}::vault::Vault<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}, ${PhantomToTypeStr<ToPhantomTypeArgument<YT>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T), extractType(YT)] as [
+          PhantomToTypeStr<ToPhantomTypeArgument<T>>,
+          PhantomToTypeStr<ToPhantomTypeArgument<YT>>,
+        ]
+      },
       isPhantom: Vault.$isPhantom,
       reifiedTypeArgs: [T, YT],
       fromFields: (fields: Record<string, any>) => Vault.fromFields([T, YT], fields),
@@ -3293,9 +3702,11 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Vault.fromJSONField([T, YT], field),
       fromJSON: (json: Record<string, any>) => Vault.fromJSON([T, YT], json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Vault.fromCoreObject([T, YT], obj),
       fromSuiParsedData: (content: SuiParsedData) => Vault.fromSuiParsedData([T, YT], content),
       fromSuiObjectData: (content: SuiObjectData) => Vault.fromSuiObjectData([T, YT], content),
-      fetch: async (client: SupportedSuiClient, id: string) => Vault.fetch(client, [T, YT], id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Vault.fetch(client, [T, YT], id),
       new: (fields: VaultFields<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>) => {
         return new Vault([extractType(T), extractType(YT)], fields)
       },
@@ -3521,6 +3932,37 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
     return Vault.fromJSONField(typeArgs, json)
   }
 
+  static fromCoreObject<
+    T extends PhantomReified<PhantomTypeArgument>,
+    YT extends PhantomReified<PhantomTypeArgument>,
+  >(
+    typeArgs: [T, YT],
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Vault<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>> {
+    if (!isVault(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Vault object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 2) {
+      throw new Error(
+        `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType(typeArgs[i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Vault.fromBcs(typeArgs, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Vault.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -3537,6 +3979,7 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
     return Vault.fromFieldsWithTypes(typeArgs, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Vault.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
@@ -3579,16 +4022,19 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
     T extends PhantomReified<PhantomTypeArgument>,
     YT extends PhantomReified<PhantomTypeArgument>,
   >(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArgs: [T, YT],
     id: string,
   ): Promise<Vault<ToPhantomTypeArgument<T>, ToPhantomTypeArgument<YT>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isVault(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isVault(object.type)) {
       throw new Error(`object at id ${id} is not a Vault object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 2) {
       throw new Error(
         `type argument mismatch: expected 2 type arguments but got '${gotTypeArgs.length}'`,
@@ -3604,6 +4050,6 @@ export class Vault<T extends PhantomTypeArgument, YT extends PhantomTypeArgument
       }
     }
 
-    return Vault.fromBcs(typeArgs, res.bcsBytes)
+    return Vault.fromBcs(typeArgs, object.content)
   }
 }

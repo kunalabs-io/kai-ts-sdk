@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { ID } from '../../../sui/object/structs'
 
@@ -59,9 +54,11 @@ export type CreateSpoolAccountEventJSON = {
 export class CreateSpoolAccountEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::user::CreateSpoolAccountEvent` = `${
-    getTypeOrigin('spool', 'user::CreateSpoolAccountEvent')
-  }::user::CreateSpoolAccountEvent` as const
+  static get $typeName(): `${string}::user::CreateSpoolAccountEvent` {
+    return `${
+      getTypeOrigin('spool', 'user::CreateSpoolAccountEvent')
+    }::user::CreateSpoolAccountEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -92,11 +89,15 @@ export class CreateSpoolAccountEvent implements StructClass {
   static reified(): CreateSpoolAccountEventReified {
     const reifiedBcs = CreateSpoolAccountEvent.bcs
     return {
-      typeName: CreateSpoolAccountEvent.$typeName,
-      fullTypeName: composeSuiType(
-        CreateSpoolAccountEvent.$typeName,
-        ...[],
-      ) as `${string}::user::CreateSpoolAccountEvent`,
+      get typeName() {
+        return CreateSpoolAccountEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CreateSpoolAccountEvent.$typeName,
+          ...[],
+        ) as `${string}::user::CreateSpoolAccountEvent`
+      },
       typeArgs: [] as [],
       isPhantom: CreateSpoolAccountEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -107,11 +108,13 @@ export class CreateSpoolAccountEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CreateSpoolAccountEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CreateSpoolAccountEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CreateSpoolAccountEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         CreateSpoolAccountEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         CreateSpoolAccountEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         CreateSpoolAccountEvent.fetch(client, id),
       new: (fields: CreateSpoolAccountEventFields) => {
         return new CreateSpoolAccountEvent([], fields)
@@ -208,6 +211,14 @@ export class CreateSpoolAccountEvent implements StructClass {
     return CreateSpoolAccountEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CreateSpoolAccountEvent {
+    if (!isCreateSpoolAccountEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CreateSpoolAccountEvent object`)
+    }
+    return CreateSpoolAccountEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreateSpoolAccountEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CreateSpoolAccountEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -220,6 +231,7 @@ export class CreateSpoolAccountEvent implements StructClass {
     return CreateSpoolAccountEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CreateSpoolAccountEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CreateSpoolAccountEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCreateSpoolAccountEvent(data.bcs.type)) {
@@ -236,13 +248,15 @@ export class CreateSpoolAccountEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CreateSpoolAccountEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCreateSpoolAccountEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CreateSpoolAccountEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCreateSpoolAccountEvent(object.type)) {
       throw new Error(`object at id ${id} is not a CreateSpoolAccountEvent object`)
     }
-
-    return CreateSpoolAccountEvent.fromBcs(res.bcsBytes)
+    return CreateSpoolAccountEvent.fromBcs(object.content)
   }
 }
 
@@ -287,9 +301,11 @@ export type SpoolAccountUnstakeEventJSON = {
 export class SpoolAccountUnstakeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::user::SpoolAccountUnstakeEvent` = `${
-    getTypeOrigin('spool', 'user::SpoolAccountUnstakeEvent')
-  }::user::SpoolAccountUnstakeEvent` as const
+  static get $typeName(): `${string}::user::SpoolAccountUnstakeEvent` {
+    return `${
+      getTypeOrigin('spool', 'user::SpoolAccountUnstakeEvent')
+    }::user::SpoolAccountUnstakeEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -324,11 +340,15 @@ export class SpoolAccountUnstakeEvent implements StructClass {
   static reified(): SpoolAccountUnstakeEventReified {
     const reifiedBcs = SpoolAccountUnstakeEvent.bcs
     return {
-      typeName: SpoolAccountUnstakeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccountUnstakeEvent.$typeName,
-        ...[],
-      ) as `${string}::user::SpoolAccountUnstakeEvent`,
+      get typeName() {
+        return SpoolAccountUnstakeEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SpoolAccountUnstakeEvent.$typeName,
+          ...[],
+        ) as `${string}::user::SpoolAccountUnstakeEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SpoolAccountUnstakeEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -339,11 +359,13 @@ export class SpoolAccountUnstakeEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountUnstakeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountUnstakeEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SpoolAccountUnstakeEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         SpoolAccountUnstakeEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         SpoolAccountUnstakeEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         SpoolAccountUnstakeEvent.fetch(client, id),
       new: (fields: SpoolAccountUnstakeEventFields) => {
         return new SpoolAccountUnstakeEvent([], fields)
@@ -450,6 +472,14 @@ export class SpoolAccountUnstakeEvent implements StructClass {
     return SpoolAccountUnstakeEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SpoolAccountUnstakeEvent {
+    if (!isSpoolAccountUnstakeEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SpoolAccountUnstakeEvent object`)
+    }
+    return SpoolAccountUnstakeEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountUnstakeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SpoolAccountUnstakeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -462,6 +492,7 @@ export class SpoolAccountUnstakeEvent implements StructClass {
     return SpoolAccountUnstakeEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountUnstakeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SpoolAccountUnstakeEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountUnstakeEvent(data.bcs.type)) {
@@ -478,13 +509,15 @@ export class SpoolAccountUnstakeEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SpoolAccountUnstakeEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSpoolAccountUnstakeEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SpoolAccountUnstakeEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSpoolAccountUnstakeEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SpoolAccountUnstakeEvent object`)
     }
-
-    return SpoolAccountUnstakeEvent.fromBcs(res.bcsBytes)
+    return SpoolAccountUnstakeEvent.fromBcs(object.content)
   }
 }
 
@@ -529,9 +562,11 @@ export type SpoolAccountStakeEventJSON = {
 export class SpoolAccountStakeEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::user::SpoolAccountStakeEvent` = `${
-    getTypeOrigin('spool', 'user::SpoolAccountStakeEvent')
-  }::user::SpoolAccountStakeEvent` as const
+  static get $typeName(): `${string}::user::SpoolAccountStakeEvent` {
+    return `${
+      getTypeOrigin('spool', 'user::SpoolAccountStakeEvent')
+    }::user::SpoolAccountStakeEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -567,11 +602,15 @@ export class SpoolAccountStakeEvent implements StructClass {
   static reified(): SpoolAccountStakeEventReified {
     const reifiedBcs = SpoolAccountStakeEvent.bcs
     return {
-      typeName: SpoolAccountStakeEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccountStakeEvent.$typeName,
-        ...[],
-      ) as `${string}::user::SpoolAccountStakeEvent`,
+      get typeName() {
+        return SpoolAccountStakeEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SpoolAccountStakeEvent.$typeName,
+          ...[],
+        ) as `${string}::user::SpoolAccountStakeEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SpoolAccountStakeEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -582,11 +621,13 @@ export class SpoolAccountStakeEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountStakeEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountStakeEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SpoolAccountStakeEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         SpoolAccountStakeEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         SpoolAccountStakeEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         SpoolAccountStakeEvent.fetch(client, id),
       new: (fields: SpoolAccountStakeEventFields) => {
         return new SpoolAccountStakeEvent([], fields)
@@ -701,6 +742,14 @@ export class SpoolAccountStakeEvent implements StructClass {
     return SpoolAccountStakeEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SpoolAccountStakeEvent {
+    if (!isSpoolAccountStakeEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SpoolAccountStakeEvent object`)
+    }
+    return SpoolAccountStakeEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountStakeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SpoolAccountStakeEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -713,6 +762,7 @@ export class SpoolAccountStakeEvent implements StructClass {
     return SpoolAccountStakeEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountStakeEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SpoolAccountStakeEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountStakeEvent(data.bcs.type)) {
@@ -729,13 +779,15 @@ export class SpoolAccountStakeEvent implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SpoolAccountStakeEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSpoolAccountStakeEvent(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SpoolAccountStakeEvent> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSpoolAccountStakeEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SpoolAccountStakeEvent object`)
     }
-
-    return SpoolAccountStakeEvent.fromBcs(res.bcsBytes)
+    return SpoolAccountStakeEvent.fromBcs(object.content)
   }
 }
 
@@ -794,9 +846,11 @@ export type SpoolAccountRedeemRewardsEventJSON = {
 export class SpoolAccountRedeemRewardsEvent implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::user::SpoolAccountRedeemRewardsEvent` = `${
-    getTypeOrigin('spool', 'user::SpoolAccountRedeemRewardsEvent')
-  }::user::SpoolAccountRedeemRewardsEvent` as const
+  static get $typeName(): `${string}::user::SpoolAccountRedeemRewardsEvent` {
+    return `${
+      getTypeOrigin('spool', 'user::SpoolAccountRedeemRewardsEvent')
+    }::user::SpoolAccountRedeemRewardsEvent` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -846,11 +900,15 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
   static reified(): SpoolAccountRedeemRewardsEventReified {
     const reifiedBcs = SpoolAccountRedeemRewardsEvent.bcs
     return {
-      typeName: SpoolAccountRedeemRewardsEvent.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccountRedeemRewardsEvent.$typeName,
-        ...[],
-      ) as `${string}::user::SpoolAccountRedeemRewardsEvent`,
+      get typeName() {
+        return SpoolAccountRedeemRewardsEvent.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SpoolAccountRedeemRewardsEvent.$typeName,
+          ...[],
+        ) as `${string}::user::SpoolAccountRedeemRewardsEvent`
+      },
       typeArgs: [] as [],
       isPhantom: SpoolAccountRedeemRewardsEvent.$isPhantom,
       reifiedTypeArgs: [],
@@ -863,11 +921,13 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccountRedeemRewardsEvent.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SpoolAccountRedeemRewardsEvent.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SpoolAccountRedeemRewardsEvent.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         SpoolAccountRedeemRewardsEvent.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         SpoolAccountRedeemRewardsEvent.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         SpoolAccountRedeemRewardsEvent.fetch(client, id),
       new: (fields: SpoolAccountRedeemRewardsEventFields) => {
         return new SpoolAccountRedeemRewardsEvent([], fields)
@@ -1009,6 +1069,16 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
     return SpoolAccountRedeemRewardsEvent.fromJSONField(json)
   }
 
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): SpoolAccountRedeemRewardsEvent {
+    if (!isSpoolAccountRedeemRewardsEvent(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SpoolAccountRedeemRewardsEvent object`)
+    }
+    return SpoolAccountRedeemRewardsEvent.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountRedeemRewardsEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SpoolAccountRedeemRewardsEvent {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -1021,6 +1091,7 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
     return SpoolAccountRedeemRewardsEvent.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccountRedeemRewardsEvent.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SpoolAccountRedeemRewardsEvent {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSpoolAccountRedeemRewardsEvent(data.bcs.type)) {
@@ -1038,14 +1109,16 @@ export class SpoolAccountRedeemRewardsEvent implements StructClass {
   }
 
   static async fetch(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     id: string,
   ): Promise<SpoolAccountRedeemRewardsEvent> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSpoolAccountRedeemRewardsEvent(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSpoolAccountRedeemRewardsEvent(object.type)) {
       throw new Error(`object at id ${id} is not a SpoolAccountRedeemRewardsEvent object`)
     }
-
-    return SpoolAccountRedeemRewardsEvent.fromBcs(res.bcsBytes)
+    return SpoolAccountRedeemRewardsEvent.fromBcs(object.content)
   }
 }

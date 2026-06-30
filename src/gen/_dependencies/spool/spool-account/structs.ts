@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -23,10 +24,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../../_framework/util'
 import { TypeName } from '../../../std/type-name/structs'
 import { Balance } from '../../../sui/balance/structs'
@@ -76,9 +75,11 @@ export type SpoolAccountJSON<StakeType extends PhantomTypeArgument> = {
 export class SpoolAccount<StakeType extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::spool_account::SpoolAccount` = `${
-    getTypeOrigin('spool', 'spool_account::SpoolAccount')
-  }::spool_account::SpoolAccount` as const
+  static get $typeName(): `${string}::spool_account::SpoolAccount` {
+    return `${
+      getTypeOrigin('spool', 'spool_account::SpoolAccount')
+    }::spool_account::SpoolAccount` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -121,14 +122,20 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
   ): SpoolAccountReified<ToPhantomTypeArgument<StakeType>> {
     const reifiedBcs = SpoolAccount.bcs
     return {
-      typeName: SpoolAccount.$typeName,
-      fullTypeName: composeSuiType(
-        SpoolAccount.$typeName,
-        ...[extractType(StakeType)],
-      ) as `${string}::spool_account::SpoolAccount<${PhantomToTypeStr<
-        ToPhantomTypeArgument<StakeType>
-      >}>`,
-      typeArgs: [extractType(StakeType)] as [PhantomToTypeStr<ToPhantomTypeArgument<StakeType>>],
+      get typeName() {
+        return SpoolAccount.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SpoolAccount.$typeName,
+          ...[extractType(StakeType)],
+        ) as `${string}::spool_account::SpoolAccount<${PhantomToTypeStr<
+          ToPhantomTypeArgument<StakeType>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(StakeType)] as [PhantomToTypeStr<ToPhantomTypeArgument<StakeType>>]
+      },
       isPhantom: SpoolAccount.$isPhantom,
       reifiedTypeArgs: [StakeType],
       fromFields: (fields: Record<string, any>) => SpoolAccount.fromFields(StakeType, fields),
@@ -138,11 +145,13 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SpoolAccount.fromJSONField(StakeType, field),
       fromJSON: (json: Record<string, any>) => SpoolAccount.fromJSON(StakeType, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SpoolAccount.fromCoreObject(StakeType, obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         SpoolAccount.fromSuiParsedData(StakeType, content),
       fromSuiObjectData: (content: SuiObjectData) =>
         SpoolAccount.fromSuiObjectData(StakeType, content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         SpoolAccount.fetch(client, StakeType, id),
       new: (fields: SpoolAccountFields<ToPhantomTypeArgument<StakeType>>) => {
         return new SpoolAccount([extractType(StakeType)], fields)
@@ -277,6 +286,34 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
     return SpoolAccount.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<StakeType extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: StakeType,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): SpoolAccount<ToPhantomTypeArgument<StakeType>> {
+    if (!isSpoolAccount(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SpoolAccount object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return SpoolAccount.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccount.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<StakeType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: StakeType,
     content: SuiParsedData,
@@ -290,6 +327,7 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
     return SpoolAccount.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SpoolAccount.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<StakeType extends PhantomReified<PhantomTypeArgument>>(
     typeArg: StakeType,
     data: SuiObjectData,
@@ -326,16 +364,19 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
   }
 
   static async fetch<StakeType extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: StakeType,
     id: string,
   ): Promise<SpoolAccount<ToPhantomTypeArgument<StakeType>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSpoolAccount(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSpoolAccount(object.type)) {
       throw new Error(`object at id ${id} is not a SpoolAccount object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -351,6 +392,6 @@ export class SpoolAccount<StakeType extends PhantomTypeArgument> implements Stru
       }
     }
 
-    return SpoolAccount.fromBcs(typeArg, res.bcsBytes)
+    return SpoolAccount.fromBcs(typeArg, object.content)
   }
 }

@@ -15,7 +15,8 @@ import { SupplyPool, SupplyPoolInfo, SUPPLY_POOL_INFOS } from './supply-pool'
 import { Position as CetusPosition } from '../gen/cetus-clmm/position/structs'
 import { Position as BluefinPosition } from '../gen/bluefin-spot/position/structs'
 import { Position } from './position'
-import { SuiClient, SuiObjectData } from '@mysten/sui/client'
+import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData } from '@mysten/sui/jsonRpc'
 import { Pool as CetusPool, isPool as isCetusPool } from '../gen/cetus-clmm/pool/structs'
 import { Pool as BluefinPool, isPool as isBluefinPool } from '../gen/bluefin-spot/pool/structs'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
@@ -63,13 +64,12 @@ import {
   TransactionResult,
 } from '@mysten/sui/transactions'
 import { normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
-import { CETUS_GLOBAL_CONFIG_ID } from '../constants'
+import { getActiveProtocolInfra } from '../protocol-infra'
 import * as coin from '../gen/sui/coin/functions'
 import * as pyth from '../gen/kai-leverage/pyth/functions'
 import * as i32 from '../gen/integer-mate/i32/functions'
 import { compressSuiType } from '../gen/_framework/util'
 import * as balance from '../gen/sui/balance/functions'
-import { BLUEFIN_GLOBAL_CONFIG_ID } from '../constants'
 
 export interface PositionConfigInfoConstructorArgs<
   X extends PhantomTypeArgument,
@@ -218,7 +218,7 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `PositionConfig`
    */
-  fetchConfigData(client: SuiClient): Promise<PositionConfig_> {
+  fetchConfigData(client: ClientWithCoreApi): Promise<PositionConfig_> {
     return PositionConfig_.r.fetch(client, this.configId)
   }
 
@@ -228,7 +228,7 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `PositionConfig`
    */
-  async fetchConfig(client: SuiClient): Promise<PositionConfig<X, Y, LP>> {
+  async fetchConfig(client: ClientWithCoreApi): Promise<PositionConfig<X, Y, LP>> {
     return new PositionConfig({
       info: this,
       data: await PositionConfig_.r.fetch(client, this.configId),
@@ -257,13 +257,27 @@ export class PositionConfigInfo<
    * @param client - The Sui client
    * @returns `ClmmPool`
    */
-  async fetchPool(client: SuiClient): Promise<ClmmPool<StructClass, unknown, X, Y>> {
+  async fetchPool(client: ClientWithCoreApi): Promise<ClmmPool<StructClass, unknown, X, Y>> {
     const poolData = await this.poolReified.fetch(client, this.poolObjectId)
     return new ClmmPool({
       reified: this.poolReified,
       X: this.X,
       Y: this.Y,
       data: poolData,
+    })
+  }
+
+  /**
+   * Fetches a `Position` belonging to this config from the chain.
+   *
+   * @param client - The Sui client
+   * @param positionId - The `Position` object ID
+   * @returns `Position`
+   */
+  async fetchPosition(client: ClientWithCoreApi, positionId: string): Promise<Position<X, Y, LP>> {
+    return new Position({
+      configInfo: this,
+      data: await this.positionReified.fetch(client, positionId),
     })
   }
 
@@ -448,6 +462,9 @@ export class PositionConfig<
   /**
    * Creates a PositionConfig instance from its SuiObjectData
    *
+   * @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use
+   * {@link PositionConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })`
+   * for transport-agnostic parsing.
    * @param data -  The SuiObjectData struct to create the PositionConfig instance from.
    * @returns `PositionConfig`
    */
@@ -455,6 +472,20 @@ export class PositionConfig<
     data: SuiObjectData
   ): PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
     return PositionConfig.fromData(PositionConfig_.fromSuiObjectData(data))
+  }
+
+  /**
+   * Creates a PositionConfig instance from a core-API object (returned by
+   * `client.core.getObject({ include: { content: true } })`). Only works for configs recognized by
+   * the SDK.
+   *
+   * @param obj - The core-API object to create the PositionConfig instance from.
+   * @returns `PositionConfig`
+   */
+  static fromCoreObject(
+    obj: SuiClientTypes.Object<{ content: true }>
+  ): PositionConfig<PhantomTypeArgument, PhantomTypeArgument, TypeArgument> | undefined {
+    return PositionConfig.fromData(PositionConfig_.fromCoreObject(obj))
   }
 
   /**
@@ -631,7 +662,7 @@ export class PositionConfig<
         config: this.id,
         ticket,
         cetusPool: this.data.poolObjectId,
-        cetusGlobalConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusGlobalConfig: getActiveProtocolInfra().cetusGlobalConfig,
         creationFee,
         clock: SUI_CLOCK_OBJECT_ID,
       })
@@ -687,7 +718,7 @@ export class PositionConfig<
         config: this.id,
         ticket,
         bluefinPool: this.data.poolObjectId,
-        bluefinGlobalConfig: BLUEFIN_GLOBAL_CONFIG_ID,
+        bluefinGlobalConfig: getActiveProtocolInfra().bluefinGlobalConfig,
         creationFee,
         clock: SUI_CLOCK_OBJECT_ID,
       })

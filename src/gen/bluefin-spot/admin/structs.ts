@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 
 /* ============================== AdminCap =============================== */
@@ -49,9 +44,9 @@ export type AdminCapJSON = {
 export class AdminCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::admin::AdminCap` = `${
-    getTypeOrigin('bluefin-spot', 'admin::AdminCap')
-  }::admin::AdminCap` as const
+  static get $typeName(): `${string}::admin::AdminCap` {
+    return `${getTypeOrigin('bluefin-spot', 'admin::AdminCap')}::admin::AdminCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -75,11 +70,15 @@ export class AdminCap implements StructClass {
   static reified(): AdminCapReified {
     const reifiedBcs = AdminCap.bcs
     return {
-      typeName: AdminCap.$typeName,
-      fullTypeName: composeSuiType(
-        AdminCap.$typeName,
-        ...[],
-      ) as `${string}::admin::AdminCap`,
+      get typeName() {
+        return AdminCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          AdminCap.$typeName,
+          ...[],
+        ) as `${string}::admin::AdminCap`
+      },
       typeArgs: [] as [],
       isPhantom: AdminCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -89,9 +88,11 @@ export class AdminCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => AdminCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => AdminCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        AdminCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => AdminCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => AdminCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => AdminCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => AdminCap.fetch(client, id),
       new: (fields: AdminCapFields) => {
         return new AdminCap([], fields)
       },
@@ -172,6 +173,14 @@ export class AdminCap implements StructClass {
     return AdminCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): AdminCap {
+    if (!isAdminCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a AdminCap object`)
+    }
+    return AdminCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): AdminCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -182,6 +191,7 @@ export class AdminCap implements StructClass {
     return AdminCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link AdminCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): AdminCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isAdminCap(data.bcs.type)) {
@@ -198,13 +208,15 @@ export class AdminCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<AdminCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isAdminCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<AdminCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isAdminCap(object.type)) {
       throw new Error(`object at id ${id} is not a AdminCap object`)
     }
-
-    return AdminCap.fromBcs(res.bcsBytes)
+    return AdminCap.fromBcs(object.content)
   }
 }
 
@@ -234,9 +246,11 @@ export type ProtocolFeeCapJSON = {
 export class ProtocolFeeCap implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::admin::ProtocolFeeCap` = `${
-    getTypeOrigin('bluefin-spot', 'admin::ProtocolFeeCap')
-  }::admin::ProtocolFeeCap` as const
+  static get $typeName(): `${string}::admin::ProtocolFeeCap` {
+    return `${
+      getTypeOrigin('bluefin-spot', 'admin::ProtocolFeeCap')
+    }::admin::ProtocolFeeCap` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -260,11 +274,15 @@ export class ProtocolFeeCap implements StructClass {
   static reified(): ProtocolFeeCapReified {
     const reifiedBcs = ProtocolFeeCap.bcs
     return {
-      typeName: ProtocolFeeCap.$typeName,
-      fullTypeName: composeSuiType(
-        ProtocolFeeCap.$typeName,
-        ...[],
-      ) as `${string}::admin::ProtocolFeeCap`,
+      get typeName() {
+        return ProtocolFeeCap.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ProtocolFeeCap.$typeName,
+          ...[],
+        ) as `${string}::admin::ProtocolFeeCap`
+      },
       typeArgs: [] as [],
       isPhantom: ProtocolFeeCap.$isPhantom,
       reifiedTypeArgs: [],
@@ -274,9 +292,11 @@ export class ProtocolFeeCap implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ProtocolFeeCap.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ProtocolFeeCap.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ProtocolFeeCap.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => ProtocolFeeCap.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => ProtocolFeeCap.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => ProtocolFeeCap.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => ProtocolFeeCap.fetch(client, id),
       new: (fields: ProtocolFeeCapFields) => {
         return new ProtocolFeeCap([], fields)
       },
@@ -357,6 +377,14 @@ export class ProtocolFeeCap implements StructClass {
     return ProtocolFeeCap.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ProtocolFeeCap {
+    if (!isProtocolFeeCap(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ProtocolFeeCap object`)
+    }
+    return ProtocolFeeCap.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ProtocolFeeCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ProtocolFeeCap {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -367,6 +395,7 @@ export class ProtocolFeeCap implements StructClass {
     return ProtocolFeeCap.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ProtocolFeeCap.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ProtocolFeeCap {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isProtocolFeeCap(data.bcs.type)) {
@@ -383,12 +412,14 @@ export class ProtocolFeeCap implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ProtocolFeeCap> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isProtocolFeeCap(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ProtocolFeeCap> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isProtocolFeeCap(object.type)) {
       throw new Error(`object at id ${id} is not a ProtocolFeeCap object`)
     }
-
-    return ProtocolFeeCap.fromBcs(res.bcsBytes)
+    return ProtocolFeeCap.fromBcs(object.content)
   }
 }

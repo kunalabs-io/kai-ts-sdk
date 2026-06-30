@@ -7,7 +7,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -24,13 +25,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
 /* ============================== Section =============================== */
@@ -61,9 +56,9 @@ export type SectionJSON = {
 export class Section implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::piecewise::Section` = `${
-    getTypeOrigin('kai-leverage', 'piecewise::Section')
-  }::piecewise::Section` as const
+  static get $typeName(): `${string}::piecewise::Section` {
+    return `${getTypeOrigin('kai-leverage', 'piecewise::Section')}::piecewise::Section` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -89,11 +84,15 @@ export class Section implements StructClass {
   static reified(): SectionReified {
     const reifiedBcs = Section.bcs
     return {
-      typeName: Section.$typeName,
-      fullTypeName: composeSuiType(
-        Section.$typeName,
-        ...[],
-      ) as `${string}::piecewise::Section`,
+      get typeName() {
+        return Section.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Section.$typeName,
+          ...[],
+        ) as `${string}::piecewise::Section`
+      },
       typeArgs: [] as [],
       isPhantom: Section.$isPhantom,
       reifiedTypeArgs: [],
@@ -103,9 +102,11 @@ export class Section implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Section.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Section.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Section.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Section.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Section.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Section.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Section.fetch(client, id),
       new: (fields: SectionFields) => {
         return new Section([], fields)
       },
@@ -191,6 +192,14 @@ export class Section implements StructClass {
     return Section.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Section {
+    if (!isSection(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Section object`)
+    }
+    return Section.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Section.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Section {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -201,6 +210,7 @@ export class Section implements StructClass {
     return Section.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Section.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Section {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSection(data.bcs.type)) {
@@ -217,13 +227,15 @@ export class Section implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Section> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSection(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Section> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSection(object.type)) {
       throw new Error(`object at id ${id} is not a Section object`)
     }
-
-    return Section.fromBcs(res.bcsBytes)
+    return Section.fromBcs(object.content)
   }
 }
 
@@ -257,9 +269,9 @@ export type PiecewiseJSON = {
 export class Piecewise implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::piecewise::Piecewise` = `${
-    getTypeOrigin('kai-leverage', 'piecewise::Piecewise')
-  }::piecewise::Piecewise` as const
+  static get $typeName(): `${string}::piecewise::Piecewise` {
+    return `${getTypeOrigin('kai-leverage', 'piecewise::Piecewise')}::piecewise::Piecewise` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -287,11 +299,15 @@ export class Piecewise implements StructClass {
   static reified(): PiecewiseReified {
     const reifiedBcs = Piecewise.bcs
     return {
-      typeName: Piecewise.$typeName,
-      fullTypeName: composeSuiType(
-        Piecewise.$typeName,
-        ...[],
-      ) as `${string}::piecewise::Piecewise`,
+      get typeName() {
+        return Piecewise.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Piecewise.$typeName,
+          ...[],
+        ) as `${string}::piecewise::Piecewise`
+      },
       typeArgs: [] as [],
       isPhantom: Piecewise.$isPhantom,
       reifiedTypeArgs: [],
@@ -301,9 +317,11 @@ export class Piecewise implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Piecewise.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Piecewise.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Piecewise.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Piecewise.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Piecewise.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Piecewise.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Piecewise.fetch(client, id),
       new: (fields: PiecewiseFields) => {
         return new Piecewise([], fields)
       },
@@ -394,6 +412,14 @@ export class Piecewise implements StructClass {
     return Piecewise.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Piecewise {
+    if (!isPiecewise(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Piecewise object`)
+    }
+    return Piecewise.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Piecewise.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Piecewise {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -404,6 +430,7 @@ export class Piecewise implements StructClass {
     return Piecewise.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Piecewise.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Piecewise {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPiecewise(data.bcs.type)) {
@@ -420,12 +447,14 @@ export class Piecewise implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Piecewise> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPiecewise(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Piecewise> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPiecewise(object.type)) {
       throw new Error(`object at id ${id} is not a Piecewise object`)
     }
-
-    return Piecewise.fromBcs(res.bcsBytes)
+    return Piecewise.fromBcs(object.content)
   }
 }

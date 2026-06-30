@@ -1,7 +1,8 @@
 /** Priority queue implemented using a max heap. */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import {
   assertFieldsWithTypesArgsMatch,
@@ -26,10 +27,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 
@@ -95,12 +94,18 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
   ): PriorityQueueReified<ToTypeArgument<T>> {
     const reifiedBcs = PriorityQueue.bcs(toBcs(T))
     return {
-      typeName: PriorityQueue.$typeName,
-      fullTypeName: composeSuiType(
-        PriorityQueue.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::priority_queue::PriorityQueue<${ToTypeStr<ToTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
+      get typeName() {
+        return PriorityQueue.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PriorityQueue.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::priority_queue::PriorityQueue<${ToTypeStr<ToTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>]
+      },
       isPhantom: PriorityQueue.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => PriorityQueue.fromFields(T, fields),
@@ -109,9 +114,11 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PriorityQueue.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => PriorityQueue.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PriorityQueue.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => PriorityQueue.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => PriorityQueue.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => PriorityQueue.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PriorityQueue.fetch(client, T, id),
       new: (fields: PriorityQueueFields<ToTypeArgument<T>>) => {
         return new PriorityQueue([extractType(T)], fields)
       },
@@ -220,6 +227,34 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
     return PriorityQueue.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): PriorityQueue<ToTypeArgument<T>> {
+    if (!isPriorityQueue(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PriorityQueue object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return PriorityQueue.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriorityQueue.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     content: SuiParsedData,
@@ -233,6 +268,7 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
     return PriorityQueue.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PriorityQueue.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     data: SuiObjectData,
@@ -269,16 +305,19 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<PriorityQueue<ToTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPriorityQueue(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPriorityQueue(object.type)) {
       throw new Error(`object at id ${id} is not a PriorityQueue object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -294,7 +333,7 @@ export class PriorityQueue<T extends TypeArgument> implements StructClass {
       }
     }
 
-    return PriorityQueue.fromBcs(typeArg, res.bcsBytes)
+    return PriorityQueue.fromBcs(typeArg, object.content)
   }
 }
 
@@ -353,12 +392,18 @@ export class Entry<T extends TypeArgument> implements StructClass {
   ): EntryReified<ToTypeArgument<T>> {
     const reifiedBcs = Entry.bcs(toBcs(T))
     return {
-      typeName: Entry.$typeName,
-      fullTypeName: composeSuiType(
-        Entry.$typeName,
-        ...[extractType(T)],
-      ) as `0x2::priority_queue::Entry<${ToTypeStr<ToTypeArgument<T>>}>`,
-      typeArgs: [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>],
+      get typeName() {
+        return Entry.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Entry.$typeName,
+          ...[extractType(T)],
+        ) as `0x2::priority_queue::Entry<${ToTypeStr<ToTypeArgument<T>>}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [ToTypeStr<ToTypeArgument<T>>]
+      },
       isPhantom: Entry.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => Entry.fromFields(T, fields),
@@ -367,9 +412,11 @@ export class Entry<T extends TypeArgument> implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Entry.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => Entry.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Entry.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => Entry.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => Entry.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => Entry.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Entry.fetch(client, T, id),
       new: (fields: EntryFields<ToTypeArgument<T>>) => {
         return new Entry([extractType(T)], fields)
       },
@@ -480,6 +527,34 @@ export class Entry<T extends TypeArgument> implements StructClass {
     return Entry.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends Reified<TypeArgument, any>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): Entry<ToTypeArgument<T>> {
+    if (!isEntry(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Entry object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return Entry.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Entry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     content: SuiParsedData,
@@ -493,6 +568,7 @@ export class Entry<T extends TypeArgument> implements StructClass {
     return Entry.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Entry.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends Reified<TypeArgument, any>>(
     typeArg: T,
     data: SuiObjectData,
@@ -529,16 +605,19 @@ export class Entry<T extends TypeArgument> implements StructClass {
   }
 
   static async fetch<T extends Reified<TypeArgument, any>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<Entry<ToTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isEntry(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isEntry(object.type)) {
       throw new Error(`object at id ${id} is not a Entry object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -554,6 +633,6 @@ export class Entry<T extends TypeArgument> implements StructClass {
       }
     }
 
-    return Entry.fromBcs(typeArg, res.bcsBytes)
+    return Entry.fromBcs(typeArg, object.content)
   }
 }

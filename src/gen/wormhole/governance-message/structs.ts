@@ -6,7 +6,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -32,10 +33,8 @@ import {
 import {
   composeSuiType,
   compressSuiType,
-  fetchObjectBcs,
   FieldsWithTypes,
   parseTypeName,
-  SupportedSuiClient,
 } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { Bytes32 } from '../bytes32/structs'
@@ -87,9 +86,11 @@ export type DecreeTicketJSON<T extends PhantomTypeArgument> = {
 export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::governance_message::DecreeTicket` = `${
-    getTypeOrigin('wormhole', 'governance_message::DecreeTicket')
-  }::governance_message::DecreeTicket` as const
+  static get $typeName(): `${string}::governance_message::DecreeTicket` {
+    return `${
+      getTypeOrigin('wormhole', 'governance_message::DecreeTicket')
+    }::governance_message::DecreeTicket` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -123,14 +124,20 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
   ): DecreeTicketReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DecreeTicket.bcs
     return {
-      typeName: DecreeTicket.$typeName,
-      fullTypeName: composeSuiType(
-        DecreeTicket.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::governance_message::DecreeTicket<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return DecreeTicket.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DecreeTicket.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::governance_message::DecreeTicket<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: DecreeTicket.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DecreeTicket.fromFields(T, fields),
@@ -139,9 +146,11 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DecreeTicket.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DecreeTicket.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DecreeTicket.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => DecreeTicket.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => DecreeTicket.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => DecreeTicket.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DecreeTicket.fetch(client, T, id),
       new: (fields: DecreeTicketFields<ToPhantomTypeArgument<T>>) => {
         return new DecreeTicket([extractType(T)], fields)
       },
@@ -268,6 +277,34 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
     return DecreeTicket.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DecreeTicket<ToPhantomTypeArgument<T>> {
+    if (!isDecreeTicket(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DecreeTicket object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DecreeTicket.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DecreeTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -281,6 +318,7 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
     return DecreeTicket.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DecreeTicket.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -317,16 +355,19 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<DecreeTicket<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDecreeTicket(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDecreeTicket(object.type)) {
       throw new Error(`object at id ${id} is not a DecreeTicket object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -342,7 +383,7 @@ export class DecreeTicket<T extends PhantomTypeArgument> implements StructClass 
       }
     }
 
-    return DecreeTicket.fromBcs(typeArg, res.bcsBytes)
+    return DecreeTicket.fromBcs(typeArg, object.content)
   }
 }
 
@@ -382,9 +423,11 @@ export type DecreeReceiptJSON<T extends PhantomTypeArgument> = {
 export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::governance_message::DecreeReceipt` = `${
-    getTypeOrigin('wormhole', 'governance_message::DecreeReceipt')
-  }::governance_message::DecreeReceipt` as const
+  static get $typeName(): `${string}::governance_message::DecreeReceipt` {
+    return `${
+      getTypeOrigin('wormhole', 'governance_message::DecreeReceipt')
+    }::governance_message::DecreeReceipt` as const
+  }
   static readonly $numTypeParams = 1
   static readonly $isPhantom = [true] as const
 
@@ -414,14 +457,20 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
   ): DecreeReceiptReified<ToPhantomTypeArgument<T>> {
     const reifiedBcs = DecreeReceipt.bcs
     return {
-      typeName: DecreeReceipt.$typeName,
-      fullTypeName: composeSuiType(
-        DecreeReceipt.$typeName,
-        ...[extractType(T)],
-      ) as `${string}::governance_message::DecreeReceipt<${PhantomToTypeStr<
-        ToPhantomTypeArgument<T>
-      >}>`,
-      typeArgs: [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>],
+      get typeName() {
+        return DecreeReceipt.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DecreeReceipt.$typeName,
+          ...[extractType(T)],
+        ) as `${string}::governance_message::DecreeReceipt<${PhantomToTypeStr<
+          ToPhantomTypeArgument<T>
+        >}>`
+      },
+      get typeArgs() {
+        return [extractType(T)] as [PhantomToTypeStr<ToPhantomTypeArgument<T>>]
+      },
       isPhantom: DecreeReceipt.$isPhantom,
       reifiedTypeArgs: [T],
       fromFields: (fields: Record<string, any>) => DecreeReceipt.fromFields(T, fields),
@@ -430,9 +479,11 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DecreeReceipt.fromJSONField(T, field),
       fromJSON: (json: Record<string, any>) => DecreeReceipt.fromJSON(T, json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DecreeReceipt.fromCoreObject(T, obj),
       fromSuiParsedData: (content: SuiParsedData) => DecreeReceipt.fromSuiParsedData(T, content),
       fromSuiObjectData: (content: SuiObjectData) => DecreeReceipt.fromSuiObjectData(T, content),
-      fetch: async (client: SupportedSuiClient, id: string) => DecreeReceipt.fetch(client, T, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DecreeReceipt.fetch(client, T, id),
       new: (fields: DecreeReceiptFields<ToPhantomTypeArgument<T>>) => {
         return new DecreeReceipt([extractType(T)], fields)
       },
@@ -546,6 +597,34 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
     return DecreeReceipt.fromJSONField(typeArg, json)
   }
 
+  static fromCoreObject<T extends PhantomReified<PhantomTypeArgument>>(
+    typeArg: T,
+    obj: SuiClientTypes.Object<{ content: true }>,
+  ): DecreeReceipt<ToPhantomTypeArgument<T>> {
+    if (!isDecreeReceipt(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DecreeReceipt object`)
+    }
+
+    const gotTypeArgs = parseTypeName(obj.type).typeArgs
+    if (gotTypeArgs.length !== 1) {
+      throw new Error(
+        `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
+      )
+    }
+    for (let i = 0; i < 1; i++) {
+      const gotTypeArg = compressSuiType(gotTypeArgs[i])
+      const expectedTypeArg = compressSuiType(extractType([typeArg][i]))
+      if (gotTypeArg !== expectedTypeArg) {
+        throw new Error(
+          `type argument mismatch at position ${i}: expected '${expectedTypeArg}' but got '${gotTypeArg}'`,
+        )
+      }
+    }
+
+    return DecreeReceipt.fromBcs(typeArg, obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DecreeReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     content: SuiParsedData,
@@ -559,6 +638,7 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
     return DecreeReceipt.fromFieldsWithTypes(typeArg, content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DecreeReceipt.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData<T extends PhantomReified<PhantomTypeArgument>>(
     typeArg: T,
     data: SuiObjectData,
@@ -595,16 +675,19 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
   }
 
   static async fetch<T extends PhantomReified<PhantomTypeArgument>>(
-    client: SupportedSuiClient,
+    client: ClientWithCoreApi,
     typeArg: T,
     id: string,
   ): Promise<DecreeReceipt<ToPhantomTypeArgument<T>>> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDecreeReceipt(res.type)) {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDecreeReceipt(object.type)) {
       throw new Error(`object at id ${id} is not a DecreeReceipt object`)
     }
 
-    const gotTypeArgs = parseTypeName(res.type).typeArgs
+    const gotTypeArgs = parseTypeName(object.type).typeArgs
     if (gotTypeArgs.length !== 1) {
       throw new Error(
         `type argument mismatch: expected 1 type arguments but got '${gotTypeArgs.length}'`,
@@ -620,6 +703,6 @@ export class DecreeReceipt<T extends PhantomTypeArgument> implements StructClass
       }
     }
 
-    return DecreeReceipt.fromBcs(typeArg, res.bcsBytes)
+    return DecreeReceipt.fromBcs(typeArg, object.content)
   }
 }

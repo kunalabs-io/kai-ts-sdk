@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Bag } from '../../../sui/bag/structs'
 import { UID } from '../../../sui/object/structs'
 
@@ -51,9 +46,9 @@ export type SupplyBagJSON = {
 export class SupplyBag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::supply_bag::SupplyBag` = `${
-    getTypeOrigin('x', 'supply_bag::SupplyBag')
-  }::supply_bag::SupplyBag` as const
+  static get $typeName(): `${string}::supply_bag::SupplyBag` {
+    return `${getTypeOrigin('x', 'supply_bag::SupplyBag')}::supply_bag::SupplyBag` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -79,11 +74,15 @@ export class SupplyBag implements StructClass {
   static reified(): SupplyBagReified {
     const reifiedBcs = SupplyBag.bcs
     return {
-      typeName: SupplyBag.$typeName,
-      fullTypeName: composeSuiType(
-        SupplyBag.$typeName,
-        ...[],
-      ) as `${string}::supply_bag::SupplyBag`,
+      get typeName() {
+        return SupplyBag.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          SupplyBag.$typeName,
+          ...[],
+        ) as `${string}::supply_bag::SupplyBag`
+      },
       typeArgs: [] as [],
       isPhantom: SupplyBag.$isPhantom,
       reifiedTypeArgs: [],
@@ -93,9 +92,11 @@ export class SupplyBag implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => SupplyBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => SupplyBag.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        SupplyBag.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => SupplyBag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => SupplyBag.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => SupplyBag.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => SupplyBag.fetch(client, id),
       new: (fields: SupplyBagFields) => {
         return new SupplyBag([], fields)
       },
@@ -181,6 +182,14 @@ export class SupplyBag implements StructClass {
     return SupplyBag.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): SupplyBag {
+    if (!isSupplyBag(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a SupplyBag object`)
+    }
+    return SupplyBag.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SupplyBag.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): SupplyBag {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -191,6 +200,7 @@ export class SupplyBag implements StructClass {
     return SupplyBag.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link SupplyBag.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): SupplyBag {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isSupplyBag(data.bcs.type)) {
@@ -207,12 +217,14 @@ export class SupplyBag implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<SupplyBag> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isSupplyBag(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<SupplyBag> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isSupplyBag(object.type)) {
       throw new Error(`object at id ${id} is not a SupplyBag object`)
     }
-
-    return SupplyBag.fromBcs(res.bcsBytes)
+    return SupplyBag.fromBcs(object.content)
   }
 }

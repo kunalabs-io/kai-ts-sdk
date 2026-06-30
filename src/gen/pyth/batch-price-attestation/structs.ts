@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { PriceInfo } from '../price-info/structs'
 
@@ -63,9 +58,11 @@ export type BatchPriceAttestationJSON = {
 export class BatchPriceAttestation implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::batch_price_attestation::BatchPriceAttestation` = `${
-    getTypeOrigin('pyth', 'batch_price_attestation::BatchPriceAttestation')
-  }::batch_price_attestation::BatchPriceAttestation` as const
+  static get $typeName(): `${string}::batch_price_attestation::BatchPriceAttestation` {
+    return `${
+      getTypeOrigin('pyth', 'batch_price_attestation::BatchPriceAttestation')
+    }::batch_price_attestation::BatchPriceAttestation` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -95,11 +92,15 @@ export class BatchPriceAttestation implements StructClass {
   static reified(): BatchPriceAttestationReified {
     const reifiedBcs = BatchPriceAttestation.bcs
     return {
-      typeName: BatchPriceAttestation.$typeName,
-      fullTypeName: composeSuiType(
-        BatchPriceAttestation.$typeName,
-        ...[],
-      ) as `${string}::batch_price_attestation::BatchPriceAttestation`,
+      get typeName() {
+        return BatchPriceAttestation.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          BatchPriceAttestation.$typeName,
+          ...[],
+        ) as `${string}::batch_price_attestation::BatchPriceAttestation`
+      },
       typeArgs: [] as [],
       isPhantom: BatchPriceAttestation.$isPhantom,
       reifiedTypeArgs: [],
@@ -110,11 +111,13 @@ export class BatchPriceAttestation implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => BatchPriceAttestation.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => BatchPriceAttestation.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        BatchPriceAttestation.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         BatchPriceAttestation.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         BatchPriceAttestation.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         BatchPriceAttestation.fetch(client, id),
       new: (fields: BatchPriceAttestationFields) => {
         return new BatchPriceAttestation([], fields)
@@ -211,6 +214,14 @@ export class BatchPriceAttestation implements StructClass {
     return BatchPriceAttestation.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): BatchPriceAttestation {
+    if (!isBatchPriceAttestation(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a BatchPriceAttestation object`)
+    }
+    return BatchPriceAttestation.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchPriceAttestation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): BatchPriceAttestation {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -223,6 +234,7 @@ export class BatchPriceAttestation implements StructClass {
     return BatchPriceAttestation.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link BatchPriceAttestation.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): BatchPriceAttestation {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isBatchPriceAttestation(data.bcs.type)) {
@@ -239,13 +251,15 @@ export class BatchPriceAttestation implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<BatchPriceAttestation> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isBatchPriceAttestation(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<BatchPriceAttestation> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isBatchPriceAttestation(object.type)) {
       throw new Error(`object at id ${id} is not a BatchPriceAttestation object`)
     }
-
-    return BatchPriceAttestation.fromBcs(res.bcsBytes)
+    return BatchPriceAttestation.fromBcs(object.content)
   }
 }
 
@@ -285,9 +299,11 @@ export type HeaderJSON = {
 export class Header implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::batch_price_attestation::Header` = `${
-    getTypeOrigin('pyth', 'batch_price_attestation::Header')
-  }::batch_price_attestation::Header` as const
+  static get $typeName(): `${string}::batch_price_attestation::Header` {
+    return `${
+      getTypeOrigin('pyth', 'batch_price_attestation::Header')
+    }::batch_price_attestation::Header` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -319,11 +335,15 @@ export class Header implements StructClass {
   static reified(): HeaderReified {
     const reifiedBcs = Header.bcs
     return {
-      typeName: Header.$typeName,
-      fullTypeName: composeSuiType(
-        Header.$typeName,
-        ...[],
-      ) as `${string}::batch_price_attestation::Header`,
+      get typeName() {
+        return Header.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Header.$typeName,
+          ...[],
+        ) as `${string}::batch_price_attestation::Header`
+      },
       typeArgs: [] as [],
       isPhantom: Header.$isPhantom,
       reifiedTypeArgs: [],
@@ -333,9 +353,10 @@ export class Header implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Header.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Header.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Header.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Header.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Header.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Header.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Header.fetch(client, id),
       new: (fields: HeaderFields) => {
         return new Header([], fields)
       },
@@ -436,6 +457,14 @@ export class Header implements StructClass {
     return Header.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Header {
+    if (!isHeader(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Header object`)
+    }
+    return Header.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Header.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Header {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -446,6 +475,7 @@ export class Header implements StructClass {
     return Header.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Header.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Header {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isHeader(data.bcs.type)) {
@@ -462,12 +492,14 @@ export class Header implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Header> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isHeader(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Header> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isHeader(object.type)) {
       throw new Error(`object at id ${id} is not a Header object`)
     }
-
-    return Header.fromBcs(res.bcsBytes)
+    return Header.fromBcs(object.content)
   }
 }

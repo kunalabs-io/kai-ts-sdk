@@ -1,4 +1,4 @@
-import { SuiClient } from '@mysten/sui/client'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { findVaultInfoById, VaultInfo, VAULTS } from './vault'
 import { phantom, PhantomTypeArgument } from '../gen/_framework/reified'
 import { Amount } from '../amount'
@@ -120,7 +120,7 @@ export function getVaultStats(vaultData: Vault<PhantomTypeArgument, PhantomTypeA
  * @param client - SuiClient
  * @returns All vault stats
  */
-export async function getAllVaultStats(client: SuiClient): Promise<
+export async function getAllVaultStats(client: ClientWithCoreApi): Promise<
   Array<{
     vaultInfo: VaultInfo<PhantomTypeArgument, PhantomTypeArgument>
     tvl: Amount
@@ -231,7 +231,7 @@ export function calcTToYtAmount(
  * @returns Wallet vault info
  */
 export async function getWalletVaultInfo(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   wallet: string,
   vaultData: Vault<PhantomTypeArgument, PhantomTypeArgument>
 ): Promise<WalletVaultInfo> {
@@ -240,8 +240,8 @@ export async function getWalletVaultInfo(
     throw new Error(`VaultInfo not found for Vault id: ${vaultData.id}`)
   }
 
-  const ytBalanceRes = await client.getBalance({ owner: wallet, coinType: vault.YT.typeName })
-  const ytBalance = Amount.fromInt(BigInt(ytBalanceRes.totalBalance), vault.YT.decimals)
+  const ytBalanceRes = await client.core.getBalance({ owner: wallet, coinType: vault.YT.typeName })
+  const ytBalance = Amount.fromInt(BigInt(ytBalanceRes.balance.balance), vault.YT.decimals)
 
   const rate = calcYtConversionRate(vault, vaultData)
   const equity = Amount.fromInt(
@@ -264,34 +264,26 @@ export async function getWalletVaultInfo(
  * @returns Vault data
  */
 export async function getVaultDataBatch(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   ids: string[]
 ): Promise<Vault<PhantomTypeArgument, PhantomTypeArgument>[]> {
-  const res = await client.multiGetObjects({
-    ids,
-    options: {
-      showBcs: true,
+  const { objects } = await client.core.getObjects({
+    objectIds: ids,
+    include: {
+      content: true,
     },
   })
 
-  return res.map((item, index) => {
-    if (!item.data) {
-      throw new Error(`No data in response for ${ids[index]}`)
+  return objects.map((obj, index) => {
+    if (obj instanceof Error) {
+      throw new Error(`No data in response for ${ids[index]}: ${obj.message}`)
     }
-    if (item.data.bcs?.dataType !== 'moveObject') {
-      throw new Error(`Invalid object type for ${item.data.objectId}, expected moveObject`)
-    }
-    if (!isVault(item.data.bcs.type)) {
-      throw new Error(
-        `Invalid object type for ${item.data.objectId}, expected Vault, got ${item.data.bcs.type}`
-      )
+    if (!isVault(obj.type)) {
+      throw new Error(`Invalid object type for ${obj.objectId}, expected Vault, got ${obj.type}`)
     }
 
-    const { typeArgs } = parseTypeName(item.data.bcs.type)
-    const vaultData = Vault.fromSuiObjectData(
-      [phantom(typeArgs[0]), phantom(typeArgs[1])],
-      item.data
-    )
+    const { typeArgs } = parseTypeName(obj.type)
+    const vaultData = Vault.fromCoreObject([phantom(typeArgs[0]), phantom(typeArgs[1])], obj)
 
     return vaultData
   })
@@ -305,22 +297,29 @@ export async function getVaultDataBatch(
  * @returns Wallet vault info
  */
 export async function getWalletAllVaultInfo(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   wallet: string
 ): Promise<WalletVaultInfo[]> {
   const ret: WalletVaultInfo[] = []
 
-  const [ytBalances, vaultDatas] = await Promise.all([
-    client.getAllBalances({ owner: wallet }),
+  const vaultInfos = Object.values(VAULTS)
+  // Fetch each vault's YT balance with a targeted per-type getBalance rather than
+  // scanning all wallet balances: core.listBalances is server-paginated (50 per
+  // page), so a single page would silently drop YT types for wallets holding many
+  // coin types, reporting zero balance/equity.
+  const [ytBalanceResults, vaultDatas] = await Promise.all([
+    Promise.all(
+      vaultInfos.map(v => client.core.getBalance({ owner: wallet, coinType: v.YT.typeName }))
+    ),
     getVaultDataBatch(
       client,
-      Object.values(VAULTS).map(v => v.id)
+      vaultInfos.map(v => v.id)
     ),
   ])
-  const balanceMap = ytBalances.reduce((acc, curr) => {
-    acc.set(curr.coinType, BigInt(curr.totalBalance))
-    return acc
-  }, new Map<string, bigint>())
+  const balanceMap = new Map<string, bigint>()
+  vaultInfos.forEach((v, i) => {
+    balanceMap.set(v.YT.typeName, BigInt(ytBalanceResults[i].balance.balance))
+  })
 
   for (const vaultData of vaultDatas) {
     const vault = findVaultInfoById(vaultData.id)

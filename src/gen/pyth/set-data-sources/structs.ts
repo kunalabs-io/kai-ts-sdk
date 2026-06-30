@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { DataSource } from '../data-source/structs'
 
@@ -52,9 +47,11 @@ export type DataSourcesJSON = {
 export class DataSources implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::set_data_sources::DataSources` = `${
-    getTypeOrigin('pyth', 'set_data_sources::DataSources')
-  }::set_data_sources::DataSources` as const
+  static get $typeName(): `${string}::set_data_sources::DataSources` {
+    return `${
+      getTypeOrigin('pyth', 'set_data_sources::DataSources')
+    }::set_data_sources::DataSources` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -78,11 +75,15 @@ export class DataSources implements StructClass {
   static reified(): DataSourcesReified {
     const reifiedBcs = DataSources.bcs
     return {
-      typeName: DataSources.$typeName,
-      fullTypeName: composeSuiType(
-        DataSources.$typeName,
-        ...[],
-      ) as `${string}::set_data_sources::DataSources`,
+      get typeName() {
+        return DataSources.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DataSources.$typeName,
+          ...[],
+        ) as `${string}::set_data_sources::DataSources`
+      },
       typeArgs: [] as [],
       isPhantom: DataSources.$isPhantom,
       reifiedTypeArgs: [],
@@ -92,9 +93,11 @@ export class DataSources implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DataSources.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DataSources.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DataSources.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DataSources.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DataSources.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DataSources.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DataSources.fetch(client, id),
       new: (fields: DataSourcesFields) => {
         return new DataSources([], fields)
       },
@@ -175,6 +178,14 @@ export class DataSources implements StructClass {
     return DataSources.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DataSources {
+    if (!isDataSources(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DataSources object`)
+    }
+    return DataSources.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DataSources.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DataSources {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -185,6 +196,7 @@ export class DataSources implements StructClass {
     return DataSources.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DataSources.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DataSources {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDataSources(data.bcs.type)) {
@@ -201,12 +213,14 @@ export class DataSources implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DataSources> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDataSources(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DataSources> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDataSources(object.type)) {
       throw new Error(`object at id ${id} is not a DataSources object`)
     }
-
-    return DataSources.fromBcs(res.bcsBytes)
+    return DataSources.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 
 /* ============================== YSUI =============================== */
 
@@ -47,9 +42,9 @@ export type YSUIJSON = {
 export class YSUI implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::ysui::YSUI` = `${
-    getTypeOrigin('kai-ywhusdte-ysui', 'ysui::YSUI')
-  }::ysui::YSUI` as const
+  static get $typeName(): `${string}::ysui::YSUI` {
+    return `${getTypeOrigin('kai-ywhusdte-ysui', 'ysui::YSUI')}::ysui::YSUI` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -73,11 +68,15 @@ export class YSUI implements StructClass {
   static reified(): YSUIReified {
     const reifiedBcs = YSUI.bcs
     return {
-      typeName: YSUI.$typeName,
-      fullTypeName: composeSuiType(
-        YSUI.$typeName,
-        ...[],
-      ) as `${string}::ysui::YSUI`,
+      get typeName() {
+        return YSUI.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          YSUI.$typeName,
+          ...[],
+        ) as `${string}::ysui::YSUI`
+      },
       typeArgs: [] as [],
       isPhantom: YSUI.$isPhantom,
       reifiedTypeArgs: [],
@@ -87,9 +86,10 @@ export class YSUI implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => YSUI.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => YSUI.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => YSUI.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => YSUI.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => YSUI.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => YSUI.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => YSUI.fetch(client, id),
       new: (fields: YSUIFields) => {
         return new YSUI([], fields)
       },
@@ -170,6 +170,14 @@ export class YSUI implements StructClass {
     return YSUI.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): YSUI {
+    if (!isYSUI(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a YSUI object`)
+    }
+    return YSUI.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link YSUI.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): YSUI {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -180,6 +188,7 @@ export class YSUI implements StructClass {
     return YSUI.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link YSUI.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): YSUI {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isYSUI(data.bcs.type)) {
@@ -196,12 +205,14 @@ export class YSUI implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<YSUI> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isYSUI(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<YSUI> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isYSUI(object.type)) {
       throw new Error(`object at id ${id} is not a YSUI object`)
     }
-
-    return YSUI.fromBcs(res.bcsBytes)
+    return YSUI.fromBcs(object.content)
   }
 }

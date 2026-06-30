@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { I32 } from '../../integer-mate/i32/structs'
 import { UID } from '../../sui/object/structs'
@@ -61,9 +56,9 @@ export type GlobalConfigJSON = {
 export class GlobalConfig implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::config::GlobalConfig` = `${
-    getTypeOrigin('bluefin-spot', 'config::GlobalConfig')
-  }::config::GlobalConfig` as const
+  static get $typeName(): `${string}::config::GlobalConfig` {
+    return `${getTypeOrigin('bluefin-spot', 'config::GlobalConfig')}::config::GlobalConfig` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -95,11 +90,15 @@ export class GlobalConfig implements StructClass {
   static reified(): GlobalConfigReified {
     const reifiedBcs = GlobalConfig.bcs
     return {
-      typeName: GlobalConfig.$typeName,
-      fullTypeName: composeSuiType(
-        GlobalConfig.$typeName,
-        ...[],
-      ) as `${string}::config::GlobalConfig`,
+      get typeName() {
+        return GlobalConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GlobalConfig.$typeName,
+          ...[],
+        ) as `${string}::config::GlobalConfig`
+      },
       typeArgs: [] as [],
       isPhantom: GlobalConfig.$isPhantom,
       reifiedTypeArgs: [],
@@ -109,9 +108,11 @@ export class GlobalConfig implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GlobalConfig.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GlobalConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GlobalConfig.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GlobalConfig.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GlobalConfig.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GlobalConfig.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GlobalConfig.fetch(client, id),
       new: (fields: GlobalConfigFields) => {
         return new GlobalConfig([], fields)
       },
@@ -217,6 +218,14 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GlobalConfig {
+    if (!isGlobalConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GlobalConfig object`)
+    }
+    return GlobalConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GlobalConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GlobalConfig {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -227,6 +236,7 @@ export class GlobalConfig implements StructClass {
     return GlobalConfig.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GlobalConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GlobalConfig {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGlobalConfig(data.bcs.type)) {
@@ -243,12 +253,14 @@ export class GlobalConfig implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GlobalConfig> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGlobalConfig(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GlobalConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGlobalConfig(object.type)) {
       throw new Error(`object at id ${id} is not a GlobalConfig object`)
     }
-
-    return GlobalConfig.fromBcs(res.bcsBytes)
+    return GlobalConfig.fromBcs(object.content)
   }
 }

@@ -2,7 +2,7 @@ import { Transaction, TransactionObjectInput, TransactionResult } from '@mysten/
 import { ProtocolHandler } from './protocol-handler'
 import { Position } from '../../../lp/position'
 import { TypeArgument, PhantomTypeArgument } from '../../../gen/_framework/reified'
-import { CETUS_GLOBAL_CONFIG_ID } from '../../../constants'
+import { getActiveProtocolInfra } from '../../../protocol-infra'
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import * as cetus from '../../../gen/kai-leverage/cetus/functions'
 
@@ -27,7 +27,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
         supplyPoolX: position.configInfo.supplyPoolXInfo.id,
         supplyPoolY: position.configInfo.supplyPoolYInfo.id,
         cetusPool: position.configInfo.poolObjectId,
-        cetusGlobalConfig: CETUS_GLOBAL_CONFIG_ID,
+        cetusGlobalConfig: getActiveProtocolInfra().cetusGlobalConfig,
         clock: SUI_CLOCK_OBJECT_ID,
       }
     )

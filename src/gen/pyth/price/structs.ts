@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { I64 } from '../i64/structs'
 
 /* ============================== Price =============================== */
@@ -67,9 +62,9 @@ export type PriceJSON = {
 export class Price implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::price::Price` = `${
-    getTypeOrigin('pyth', 'price::Price')
-  }::price::Price` as const
+  static get $typeName(): `${string}::price::Price` {
+    return `${getTypeOrigin('pyth', 'price::Price')}::price::Price` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -102,11 +97,15 @@ export class Price implements StructClass {
   static reified(): PriceReified {
     const reifiedBcs = Price.bcs
     return {
-      typeName: Price.$typeName,
-      fullTypeName: composeSuiType(
-        Price.$typeName,
-        ...[],
-      ) as `${string}::price::Price`,
+      get typeName() {
+        return Price.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Price.$typeName,
+          ...[],
+        ) as `${string}::price::Price`
+      },
       typeArgs: [] as [],
       isPhantom: Price.$isPhantom,
       reifiedTypeArgs: [],
@@ -116,9 +115,10 @@ export class Price implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Price.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Price.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Price.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Price.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Price.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Price.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Price.fetch(client, id),
       new: (fields: PriceFields) => {
         return new Price([], fields)
       },
@@ -214,6 +214,14 @@ export class Price implements StructClass {
     return Price.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Price {
+    if (!isPrice(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Price object`)
+    }
+    return Price.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Price.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Price {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -224,6 +232,7 @@ export class Price implements StructClass {
     return Price.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Price.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Price {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPrice(data.bcs.type)) {
@@ -240,12 +249,14 @@ export class Price implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Price> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPrice(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Price> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPrice(object.type)) {
       throw new Error(`object at id ${id} is not a Price object`)
     }
-
-    return Price.fromBcs(res.bcsBytes)
+    return Price.fromBcs(object.content)
   }
 }

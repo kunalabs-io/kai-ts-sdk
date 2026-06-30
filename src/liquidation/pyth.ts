@@ -8,10 +8,7 @@ import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { destroy as destroyHotPotatoVector } from '../gen/pyth/hot-potato-vector/functions'
 import { PriceInfo } from '../gen/pyth/price-info/structs'
 import { PriceFeedUpdateInfo } from './position-monitor/utils'
-
-export const PYTH_STATE_ID = '0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8'
-export const WORMHOLE_STATE_ID =
-  '0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c'
+import { PYTH_STATE_ID, WORMHOLE_STATE_ID } from '../protocol-infra'
 
 export function updatePriceFeeds(tx: Transaction, info: PriceFeedUpdateInfo): void {
   if (info.priceFeedsUpdateData.length !== 1) {

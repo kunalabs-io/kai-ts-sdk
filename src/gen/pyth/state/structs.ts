@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64, fromHex, toHex } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { UID } from '../../sui/object/structs'
 import { UpgradeCap } from '../../sui/package/structs'
 import { ConsumedVAAs } from '../../wormhole/consumed-vaas/structs'
@@ -55,9 +50,9 @@ export type LatestOnlyJSON = {
 export class LatestOnly implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::state::LatestOnly` = `${
-    getTypeOrigin('pyth', 'state::LatestOnly')
-  }::state::LatestOnly` as const
+  static get $typeName(): `${string}::state::LatestOnly` {
+    return `${getTypeOrigin('pyth', 'state::LatestOnly')}::state::LatestOnly` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -81,11 +76,15 @@ export class LatestOnly implements StructClass {
   static reified(): LatestOnlyReified {
     const reifiedBcs = LatestOnly.bcs
     return {
-      typeName: LatestOnly.$typeName,
-      fullTypeName: composeSuiType(
-        LatestOnly.$typeName,
-        ...[],
-      ) as `${string}::state::LatestOnly`,
+      get typeName() {
+        return LatestOnly.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          LatestOnly.$typeName,
+          ...[],
+        ) as `${string}::state::LatestOnly`
+      },
       typeArgs: [] as [],
       isPhantom: LatestOnly.$isPhantom,
       reifiedTypeArgs: [],
@@ -95,9 +94,11 @@ export class LatestOnly implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => LatestOnly.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => LatestOnly.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        LatestOnly.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => LatestOnly.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => LatestOnly.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => LatestOnly.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => LatestOnly.fetch(client, id),
       new: (fields: LatestOnlyFields) => {
         return new LatestOnly([], fields)
       },
@@ -178,6 +179,14 @@ export class LatestOnly implements StructClass {
     return LatestOnly.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): LatestOnly {
+    if (!isLatestOnly(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a LatestOnly object`)
+    }
+    return LatestOnly.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LatestOnly.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): LatestOnly {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -188,6 +197,7 @@ export class LatestOnly implements StructClass {
     return LatestOnly.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link LatestOnly.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): LatestOnly {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isLatestOnly(data.bcs.type)) {
@@ -204,13 +214,15 @@ export class LatestOnly implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<LatestOnly> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isLatestOnly(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<LatestOnly> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isLatestOnly(object.type)) {
       throw new Error(`object at id ${id} is not a LatestOnly object`)
     }
-
-    return LatestOnly.fromBcs(res.bcsBytes)
+    return LatestOnly.fromBcs(object.content)
   }
 }
 
@@ -253,9 +265,9 @@ export type StateJSON = {
 export class State implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::state::State` = `${
-    getTypeOrigin('pyth', 'state::State')
-  }::state::State` as const
+  static get $typeName(): `${string}::state::State` {
+    return `${getTypeOrigin('pyth', 'state::State')}::state::State` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -293,11 +305,15 @@ export class State implements StructClass {
   static reified(): StateReified {
     const reifiedBcs = State.bcs
     return {
-      typeName: State.$typeName,
-      fullTypeName: composeSuiType(
-        State.$typeName,
-        ...[],
-      ) as `${string}::state::State`,
+      get typeName() {
+        return State.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          State.$typeName,
+          ...[],
+        ) as `${string}::state::State`
+      },
       typeArgs: [] as [],
       isPhantom: State.$isPhantom,
       reifiedTypeArgs: [],
@@ -307,9 +323,10 @@ export class State implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => State.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => State.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => State.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => State.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => State.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => State.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => State.fetch(client, id),
       new: (fields: StateFields) => {
         return new State([], fields)
       },
@@ -440,6 +457,14 @@ export class State implements StructClass {
     return State.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): State {
+    if (!isState(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a State object`)
+    }
+    return State.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link State.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): State {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -450,6 +475,7 @@ export class State implements StructClass {
     return State.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link State.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): State {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isState(data.bcs.type)) {
@@ -466,13 +492,15 @@ export class State implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<State> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isState(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<State> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isState(object.type)) {
       throw new Error(`object at id ${id} is not a State object`)
     }
-
-    return State.fromBcs(res.bcsBytes)
+    return State.fromBcs(object.content)
   }
 }
 
@@ -501,9 +529,9 @@ export type CurrentDigestJSON = {
 export class CurrentDigest implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::state::CurrentDigest` = `${
-    getTypeOrigin('pyth', 'state::CurrentDigest')
-  }::state::CurrentDigest` as const
+  static get $typeName(): `${string}::state::CurrentDigest` {
+    return `${getTypeOrigin('pyth', 'state::CurrentDigest')}::state::CurrentDigest` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -527,11 +555,15 @@ export class CurrentDigest implements StructClass {
   static reified(): CurrentDigestReified {
     const reifiedBcs = CurrentDigest.bcs
     return {
-      typeName: CurrentDigest.$typeName,
-      fullTypeName: composeSuiType(
-        CurrentDigest.$typeName,
-        ...[],
-      ) as `${string}::state::CurrentDigest`,
+      get typeName() {
+        return CurrentDigest.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          CurrentDigest.$typeName,
+          ...[],
+        ) as `${string}::state::CurrentDigest`
+      },
       typeArgs: [] as [],
       isPhantom: CurrentDigest.$isPhantom,
       reifiedTypeArgs: [],
@@ -541,9 +573,11 @@ export class CurrentDigest implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => CurrentDigest.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => CurrentDigest.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        CurrentDigest.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => CurrentDigest.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => CurrentDigest.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => CurrentDigest.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => CurrentDigest.fetch(client, id),
       new: (fields: CurrentDigestFields) => {
         return new CurrentDigest([], fields)
       },
@@ -624,6 +658,14 @@ export class CurrentDigest implements StructClass {
     return CurrentDigest.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): CurrentDigest {
+    if (!isCurrentDigest(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a CurrentDigest object`)
+    }
+    return CurrentDigest.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentDigest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): CurrentDigest {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -634,6 +676,7 @@ export class CurrentDigest implements StructClass {
     return CurrentDigest.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link CurrentDigest.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): CurrentDigest {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isCurrentDigest(data.bcs.type)) {
@@ -650,12 +693,14 @@ export class CurrentDigest implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<CurrentDigest> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isCurrentDigest(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<CurrentDigest> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isCurrentDigest(object.type)) {
       throw new Error(`object at id ${id} is not a CurrentDigest object`)
     }
-
-    return CurrentDigest.fromBcs(res.bcsBytes)
+    return CurrentDigest.fromBcs(object.content)
   }
 }

@@ -11,7 +11,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../../_envs'
 import {
@@ -26,13 +27,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ExternalAddress } from '../../../wormhole/external-address/structs'
 import { NormalizedAmount } from '../normalized-amount/structs'
 
@@ -75,9 +70,9 @@ export type TransferJSON = {
 export class Transfer implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::transfer::Transfer` = `${
-    getTypeOrigin('token-bridge', 'transfer::Transfer')
-  }::transfer::Transfer` as const
+  static get $typeName(): `${string}::transfer::Transfer` {
+    return `${getTypeOrigin('token-bridge', 'transfer::Transfer')}::transfer::Transfer` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -111,11 +106,15 @@ export class Transfer implements StructClass {
   static reified(): TransferReified {
     const reifiedBcs = Transfer.bcs
     return {
-      typeName: Transfer.$typeName,
-      fullTypeName: composeSuiType(
-        Transfer.$typeName,
-        ...[],
-      ) as `${string}::transfer::Transfer`,
+      get typeName() {
+        return Transfer.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Transfer.$typeName,
+          ...[],
+        ) as `${string}::transfer::Transfer`
+      },
       typeArgs: [] as [],
       isPhantom: Transfer.$isPhantom,
       reifiedTypeArgs: [],
@@ -125,9 +124,11 @@ export class Transfer implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Transfer.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Transfer.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        Transfer.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Transfer.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Transfer.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Transfer.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Transfer.fetch(client, id),
       new: (fields: TransferFields) => {
         return new Transfer([], fields)
       },
@@ -233,6 +234,14 @@ export class Transfer implements StructClass {
     return Transfer.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Transfer {
+    if (!isTransfer(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Transfer object`)
+    }
+    return Transfer.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Transfer.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Transfer {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -243,6 +252,7 @@ export class Transfer implements StructClass {
     return Transfer.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Transfer.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Transfer {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isTransfer(data.bcs.type)) {
@@ -259,12 +269,14 @@ export class Transfer implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Transfer> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isTransfer(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Transfer> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isTransfer(object.type)) {
       throw new Error(`object at id ${id} is not a Transfer object`)
     }
-
-    return Transfer.fromBcs(res.bcsBytes)
+    return Transfer.fromBcs(object.content)
   }
 }

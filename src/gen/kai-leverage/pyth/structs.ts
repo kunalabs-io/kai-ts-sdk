@@ -1,7 +1,8 @@
 /** Pyth price feed integration for Kai Leverage. */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -16,13 +17,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { PriceInfo } from '../../pyth/price-info/structs'
 import { TypeName } from '../../std/type-name/structs'
 import { ID } from '../../sui/object/structs'
@@ -58,9 +53,9 @@ export type PythPriceInfoJSON = {
 export class PythPriceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pyth::PythPriceInfo` = `${
-    getTypeOrigin('kai-leverage', 'pyth::PythPriceInfo')
-  }::pyth::PythPriceInfo` as const
+  static get $typeName(): `${string}::pyth::PythPriceInfo` {
+    return `${getTypeOrigin('kai-leverage', 'pyth::PythPriceInfo')}::pyth::PythPriceInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -88,11 +83,15 @@ export class PythPriceInfo implements StructClass {
   static reified(): PythPriceInfoReified {
     const reifiedBcs = PythPriceInfo.bcs
     return {
-      typeName: PythPriceInfo.$typeName,
-      fullTypeName: composeSuiType(
-        PythPriceInfo.$typeName,
-        ...[],
-      ) as `${string}::pyth::PythPriceInfo`,
+      get typeName() {
+        return PythPriceInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          PythPriceInfo.$typeName,
+          ...[],
+        ) as `${string}::pyth::PythPriceInfo`
+      },
       typeArgs: [] as [],
       isPhantom: PythPriceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -102,9 +101,11 @@ export class PythPriceInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => PythPriceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => PythPriceInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        PythPriceInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => PythPriceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => PythPriceInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => PythPriceInfo.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => PythPriceInfo.fetch(client, id),
       new: (fields: PythPriceInfoFields) => {
         return new PythPriceInfo([], fields)
       },
@@ -198,6 +199,14 @@ export class PythPriceInfo implements StructClass {
     return PythPriceInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): PythPriceInfo {
+    if (!isPythPriceInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a PythPriceInfo object`)
+    }
+    return PythPriceInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythPriceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): PythPriceInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -208,6 +217,7 @@ export class PythPriceInfo implements StructClass {
     return PythPriceInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link PythPriceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): PythPriceInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isPythPriceInfo(data.bcs.type)) {
@@ -224,13 +234,15 @@ export class PythPriceInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<PythPriceInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isPythPriceInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<PythPriceInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isPythPriceInfo(object.type)) {
       throw new Error(`object at id ${id} is not a PythPriceInfo object`)
     }
-
-    return PythPriceInfo.fromBcs(res.bcsBytes)
+    return PythPriceInfo.fromBcs(object.content)
   }
 }
 
@@ -270,9 +282,11 @@ export type ValidatedPythPriceInfoJSON = {
 export class ValidatedPythPriceInfo implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::pyth::ValidatedPythPriceInfo` = `${
-    getTypeOrigin('kai-leverage', 'pyth::ValidatedPythPriceInfo')
-  }::pyth::ValidatedPythPriceInfo` as const
+  static get $typeName(): `${string}::pyth::ValidatedPythPriceInfo` {
+    return `${
+      getTypeOrigin('kai-leverage', 'pyth::ValidatedPythPriceInfo')
+    }::pyth::ValidatedPythPriceInfo` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -300,11 +314,15 @@ export class ValidatedPythPriceInfo implements StructClass {
   static reified(): ValidatedPythPriceInfoReified {
     const reifiedBcs = ValidatedPythPriceInfo.bcs
     return {
-      typeName: ValidatedPythPriceInfo.$typeName,
-      fullTypeName: composeSuiType(
-        ValidatedPythPriceInfo.$typeName,
-        ...[],
-      ) as `${string}::pyth::ValidatedPythPriceInfo`,
+      get typeName() {
+        return ValidatedPythPriceInfo.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          ValidatedPythPriceInfo.$typeName,
+          ...[],
+        ) as `${string}::pyth::ValidatedPythPriceInfo`
+      },
       typeArgs: [] as [],
       isPhantom: ValidatedPythPriceInfo.$isPhantom,
       reifiedTypeArgs: [],
@@ -315,11 +333,13 @@ export class ValidatedPythPriceInfo implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => ValidatedPythPriceInfo.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => ValidatedPythPriceInfo.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        ValidatedPythPriceInfo.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) =>
         ValidatedPythPriceInfo.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) =>
         ValidatedPythPriceInfo.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) =>
+      fetch: async (client: ClientWithCoreApi, id: string) =>
         ValidatedPythPriceInfo.fetch(client, id),
       new: (fields: ValidatedPythPriceInfoFields) => {
         return new ValidatedPythPriceInfo([], fields)
@@ -414,6 +434,14 @@ export class ValidatedPythPriceInfo implements StructClass {
     return ValidatedPythPriceInfo.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): ValidatedPythPriceInfo {
+    if (!isValidatedPythPriceInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a ValidatedPythPriceInfo object`)
+    }
+    return ValidatedPythPriceInfo.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ValidatedPythPriceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): ValidatedPythPriceInfo {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -426,6 +454,7 @@ export class ValidatedPythPriceInfo implements StructClass {
     return ValidatedPythPriceInfo.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link ValidatedPythPriceInfo.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): ValidatedPythPriceInfo {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isValidatedPythPriceInfo(data.bcs.type)) {
@@ -442,12 +471,14 @@ export class ValidatedPythPriceInfo implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<ValidatedPythPriceInfo> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isValidatedPythPriceInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<ValidatedPythPriceInfo> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isValidatedPythPriceInfo(object.type)) {
       throw new Error(`object at id ${id} is not a ValidatedPythPriceInfo object`)
     }
-
-    return ValidatedPythPriceInfo.fromBcs(res.bcsBytes)
+    return ValidatedPythPriceInfo.fromBcs(object.content)
   }
 }

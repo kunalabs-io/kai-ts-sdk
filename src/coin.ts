@@ -1,27 +1,33 @@
 import { CallArg, Transaction, TransactionObjectArgument } from '@mysten/sui/transactions'
-import { CoinStruct, SuiClient } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import { Amount } from './amount'
 import * as coin from './gen/sui/coin/functions'
-import { compressSuiType } from './gen/_framework/util'
+import { compressSuiType, parseTypeName } from './gen/_framework/util'
 import { SUI_TYPE_ARG } from '@mysten/sui/utils'
 
-function coinToObjectArg(coin: CoinStruct): CallArg {
+function coinToObjectArg(coin: SuiClientTypes.Coin): CallArg {
   return {
     $kind: 'Object',
     Object: {
       $kind: 'ImmOrOwnedObject',
       ImmOrOwnedObject: {
         digest: coin.digest,
-        objectId: coin.coinObjectId,
+        objectId: coin.objectId,
         version: coin.version,
       },
     },
   }
 }
 
+// core `Coin.type` is the wrapped `0x2::coin::Coin<INNER>`; extract the inner coin type.
+function coinInnerType(coin: SuiClientTypes.Coin): string {
+  const { typeArgs } = parseTypeName(coin.type)
+  return typeArgs[0] ?? coin.type
+}
+
 export function createCoinOfMinimumValueFromList(
   tx: Transaction,
-  coins: CoinStruct[],
+  coins: SuiClientTypes.Coin[],
   amount: bigint,
   coinType: string
 ): { coin: TransactionObjectArgument; amount: bigint } {
@@ -29,7 +35,7 @@ export function createCoinOfMinimumValueFromList(
     return { coin: coin.zero(tx, coinType) as TransactionObjectArgument, amount: 0n }
   }
 
-  coins = coins.filter(c => compressSuiType(c.coinType) === compressSuiType(coinType))
+  coins = coins.filter(c => compressSuiType(coinInnerType(c)) === compressSuiType(coinType))
 
   // check there is enough balance
   let totalAmt = 0n
@@ -40,7 +46,7 @@ export function createCoinOfMinimumValueFromList(
     throw new Error('Not enough balance')
   }
 
-  const selectedCoins: Array<CoinStruct> = []
+  const selectedCoins: Array<SuiClientTypes.Coin> = []
   let selectedAmount = 0n
   while (selectedAmount < amount) {
     // select random coin from the array
@@ -69,7 +75,7 @@ export function createCoinOfMinimumValueFromList(
 
 export function createCoinOfExactValueFromList(
   tx: Transaction,
-  coins: CoinStruct[],
+  coins: SuiClientTypes.Coin[],
   amount: bigint,
   coinType: string
 ): TransactionObjectArgument {
@@ -84,26 +90,26 @@ export function createCoinOfExactValueFromList(
 }
 
 export async function getCoins(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   address: string,
   coinType: string,
   maxAmount?: Amount
-): Promise<CoinStruct[]> {
+): Promise<SuiClientTypes.Coin[]> {
   let acc = 0n
-  const coins: Array<CoinStruct> = []
-  let cursor = undefined
+  const coins: Array<SuiClientTypes.Coin> = []
+  let cursor: string | null | undefined = undefined
   let hasNextPage = true
   while (hasNextPage && (!maxAmount || acc < maxAmount.int)) {
-    const coinsResult = await client.getCoins({
+    const coinsResult = await client.core.listCoins({
       owner: address,
       coinType,
       cursor,
     })
-    for (const coin of coinsResult.data) {
+    for (const coin of coinsResult.objects) {
       acc += BigInt(coin.balance)
       coins.push(coin)
     }
-    cursor = coinsResult.nextCursor
+    cursor = coinsResult.cursor
     hasNextPage = coinsResult.hasNextPage
   }
 
@@ -111,7 +117,7 @@ export async function getCoins(
 }
 
 export async function createCoinOfExactValue(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   tx: Transaction,
   address: string,
   coinType: string,
@@ -126,7 +132,7 @@ export async function createCoinOfExactValue(
 }
 
 export async function createBalanceOfExactValue(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   tx: Transaction,
   address: string,
   coinType: string,
@@ -137,7 +143,7 @@ export async function createBalanceOfExactValue(
 }
 
 export async function createCoinOfMinimumValue(
-  client: SuiClient,
+  client: ClientWithCoreApi,
   tx: Transaction,
   address: string,
   coinType: string,

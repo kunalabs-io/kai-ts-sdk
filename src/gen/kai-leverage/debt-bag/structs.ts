@@ -15,7 +15,8 @@
  */
 
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -32,13 +33,7 @@ import {
   ToTypeStr,
   vector,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 import { Vector } from '../../_framework/vector'
 import { TypeName } from '../../std/type-name/structs'
 import { Bag } from '../../sui/bag/structs'
@@ -74,9 +69,9 @@ export type InfoJSON = {
 export class Info implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt_bag::Info` = `${
-    getTypeOrigin('kai-leverage', 'debt_bag::Info')
-  }::debt_bag::Info` as const
+  static get $typeName(): `${string}::debt_bag::Info` {
+    return `${getTypeOrigin('kai-leverage', 'debt_bag::Info')}::debt_bag::Info` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -104,11 +99,15 @@ export class Info implements StructClass {
   static reified(): InfoReified {
     const reifiedBcs = Info.bcs
     return {
-      typeName: Info.$typeName,
-      fullTypeName: composeSuiType(
-        Info.$typeName,
-        ...[],
-      ) as `${string}::debt_bag::Info`,
+      get typeName() {
+        return Info.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Info.$typeName,
+          ...[],
+        ) as `${string}::debt_bag::Info`
+      },
       typeArgs: [] as [],
       isPhantom: Info.$isPhantom,
       reifiedTypeArgs: [],
@@ -118,9 +117,10 @@ export class Info implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Info.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Info.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Info.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Info.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Info.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Info.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Info.fetch(client, id),
       new: (fields: InfoFields) => {
         return new Info([], fields)
       },
@@ -211,6 +211,14 @@ export class Info implements StructClass {
     return Info.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Info {
+    if (!isInfo(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Info object`)
+    }
+    return Info.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Info.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Info {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -221,6 +229,7 @@ export class Info implements StructClass {
     return Info.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Info.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Info {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isInfo(data.bcs.type)) {
@@ -237,13 +246,15 @@ export class Info implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Info> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isInfo(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Info> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isInfo(object.type)) {
       throw new Error(`object at id ${id} is not a Info object`)
     }
-
-    return Info.fromBcs(res.bcsBytes)
+    return Info.fromBcs(object.content)
   }
 }
 
@@ -277,9 +288,9 @@ export type DebtBagJSON = {
 export class DebtBag implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt_bag::DebtBag` = `${
-    getTypeOrigin('kai-leverage', 'debt_bag::DebtBag')
-  }::debt_bag::DebtBag` as const
+  static get $typeName(): `${string}::debt_bag::DebtBag` {
+    return `${getTypeOrigin('kai-leverage', 'debt_bag::DebtBag')}::debt_bag::DebtBag` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -307,11 +318,15 @@ export class DebtBag implements StructClass {
   static reified(): DebtBagReified {
     const reifiedBcs = DebtBag.bcs
     return {
-      typeName: DebtBag.$typeName,
-      fullTypeName: composeSuiType(
-        DebtBag.$typeName,
-        ...[],
-      ) as `${string}::debt_bag::DebtBag`,
+      get typeName() {
+        return DebtBag.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          DebtBag.$typeName,
+          ...[],
+        ) as `${string}::debt_bag::DebtBag`
+      },
       typeArgs: [] as [],
       isPhantom: DebtBag.$isPhantom,
       reifiedTypeArgs: [],
@@ -321,9 +336,11 @@ export class DebtBag implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => DebtBag.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => DebtBag.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        DebtBag.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => DebtBag.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => DebtBag.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => DebtBag.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => DebtBag.fetch(client, id),
       new: (fields: DebtBagFields) => {
         return new DebtBag([], fields)
       },
@@ -414,6 +431,14 @@ export class DebtBag implements StructClass {
     return DebtBag.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): DebtBag {
+    if (!isDebtBag(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a DebtBag object`)
+    }
+    return DebtBag.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtBag.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): DebtBag {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -424,6 +449,7 @@ export class DebtBag implements StructClass {
     return DebtBag.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link DebtBag.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): DebtBag {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isDebtBag(data.bcs.type)) {
@@ -440,13 +466,15 @@ export class DebtBag implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<DebtBag> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isDebtBag(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<DebtBag> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isDebtBag(object.type)) {
       throw new Error(`object at id ${id} is not a DebtBag object`)
     }
-
-    return DebtBag.fromBcs(res.bcsBytes)
+    return DebtBag.fromBcs(object.content)
   }
 }
 
@@ -477,9 +505,9 @@ export type KeyJSON = {
 export class Key implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::debt_bag::Key` = `${
-    getTypeOrigin('kai-leverage', 'debt_bag::Key')
-  }::debt_bag::Key` as const
+  static get $typeName(): `${string}::debt_bag::Key` {
+    return `${getTypeOrigin('kai-leverage', 'debt_bag::Key')}::debt_bag::Key` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -505,11 +533,15 @@ export class Key implements StructClass {
   static reified(): KeyReified {
     const reifiedBcs = Key.bcs
     return {
-      typeName: Key.$typeName,
-      fullTypeName: composeSuiType(
-        Key.$typeName,
-        ...[],
-      ) as `${string}::debt_bag::Key`,
+      get typeName() {
+        return Key.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          Key.$typeName,
+          ...[],
+        ) as `${string}::debt_bag::Key`
+      },
       typeArgs: [] as [],
       isPhantom: Key.$isPhantom,
       reifiedTypeArgs: [],
@@ -519,9 +551,10 @@ export class Key implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => Key.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => Key.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) => Key.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => Key.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => Key.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => Key.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => Key.fetch(client, id),
       new: (fields: KeyFields) => {
         return new Key([], fields)
       },
@@ -607,6 +640,14 @@ export class Key implements StructClass {
     return Key.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): Key {
+    if (!isKey(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a Key object`)
+    }
+    return Key.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Key.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): Key {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -617,6 +658,7 @@ export class Key implements StructClass {
     return Key.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link Key.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): Key {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isKey(data.bcs.type)) {
@@ -633,12 +675,14 @@ export class Key implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<Key> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isKey(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<Key> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isKey(object.type)) {
       throw new Error(`object at id ${id} is not a Key object`)
     }
-
-    return Key.fromBcs(res.bcsBytes)
+    return Key.fromBcs(object.content)
   }
 }

@@ -1,5 +1,6 @@
 import { bcs } from '@mysten/sui/bcs'
-import { SuiObjectData, SuiParsedData } from '@mysten/sui/client'
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
+import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
 import { getTypeOrigin } from '../../_envs'
 import {
@@ -14,13 +15,7 @@ import {
   ToJSON,
   ToTypeStr,
 } from '../../_framework/reified'
-import {
-  composeSuiType,
-  compressSuiType,
-  fetchObjectBcs,
-  FieldsWithTypes,
-  SupportedSuiClient,
-} from '../../_framework/util'
+import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
 
 /* ============================== GovernanceAction =============================== */
 
@@ -50,9 +45,11 @@ export type GovernanceActionJSON = {
 export class GovernanceAction implements StructClass {
   __StructClass = true as const
 
-  static readonly $typeName: `${string}::governance_action::GovernanceAction` = `${
-    getTypeOrigin('pyth', 'governance_action::GovernanceAction')
-  }::governance_action::GovernanceAction` as const
+  static get $typeName(): `${string}::governance_action::GovernanceAction` {
+    return `${
+      getTypeOrigin('pyth', 'governance_action::GovernanceAction')
+    }::governance_action::GovernanceAction` as const
+  }
   static readonly $numTypeParams = 0
   static readonly $isPhantom = [] as const
 
@@ -76,11 +73,15 @@ export class GovernanceAction implements StructClass {
   static reified(): GovernanceActionReified {
     const reifiedBcs = GovernanceAction.bcs
     return {
-      typeName: GovernanceAction.$typeName,
-      fullTypeName: composeSuiType(
-        GovernanceAction.$typeName,
-        ...[],
-      ) as `${string}::governance_action::GovernanceAction`,
+      get typeName() {
+        return GovernanceAction.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          GovernanceAction.$typeName,
+          ...[],
+        ) as `${string}::governance_action::GovernanceAction`
+      },
       typeArgs: [] as [],
       isPhantom: GovernanceAction.$isPhantom,
       reifiedTypeArgs: [],
@@ -90,9 +91,11 @@ export class GovernanceAction implements StructClass {
       bcs: reifiedBcs,
       fromJSONField: (field: any) => GovernanceAction.fromJSONField(field),
       fromJSON: (json: Record<string, any>) => GovernanceAction.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        GovernanceAction.fromCoreObject(obj),
       fromSuiParsedData: (content: SuiParsedData) => GovernanceAction.fromSuiParsedData(content),
       fromSuiObjectData: (content: SuiObjectData) => GovernanceAction.fromSuiObjectData(content),
-      fetch: async (client: SupportedSuiClient, id: string) => GovernanceAction.fetch(client, id),
+      fetch: async (client: ClientWithCoreApi, id: string) => GovernanceAction.fetch(client, id),
       new: (fields: GovernanceActionFields) => {
         return new GovernanceAction([], fields)
       },
@@ -173,6 +176,14 @@ export class GovernanceAction implements StructClass {
     return GovernanceAction.fromJSONField(json)
   }
 
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): GovernanceAction {
+    if (!isGovernanceAction(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a GovernanceAction object`)
+    }
+    return GovernanceAction.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceAction.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiParsedData(content: SuiParsedData): GovernanceAction {
     if (content.dataType !== 'moveObject') {
       throw new Error('not an object')
@@ -183,6 +194,7 @@ export class GovernanceAction implements StructClass {
     return GovernanceAction.fromFieldsWithTypes(content)
   }
 
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link GovernanceAction.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
   static fromSuiObjectData(data: SuiObjectData): GovernanceAction {
     if (data.bcs) {
       if (data.bcs.dataType !== 'moveObject' || !isGovernanceAction(data.bcs.type)) {
@@ -199,12 +211,14 @@ export class GovernanceAction implements StructClass {
     )
   }
 
-  static async fetch(client: SupportedSuiClient, id: string): Promise<GovernanceAction> {
-    const res = await fetchObjectBcs(client, id)
-    if (!isGovernanceAction(res.type)) {
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<GovernanceAction> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isGovernanceAction(object.type)) {
       throw new Error(`object at id ${id} is not a GovernanceAction object`)
     }
-
-    return GovernanceAction.fromBcs(res.bcsBytes)
+    return GovernanceAction.fromBcs(object.content)
   }
 }
