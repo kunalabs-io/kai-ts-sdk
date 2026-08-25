@@ -10,6 +10,6 @@ cetus_integrate = { local = "../../../../../move/_vendor/Cetus/integrate-v15" }
 integer_mate = { local = "../../../../../move/_vendor/Cetus/integer-mate-v7", override = true }
 kai_leverage = { local = "../../../../../move/kai/leverage/core" }
 kai_leverage_util = { local = "../../../../../move/kai/leverage/util" }
-pyth = { local = "../../../../../move/_vendor/Pyth/core-v2" }
-wormhole = { local = "../../../../../move/_vendor/Wormhole/core-v1" }
+pyth = { local = "../../../../../move/_vendor/Pyth/pro-compatible-v1" }
+wormhole = { local = "../../../../../move/_vendor/Pyth/wormhole-simple-majority-v1" }
 bluefin_spot = { local = "../../../../../move/_vendor/Bluefin/spot-v17" }

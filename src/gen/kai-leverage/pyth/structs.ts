@@ -4,6 +4,7 @@ import { bcs } from '@mysten/sui/bcs'
 import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
 import type { SuiObjectData, SuiParsedData } from '@mysten/sui/jsonRpc'
 import { fromBase64 } from '@mysten/sui/utils'
+import { PriceInfo } from '../../_dependencies/pyth-1/price-info/structs'
 import { getTypeOrigin } from '../../_envs'
 import {
   decodeFromFields,
@@ -18,7 +19,6 @@ import {
   ToTypeStr,
 } from '../../_framework/reified'
 import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../_framework/util'
-import { PriceInfo } from '../../pyth/price-info/structs'
 import { TypeName } from '../../std/type-name/structs'
 import { ID } from '../../sui/object/structs'
 import { VecMap } from '../../sui/vec-map/structs'

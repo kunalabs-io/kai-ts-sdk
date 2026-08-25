@@ -55,6 +55,7 @@ export type BatchPriceAttestationJSON = {
   $typeArgs: []
 } & BatchPriceAttestationJSONField
 
+/** @notice This struct is based on the legacy wormhole attester implementation in pythnet_sdk */
 export class BatchPriceAttestation implements StructClass {
   __StructClass = true as const
 

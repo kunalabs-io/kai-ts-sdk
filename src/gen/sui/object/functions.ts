@@ -211,6 +211,20 @@ export function addressAliasState(
   })
 }
 
+/**
+ * Create the `UID` for the singleton `ForwardingAddressRegistry` object.
+ * This should only be called once from `forwarding_address`.
+ */
+export function forwardingAddressRegistry(
+  tx: Transaction,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::object::forwarding_address_registry`,
+    arguments: [],
+  })
+}
+
 /** Get the inner `ID` of `uid` */
 export function uidAsInner(
   tx: Transaction,
@@ -364,15 +378,23 @@ export function borrowUid(
   })
 }
 
+export interface NewUidFromHashArgs {
+  parent: string | TransactionArgument
+  bytes: string | TransactionArgument
+}
+
 /** Generate a new UID specifically used for creating a UID from a hash */
 export function newUidFromHash(
   tx: Transaction,
-  bytes: string | TransactionArgument,
+  args: NewUidFromHashArgs,
   options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('sui', options?.env)}::object::new_uid_from_hash`,
-    arguments: [pure(tx, bytes, `address`)],
+    arguments: [
+      pure(tx, args.parent, `address`),
+      pure(tx, args.bytes, `address`),
+    ],
   })
 }
 
@@ -387,13 +409,21 @@ export function deleteImpl(
   })
 }
 
-export function recordNewUid(
+export interface RecordNewUidFromHashArgs {
+  parent: string | TransactionArgument
+  bytes: string | TransactionArgument
+}
+
+export function recordNewUidFromHash(
   tx: Transaction,
-  id: string | TransactionArgument,
+  args: RecordNewUidFromHashArgs,
   options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui', options?.env)}::object::record_new_uid`,
-    arguments: [pure(tx, id, `address`)],
+    target: `${getPublishedAt('sui', options?.env)}::object::record_new_uid_from_hash`,
+    arguments: [
+      pure(tx, args.parent, `address`),
+      pure(tx, args.bytes, `address`),
+    ],
   })
 }

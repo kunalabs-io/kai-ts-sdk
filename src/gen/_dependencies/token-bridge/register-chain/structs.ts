@@ -21,7 +21,7 @@ import {
   ToTypeStr,
 } from '../../../_framework/reified'
 import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 
 /* ============================== GovernanceWitness =============================== */
 

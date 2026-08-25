@@ -58,7 +58,7 @@ import {
   parseTypeName,
 } from '../../../_framework/util'
 import { Coin } from '../../../sui/coin/structs'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 
 /* ============================== TransferRedeemed =============================== */
 

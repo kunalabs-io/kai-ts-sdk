@@ -126,21 +126,17 @@ export interface FlashSwapReceipt {
   readonly object: TransactionObjectInput
 }
 
-export function flashSwap(
+function flashSwapHop(
   tx: Transaction,
-  args: FlashSwapArguments
+  step: RouteStep,
+  byAmountIn: boolean,
+  amount: bigint | TransactionArgument
 ): {
-  balanceOut: TransactionObjectInput
-  repayAmount: TransactionResult
-  receipt: FlashSwapReceipt
+  balanceOut: TransactionObjectArgument
+  payAmount: TransactionResult
+  receipt: TransactionObjectArgument
 } {
-  const route = findRoute(args.coinInInfo, args.coinOutInfo, ['cetus'])
-  if (!route) {
-    throw new Error(
-      `No route found from ${args.coinInInfo.typeName} to ${args.coinOutInfo.typeName}`
-    )
-  }
-  const { pool, a2b } = route[0]
+  const { pool, a2b } = step
 
   if (pool.protocol !== 'cetus') {
     throw new Error(`cetusFlashSwap: Only 'cetus' protocol supported, but got '${pool.protocol}'`)
@@ -153,30 +149,112 @@ export function flashSwap(
       config: CETUS_GLOBAL_CONFIG_ID,
       pool: pool.poolId,
       a2B: a2b,
-      byAmountIn: args.byAmountIn,
-      amount: args.amount,
+      byAmountIn,
+      amount,
       sqrtPriceLimit: getSqrtPriceLimit(a2b),
       clock: tx.object.clock(),
     }
   )
-  if (a2b) {
-    balance.destroyZero(tx, args.coinInInfo.typeName, outA)
-  } else {
-    balance.destroyZero(tx, args.coinInInfo.typeName, outB)
+  const coinInType = a2b ? pool.coinA.typeName : pool.coinB.typeName
+  balance.destroyZero(tx, coinInType, a2b ? outA : outB)
+
+  return {
+    balanceOut: a2b ? outB : outA,
+    payAmount: cetusUtil.swapPayAmount(tx, [pool.coinA.typeName, pool.coinB.typeName], receipt),
+    receipt,
+  }
+}
+
+function repayFlashSwapForStep(
+  tx: Transaction,
+  step: RouteStep,
+  receipt: TransactionObjectInput,
+  repayBalance: TransactionObjectInput
+): void {
+  const { pool, a2b } = step
+
+  if (pool.protocol !== 'cetus') {
+    throw new Error(
+      `cetusRepayFlashSwap: Only 'cetus' protocol supported, but got '${pool.protocol}'`
+    )
   }
 
-  let balanceOut: TransactionObjectInput = a2b ? outB : outA
-  if (route.length > 1) {
-    balanceOut = swapWithRoute(tx, route.slice(1), balanceOut)
+  const repayA = a2b ? repayBalance : balance.zero(tx, pool.coinA.typeName)
+  const repayB = a2b ? balance.zero(tx, pool.coinB.typeName) : repayBalance
+
+  cetusUtil.repayFlashSwap(tx, [pool.coinA.typeName, pool.coinB.typeName], {
+    config: CETUS_GLOBAL_CONFIG_ID,
+    pool: pool.poolId,
+    coinA: repayA,
+    coinB: repayB,
+    receipt,
+  })
+}
+
+export function flashSwap(
+  tx: Transaction,
+  args: FlashSwapArguments
+): {
+  balanceOut: TransactionObjectInput
+  repayAmount: TransactionResult
+  receipt: FlashSwapReceipt
+} {
+  const route = findRoute(args.coinInInfo, args.coinOutInfo, ['cetus'])
+  if (!route || route.length === 0) {
+    throw new Error(
+      `No route found from ${args.coinInInfo.typeName} to ${args.coinOutInfo.typeName}`
+    )
+  }
+  const first = route[0]
+
+  if (args.byAmountIn) {
+    // `amount` is denominated in the input coin, so it applies directly to the
+    // first hop; the proceeds are then pushed forward through the rest of the route.
+    const hop = flashSwapHop(tx, first, true, args.amount)
+
+    let balanceOut: TransactionObjectInput = hop.balanceOut
+    if (route.length > 1) {
+      balanceOut = swapWithRoute(tx, route.slice(1), balanceOut)
+    }
+
+    return {
+      balanceOut,
+      repayAmount: hop.payAmount,
+      receipt: {
+        poolInfo: first.pool,
+        a2b: first.a2b,
+        object: hop.receipt,
+      } as FlashSwapReceipt,
+    }
+  }
+
+  // `amount` is denominated in the output coin, which is the *last* hop's output —
+  // applying it to the first hop would request an amount in the wrong coin. Chain
+  // flash swaps back to front instead: each hop borrows exactly what the hop after
+  // it owes and repays that hop's receipt with its own proceeds. Only the first
+  // hop's receipt is left open for the caller, so `repayAmount` is in the input coin.
+  let amount: bigint | TransactionArgument = args.amount
+  let balanceOut: TransactionObjectInput | undefined = undefined
+  let open: { step: RouteStep; receipt: TransactionObjectArgument } | undefined = undefined
+  let payAmount!: TransactionResult
+  for (let i = route.length - 1; i >= 0; i--) {
+    const hop = flashSwapHop(tx, route[i], false, amount)
+    if (open === undefined) {
+      balanceOut = hop.balanceOut
+    } else {
+      repayFlashSwapForStep(tx, open.step, open.receipt, hop.balanceOut)
+    }
+    open = { step: route[i], receipt: hop.receipt }
+    amount = payAmount = hop.payAmount
   }
 
   return {
-    balanceOut,
-    repayAmount: cetusUtil.swapPayAmount(tx, [pool.coinA.typeName, pool.coinB.typeName], receipt),
+    balanceOut: balanceOut!,
+    repayAmount: payAmount,
     receipt: {
-      poolInfo: pool,
-      a2b,
-      object: receipt,
+      poolInfo: first.pool,
+      a2b: first.a2b,
+      object: open!.receipt,
     } as FlashSwapReceipt,
   }
 }

@@ -107,6 +107,72 @@ export function pushBack(
   })
 }
 
+export interface InsertBeforeArgs {
+  table: TransactionObjectInput
+  anchor: GenericArg
+  k: GenericArg
+  value: GenericArg
+}
+
+/**
+ * Inserts a key-value pair immediately before the entry with key `anchor: K`.
+ * If `anchor` is the front of the table, the newly inserted pair becomes the new front.
+ * Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry
+ * with the key `anchor: K`.
+ * Aborts with `sui::dynamic_field::EFieldAlreadyExists` if the table already has an entry
+ * with the key `k: K`.
+ */
+export function insertBefore(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: InsertBeforeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::linked_table::insert_before`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.table),
+      generic(tx, `${typeArgs[0]}`, args.anchor),
+      generic(tx, `${typeArgs[0]}`, args.k),
+      generic(tx, `${typeArgs[1]}`, args.value),
+    ],
+  })
+}
+
+export interface InsertAfterArgs {
+  table: TransactionObjectInput
+  anchor: GenericArg
+  k: GenericArg
+  value: GenericArg
+}
+
+/**
+ * Inserts a key-value pair immediately after the entry with key `anchor: K`.
+ * If `anchor` is the back of the table, the newly inserted pair becomes the new back.
+ * Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry
+ * with the key `anchor: K`.
+ * Aborts with `sui::dynamic_field::EFieldAlreadyExists` if the table already has an entry
+ * with the key `k: K`.
+ */
+export function insertAfter(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: InsertAfterArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::linked_table::insert_after`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.table),
+      generic(tx, `${typeArgs[0]}`, args.anchor),
+      generic(tx, `${typeArgs[0]}`, args.k),
+      generic(tx, `${typeArgs[1]}`, args.value),
+    ],
+  })
+}
+
 export interface BorrowArgs {
   table: TransactionObjectInput
   k: GenericArg

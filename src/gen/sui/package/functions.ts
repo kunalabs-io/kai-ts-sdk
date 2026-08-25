@@ -362,6 +362,41 @@ export function commitUpgrade(
   })
 }
 
+/** The original (first-version) ID of the package that this cap authorizes upgrades for. */
+export function originalPackageId(
+  tx: Transaction,
+  cap: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::package::original_package_id`,
+    arguments: [obj(tx, cap)],
+  })
+}
+
+export interface OriginalPackageIdImplArgs {
+  packageId: string | TransactionArgument
+  version: bigint | TransactionArgument
+}
+
+/**
+ * Returns the original package id for the given `package_id` that must be `version` of the package.
+ * If `package_id`'s version is not `version`, `EInvalidPackageVersion` will be raised.
+ */
+export function originalPackageIdImpl(
+  tx: Transaction,
+  args: OriginalPackageIdImplArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::package::original_package_id_impl`,
+    arguments: [
+      pure(tx, args.packageId, `address`),
+      pure(tx, args.version, `u64`),
+    ],
+  })
+}
+
 export interface RestrictArgs {
   cap: TransactionObjectInput
   policy: number | TransactionArgument

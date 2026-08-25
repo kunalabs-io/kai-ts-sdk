@@ -91,12 +91,12 @@ export const BLUEFIN_POOL_INFOS: Array<DexInfo> = [
   {
     coinA: SUI,
     coinB: USDC,
-    poolId: '0x3b585786b13af1d8ea067ab37101b6513a05d2f90cfe60e8b1d9e1b46a63c4fa',
+    poolId: '0x15dbcac854b1fc68fc9467dbd9ab34270447aabd8cc0e04a5864d95ccb86b74a',
   },
   {
     coinA: suiUSDT,
     coinB: USDC,
-    poolId: '0x0bd95d012d60190a6713ae51f2d833b24ae70c5fb07fcfb41db40f25549878b1',
+    poolId: '0x62af128423465822e5a0979ccad2b0b5ee50a58c6a2c8ea3dd7fda1cda3cfbe7',
   },
   {
     coinA: whUSDTe,
@@ -116,12 +116,17 @@ export const BLUEFIN_POOL_INFOS: Array<DexInfo> = [
   {
     coinA: BLUE,
     coinB: USDC,
-    poolId: '0x198c607644a07d500b5b2bd076e54eecd022f471b714f89a336e38749559a496',
+    poolId: '0x3717c637003c4274f20cde8c4eeadbffa2bbf16d995a0fe0f7bf99c03cf52e61',
   },
   {
     coinA: DEEP,
     coinB: USDC,
     poolId: '0xd5e3a3c7396702d8f358a63ef921cc7c1951f52c6dfc2051cc8772cf7cb9900c',
+  },
+  {
+    coinA: DEEP,
+    coinB: SUI,
+    poolId: '0x7242459a663c4e59434252ceb27c228f6b1f21f2ba506f3b62d71b19a7421cc1',
   },
   {
     coinA: LBTC,

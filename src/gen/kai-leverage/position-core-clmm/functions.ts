@@ -776,6 +776,88 @@ export function pythConfigDisallowPio(
   })
 }
 
+/** Add empty oracle price configuration to position config. */
+export function configAddEmptyOraclePriceConfig(
+  tx: Transaction,
+  config: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::config_add_empty_oracle_price_config`,
+    arguments: [obj(tx, config)],
+  })
+}
+
+export interface SetOraclePriceConfigMaxAgeSecsArgs {
+  config: TransactionObjectInput
+  maxAgeSecs: bigint | TransactionArgument
+}
+
+/** Set maximum age for oracle price feeds in seconds. */
+export function setOraclePriceConfigMaxAgeSecs(
+  tx: Transaction,
+  args: SetOraclePriceConfigMaxAgeSecsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::set_oracle_price_config_max_age_secs`,
+    arguments: [
+      obj(tx, args.config),
+      pure(tx, args.maxAgeSecs, `u64`),
+    ],
+  })
+}
+
+export interface OraclePriceConfigAllowPriceObjectArgs {
+  config: TransactionObjectInput
+  coinType: TransactionObjectInput
+  priceObjectId: string | TransactionArgument
+}
+
+/** Allow a specific oracle price info object for a coin type. */
+export function oraclePriceConfigAllowPriceObject(
+  tx: Transaction,
+  args: OraclePriceConfigAllowPriceObjectArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::oracle_price_config_allow_price_object`,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.coinType),
+      pure(tx, args.priceObjectId, `${ID.$typeName}`),
+    ],
+  })
+}
+
+export interface OraclePriceConfigDisallowPriceObjectArgs {
+  config: TransactionObjectInput
+  coinType: TransactionObjectInput
+}
+
+/** Remove allowlist for a specific oracle price info object. */
+export function oraclePriceConfigDisallowPriceObject(
+  tx: Transaction,
+  args: OraclePriceConfigDisallowPriceObjectArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::oracle_price_config_disallow_price_object`,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.coinType),
+    ],
+  })
+}
+
 export interface SetDeleverageMarginBpsArgs {
   config: TransactionObjectInput
   value: number | TransactionArgument
@@ -2929,6 +3011,35 @@ export function initMarginIsValid(
   })
 }
 
+export interface PositionModelFromLpShapeArgs {
+  position: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  shape: TransactionObjectInput
+}
+
+/**
+ * Build a `PositionModel` snapshot from position state given the LP
+ * position's shape (see [lp_shape]).
+ */
+export function positionModelFromLpShape(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: PositionModelFromLpShapeArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::position_model_from_lp_shape`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.debtInfo),
+      obj(tx, args.shape),
+    ],
+  })
+}
+
 export interface GetAmountEmaUsdValue6DecimalsArgs {
   amount: bigint | TransactionArgument
   priceInfo: TransactionObjectInput
@@ -3087,6 +3198,133 @@ export function calcLiqFeeFromReward(
     arguments: [
       obj(tx, args.config),
       pure(tx, args.rewardAmt, `u64`),
+    ],
+  })
+}
+
+export interface LiquidateColXArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  repayment: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  shape: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Liquidate X collateral by repaying Y debt.
+ *
+ * This function performs partial liquidation of a position's X collateral
+ * in exchange for repaying Y debt. Liquidators receive X tokens as reward
+ * for helping restore position health by reducing debt obligations.
+ *
+ * The LP position's shape is passed in by the wrapper via [lp_shape].
+ */
+export function liquidateColX(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: LiquidateColXArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::liquidate_col_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.repayment),
+      obj(tx, args.supplyPool),
+      obj(tx, args.shape),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface LiquidateColYArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  repayment: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  shape: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Liquidate Y collateral by repaying X debt.
+ *
+ * This function performs partial liquidation of a position's Y collateral
+ * in exchange for repaying X debt. Liquidators receive Y tokens as reward
+ * for helping restore position health by reducing debt obligations.
+ *
+ * The LP position's shape is passed in by the wrapper via [lp_shape].
+ */
+export function liquidateColY(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: LiquidateColYArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.repayment),
+      obj(tx, args.supplyPool),
+      obj(tx, args.shape),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayBadDebtArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  repayment: TransactionObjectInput
+  shape: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Handles the repayment of "bad debt" for a position that has no assets but retains outstanding debt.
+ *
+ * This scenario can occur if a position's assets are fully liquidated but the debt remains.
+ * Standard liquidation is not possible here, typically due to the minimum liquidation bonus requirement,
+ * making the position under-collateralized and unable to be restored via normal means.
+ *
+ * This function enables an entity with the `ARepayBadDebt` permission to repay the residual debt,
+ * aiding in restoring the solvency of the position and allowing the protocol to manage or close it gracefully.
+ *
+ * The LP position's shape is passed in by the wrapper via [lp_shape]
+ * (structural method calls on the LP type can't be made on an unbound
+ * generic).
+ */
+export function repayBadDebt(
+  tx: Transaction,
+  typeArgs: [string, string, string, string, string],
+  args: RepayBadDebtArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::position_core_clmm::repay_bad_debt`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.supplyPool),
+      obj(tx, args.repayment),
+      obj(tx, args.shape),
+      obj(tx, args.clock),
     ],
   })
 }
@@ -3564,5 +3802,77 @@ export function collectDeletedPositionFees(
       getPublishedAt('kai-leverage', options?.env)
     }::position_core_clmm::collect_deleted_position_fees`,
     arguments: [obj(tx, fees)],
+  })
+}
+
+export interface CalcLiquidateColXArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtY: bigint | TransactionArgument
+  shape: TransactionObjectInput
+}
+
+/**
+ * Calculate the required amounts to liquidate X collateral by repaying Y debt.
+ *
+ * The LP position's shape is passed in by the wrapper via [lp_shape].
+ */
+export function calcLiquidateColX(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: CalcLiquidateColXArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::calc_liquidate_col_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtY, `u64`),
+      obj(tx, args.shape),
+    ],
+  })
+}
+
+export interface CalcLiquidateColYArgs {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtX: bigint | TransactionArgument
+  shape: TransactionObjectInput
+}
+
+/**
+ * Calculate the required amounts to liquidate Y collateral by repaying X debt.
+ *
+ * The LP position's shape is passed in by the wrapper via [lp_shape].
+ */
+export function calcLiquidateColY(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: CalcLiquidateColYArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::position_core_clmm::calc_liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtX, `u64`),
+      obj(tx, args.shape),
+    ],
   })
 }

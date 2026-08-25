@@ -8,19 +8,6 @@ import type { EnvConfig } from '../../_envs'
 import { getPublishedAt } from '../../_envs'
 import { generic, GenericArg, pure, vector } from '../../_framework/util'
 
-/** Create an empty vector. */
-export function empty(
-  tx: Transaction,
-  typeArg: string,
-  options?: { env?: EnvConfig },
-): TransactionResult {
-  return tx.moveCall({
-    target: `${getPublishedAt('std', options?.env)}::vector::empty`,
-    typeArguments: [typeArg],
-    arguments: [],
-  })
-}
-
 /** Return the length of the vector. */
 export function length(
   tx: Transaction,
@@ -165,20 +152,6 @@ export function swap(
       pure(tx, args.i, `u64`),
       pure(tx, args.j, `u64`),
     ],
-  })
-}
-
-/** Return an vector of size one containing element `e`. */
-export function singleton(
-  tx: Transaction,
-  typeArg: string,
-  e: GenericArg,
-  options?: { env?: EnvConfig },
-): TransactionResult {
-  return tx.moveCall({
-    target: `${getPublishedAt('std', options?.env)}::vector::singleton`,
-    typeArguments: [typeArg],
-    arguments: [generic(tx, `${typeArg}`, e)],
   })
 }
 
@@ -425,5 +398,40 @@ export function flatten(
     target: `${getPublishedAt('std', options?.env)}::vector::flatten`,
     typeArguments: [typeArg],
     arguments: [vector(tx, `vector<${typeArg}>`, v)],
+  })
+}
+
+/**
+ * Create an empty vector.
+ *
+ * @deprecated Use `vector[]` literal instead
+ */
+export function empty(
+  tx: Transaction,
+  typeArg: string,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('std', options?.env)}::vector::empty`,
+    typeArguments: [typeArg],
+    arguments: [],
+  })
+}
+
+/**
+ * Return an vector of size one containing element `e`.
+ *
+ * @deprecated Use `vector[e]` literal instead
+ */
+export function singleton(
+  tx: Transaction,
+  typeArg: string,
+  e: GenericArg,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('std', options?.env)}::vector::singleton`,
+    typeArguments: [typeArg],
+    arguments: [generic(tx, `${typeArg}`, e)],
   })
 }

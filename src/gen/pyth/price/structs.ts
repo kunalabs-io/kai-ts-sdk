@@ -57,7 +57,7 @@ export type PriceJSON = {
  * `x * (10^expo)`, where `expo` is the exponent.
  *
  * Please refer to the documentation at https://docs.pyth.network/documentation/pythnet-price-feeds/best-practices for how
- * to how this price safely.
+ * to use this price safely.
  */
 export class Price implements StructClass {
   __StructClass = true as const

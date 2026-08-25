@@ -145,6 +145,58 @@ export function migrate(
   })
 }
 
+export interface WithdrawLeavesReserveArgs {
+  available: bigint | TransactionArgument
+  liabilities: bigint | TransactionArgument
+  amount: bigint | TransactionArgument
+}
+
+/**
+ * Whether withdrawing `amount` leaves at least `WITHDRAW_RESERVE_BPS` of the pool's total
+ * value available. `available` and `liabilities` describe the pool before the withdrawal.
+ */
+export function withdrawLeavesReserve(
+  tx: Transaction,
+  args: WithdrawLeavesReserveArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::withdraw_leaves_reserve`,
+    arguments: [
+      pure(tx, args.available, `u64`),
+      pure(tx, args.liabilities, `u128`),
+      pure(tx, args.amount, `u64`),
+    ],
+  })
+}
+
+export interface MaxWithdrawWithinReserveArgs {
+  available: bigint | TransactionArgument
+  liabilities: bigint | TransactionArgument
+}
+
+/**
+ * The largest amount withdrawable from a pool holding `available` with `liabilities` out on
+ * loan that still leaves the reserve. Zero if the pool is already at or below it.
+ */
+export function maxWithdrawWithinReserve(
+  tx: Transaction,
+  args: MaxWithdrawWithinReserveArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-sav', options?.env)
+    }::kai_leverage_supply_pool::max_withdraw_within_reserve`,
+    arguments: [
+      pure(tx, args.available, `u64`),
+      pure(tx, args.liabilities, `u128`),
+    ],
+  })
+}
+
 export interface RebalanceArgs {
   strategy: TransactionObjectInput
   cap: TransactionObjectInput

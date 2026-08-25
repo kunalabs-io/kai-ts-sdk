@@ -3,7 +3,12 @@ import { LRUCache } from 'lru-cache'
 import { Logger } from 'pino'
 import { LiquidationExecutor } from '../executor/liquidation-executor'
 import { TransactionExecutor } from '../executor/transaction-executor'
-import { CongestionError, InsufficientGasError, ExecutionFailureError } from '../executor/errors'
+import {
+  CongestionError,
+  InsufficientGasError,
+  ExecutionFailureError,
+  isDeterministicBuildFailure,
+} from '../executor/errors'
 import * as metrics from '../metrics'
 
 export type ExecutionMode = 'parallel' | 'sequential'
@@ -321,7 +326,19 @@ export class LiquidationController {
       return
     }
 
-    if (error instanceof ExecutionFailureError) {
+    // A PTB that aborts on chain can surface either as an ExecutionFailureError or,
+    // when it aborts while `Transaction.build()` resolves it against the node, as a
+    // plain Error. Both are persistent: the same transaction rebuilt against the same
+    // state fails the same way, so both must count toward exclusion. Treating the
+    // build-time variant as transient is what let a single position retry ~85k times.
+    const errorKind =
+      error instanceof ExecutionFailureError
+        ? error.errorKind
+        : isDeterministicBuildFailure(error)
+          ? 'BuildAbort'
+          : null
+
+    if (errorKind !== null) {
       // Persistent on-chain failure — backoff + count toward exclusion
       this.scheduleRetry(positionId)
       const retry = this.retryState.get(positionId)!
@@ -331,7 +348,7 @@ export class LiquidationController {
 
       if (failureCount > this.MAX_FAILURE_COUNT) {
         this.logger.error(
-          { positionId, errorKind: error.errorKind, failureCount },
+          { positionId, errorKind, failureCount },
           `Position ${positionId} has failed too many times, excluding from processing`
         )
         this.excludedPositions.set(positionId, true)
@@ -340,7 +357,7 @@ export class LiquidationController {
         this.logger.error(
           {
             positionId,
-            errorKind: error.errorKind,
+            errorKind,
             failureCount,
             retryCount: retry.retryCount,
             retryDelayMs: retry.retryAfter - Date.now(),

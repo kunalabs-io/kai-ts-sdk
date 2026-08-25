@@ -374,7 +374,15 @@ export type DebtRegistryJSON<T extends PhantomTypeArgument> = {
   $typeArgs: [PhantomToTypeStr<T>]
 } & DebtRegistryJSONField<T>
 
-/** Registry tracking total debt shares and liability value. */
+/**
+ * Registry tracking total debt shares and liability value.
+ *
+ * Note that `liability_value_x64` can be zero while `supply_x64` is not. `repay_lossy` rounds
+ * the repaid amount up and credits the overpayment to the remaining borrowers by reducing the
+ * total liability; when that overpayment exceeds what is left, the liability is pinned at zero
+ * while sub-unit shares are still outstanding. Code must not treat a zero liability as proof
+ * that the registry is empty -- `supply_x64` is the authoritative signal for that.
+ */
 export class DebtRegistry<T extends PhantomTypeArgument> implements StructClass {
   __StructClass = true as const
 

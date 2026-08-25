@@ -28,9 +28,9 @@ import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_fram
 import { UID } from '../../../sui/object/structs'
 import { UpgradeCap } from '../../../sui/package/structs'
 import { Table } from '../../../sui/table/structs'
-import { ConsumedVAAs } from '../../../wormhole/consumed-vaas/structs'
-import { EmitterCap } from '../../../wormhole/emitter/structs'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ConsumedVAAs } from '../../wormhole-1/consumed-vaas/structs'
+import { EmitterCap } from '../../wormhole-1/emitter/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 import { TokenRegistry } from '../token-registry/structs'
 
 /* ============================== LatestOnly =============================== */

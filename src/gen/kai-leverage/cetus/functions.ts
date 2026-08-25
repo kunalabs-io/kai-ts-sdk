@@ -135,7 +135,7 @@ export interface CreatePositionTicketV2Args {
   clock: TransactionObjectInput
 }
 
-/** Initialize position creation for a leveraged Cetus position. */
+/** @deprecated Use `create_position_ticket_v3` instead. */
 export function createPositionTicketV2(
   tx: Transaction,
   typeArgs: [string, string],
@@ -144,6 +144,42 @@ export function createPositionTicketV2(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_position_ticket_v2`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.cetusPool),
+      obj(tx, args.config),
+      obj(tx, args.tickA),
+      obj(tx, args.tickB),
+      obj(tx, args.principalX),
+      obj(tx, args.principalY),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.priceInfo),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CreatePositionTicketV3Args {
+  cetusPool: TransactionObjectInput
+  config: TransactionObjectInput
+  tickA: TransactionObjectInput
+  tickB: TransactionObjectInput
+  principalX: TransactionObjectInput
+  principalY: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  priceInfo: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [create_position_ticket_v2], taking the rail-agnostic price collection. */
+export function createPositionTicketV3(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePositionTicketV3Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_position_ticket_v3`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.cetusPool),
@@ -252,10 +288,7 @@ export interface CreateDeleverageTicketArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Initialize deleveraging for a position that has fallen below
- * the deleverage margin threshold (permissioned).
- */
+/** @deprecated Use `create_deleverage_ticket_v2` instead. */
 export function createDeleverageTicket(
   tx: Transaction,
   typeArgs: [string, string],
@@ -264,6 +297,40 @@ export function createDeleverageTicket(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_deleverage_ticket`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusGlobalConfig),
+      pure(tx, args.maxDeltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CreateDeleverageTicketV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusGlobalConfig: TransactionObjectInput
+  maxDeltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/** Like [create_deleverage_ticket], taking the rail-agnostic price collection. */
+export function createDeleverageTicketV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreateDeleverageTicketV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::create_deleverage_ticket_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -288,10 +355,7 @@ export interface CreateDeleverageTicketForLiquidationArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Initialize deleveraging for a position that has fallen below
- * the liquidation margin threshold (permissionless).
- */
+/** @deprecated Use `create_deleverage_ticket_for_liquidation_v2` instead. */
 export function createDeleverageTicketForLiquidation(
   tx: Transaction,
   typeArgs: [string, string],
@@ -302,6 +366,40 @@ export function createDeleverageTicketForLiquidation(
     target: `${
       getPublishedAt('kai-leverage', options?.env)
     }::cetus::create_deleverage_ticket_for_liquidation`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusGlobalConfig),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CreateDeleverageTicketForLiquidationV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusGlobalConfig: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [create_deleverage_ticket_for_liquidation], taking the rail-agnostic price collection. */
+export function createDeleverageTicketForLiquidationV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreateDeleverageTicketForLiquidationV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage', options?.env)
+    }::cetus::create_deleverage_ticket_for_liquidation_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -327,10 +425,7 @@ export interface DeleverageArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Execute deleveraging for a position that has fallen below
- * the deleverage margin threshold (permissioned).
- */
+/** @deprecated Use `deleverage_v2` instead. */
 export function deleverage(
   tx: Transaction,
   typeArgs: [string, string, string, string],
@@ -339,6 +434,42 @@ export function deleverage(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.supplyPoolX),
+      obj(tx, args.supplyPoolY),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusGlobalConfig),
+      pure(tx, args.maxDeltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface DeleverageV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  supplyPoolX: TransactionObjectInput
+  supplyPoolY: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusGlobalConfig: TransactionObjectInput
+  maxDeltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/** Like [deleverage], taking the rail-agnostic price collection. */
+export function deleverageV2(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: DeleverageV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -365,10 +496,7 @@ export interface DeleverageForLiquidationArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Execute deleveraging for a position that has fallen below
- * the liquidation margin threshold (permissionless).
- */
+/** @deprecated Use `deleverage_for_liquidation_v2` instead. */
 export function deleverageForLiquidation(
   tx: Transaction,
   typeArgs: [string, string, string, string],
@@ -377,6 +505,40 @@ export function deleverageForLiquidation(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage_for_liquidation`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.supplyPoolX),
+      obj(tx, args.supplyPoolY),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusGlobalConfig),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface DeleverageForLiquidationV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  supplyPoolX: TransactionObjectInput
+  supplyPoolY: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusGlobalConfig: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [deleverage_for_liquidation], taking the rail-agnostic price collection. */
+export function deleverageForLiquidationV2(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: DeleverageForLiquidationV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::deleverage_for_liquidation_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -401,10 +563,7 @@ export interface LiquidateColXArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Liquidate X collateral by repaying Y debt. The position needs to be fully deleveraged and
- * below the liquidation margin threshold.
- */
+/** @deprecated Use `liquidate_col_x_v2` instead. */
 export function liquidateColX(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -413,6 +572,41 @@ export function liquidateColX(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.repayment),
+      obj(tx, args.supplyPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface LiquidateColXV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  repayment: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Liquidate X collateral by repaying Y debt. The position needs to be fully deleveraged and
+ * below the liquidation margin threshold.
+ */
+export function liquidateColXV2(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: LiquidateColXV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_x_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -436,10 +630,7 @@ export interface LiquidateColYArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Liquidate Y collateral by repaying X debt. The position needs to be fully deleveraged and
- * below the liquidation margin threshold.
- */
+/** @deprecated Use `liquidate_col_y_v2` instead. */
 export function liquidateColY(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -448,6 +639,41 @@ export function liquidateColY(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.repayment),
+      obj(tx, args.supplyPool),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface LiquidateColYV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  repayment: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/**
+ * Liquidate Y collateral by repaying X debt. The position needs to be fully deleveraged and
+ * below the liquidation margin threshold.
+ */
+export function liquidateColYV2(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: LiquidateColYV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::liquidate_col_y_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -471,7 +697,7 @@ export interface RepayBadDebtXArgs {
   clock: TransactionObjectInput
 }
 
-/** Repay bad debt for X tokens. */
+/** @deprecated Use `repay_bad_debt_x_v2` instead. */
 export function repayBadDebtX(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -480,6 +706,38 @@ export function repayBadDebtX(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_x`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.supplyPool),
+      obj(tx, args.repayment),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayBadDebtXV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  repayment: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Repay bad debt for X tokens. */
+export function repayBadDebtXV2(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayBadDebtXV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_x_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -503,7 +761,7 @@ export interface RepayBadDebtYArgs {
   clock: TransactionObjectInput
 }
 
-/** Repay bad debt for Y tokens. */
+/** @deprecated Use `repay_bad_debt_y_v2` instead. */
 export function repayBadDebtY(
   tx: Transaction,
   typeArgs: [string, string, string],
@@ -512,6 +770,38 @@ export function repayBadDebtY(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.supplyPool),
+      obj(tx, args.repayment),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RepayBadDebtYV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  supplyPool: TransactionObjectInput
+  repayment: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Repay bad debt for Y tokens. */
+export function repayBadDebtYV2(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: RepayBadDebtYV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::repay_bad_debt_y_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -538,10 +828,7 @@ export interface ReduceArgs {
   clock: TransactionObjectInput
 }
 
-/**
- * Initialize position size reduction (withdraw), while preserving mathematical safety guarantees.
- * A factor_x64 percentage of the position is withdrawn and the same percentage of debt is repaid.
- */
+/** @deprecated Use `reduce_v2` instead. */
 export function reduce(
   tx: Transaction,
   typeArgs: [string, string, string, string],
@@ -550,6 +837,47 @@ export function reduce(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::reduce`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.supplyPoolX),
+      obj(tx, args.supplyPoolY),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusGlobalConfig),
+      pure(tx, args.factorX64, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface ReduceV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  cap: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  supplyPoolX: TransactionObjectInput
+  supplyPoolY: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusGlobalConfig: TransactionObjectInput
+  factorX64: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/**
+ * Initialize position size reduction (withdraw), while preserving mathematical safety guarantees.
+ * A factor_x64 percentage of the position is withdrawn and the same percentage of debt is repaid.
+ */
+export function reduceV2(
+  tx: Transaction,
+  typeArgs: [string, string, string, string],
+  args: ReduceV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::reduce_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -578,7 +906,7 @@ export interface AddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
-/** Add liquidity to the inner LP position. */
+/** @deprecated Use `add_liquidity_v2` instead. */
 export function addLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
@@ -587,6 +915,42 @@ export function addLiquidity(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusConfig),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface AddLiquidityV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  cap: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/** Add liquidity to the inner LP position. */
+export function addLiquidityV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: AddLiquidityV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::add_liquidity_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -886,7 +1250,7 @@ export interface RebalanceAddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
-/** Adds liquidity to a the underlying LP position during rebalancing. */
+/** @deprecated Use `rebalance_add_liquidity_v2` instead. */
 export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
@@ -895,6 +1259,42 @@ export function rebalanceAddLiquidity(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::rebalance_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.receipt),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.cetusPool),
+      obj(tx, args.cetusConfig),
+      pure(tx, args.deltaL, `u128`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RebalanceAddLiquidityV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  receipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  cetusPool: TransactionObjectInput
+  cetusConfig: TransactionObjectInput
+  deltaL: bigint | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/** Adds liquidity to a the underlying LP position during rebalancing. */
+export function rebalanceAddLiquidityV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RebalanceAddLiquidityV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::rebalance_add_liquidity_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -1049,7 +1449,7 @@ export interface CalcLiquidateColXArgs {
   maxRepaymentAmtY: bigint | TransactionArgument
 }
 
-/** Calculate the required amounts to liquidate X collateral by repaying Y debt. */
+/** @deprecated Use `calc_liquidate_col_x_v2` instead. */
 export function calcLiquidateColX(
   tx: Transaction,
   typeArgs: [string, string],
@@ -1069,6 +1469,34 @@ export function calcLiquidateColX(
   })
 }
 
+export interface CalcLiquidateColXV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtY: bigint | TransactionArgument
+}
+
+/** Calculate the required amounts to liquidate X collateral by repaying Y debt. */
+export function calcLiquidateColXV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColXV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::calc_liquidate_col_x_v2`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtY, `u64`),
+    ],
+  })
+}
+
 export interface CalcLiquidateColYArgs {
   position: TransactionObjectInput
   config: TransactionObjectInput
@@ -1077,7 +1505,7 @@ export interface CalcLiquidateColYArgs {
   maxRepaymentAmtX: bigint | TransactionArgument
 }
 
-/** Calculate the required amounts to liquidate Y collateral by repaying X debt. */
+/** @deprecated Use `calc_liquidate_col_y_v2` instead. */
 export function calcLiquidateColY(
   tx: Transaction,
   typeArgs: [string, string],
@@ -1086,6 +1514,34 @@ export function calcLiquidateColY(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::calc_liquidate_col_y`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      pure(tx, args.maxRepaymentAmtX, `u64`),
+    ],
+  })
+}
+
+export interface CalcLiquidateColYV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  maxRepaymentAmtX: bigint | TransactionArgument
+}
+
+/** Calculate the required amounts to liquidate Y collateral by repaying X debt. */
+export function calcLiquidateColYV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CalcLiquidateColYV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::cetus::calc_liquidate_col_y_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

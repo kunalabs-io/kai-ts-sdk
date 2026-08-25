@@ -92,6 +92,7 @@ export const mainnetEnv: EnvConfig = {
         'display_registry::SystemMigrationCap': '0x2',
         'dynamic_field::Field': '0x2',
         'dynamic_object_field::Wrapper': '0x2',
+        'forwarding_address::ForwardingAddressRegistry': '0x2',
         'funds_accumulator::Withdrawal': '0x2',
         'groth16::Curve': '0x2',
         'groth16::PreparedVerifyingKey': '0x2',
@@ -131,6 +132,9 @@ export const mainnetEnv: EnvConfig = {
         'random::RandomInner': '0x2',
         'ristretto255::G': '0x2',
         'ristretto255::Scalar': '0x2',
+        'scratch::BorrowMarker': '0x2',
+        'scratch::BorrowMarkerKey': '0x2',
+        'scratch::Permit': '0x2',
         'sui::SUI': '0x2',
         'table::Table': '0x2',
         'table_vec::TableVec': '0x2',
@@ -160,7 +164,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-sav': {
       originalId: '0x1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273',
-      publishedAt: '0x909ad5f8badc34b49507dbd0cb9fb88cc816b531323659e3aefb992d4ab58474',
+      publishedAt: '0x9580f10893b5b19ccf41b2782aed96ba23eb4c00f9d401969a8de0b03117fe66',
       typeOrigins: {
         'kai_leverage_supply_pool::AdminCap':
           '0xe1e61a4b2c25bbc965f40fb895d9d6b9ebe327b9f3e34eb84b1c8dfc7df574ce',
@@ -217,7 +221,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-leverage-util': {
       originalId: '0x1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4',
-      publishedAt: '0x37affc3b878e5e33660a819fc46136924c4c99d116c91250a560904a04569b70',
+      publishedAt: '0xb23290e7f46b91383d9ed56f46feda5a7f96bd35427452cc58e788758ae3654a',
       typeOrigins: {
         'batch_swap::BatchSwap':
           '0xd7f2af9b0c736ce49b1a5aad829e620cc6b743da419a5d09ff5f1a86cedfb5bd',
@@ -469,7 +473,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-leverage': {
       originalId: '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
-      publishedAt: '0xf259194ebadf4a68c7dd0103483aa6c6e0e058597c02c390a398092892192f6f',
+      publishedAt: '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
       typeOrigins: {
         'access_init::ACCESS_INIT':
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
@@ -495,6 +499,15 @@ export const mainnetEnv: EnvConfig = {
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
         'equity::EquityTreasury':
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
+        'lp_shape_clmm::LpShape':
+          '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
+        'oracle_price::PriceCollection':
+          '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
+        'oracle_price::PriceData':
+          '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
+        'oracle_price::Quote': '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
+        'oracle_price::ValidatedPrices':
+          '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
         'piecewise::Piecewise':
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
         'piecewise::Section': '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
@@ -540,6 +553,8 @@ export const mainnetEnv: EnvConfig = {
           '0x49691904e57eff80e1409e6c71f643fecb5b7eeec97a1b4b97205a7317bed12a',
         'position_core_clmm::LiquidationInfo':
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
+        'position_core_clmm::OraclePriceConfig':
+          '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908',
         'position_core_clmm::OwnerCollectFeeDisabledKey':
           '0x49691904e57eff80e1409e6c71f643fecb5b7eeec97a1b4b97205a7317bed12a',
         'position_core_clmm::OwnerCollectFeeInfo':
@@ -607,76 +622,69 @@ export const mainnetEnv: EnvConfig = {
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
       },
     },
-    'wormhole': {
-      originalId: '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-      publishedAt: '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+    'pyth': {
+      originalId: '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+      publishedAt: '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
       typeOrigins: {
-        'bytes20::Bytes20': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'bytes32::Bytes32': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'consumed_vaas::ConsumedVAAs':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'cursor::Cursor': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'emitter::EmitterCap': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'emitter::EmitterCreated':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'emitter::EmitterDestroyed':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'external_address::ExternalAddress':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'fee_collector::FeeCollector':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'governance_message::DecreeReceipt':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'governance_message::DecreeTicket':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'guardian::Guardian': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'guardian_set::GuardianSet':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'guardian_signature::GuardianSignature':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'batch_price_attestation::BatchPriceAttestation':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'batch_price_attestation::Header':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'contract_upgrade::ContractUpgraded':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'contract_upgrade::UpgradeContract':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'data_source::DataSource':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'event::PriceFeedUpdateEvent':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'event::PythInitializationEvent':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'governance::WormholeVAAVerificationReceipt':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'governance_action::GovernanceAction':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'governance_instruction::GovernanceInstruction':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'hot_potato_vector::HotPotatoVector':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'i64::I64': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
         'migrate::MigrateComplete':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'package_utils::CurrentPackage':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'package_utils::CurrentVersion':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'package_utils::PackageInfo':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'package_utils::PendingPackage':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'publish_message::MessageTicket':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'publish_message::WormholeMessage':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'set::Empty': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'set::Set': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'set_fee::GovernanceWitness':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'set_fee::SetFee': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'setup::DeployerCap': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'state::LatestOnly': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'state::State': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'transfer_fee::GovernanceWitness':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'transfer_fee::TransferFee':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'update_guardian_set::GovernanceWitness':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'update_guardian_set::GuardianSetAdded':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'update_guardian_set::UpdateGuardianSet':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'upgrade_contract::ContractUpgraded':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'upgrade_contract::GovernanceWitness':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'upgrade_contract::UpgradeContract':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'vaa::VAA': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
-        'version_control::V__0_2_0':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price::Price': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price_feed::PriceFeed':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price_identifier::PriceIdentifier':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price_info::PriceInfo':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price_info::PriceInfoObject':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'price_status::PriceStatus':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set::Set': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set::Unit': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set_data_sources::DataSources':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set_fee_recipient::PythFeeRecipient':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set_governance_data_source::GovernanceDataSource':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set_stale_price_threshold::StalePriceThreshold':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'set_update_fee::UpdateFee':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'setup::DeployerCap': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'state::CurrentDigest':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'state::LatestOnly': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'state::State': '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'version_control::V__0_1_1':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
+        'version_control::V__0_1_2':
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
         'version_control::V__DUMMY':
-          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+          '0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0',
       },
     },
     'integer-mate': {
@@ -686,71 +694,6 @@ export const mainnetEnv: EnvConfig = {
         'i128::I128': '0x714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951a5a6f5b7f57',
         'i32::I32': '0x714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951a5a6f5b7f57',
         'i64::I64': '0x714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951a5a6f5b7f57',
-      },
-    },
-    'pyth': {
-      originalId: '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-      publishedAt: '0x4e20ddf36af412a4096f9014f4a565af9e812db9a05cc40254846cf6ed0ad91',
-      typeOrigins: {
-        'batch_price_attestation::BatchPriceAttestation':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'batch_price_attestation::Header':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'contract_upgrade::ContractUpgraded':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'contract_upgrade::UpgradeContract':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'data_source::DataSource':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'event::PriceFeedUpdateEvent':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'event::PythInitializationEvent':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'governance::WormholeVAAVerificationReceipt':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'governance_action::GovernanceAction':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'governance_instruction::GovernanceInstruction':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'hot_potato_vector::HotPotatoVector':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'i64::I64': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'migrate::MigrateComplete':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price::Price': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price_feed::PriceFeed':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price_identifier::PriceIdentifier':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price_info::PriceInfo':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price_info::PriceInfoObject':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'price_status::PriceStatus':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set::Set': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set::Unit': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set_data_sources::DataSources':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set_fee_recipient::PythFeeRecipient':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set_governance_data_source::GovernanceDataSource':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set_stale_price_threshold::StalePriceThreshold':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'set_update_fee::UpdateFee':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'setup::DeployerCap': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'state::CurrentDigest':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'state::LatestOnly': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'state::State': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'version_control::V__0_1_1':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
-        'version_control::V__0_1_2':
-          '0x4e20ddf36af412a4096f9014f4a565af9e812db9a05cc40254846cf6ed0ad91',
-        'version_control::V__DUMMY':
-          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
       },
     },
     'cetus-integrate': {
@@ -783,6 +726,78 @@ export const mainnetEnv: EnvConfig = {
           '0x996c4d9480708fb8b92aa7acf819fb0497b5ec8e65ba06601cae2fb6db3312c3',
         'router::CalculatedRouterSwapResultEvent':
           '0x996c4d9480708fb8b92aa7acf819fb0497b5ec8e65ba06601cae2fb6db3312c3',
+      },
+    },
+    'wormhole': {
+      originalId: '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+      publishedAt: '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+      typeOrigins: {
+        'bytes20::Bytes20': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'bytes32::Bytes32': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'consumed_vaas::ConsumedVAAs':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'cursor::Cursor': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'emitter::EmitterCap': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'emitter::EmitterCreated':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'emitter::EmitterDestroyed':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'external_address::ExternalAddress':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'fee_collector::FeeCollector':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'governance_message::DecreeReceipt':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'governance_message::DecreeTicket':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'guardian::Guardian': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'guardian_set::GuardianSet':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'guardian_signature::GuardianSignature':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'migrate::MigrateComplete':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'package_utils::CurrentPackage':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'package_utils::CurrentVersion':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'package_utils::PackageInfo':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'package_utils::PendingPackage':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'publish_message::MessageTicket':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'publish_message::WormholeMessage':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'set::Empty': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'set::Set': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'set_fee::GovernanceWitness':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'set_fee::SetFee': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'setup::DeployerCap': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'state::LatestOnly': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'state::State': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'transfer_fee::GovernanceWitness':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'transfer_fee::TransferFee':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'update_guardian_set::GovernanceWitness':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'update_guardian_set::GuardianSetAdded':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'update_guardian_set::UpdateGuardianSet':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'upgrade_contract::ContractUpgraded':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'upgrade_contract::GovernanceWitness':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'upgrade_contract::UpgradeContract':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'vaa::VAA': '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'version_control::V__0_2_0':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
+        'version_control::V__DUMMY':
+          '0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4',
       },
     },
   },
@@ -988,6 +1003,78 @@ export const mainnetEnv: EnvConfig = {
           '0x26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d',
       },
     },
+    'wormhole-1': {
+      originalId: '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+      publishedAt: '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+      typeOrigins: {
+        'bytes20::Bytes20': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'bytes32::Bytes32': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'consumed_vaas::ConsumedVAAs':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'cursor::Cursor': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'emitter::EmitterCap': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'emitter::EmitterCreated':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'emitter::EmitterDestroyed':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'external_address::ExternalAddress':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'fee_collector::FeeCollector':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'governance_message::DecreeReceipt':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'governance_message::DecreeTicket':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'guardian::Guardian': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'guardian_set::GuardianSet':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'guardian_signature::GuardianSignature':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'migrate::MigrateComplete':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'package_utils::CurrentPackage':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'package_utils::CurrentVersion':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'package_utils::PackageInfo':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'package_utils::PendingPackage':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'publish_message::MessageTicket':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'publish_message::WormholeMessage':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'set::Empty': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'set::Set': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'set_fee::GovernanceWitness':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'set_fee::SetFee': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'setup::DeployerCap': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'state::LatestOnly': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'state::State': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'transfer_fee::GovernanceWitness':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'transfer_fee::TransferFee':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'update_guardian_set::GovernanceWitness':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'update_guardian_set::GuardianSetAdded':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'update_guardian_set::UpdateGuardianSet':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'upgrade_contract::ContractUpgraded':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'upgrade_contract::GovernanceWitness':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'upgrade_contract::UpgradeContract':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'vaa::VAA': '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'version_control::V__0_2_0':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+        'version_control::V__DUMMY':
+          '0x5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a',
+      },
+    },
     'whusdce': {
       originalId: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf',
       publishedAt: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf',
@@ -1016,6 +1103,71 @@ export const mainnetEnv: EnvConfig = {
         'witness::Witness': '0x779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162',
         'witness::WitnessGenerator':
           '0x779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162',
+      },
+    },
+    'pyth-1': {
+      originalId: '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+      publishedAt: '0x4e20ddf36af412a4096f9014f4a565af9e812db9a05cc40254846cf6ed0ad91',
+      typeOrigins: {
+        'batch_price_attestation::BatchPriceAttestation':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'batch_price_attestation::Header':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'contract_upgrade::ContractUpgraded':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'contract_upgrade::UpgradeContract':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'data_source::DataSource':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'event::PriceFeedUpdateEvent':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'event::PythInitializationEvent':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'governance::WormholeVAAVerificationReceipt':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'governance_action::GovernanceAction':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'governance_instruction::GovernanceInstruction':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'hot_potato_vector::HotPotatoVector':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'i64::I64': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'migrate::MigrateComplete':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price::Price': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price_feed::PriceFeed':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price_identifier::PriceIdentifier':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price_info::PriceInfo':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price_info::PriceInfoObject':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'price_status::PriceStatus':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set::Set': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set::Unit': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set_data_sources::DataSources':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set_fee_recipient::PythFeeRecipient':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set_governance_data_source::GovernanceDataSource':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set_stale_price_threshold::StalePriceThreshold':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'set_update_fee::UpdateFee':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'setup::DeployerCap': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'state::CurrentDigest':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'state::LatestOnly': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'state::State': '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'version_control::V__0_1_1':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
+        'version_control::V__0_1_2':
+          '0x4e20ddf36af412a4096f9014f4a565af9e812db9a05cc40254846cf6ed0ad91',
+        'version_control::V__DUMMY':
+          '0x8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e',
       },
     },
     'math': {

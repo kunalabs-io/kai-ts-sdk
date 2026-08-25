@@ -6,6 +6,8 @@ import * as debtBag from './debt-bag/structs'
 import * as debtInfo from './debt-info/structs'
 import * as debt from './debt/structs'
 import * as equity from './equity/structs'
+import * as lpShapeClmm from './lp-shape-clmm/structs'
+import * as oraclePrice from './oracle-price/structs'
 import * as piecewise from './piecewise/structs'
 import * as positionCoreClmm from './position-core-clmm/structs'
 import * as positionModelClmm from './position-model-clmm/structs'
@@ -28,6 +30,11 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(equity.EquityShareBalance)
   loader.register(equity.EquityRegistry)
   loader.register(equity.EquityTreasury)
+  loader.register(lpShapeClmm.LpShape)
+  loader.register(oraclePrice.Quote)
+  loader.register(oraclePrice.PriceData)
+  loader.register(oraclePrice.PriceCollection)
+  loader.register(oraclePrice.ValidatedPrices)
   loader.register(piecewise.Section)
   loader.register(piecewise.Piecewise)
   loader.register(positionCoreClmm.ACreateConfig)
@@ -41,6 +48,7 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(positionCoreClmm.Position)
   loader.register(positionCoreClmm.PositionCap)
   loader.register(positionCoreClmm.PythConfig)
+  loader.register(positionCoreClmm.OraclePriceConfig)
   loader.register(positionCoreClmm.PositionConfig)
   loader.register(positionCoreClmm.LiquidationDisabledKey)
   loader.register(positionCoreClmm.ReductionDisabledKey)

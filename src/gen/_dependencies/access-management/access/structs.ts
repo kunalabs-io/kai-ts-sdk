@@ -1,6 +1,12 @@
 /**
  * Access Management module for Sui packages.
  * Provides fine-grained, configurable permissions using PackageAdmin, Policy, Rule, and ActionRequest.
+ *
+ * Authorization model: the rule is the unit of authorization. A `Rule` permits any of its actions
+ * provided all of its conditions are approved; the caller selects which rule a request is judged
+ * under; and a policy's permissions are therefore the union over its rules. There are no deny
+ * rules, so adding a rule can only widen access. Entities are allowlisted per policy rather than
+ * per rule, so every allowlisted entity may be judged under every rule in that policy.
  */
 
 import { bcs, BcsType } from '@mysten/sui/bcs'
@@ -471,7 +477,7 @@ export function isRule(type: string): boolean {
 export interface RuleFields {
   /** The set of action type names that are allowed by this rule. */
   actions: ToField<VecSet<TypeName>>
-  /** Conditions that must be met for the actions to be allowed. */
+  /** Conditions that must all be met for any of the actions to be allowed. */
   conditions: ToField<VecSet<TypeName>>
   /** A dynamic map from condition type name to its configuration for this rule. */
   conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
@@ -490,7 +496,14 @@ export type RuleJSON = {
   $typeArgs: []
 } & RuleJSONField
 
-/** Represents a rule within a policy, specifying allowed actions and required conditions. */
+/**
+ * Represents a rule within a policy, specifying allowed actions and required conditions.
+ *
+ * The condition set applies uniformly to every action in the rule. Conditions are not paired with
+ * individual actions, and `condition_configs` is keyed by condition alone, so the configuration
+ * cannot vary per action either. Express per-action conditions by splitting the actions across
+ * separate rules.
+ */
 export class Rule implements StructClass {
   __StructClass = true as const
 
@@ -507,7 +520,7 @@ export class Rule implements StructClass {
 
   /** The set of action type names that are allowed by this rule. */
   readonly actions: ToField<VecSet<TypeName>>
-  /** Conditions that must be met for the actions to be allowed. */
+  /** Conditions that must all be met for any of the actions to be allowed. */
   readonly conditions: ToField<VecSet<TypeName>>
   /** A dynamic map from condition type name to its configuration for this rule. */
   readonly conditionConfigs: ToField<DynamicMap<ToPhantom<TypeName>>>
@@ -709,7 +722,11 @@ export interface PolicyFields {
   id: ToField<UID>
   /** The address string of the package this policy applies to. */
   package: ToField<String>
-  /** The set of entity IDs that are allowed by this policy. */
+  /**
+   * The set of entity IDs that are allowed by this policy. Allowlisting is policy-wide: every
+   * entity listed here may be judged under every rule in the policy. To scope access by holder,
+   * use separate policies rather than separate rules.
+   */
   allowedEntities: ToField<VecSet<ID>>
   /** A mapping from rule ID (address) to the corresponding rule definition. */
   rules: ToField<VecMap<'address', Rule>>
@@ -738,6 +755,10 @@ export type PolicyJSON = {
 /**
  * Represents an access control policy for a package, specifying which entities are allowed,
  * the rules governing actions, and the policy's status and version.
+ *
+ * A policy's permissions are the union over its rules: an action allowed by any rule is allowed,
+ * under that rule's conditions. Placing the same action in two rules therefore gives the caller
+ * the choice of the weaker one.
  */
 export class Policy implements StructClass {
   __StructClass = true as const
@@ -756,7 +777,11 @@ export class Policy implements StructClass {
   readonly id: ToField<UID>
   /** The address string of the package this policy applies to. */
   readonly package: ToField<String>
-  /** The set of entity IDs that are allowed by this policy. */
+  /**
+   * The set of entity IDs that are allowed by this policy. Allowlisting is policy-wide: every
+   * entity listed here may be judged under every rule in the policy. To scope access by holder,
+   * use separate policies rather than separate rules.
+   */
   readonly allowedEntities: ToField<VecSet<ID>>
   /** A mapping from rule ID (address) to the corresponding rule definition. */
   readonly rules: ToField<VecMap<'address', Rule>>
@@ -1240,9 +1265,9 @@ export interface ConditionWitnessFields<
   ruleId: ToField<'address'>
   /** Configuration data for the condition */
   config: ToField<Config>
-  /** Policy ID for additional context */
+  /** Policy ID, informational for the condition implementation; not re-checked at approval */
   policy: ToField<ID>
-  /** Entity ID for additional context */
+  /** Entity ID, informational for the condition implementation; not re-checked at approval */
   entity: ToField<ID>
 }
 
@@ -1272,6 +1297,13 @@ export type ConditionWitnessJSON<
 /**
  * Carries condition configuration and context for condition approval functions.
  *
+ * The witness is bound to the rule, not to an action. The `Action` type argument of
+ * `get_condition_witness` is validated against the rule's action set at creation and then
+ * discarded, so a witness obtained for one action can be applied to a request carrying any other
+ * action of the same rule. That is sound under the rule-wide condition model, because every
+ * action of a rule requires the same conditions, but a condition implementation must not treat a
+ * witness as evidence of which action is being approved.
+ *
  * Type Parameters:
  * - `Condition`: The condition type being witnessed
  * - `Config`: Configuration data for the condition
@@ -1300,9 +1332,9 @@ export class ConditionWitness<Condition extends PhantomTypeArgument, Config exte
   readonly ruleId: ToField<'address'>
   /** Configuration data for the condition */
   readonly config: ToField<Config>
-  /** Policy ID for additional context */
+  /** Policy ID, informational for the condition implementation; not re-checked at approval */
   readonly policy: ToField<ID>
-  /** Entity ID for additional context */
+  /** Entity ID, informational for the condition implementation; not re-checked at approval */
   readonly entity: ToField<ID>
 
   private constructor(

@@ -1,14 +1,12 @@
 import { BaseLiquidationExecutor } from './liquidation-executor'
 import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions'
-import { TransactionExecutor, ExecutionResult } from './transaction-executor'
+import { TransactionExecutor } from './transaction-executor'
 import { ExecutionOutcome } from './types'
-import { CongestionError, InsufficientGasError, ExecutionFailureError } from './errors'
-import { bcs } from '@mysten/sui/bcs'
 import { Position } from '../../lp/position'
 import { PhantomTypeArgument, TypeArgument } from '../../gen/_framework/reified'
 import { updatePriceFeeds } from '../pyth'
-import * as pyth from '../../gen/kai-leverage/pyth/functions'
-import { SUI_CLOCK_OBJECT_ID, toBase64 } from '@mysten/sui/utils'
+import { buildPriceCollection } from '../../pyth'
+import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import {
   isDeleverageInfo,
   isLiquidationInfo,
@@ -20,19 +18,9 @@ import * as coin from '../../gen/sui/coin/functions'
 import * as metrics from '../metrics'
 import { Logger } from 'pino'
 import Decimal from 'decimal.js'
-import { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client'
-import { isSuiGrpcClient } from '@mysten/sui/grpc'
+import { ClientWithCoreApi } from '@mysten/sui/client'
 import { PositionInfo } from '../position-monitor/utils'
 import { OracleService, OnChainPriceData } from '../../oracle'
-
-export interface DryRunResult {
-  suggestedGasPrice: bigint | null
-  computationCost: bigint | null
-  storageCost: bigint | null
-  dryRunGasPrice: bigint | null
-  /** Dry run events when the simulation succeeded, null when dry run failed or was unreliable. */
-  events: SuiClientTypes.Event[] | null
-}
 
 interface PriceUpdateNeeded {
   needsUpdate: boolean
@@ -68,182 +56,6 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     this.logger = this.logger.child({ task: 'flash_swap_executor' })
     this.oracleService = oracleService
     this.skipDryRun = options?.skipDryRun ?? false
-  }
-
-  /**
-   * Applies gas estimate from a dry run to the transaction.
-   * Scales computation cost by suggestedGasPrice/dryRunGasPrice so the budget
-   * covers execution at the congestion-elevated gas price. Storage cost is not
-   * scaled since it's independent of gas price.
-   */
-  protected applyGasEstimate(tx: Transaction, estimate: DryRunResult): void {
-    const MIN_GAS_BUDGET = 100_000_000n // 100M MIST = 0.1 SUI
-    const { suggestedGasPrice, computationCost, storageCost, dryRunGasPrice } = estimate
-
-    if (suggestedGasPrice) {
-      tx.setGasPrice(suggestedGasPrice)
-    }
-
-    if (computationCost && storageCost && dryRunGasPrice && dryRunGasPrice > 0n) {
-      const effectivePrice = suggestedGasPrice ?? dryRunGasPrice
-      const scaledComputation = (computationCost * effectivePrice) / dryRunGasPrice
-      const budget = (scaledComputation + storageCost) * 2n
-      tx.setGasBudget(budget > MIN_GAS_BUDGET ? budget : MIN_GAS_BUDGET)
-    } else {
-      tx.setGasBudget(MIN_GAS_BUDGET)
-    }
-  }
-
-  /**
-   * Validates execution success. Does NOT log - caller is responsible for logging.
-   * Throws on transaction failure.
-   */
-  protected assertExecutionSuccess(result: ExecutionResult, context: string): void {
-    const effects = bcs.TransactionEffects.fromBase64(result.effects)
-    const status = effects.V1?.status || effects.V2?.status
-
-    if (status?.Failure) {
-      const error = status.Failure.error
-      const executionError = error as Record<string, unknown>
-
-      if (error.$kind === 'ExecutionCancelledDueToSharedObjectCongestion') {
-        const congestedObjects =
-          error.ExecutionCancelledDueToSharedObjectCongestion.congested_objects
-        throw new CongestionError(context, congestedObjects, result.digest, executionError)
-      }
-
-      if (error.$kind === 'InsufficientGas') {
-        throw new InsufficientGasError(context, result.digest, executionError)
-      }
-
-      throw new ExecutionFailureError(context, error.$kind, result.digest, executionError)
-    }
-  }
-
-  /**
-   * Reads the congestion-elevated `suggested_gas_price` from the raw gRPC SimulateTransaction
-   * response — the transport-agnostic core API drops it. Returns null for non-gRPC clients
-   * (where the caller falls back to the reference gas price); a gRPC read that fails is logged
-   * and treated as null so it can't take down the core dry run, but isn't silently swallowed.
-   */
-  protected async readSuggestedGasPrice(txBytes: Uint8Array): Promise<bigint | null> {
-    const client = this.client
-    if (!isSuiGrpcClient(client)) {
-      return null
-    }
-    try {
-      const { response } = await client.transactionExecutionService.simulateTransaction({
-        transaction: { bcs: { value: txBytes } },
-        readMask: { paths: ['suggested_gas_price'] },
-      })
-      return response.suggestedGasPrice ?? null
-    } catch (err) {
-      this.logger.warn(
-        { err },
-        'Failed to read suggested gas price from gRPC; falling back to reference price'
-      )
-      return null
-    }
-  }
-
-  /**
-   * Performs a dry run of the transaction.
-   * Returns suggested gas price and budget on success, nulls on failure.
-   * Throws ExecutionFailureError for persistent dry-run failures (e.g. MoveAbort).
-   * Transient dry-run failures (congestion, gas) proceed to execution.
-   * RPC/network failures return null estimates and proceed to execution.
-   */
-  protected async performDryRun(
-    tx: Transaction,
-    executor: TransactionExecutor,
-    logger: Logger
-  ): Promise<DryRunResult> {
-    let txBytes: Uint8Array | undefined
-    try {
-      // Clone tx and set temp gas budget so the SDK skips its internal dry-run.
-      // The original tx is not modified — applyGasEstimate() handles that.
-      const dryRunTx = Transaction.from(tx)
-      dryRunTx.setGasBudget(50_000_000_000n)
-
-      txBytes = await executor.buildTransaction(dryRunTx)
-
-      // Simulate for status/gas/events (transport-agnostic), read the congestion-elevated
-      // suggested gas price from the raw gRPC response (null on non-gRPC clients), and the
-      // reference gas price as the budget-scaling baseline — all in parallel.
-      const [result, suggestedGasPrice, refGasPrice] = await Promise.all([
-        this.client.core.simulateTransaction({
-          transaction: txBytes,
-          include: { effects: true, events: true },
-        }),
-        this.readSuggestedGasPrice(txBytes),
-        this.client.core.getReferenceGasPrice(),
-      ])
-
-      const txResult = result.Transaction ?? result.FailedTransaction
-      const status = txResult.status
-
-      if (!status.success) {
-        const errorStr = status.error.message ?? ''
-
-        const isTransientDryRunFailure =
-          status.error.$kind === 'CongestedObjects' ||
-          errorStr.startsWith('ExecutionCancelledDueToSharedObjectCongestion') ||
-          errorStr.startsWith('InsufficientGas')
-
-        if (isTransientDryRunFailure) {
-          logger.warn(
-            { error: errorStr },
-            'Dry run indicates transient failure, proceeding with execution'
-          )
-        } else {
-          logger.warn(
-            { error: errorStr, serializedTx: txBytes ? toBase64(txBytes) : null },
-            'Dry run indicates persistent failure, aborting execution'
-          )
-          throw new ExecutionFailureError('Dry run', errorStr)
-        }
-      }
-
-      const gasUsed = txResult.effects?.gasUsed
-      const computationCost = gasUsed ? BigInt(gasUsed.computationCost) : null
-      const storageCost = gasUsed ? BigInt(gasUsed.storageCost) : null
-      const dryRunGasPrice = BigInt(refGasPrice.referenceGasPrice)
-
-      if (status.success) {
-        logger.info(
-          {
-            suggestedGasPrice: suggestedGasPrice?.toString(),
-            computationCost: computationCost?.toString(),
-            storageCost: storageCost?.toString(),
-            dryRunGasPrice: dryRunGasPrice.toString(),
-          },
-          'Dry run successful'
-        )
-      }
-
-      return {
-        suggestedGasPrice,
-        computationCost,
-        storageCost,
-        dryRunGasPrice,
-        events: status.success ? (txResult.events ?? null) : null,
-      }
-    } catch (error) {
-      if (error instanceof ExecutionFailureError) {
-        throw error
-      }
-      logger.warn(
-        { err: error, serializedTx: txBytes ? toBase64(txBytes) : null },
-        'Dry run failed, proceeding with execution'
-      )
-      return {
-        suggestedGasPrice: null,
-        computationCost: null,
-        storageCost: null,
-        dryRunGasPrice: null,
-        events: null,
-      }
-    }
   }
 
   protected needsPriceUpdate(
@@ -355,9 +167,10 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       updatePriceFeeds(tx, pythUpdateData)
     }
 
-    const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
-    pyth.add(tx, { self: priceInfo, info: position.configInfo.pioInfoX.priceInfoObjectId })
-    pyth.add(tx, { self: priceInfo, info: position.configInfo.pioInfoY.priceInfoObjectId })
+    const priceInfo = buildPriceCollection(tx, [
+      position.configInfo.pioInfoX,
+      position.configInfo.pioInfoY,
+    ])
 
     return {
       tx,
@@ -502,9 +315,19 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
 
     KaiRouterUtil.bluefin.repayFlashSwap(tx, flashRepayX, receipt)
 
-    // transfer the remaining reward X to the wallet
-    balance.destroyZero(tx, position.Y.typeName, repayYBalance)
+    // `liquidate_col_x` repays through `supply_pool::repay_max_possible`, which is
+    // capped at the debt the pool computes from the position's shares, and joins
+    // whatever it could not consume back into the repayment balance. The model's
+    // `repayment_amt_y` rounds up and is bounded by the debt only up to that
+    // rounding, so the remainder is dust — but it is not always zero, and
+    // `destroy_zero` on it aborted the whole PTB, leaving such positions
+    // permanently unliquidatable. Send it back instead of asserting it away.
+    balance.sendFunds(tx, position.Y.typeName, {
+      balance: repayYBalance,
+      recipient: rewardRecipient,
+    })
 
+    // transfer the remaining reward X to the wallet
     const rewardXCoin = coin.fromBalance(tx, position.X.typeName, rewardX)
     tx.transferObjects([rewardXCoin], rewardRecipient)
   }
@@ -543,7 +366,11 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     })
     KaiRouterUtil.bluefin.repayFlashSwap(tx, flashRepayY, receipt)
 
-    balance.destroyZero(tx, position.X.typeName, repayXBalance)
+    // See `addLiquidateColXCalls` — the repayment balance can come back non-empty.
+    balance.sendFunds(tx, position.X.typeName, {
+      balance: repayXBalance,
+      recipient: rewardRecipient,
+    })
 
     const rewardYCoin = coin.fromBalance(tx, position.Y.typeName, rewardY)
     tx.transferObjects([rewardYCoin], rewardRecipient)

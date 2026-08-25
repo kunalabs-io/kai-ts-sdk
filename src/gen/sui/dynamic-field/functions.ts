@@ -117,7 +117,7 @@ export function remove(
   })
 }
 
-export interface Exists_Args {
+export interface ExistsArgs {
   object: TransactionObjectInput
   name: GenericArg
 }
@@ -126,14 +126,14 @@ export interface Exists_Args {
  * Returns true if and only if the `object` has a dynamic field with the name specified by
  * `name: Name` but without specifying the `Value` type
  */
-export function exists_(
+export function exists(
   tx: Transaction,
   typeArg: string,
-  args: Exists_Args,
+  args: ExistsArgs,
   options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::exists_`,
+    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::exists`,
     typeArguments: [typeArg],
     arguments: [
       obj(tx, args.object),
@@ -142,24 +142,58 @@ export function exists_(
   })
 }
 
-export interface RemoveIfExistsArgs {
+export interface RemoveOptArgs {
   object: TransactionObjectInput
   name: GenericArg
 }
 
-/** Removes the dynamic field if it exists. Returns the `some(Value)` if it exists or none otherwise. */
-export function removeIfExists(
+/**
+ * Removes the dynamic field if it exists. Returns `some(Value)` if it exists or `none` otherwise.
+ * Aborts with `EFieldTypeMismatch` if the field exists, but the value does not have the specified
+ * type.
+ */
+export function removeOpt(
   tx: Transaction,
   typeArgs: [string, string],
-  args: RemoveIfExistsArgs,
+  args: RemoveOptArgs,
   options?: { env?: EnvConfig },
 ): TransactionResult {
   return tx.moveCall({
-    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::remove_if_exists`,
+    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::remove_opt`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.object),
       generic(tx, `${typeArgs[0]}`, args.name),
+    ],
+  })
+}
+
+export interface ReplaceArgs {
+  object: TransactionObjectInput
+  name: GenericArg
+  value: GenericArg
+}
+
+/**
+ * Removes the existing value at `name` (if any) and adds `value` in its place.
+ * Returns the old value if it existed, or `none` otherwise.
+ * Note: the old and new value types may differ.
+ * Aborts with `EFieldTypeMismatch` if the field exists, but the value does not have the specified
+ * `ValueOld` type.
+ */
+export function replace(
+  tx: Transaction,
+  typeArgs: [string, string, string],
+  args: ReplaceArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::replace`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+      generic(tx, `${typeArgs[1]}`, args.value),
     ],
   })
 }
@@ -181,6 +215,50 @@ export function existsWithType(
 ): TransactionResult {
   return tx.moveCall({
     target: `${getPublishedAt('sui', options?.env)}::dynamic_field::exists_with_type`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArgs[0]}`, args.name),
+    ],
+  })
+}
+
+export interface Exists_Args {
+  object: TransactionObjectInput
+  name: GenericArg
+}
+
+/** @deprecated Renamed to `exists` */
+export function exists_(
+  tx: Transaction,
+  typeArg: string,
+  args: Exists_Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::exists_`,
+    typeArguments: [typeArg],
+    arguments: [
+      obj(tx, args.object),
+      generic(tx, `${typeArg}`, args.name),
+    ],
+  })
+}
+
+export interface RemoveIfExistsArgs {
+  object: TransactionObjectInput
+  name: GenericArg
+}
+
+/** @deprecated Renamed to `remove_opt` */
+export function removeIfExists(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RemoveIfExistsArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('sui', options?.env)}::dynamic_field::remove_if_exists`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.object),

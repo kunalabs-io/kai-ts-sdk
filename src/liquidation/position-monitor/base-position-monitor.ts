@@ -18,6 +18,8 @@ import { OracleService } from '../../oracle'
 export interface PositionMonitor {
   onLiquidationNeeded(observer: (positions: Map<string, PositionInfo>) => Promise<void>): void
   updateSkipList(newSkipList: string[]): void
+  /** Position ids the latest poll skipped for low asset value — the dust sweep's input. */
+  getDustCandidateIds(): Set<string>
 }
 
 export interface PositionMonitorConfig {
@@ -60,6 +62,7 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
   // Filter stats (accumulated across polls)
   private liquidateAddedIdsSinceLastSummary = new Set<string>()
   private deleverageAddedIdsSinceLastSummary = new Set<string>()
+  private currentDustCandidateIds = new Set<string>()
   private liquidateSkippedLowValueIdsSinceLastSummary = new Set<string>()
   private deleverageSkippedLowValueIdsSinceLastSummary = new Set<string>()
   private nothingToDeleverageIdsSinceLastSummary = new Set<string>()
@@ -163,6 +166,10 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     this.liquidationObservers.push(observer)
   }
 
+  public getDustCandidateIds(): Set<string> {
+    return new Set(this.currentDustCandidateIds)
+  }
+
   public updateSkipList(newSkipList: string[]): void {
     this.config.positionSkipList = newSkipList
     this.logger.info(`Updated skip list with ${newSkipList.length} positions`)
@@ -260,6 +267,13 @@ export abstract class BasePositionMonitor extends Interval implements PositionMo
     metrics.deleveragePositionSkippedLowAssetValueCount?.record(
       filterResult.deleverageSkippedLowAssetValueIds.size
     )
+
+    // Current (not cumulative) dust set: reset every poll so the sweep sees
+    // live classification, not summary-window bookkeeping.
+    this.currentDustCandidateIds = new Set([
+      ...filterResult.liquidateSkippedLowAssetValueIds,
+      ...filterResult.deleverageSkippedLowAssetValueIds,
+    ])
 
     for (const id of filterResult.liquidateAddedIds) this.liquidateAddedIdsSinceLastSummary.add(id)
     for (const id of filterResult.deleverageAddedIds)

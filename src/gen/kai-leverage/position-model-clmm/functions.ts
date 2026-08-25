@@ -517,8 +517,10 @@ export interface CalcLiquidateColXArgs {
  * - `cx == 0`
  * - The position is liquidated so that the margin level is above the liquidation threshold after
  * the liquidation, if possible for the given `max_repayment_amt_y` and available collateral.
- * - Always respects the liquidation bonus, even if there's not enough collateral to cover a full
- * liquidation.
+ * - The reward never exceeds the bonus-adjusted value of the repayment actually charged. It is
+ * rounded down, so it can be up to 1 wei less than the exact amount (in the protocol's favor).
+ * - When there's not enough collateral to cover a full liquidation, the entire collateral amount
+ * is paid out.
  * - Never aborts.
  *
  * See documentation for `calc_max_liq_factor_x64` for more details on how the liquidation factor
@@ -566,8 +568,10 @@ export interface CalcLiquidateColYArgs {
  * - `cy == 0`
  * - The position is liquidated so that the margin level is above the liquidation threshold after
  * the liquidation, if possible for the given `max_repayment_amt_x` and available collateral.
- * - Always respects the liquidation bonus, even if there's not enough collateral to cover a full
- * liquidation.
+ * - The reward never exceeds the bonus-adjusted value of the repayment actually charged. It is
+ * rounded down, so it can be up to 1 wei less than the exact amount (in the protocol's favor).
+ * - When there's not enough collateral to cover a full liquidation, the entire collateral amount
+ * is paid out.
  * - Never aborts.
  *
  * See documentation for `calc_max_liq_factor_x64` for more details on how the liquidation factor

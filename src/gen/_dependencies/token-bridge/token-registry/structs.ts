@@ -42,7 +42,7 @@ import { Vector } from '../../../_framework/vector'
 import { String } from '../../../std/ascii/structs'
 import { UID } from '../../../sui/object/structs'
 import { Table } from '../../../sui/table/structs'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 
 /* ============================== TokenRegistry =============================== */
 

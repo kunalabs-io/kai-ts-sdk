@@ -12,7 +12,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
     priceInfo: TransactionObjectInput
   ): void {
-    cetus.deleverageForLiquidation(
+    cetus.deleverageForLiquidationV2(
       tx,
       [
         position.X.typeName,
@@ -39,7 +39,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput
   ): TransactionResult {
-    return cetus.calcLiquidateColX(tx, [position.X.typeName, position.Y.typeName], {
+    return cetus.calcLiquidateColXV2(tx, [position.X.typeName, position.Y.typeName], {
       position: position.id,
       config: position.configInfo.configId,
       priceInfo,
@@ -54,7 +54,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput
   ): TransactionResult {
-    return cetus.calcLiquidateColY(tx, [position.X.typeName, position.Y.typeName], {
+    return cetus.calcLiquidateColYV2(tx, [position.X.typeName, position.Y.typeName], {
       position: position.id,
       config: position.configInfo.configId,
       priceInfo,
@@ -70,7 +70,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     debtInfo: TransactionObjectInput,
     repayYBalance: TransactionObjectInput
   ): TransactionResult {
-    return cetus.liquidateColX(
+    return cetus.liquidateColXV2(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolYInfo.ST.typeName],
       {
@@ -92,7 +92,7 @@ export class CetusProtocolHandler implements ProtocolHandler {
     debtInfo: TransactionObjectInput,
     repayXBalance: TransactionObjectInput
   ): TransactionResult {
-    return cetus.liquidateColY(
+    return cetus.liquidateColYV2(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolXInfo.ST.typeName],
       {

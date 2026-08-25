@@ -31,7 +31,7 @@ import {
 } from '../../../_framework/reified'
 import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { Vector } from '../../../_framework/vector'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 import { NormalizedAmount } from '../normalized-amount/structs'
 
 /* ============================== TransferWithPayload =============================== */

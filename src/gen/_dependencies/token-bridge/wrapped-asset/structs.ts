@@ -39,7 +39,7 @@ import {
 import { String } from '../../../std/string/structs'
 import { TreasuryCap } from '../../../sui/coin/structs'
 import { UpgradeCap } from '../../../sui/package/structs'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 
 /* ============================== ForeignInfo =============================== */
 

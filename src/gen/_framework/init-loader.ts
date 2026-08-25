@@ -6,12 +6,14 @@ import * as package_b8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb63
 import * as package_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f from '../_dependencies/math/init'
 import * as package_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa from '../_dependencies/move-stl/init'
 import * as package_efe8b36d5b2e43728cc323298626b83177803521d195cfb11e15b910e892fddf from '../_dependencies/protocol/init'
+import * as package_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e from '../_dependencies/pyth-1/init'
 import * as package_e829c047cf805d54bde8ff2390883004d4557193d33bac516f3232105a2f2bb2 from '../_dependencies/rate-limiter/init'
 import * as package_e87f1b2d498106a2c61421cec75b7b5c5e348512b0dc263949a0e7a3c256571a from '../_dependencies/spool/init'
 import * as package_26efee2b51c911237888e5dc6702868abca3c7ac12c53f76ef8eba0697695e3d from '../_dependencies/token-bridge/init'
 import * as package_1318fdc90319ec9c24df1456d960a447521b0a658316155895014a6e39b5482f from '../_dependencies/whitelist/init'
 import * as package_5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf from '../_dependencies/whusdce/init'
 import * as package_c060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c from '../_dependencies/whusdte/init'
+import * as package_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../_dependencies/wormhole-1/init'
 import * as package_1478a432123e4b3d61878b629f2c692969fdb375644f1251cd278a4b1e7d7cd6 from '../_dependencies/x-oracle/init'
 import * as package_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162 from '../_dependencies/x/init'
 import * as package_3492c874c1e3b3e2984e8c41b589e642d4d0a5d6459e5a9cfc2d52fd7c89c267 from '../bluefin-spot/init'
@@ -21,10 +23,10 @@ import * as package_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951a5a6f5b
 import * as package_1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4 from '../kai-leverage-util/init'
 import * as package_51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523 from '../kai-leverage/init'
 import * as package_1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273 from '../kai-sav/init'
-import * as package_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e from '../pyth/init'
+import * as package_55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0 from '../pyth/init'
 import * as package_1 from '../std/init'
 import * as package_2 from '../sui/init'
-import * as package_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a from '../wormhole/init'
+import * as package_99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4 from '../wormhole/init'
 import { StructClassLoader } from './loader'
 
 export function registerClasses(loader: StructClassLoader): void {
@@ -42,11 +44,13 @@ export function registerClasses(loader: StructClassLoader): void {
   package_3492c874c1e3b3e2984e8c41b589e642d4d0a5d6459e5a9cfc2d52fd7c89c267.registerClasses(loader)
   package_51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523.registerClasses(loader)
   package_5306f64e312b581766351c07af79c72fcb1cd25147157fdc2f8ad76de9a3fb6a.registerClasses(loader)
+  package_55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0.registerClasses(loader)
   package_5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf.registerClasses(loader)
   package_714a63a0dba6da4f017b42d5d0fb78867f18bcde904868e51d951a5a6f5b7f57.registerClasses(loader)
   package_779b5c547976899f5474f3a5bc0db36ddf4697ad7e5a901db0415c2281d28162.registerClasses(loader)
   package_8d97f1cd6ac663735be08d1d2b6d02a159e711586461306ce60a2b7a6a565a9e.registerClasses(loader)
   package_996c4d9480708fb8b92aa7acf819fb0497b5ec8e65ba06601cae2fb6db3312c3.registerClasses(loader)
+  package_99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4.registerClasses(loader)
   package_ad013d5fde39e15eabda32b3dbdafd67dac32b798ce63237c27a8f73339b9b6f.registerClasses(loader)
   package_b8dc843a816b51992ee10d2ddc6d28aab4f0a1d651cd7289a7897902eb631613.registerClasses(loader)
   package_be21a06129308e0495431d12286127897aff07a8ade3970495a4404d97f9eaaa.registerClasses(loader)

@@ -12,7 +12,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     position: Position<PhantomTypeArgument, PhantomTypeArgument, TypeArgument>,
     priceInfo: TransactionObjectInput
   ): void {
-    bluefin.deleverageForLiquidation(
+    bluefin.deleverageForLiquidationV2(
       tx,
       [
         position.X.typeName,
@@ -39,7 +39,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput
   ): TransactionResult {
-    return bluefin.calcLiquidateColX(tx, [position.X.typeName, position.Y.typeName], {
+    return bluefin.calcLiquidateColXV2(tx, [position.X.typeName, position.Y.typeName], {
       position: position.id,
       config: position.configInfo.configId,
       priceInfo,
@@ -54,7 +54,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     priceInfo: TransactionObjectInput,
     debtInfo: TransactionObjectInput
   ): TransactionResult {
-    return bluefin.calcLiquidateColY(tx, [position.X.typeName, position.Y.typeName], {
+    return bluefin.calcLiquidateColYV2(tx, [position.X.typeName, position.Y.typeName], {
       position: position.id,
       config: position.configInfo.configId,
       priceInfo,
@@ -70,7 +70,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     debtInfo: TransactionObjectInput,
     repayYBalance: TransactionObjectInput
   ): TransactionResult {
-    return bluefin.liquidateColX(
+    return bluefin.liquidateColXV2(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolYInfo.ST.typeName],
       {
@@ -92,7 +92,7 @@ export class BluefinProtocolHandler implements ProtocolHandler {
     debtInfo: TransactionObjectInput,
     repayXBalance: TransactionObjectInput
   ): TransactionResult {
-    return bluefin.liquidateColY(
+    return bluefin.liquidateColYV2(
       tx,
       [position.X.typeName, position.Y.typeName, position.configInfo.supplyPoolXInfo.ST.typeName],
       {

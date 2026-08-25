@@ -2931,6 +2931,234 @@ export class PythConfig implements StructClass {
   }
 }
 
+/* ============================== OraclePriceConfig =============================== */
+
+export function isOraclePriceConfig(type: string): boolean {
+  type = compressSuiType(type)
+  return type
+    === `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OraclePriceConfig')
+    }::position_core_clmm::OraclePriceConfig`
+}
+
+export interface OraclePriceConfigFields {
+  maxAgeSecs: ToField<'u64'>
+  priceObjectAllowlist: ToField<VecMap<TypeName, ID>>
+}
+
+export type OraclePriceConfigReified = Reified<OraclePriceConfig, OraclePriceConfigFields>
+
+export type OraclePriceConfigJSONField = {
+  maxAgeSecs: string
+  priceObjectAllowlist: ToJSON<VecMap<TypeName, ID>>
+}
+
+export type OraclePriceConfigJSON = {
+  $typeName: typeof OraclePriceConfig.$typeName
+  $typeArgs: []
+} & OraclePriceConfigJSONField
+
+/**
+ * Configuration for the rail-agnostic oracle price collection
+ * (`kai_leverage::oracle_price`).
+ */
+export class OraclePriceConfig implements StructClass {
+  __StructClass = true as const
+
+  static get $typeName(): `${string}::position_core_clmm::OraclePriceConfig` {
+    return `${
+      getTypeOrigin('kai-leverage', 'position_core_clmm::OraclePriceConfig')
+    }::position_core_clmm::OraclePriceConfig` as const
+  }
+  static readonly $numTypeParams = 0
+  static readonly $isPhantom = [] as const
+
+  readonly $typeName: typeof OraclePriceConfig.$typeName = OraclePriceConfig.$typeName
+  readonly $fullTypeName: `${string}::position_core_clmm::OraclePriceConfig`
+  readonly $typeArgs: []
+  readonly $isPhantom: typeof OraclePriceConfig.$isPhantom = OraclePriceConfig.$isPhantom
+
+  readonly maxAgeSecs: ToField<'u64'>
+  readonly priceObjectAllowlist: ToField<VecMap<TypeName, ID>>
+
+  private constructor(typeArgs: [], fields: OraclePriceConfigFields) {
+    this.$fullTypeName = composeSuiType(
+      OraclePriceConfig.$typeName,
+      ...typeArgs,
+    ) as `${string}::position_core_clmm::OraclePriceConfig`
+    this.$typeArgs = typeArgs
+
+    this.maxAgeSecs = fields.maxAgeSecs
+    this.priceObjectAllowlist = fields.priceObjectAllowlist
+  }
+
+  static reified(): OraclePriceConfigReified {
+    const reifiedBcs = OraclePriceConfig.bcs
+    return {
+      get typeName() {
+        return OraclePriceConfig.$typeName
+      },
+      get fullTypeName() {
+        return composeSuiType(
+          OraclePriceConfig.$typeName,
+          ...[],
+        ) as `${string}::position_core_clmm::OraclePriceConfig`
+      },
+      typeArgs: [] as [],
+      isPhantom: OraclePriceConfig.$isPhantom,
+      reifiedTypeArgs: [],
+      fromFields: (fields: Record<string, any>) => OraclePriceConfig.fromFields(fields),
+      fromFieldsWithTypes: (item: FieldsWithTypes) => OraclePriceConfig.fromFieldsWithTypes(item),
+      fromBcs: (data: Uint8Array) => OraclePriceConfig.fromFields(reifiedBcs.parse(data)),
+      bcs: reifiedBcs,
+      fromJSONField: (field: any) => OraclePriceConfig.fromJSONField(field),
+      fromJSON: (json: Record<string, any>) => OraclePriceConfig.fromJSON(json),
+      fromCoreObject: (obj: SuiClientTypes.Object<{ content: true }>) =>
+        OraclePriceConfig.fromCoreObject(obj),
+      fromSuiParsedData: (content: SuiParsedData) => OraclePriceConfig.fromSuiParsedData(content),
+      fromSuiObjectData: (content: SuiObjectData) => OraclePriceConfig.fromSuiObjectData(content),
+      fetch: async (client: ClientWithCoreApi, id: string) => OraclePriceConfig.fetch(client, id),
+      new: (fields: OraclePriceConfigFields) => {
+        return new OraclePriceConfig([], fields)
+      },
+      kind: 'StructClassReified',
+    }
+  }
+
+  static get r(): OraclePriceConfigReified {
+    return OraclePriceConfig.reified()
+  }
+
+  static phantom(): PhantomReified<ToTypeStr<OraclePriceConfig>> {
+    return phantom(OraclePriceConfig.reified())
+  }
+
+  static get p(): PhantomReified<ToTypeStr<OraclePriceConfig>> {
+    return OraclePriceConfig.phantom()
+  }
+
+  private static instantiateBcs() {
+    return bcs.struct('OraclePriceConfig', {
+      max_age_secs: bcs.u64(),
+      price_object_allowlist: VecMap.bcs(TypeName.bcs, ID.bcs),
+    })
+  }
+
+  private static cachedBcs: ReturnType<typeof OraclePriceConfig.instantiateBcs> | null = null
+
+  static get bcs(): ReturnType<typeof OraclePriceConfig.instantiateBcs> {
+    if (!OraclePriceConfig.cachedBcs) {
+      OraclePriceConfig.cachedBcs = OraclePriceConfig.instantiateBcs()
+    }
+    return OraclePriceConfig.cachedBcs
+  }
+
+  static fromFields(fields: Record<string, any>): OraclePriceConfig {
+    return OraclePriceConfig.reified().new({
+      maxAgeSecs: decodeFromFields('u64', fields.max_age_secs),
+      priceObjectAllowlist: decodeFromFields(
+        VecMap.reified(TypeName.reified(), ID.reified()),
+        fields.price_object_allowlist,
+      ),
+    })
+  }
+
+  static fromFieldsWithTypes(item: FieldsWithTypes): OraclePriceConfig {
+    if (!isOraclePriceConfig(item.type)) {
+      throw new Error('not a OraclePriceConfig type')
+    }
+
+    return OraclePriceConfig.reified().new({
+      maxAgeSecs: decodeFromFieldsWithTypes('u64', item.fields.max_age_secs),
+      priceObjectAllowlist: decodeFromFieldsWithTypes(
+        VecMap.reified(TypeName.reified(), ID.reified()),
+        item.fields.price_object_allowlist,
+      ),
+    })
+  }
+
+  static fromBcs(data: Uint8Array): OraclePriceConfig {
+    return OraclePriceConfig.fromFields(OraclePriceConfig.bcs.parse(data))
+  }
+
+  toJSONField(): OraclePriceConfigJSONField {
+    return {
+      maxAgeSecs: this.maxAgeSecs.toString(),
+      priceObjectAllowlist: this.priceObjectAllowlist.toJSONField(),
+    }
+  }
+
+  toJSON(): OraclePriceConfigJSON {
+    return { $typeName: this.$typeName, $typeArgs: this.$typeArgs, ...this.toJSONField() }
+  }
+
+  static fromJSONField(field: any): OraclePriceConfig {
+    return OraclePriceConfig.reified().new({
+      maxAgeSecs: decodeFromJSONField('u64', field.maxAgeSecs),
+      priceObjectAllowlist: decodeFromJSONField(
+        VecMap.reified(TypeName.reified(), ID.reified()),
+        field.priceObjectAllowlist,
+      ),
+    })
+  }
+
+  static fromJSON(json: Record<string, any>): OraclePriceConfig {
+    if (json.$typeName !== OraclePriceConfig.$typeName) {
+      throw new Error(
+        `not a OraclePriceConfig json object: expected '${OraclePriceConfig.$typeName}' but got '${json.$typeName}'`,
+      )
+    }
+
+    return OraclePriceConfig.fromJSONField(json)
+  }
+
+  static fromCoreObject(obj: SuiClientTypes.Object<{ content: true }>): OraclePriceConfig {
+    if (!isOraclePriceConfig(obj.type)) {
+      throw new Error(`object at ${obj.objectId} is not a OraclePriceConfig object`)
+    }
+    return OraclePriceConfig.fromBcs(obj.content)
+  }
+
+  /** @deprecated `SuiParsedData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OraclePriceConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
+  static fromSuiParsedData(content: SuiParsedData): OraclePriceConfig {
+    if (content.dataType !== 'moveObject') {
+      throw new Error('not an object')
+    }
+    if (!isOraclePriceConfig(content.type)) {
+      throw new Error(`object at ${(content.fields as any).id} is not a OraclePriceConfig object`)
+    }
+    return OraclePriceConfig.fromFieldsWithTypes(content)
+  }
+
+  /** @deprecated `SuiObjectData` is a JSON-RPC-only type that is being phased out upstream. Use {@link OraclePriceConfig.fromCoreObject} together with `client.core.getObject({ include: { content: true } })` for transport-agnostic parsing. */
+  static fromSuiObjectData(data: SuiObjectData): OraclePriceConfig {
+    if (data.bcs) {
+      if (data.bcs.dataType !== 'moveObject' || !isOraclePriceConfig(data.bcs.type)) {
+        throw new Error(`object at is not a OraclePriceConfig object`)
+      }
+
+      return OraclePriceConfig.fromBcs(fromBase64(data.bcs.bcsBytes))
+    }
+    if (data.content) {
+      return OraclePriceConfig.fromSuiParsedData(data.content)
+    }
+    throw new Error(
+      'Both `bcs` and `content` fields are missing from the data. Include `showBcs` or `showContent` in the request.',
+    )
+  }
+
+  static async fetch(client: ClientWithCoreApi, id: string): Promise<OraclePriceConfig> {
+    const { object } = await client.core.getObject({
+      objectId: id,
+      include: { content: true },
+    })
+    if (!isOraclePriceConfig(object.type)) {
+      throw new Error(`object at id ${id} is not a OraclePriceConfig object`)
+    }
+    return OraclePriceConfig.fromBcs(object.content)
+  }
+}
+
 /* ============================== PositionConfig =============================== */
 
 export function isPositionConfig(type: string): boolean {

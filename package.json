@@ -1,6 +1,6 @@
 {
   "name": "@kunalabs-io/kai",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "license": "Apache-2.0",
   "author": "Kuna Labs <build@kunalabs.io>",
   "main": "./src/index.ts",
@@ -49,6 +49,7 @@
   "dependencies": {
     "@cetusprotocol/aggregator-sdk": "1.6.1",
     "@mysten/sui": "2.20.0",
+    "@protobuf-ts/runtime-rpc": "^2.11.1",
     "@opentelemetry/api": "1.9.1",
     "@pythnetwork/pyth-sui-js": "3.0.0",
     "@sinclair/typebox": "^0.34.49",

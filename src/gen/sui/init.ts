@@ -19,6 +19,7 @@ import * as displayRegistry from './display-registry/structs'
 import * as display from './display/structs'
 import * as dynamicField from './dynamic-field/structs'
 import * as dynamicObjectField from './dynamic-object-field/structs'
+import * as forwardingAddress from './forwarding-address/structs'
 import * as fundsAccumulator from './funds-accumulator/structs'
 import * as groth16 from './groth16/structs'
 import * as groupOps from './group-ops/structs'
@@ -34,6 +35,7 @@ import * as party from './party/structs'
 import * as priorityQueue from './priority-queue/structs'
 import * as random from './random/structs'
 import * as ristretto255 from './ristretto255/structs'
+import * as scratch from './scratch/structs'
 import * as sui from './sui/structs'
 import * as tableVec from './table-vec/structs'
 import * as table from './table/structs'
@@ -115,6 +117,7 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(displayRegistry.DisplayKey)
   loader.register(dynamicField.Field)
   loader.register(dynamicObjectField.Wrapper)
+  loader.register(forwardingAddress.ForwardingAddressRegistry)
   loader.register(fundsAccumulator.Withdrawal)
   loader.register(groth16.Curve)
   loader.register(groth16.PreparedVerifyingKey)
@@ -154,6 +157,9 @@ export function registerClasses(loader: StructClassLoader): void {
   loader.register(random.RandomGenerator)
   loader.register(ristretto255.Scalar)
   loader.register(ristretto255.G)
+  loader.register(scratch.Permit)
+  loader.register(scratch.BorrowMarker)
+  loader.register(scratch.BorrowMarkerKey)
   loader.register(sui.SUI)
   loader.register(table.Table)
   loader.register(tableVec.TableVec)

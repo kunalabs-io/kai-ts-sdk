@@ -238,6 +238,23 @@ export function takeCollectedFees(
 }
 
 /**
+ * The portion of the pool's balance that is currently available, i.e. the part that is not
+ * out on loan. This is the upper bound on what a single `withdraw` call can pay out.
+ */
+export function availableBalanceValue(
+  tx: Transaction,
+  typeArgs: [string, string],
+  pool: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('kai-leverage', options?.env)}::supply_pool::available_balance_value`,
+    typeArguments: typeArgs,
+    arguments: [obj(tx, pool)],
+  })
+}
+
+/**
  * Total balance of the pool. This is the sum of the available balance and the borrowed amount
  * which is out on loan, or the total supply equity underlying value. In `UQ64.64` format.
  */

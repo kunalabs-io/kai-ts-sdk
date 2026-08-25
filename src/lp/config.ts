@@ -44,6 +44,7 @@ import Decimal from 'decimal.js'
 import { Amount } from '../amount'
 import { Price } from '../price'
 import {
+  buildPriceCollection,
   DEEPPioInfo,
   LBTCPioInfo,
   PriceFeedInfo,
@@ -66,7 +67,6 @@ import {
 import { normalizeSuiObjectId, SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils'
 import { getActiveProtocolInfra } from '../protocol-infra'
 import * as coin from '../gen/sui/coin/functions'
-import * as pyth from '../gen/kai-leverage/pyth/functions'
 import * as i32 from '../gen/integer-mate/i32/functions'
 import { compressSuiType } from '../gen/_framework/util'
 import * as balance from '../gen/sui/balance/functions'
@@ -592,15 +592,7 @@ export class PositionConfig<
    * @returns `TransactionResult` of the created `PositionCap`
    */
   createPosition(tx: Transaction, args: CreatePositionArgs): TransactionResult {
-    const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.info.pioInfoX.priceInfoObjectId,
-    })
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.info.pioInfoY.priceInfoObjectId,
-    })
+    const priceInfo = buildPriceCollection(tx, [this.info.pioInfoX, this.info.pioInfoY])
 
     const creationFee = coin.intoBalance(
       tx,
@@ -626,7 +618,7 @@ export class PositionConfig<
         tickB = i32.negFrom(tx, Math.abs(args.tickB))
       }
 
-      const ticket = cetus.createPositionTicketV2(tx, [this.X.typeName, this.Y.typeName], {
+      const ticket = cetus.createPositionTicketV3(tx, [this.X.typeName, this.Y.typeName], {
         cetusPool: this.data.poolObjectId,
         config: this.id,
         tickA,
@@ -682,7 +674,7 @@ export class PositionConfig<
         tickB = i32.negFrom(tx, Math.abs(args.tickB))
       }
 
-      const ticket = bluefin.createPositionTicketV2(tx, [this.X.typeName, this.Y.typeName], {
+      const ticket = bluefin.createPositionTicketV3(tx, [this.X.typeName, this.Y.typeName], {
         bluefinPool: this.data.poolObjectId,
         config: this.id,
         tickA,

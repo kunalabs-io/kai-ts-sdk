@@ -48,6 +48,7 @@ export interface RebalanceAddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
+/** @deprecated Use `rebalance_add_liquidity_v2` instead. */
 export function rebalanceAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
@@ -58,6 +59,46 @@ export function rebalanceAddLiquidity(
     target: `${
       getPublishedAt('kai-leverage-util', options?.env)
     }::bluefin_spot::rebalance_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.receipt),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.bluefinPool),
+      obj(tx, args.bluefinConfig),
+      obj(tx, args.balanceX),
+      obj(tx, args.balanceY),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RebalanceAddLiquidityV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  receipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  bluefinPool: TransactionObjectInput
+  bluefinConfig: TransactionObjectInput
+  balanceX: TransactionObjectInput
+  balanceY: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [rebalance_add_liquidity], taking the rail-agnostic price collection. */
+export function rebalanceAddLiquidityV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RebalanceAddLiquidityV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::bluefin_spot::rebalance_add_liquidity_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -87,6 +128,7 @@ export interface OwnerAddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
+/** @deprecated Use `owner_add_liquidity_v2` instead. */
 export function ownerAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
@@ -97,6 +139,46 @@ export function ownerAddLiquidity(
     target: `${
       getPublishedAt('kai-leverage-util', options?.env)
     }::bluefin_spot::owner_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.cap),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.bluefinPool),
+      obj(tx, args.bluefinConfig),
+      obj(tx, args.balanceX),
+      obj(tx, args.balanceY),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface OwnerAddLiquidityV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  cap: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  bluefinPool: TransactionObjectInput
+  bluefinConfig: TransactionObjectInput
+  balanceX: TransactionObjectInput
+  balanceY: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [owner_add_liquidity], taking the rail-agnostic price collection. */
+export function ownerAddLiquidityV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: OwnerAddLiquidityV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::bluefin_spot::owner_add_liquidity_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),
@@ -272,6 +354,7 @@ export interface RebalanceFinalizeAddLiquidityArgs {
   clock: TransactionObjectInput
 }
 
+/** @deprecated Use `rebalance_finalize_add_liquidity_v2` instead. */
 export function rebalanceFinalizeAddLiquidity(
   tx: Transaction,
   typeArgs: [string, string],
@@ -282,6 +365,44 @@ export function rebalanceFinalizeAddLiquidity(
     target: `${
       getPublishedAt('kai-leverage-util', options?.env)
     }::bluefin_spot::rebalance_finalize_add_liquidity`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.position),
+      obj(tx, args.config),
+      obj(tx, args.coreReceipt),
+      obj(tx, args.priceInfo),
+      obj(tx, args.debtInfo),
+      obj(tx, args.bluefinPool),
+      obj(tx, args.bluefinConfig),
+      obj(tx, args.receipt),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface RebalanceFinalizeAddLiquidityV2Args {
+  position: TransactionObjectInput
+  config: TransactionObjectInput
+  coreReceipt: TransactionObjectInput
+  priceInfo: TransactionObjectInput
+  debtInfo: TransactionObjectInput
+  bluefinPool: TransactionObjectInput
+  bluefinConfig: TransactionObjectInput
+  receipt: TransactionObjectInput
+  clock: TransactionObjectInput
+}
+
+/** Like [rebalance_finalize_add_liquidity], taking the rail-agnostic price collection. */
+export function rebalanceFinalizeAddLiquidityV2(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: RebalanceFinalizeAddLiquidityV2Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${
+      getPublishedAt('kai-leverage-util', options?.env)
+    }::bluefin_spot::rebalance_finalize_add_liquidity_v2`,
     typeArguments: typeArgs,
     arguments: [
       obj(tx, args.position),

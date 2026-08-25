@@ -38,7 +38,7 @@ import {
   parseTypeName,
 } from '../../../_framework/util'
 import { Balance } from '../../../sui/balance/structs'
-import { ExternalAddress } from '../../../wormhole/external-address/structs'
+import { ExternalAddress } from '../../wormhole-1/external-address/structs'
 
 /* ============================== NativeAsset =============================== */
 

@@ -40,7 +40,7 @@ import {
   TransactionResult,
 } from '@mysten/sui/transactions'
 import { getActiveProtocolInfra } from '../protocol-infra'
-import * as pyth from '../gen/kai-leverage/pyth/functions'
+import { buildPriceCollection } from '../pyth'
 import * as cetus from '../gen/kai-leverage/cetus/functions'
 import * as bluefin from '../gen/kai-leverage/bluefin-spot/functions'
 import * as core from '../gen/kai-leverage/position-core-clmm/functions'
@@ -1364,15 +1364,7 @@ export class Position<
       value: 0,
     })
 
-    const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoX.priceInfoObjectId,
-    })
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoY.priceInfoObjectId,
-    })
+    const priceInfo = buildPriceCollection(tx, [this.configInfo.pioInfoX, this.configInfo.pioInfoY])
 
     const factorX64 = BigInt(factor.mul((1n << 64n).toString()).toFixed(0, Decimal.ROUND_DOWN))
 
@@ -1385,7 +1377,7 @@ export class Position<
 
     let gotX: Argument, gotY: Argument, ticket: Argument
     if (this.isCetus()) {
-      ;[gotX, gotY, ticket] = cetus.reduce(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
+      ;[gotX, gotY, ticket] = cetus.reduceV2(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: positionCapId,
@@ -1398,7 +1390,7 @@ export class Position<
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else if (this.isBluefin()) {
-      ;[gotX, gotY, ticket] = bluefin.reduce(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
+      ;[gotX, gotY, ticket] = bluefin.reduceV2(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: positionCapId,
@@ -1561,15 +1553,7 @@ export class Position<
       getMinSwapAmountBatch([this.X, this.Y]),
     ])
 
-    const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoX.priceInfoObjectId,
-    })
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoY.priceInfoObjectId,
-    })
+    const priceInfo = buildPriceCollection(tx, [this.configInfo.pioInfoX, this.configInfo.pioInfoY])
 
     const factorX64 = BigInt(args.factor.mul((1n << 64n).toString()).toFixed(0, Decimal.ROUND_DOWN))
 
@@ -1628,7 +1612,7 @@ export class Position<
     // get reduce ticket
     let gotX: Argument, gotY: Argument, ticket: Argument
     if (this.isCetus()) {
-      ;[gotX, gotY, ticket] = cetus.reduce(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
+      ;[gotX, gotY, ticket] = cetus.reduceV2(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: args.positionCapId,
@@ -1641,7 +1625,7 @@ export class Position<
         clock: SUI_CLOCK_OBJECT_ID,
       })
     } else if (this.isBluefin()) {
-      ;[gotX, gotY, ticket] = bluefin.reduce(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
+      ;[gotX, gotY, ticket] = bluefin.reduceV2(tx, [ta.X, ta.Y, ta.SX, ta.SY], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: args.positionCapId,
@@ -2048,15 +2032,7 @@ export class Position<
       SY: this.configInfo.supplyPoolYInfo.ST.typeName,
     }
 
-    const priceInfo = pyth.create(tx, SUI_CLOCK_OBJECT_ID)
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoX.priceInfoObjectId,
-    })
-    pyth.add(tx, {
-      self: priceInfo,
-      info: this.configInfo.pioInfoY.priceInfoObjectId,
-    })
+    const priceInfo = buildPriceCollection(tx, [this.configInfo.pioInfoX, this.configInfo.pioInfoY])
     const di = debtInfo.empty(tx, this.configInfo.lendFacilCap)
     debtInfo.addFromSupplyPool(tx, [ta.X, ta.SX], {
       self: di,
@@ -2070,7 +2046,7 @@ export class Position<
     })
 
     if (this.isCetus()) {
-      const [remX, remY] = cetusUtil.ownerAddLiquidity(tx, [ta.X, ta.Y], {
+      const [remX, remY] = cetusUtil.ownerAddLiquidityV2(tx, [ta.X, ta.Y], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: positionCapId,
@@ -2091,7 +2067,7 @@ export class Position<
         recipient: sender,
       })
     } else if (this.isBluefin()) {
-      const [remX, remY] = bluefinUtil.ownerAddLiquidity(tx, [ta.X, ta.Y], {
+      const [remX, remY] = bluefinUtil.ownerAddLiquidityV2(tx, [ta.X, ta.Y], {
         position: this.data.id,
         config: this.configInfo.configId,
         cap: positionCapId,

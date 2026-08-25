@@ -26,11 +26,23 @@ export const CETUS_REWARDER_GLOBAL_VAULT =
 /** Bluefin spot `GlobalConfig` shared object (mainnet). */
 export const BLUEFIN_GLOBAL_CONFIG_ID =
   '0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352'
-/** Pyth `State` shared object (mainnet). */
-export const PYTH_STATE_ID = '0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8'
-/** Wormhole `State` shared object (mainnet). */
+/**
+ * Pyth Pro `State` shared object (mainnet). Belongs to the pro-compatible pyth
+ * package `0x55300367a2d40813727ccac4ecee977a39fb9cdb46f2e6b2c354b9798f5de2c0`
+ * (the `pyth` package in gen); the legacy pyth `State`
+ * (`0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8`) is no
+ * longer used.
+ */
+export const PYTH_STATE_ID = '0x03719fae774ddab3cfcaa53bbc046f0cbe21410019b6280811bf3f9f4b05839d'
+/**
+ * Wormhole `State` shared object (mainnet) of the simple-majority wormhole
+ * deployment `0x99de5c967d8206ef4b75c0afab3df2a59eb02b05c282821db803831008ac25b4`
+ * that the Pyth Pro package verifies VAAs against; the classic wormhole `State`
+ * (`0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c`) is no
+ * longer used.
+ */
 export const WORMHOLE_STATE_ID =
-  '0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c'
+  '0xdbca52b9fb4f712e25f61f974586d93ac541bcf8389564f0323bb07215168b5c'
 
 export interface ProtocolInfra {
   /** Cetus CLMM `GlobalConfig` shared object. */

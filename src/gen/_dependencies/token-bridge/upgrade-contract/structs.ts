@@ -27,7 +27,7 @@ import {
 } from '../../../_framework/reified'
 import { composeSuiType, compressSuiType, FieldsWithTypes } from '../../../_framework/util'
 import { ID } from '../../../sui/object/structs'
-import { Bytes32 } from '../../../wormhole/bytes32/structs'
+import { Bytes32 } from '../../wormhole-1/bytes32/structs'
 
 /* ============================== GovernanceWitness =============================== */
 
