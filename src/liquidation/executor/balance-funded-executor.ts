@@ -33,6 +33,11 @@ export const DUST_RUN_MAX_REPAY_USD: Decimal = new Decimal('1')
 /** Per-run gas cap. */
 export const DUST_RUN_MAX_GAS_SUI: Decimal = new Decimal('1')
 
+/** The contract's max price age (`OraclePriceConfig.max_age_secs`). */
+const CONTRACT_MAX_PRICE_AGE_SEC = 60
+/** Safety margin so a tx isn't built against a feed about to cross max age. */
+const STALENESS_BUFFER_SEC = 10
+
 /**
  * Debt plus a small buffer (0.2% + 1 unit) for interest accrued between the
  * off-chain calculation and execution; the contract consumes only the actual
@@ -226,15 +231,32 @@ export class BalanceFundedExecutor extends BaseLiquidationExecutor {
     const xPriceUsd = this.oracleService.getAssetPriceUsd(position.X)
     const yPriceUsd = this.oracleService.getAssetPriceUsd(position.Y)
 
-    // Dust pools see little organic traffic, so their on-chain Pyth feeds
-    // are typically past the contract's max age — always include the update.
-    const pythUpdateData = await this.oracleService.getPriceFeedUpdateInfo([
-      position.configInfo.pioInfoX,
-      position.configInfo.pioInfoY,
-    ])
-
     const tx = new Transaction()
-    updatePriceFeeds(tx, pythUpdateData)
+    if (this.oracleService.supportsPriceUpdates) {
+      // With a Hermes connection, always include the update — costs little
+      // and guarantees the feeds pass the contract's max-age check.
+      const pythUpdateData = await this.oracleService.getPriceFeedUpdateInfo([
+        position.configInfo.pioInfoX,
+        position.configInfo.pioInfoY,
+      ])
+      updatePriceFeeds(tx, pythUpdateData)
+    } else {
+      // No Hermes to refresh with — rely on the sponsored pusher. If a feed
+      // is close to the contract's max age, skip; the sweep retries on the
+      // next cron run.
+      const onChainData = await this.oracleService.fetchFreshOnChainPrices(position.configInfo)
+      const stalenessSec = Math.max(onChainData.stalenessXSec, onChainData.stalenessYSec)
+      if (stalenessSec > CONTRACT_MAX_PRICE_AGE_SEC - STALENESS_BUFFER_SEC) {
+        logger.warn(
+          {
+            stalenessX: onChainData.stalenessXSec,
+            stalenessY: onChainData.stalenessYSec,
+          },
+          'On-chain price feeds are stale and no Hermes connection to refresh them, skipping'
+        )
+        return null
+      }
+    }
 
     const priceInfo = buildPriceCollection(tx, [
       position.configInfo.pioInfoX,

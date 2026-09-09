@@ -625,12 +625,6 @@ export interface EmergencyUnpauseArgs {
   version: bigint | TransactionArgument
 }
 
-/**
- * Emergency unpause the protocol.
- * * `config` - The global config
- * * `version` - The new package version
- * * `ctx` - The transaction context
- */
 export function emergencyUnpause(
   tx: Transaction,
   args: EmergencyUnpauseArgs,

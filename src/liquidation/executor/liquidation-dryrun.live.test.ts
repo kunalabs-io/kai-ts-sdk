@@ -67,9 +67,7 @@ describe.runIf(process.env.RUN_LIVE_TESTS)('liquidation dry run (real network)',
     const oracleService = new OracleService({
       client,
       logger,
-      pythHermesUrl: 'https://hermes.pyth.network',
-      mode: 'polling',
-      pollingIntervalMs: 1000,
+      mode: 'onchain',
     })
     await oracleService.start()
 

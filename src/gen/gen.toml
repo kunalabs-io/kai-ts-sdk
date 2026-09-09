@@ -5,7 +5,7 @@ environment = "mainnet"
 kai_sav = { local = "../../../../../move/kai/sav/core" }
 sui = { system = "sui" }
 std = { system = "std" }
-cetus_clmm = { local = "../../../../../move/_vendor/Cetus/clmm-v13" }
+cetus_clmm = { local = "../../../../../move/_vendor/Cetus/clmm-v14" }
 cetus_integrate = { local = "../../../../../move/_vendor/Cetus/integrate-v15" }
 integer_mate = { local = "../../../../../move/_vendor/Cetus/integer-mate-v7", override = true }
 kai_leverage = { local = "../../../../../move/kai/leverage/core" }

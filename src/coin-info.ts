@@ -478,6 +478,30 @@ export const xBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   iconUrl: 'https://static.coinall.ltd/cdn/oksupport/common/20250512-095503.72e1f41d9b9a06.png',
 })
 
+export const WBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
+  reified: phantom(
+    '0x0041f9f9344cac094454cd574e333c4fdb132d7bcc9379bcd4aab485b2a63942::wbtc::WBTC'
+  ),
+  decimals: 8,
+  name: 'Wrapped BTC',
+  description: 'WBTC by BitGo, issued natively on Sui via the LayerZero OFT standard',
+  symbol: 'WBTC',
+  displaySymbol: 'WBTC',
+  iconUrl: 'https://imagedelivery.net/cBNDGgkrsEA-b_ixIp9SkQ/layerzero-wbtc.png/public',
+})
+
+export const USDSUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
+  reified: phantom(
+    '0x44f838219cf67b058f3b37907b655f226153c18e33dfcd0da559a844fea9b1c1::usdsui::USDSUI'
+  ),
+  decimals: 6,
+  name: 'Sui Dollar',
+  description: 'USDSUI is a USD-backed stablecoin issued on Sui by Bridge (bridge.xyz)',
+  symbol: 'USDSUI',
+  displaySymbol: 'USDSUI',
+  iconUrl: 'https://token-metadata.bridge.xyz/images/usd_sui.png',
+})
+
 export const yWAL: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdab19711df7a4eefc633b9426e15d23305c6815eed775247e477599c706ede98::ywal::YWAL'
@@ -559,6 +583,8 @@ export const COIN_INFOS: CoinInfo<PhantomTypeArgument>[] = [
   wBTC,
   LBTC,
   xBTC,
+  WBTC,
+  USDSUI,
   yWAL,
   yWBTC,
   yLBTC,

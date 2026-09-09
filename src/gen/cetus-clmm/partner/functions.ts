@@ -313,3 +313,26 @@ export function claimRefFee(
     ],
   })
 }
+
+export interface ClaimRefFeeCoinArgs {
+  config: TransactionObjectInput
+  partnerCap: TransactionObjectInput
+  partner: TransactionObjectInput
+}
+
+export function claimRefFeeCoin(
+  tx: Transaction,
+  typeArg: string,
+  args: ClaimRefFeeCoinArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::partner::claim_ref_fee_coin`,
+    typeArguments: [typeArg],
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.partnerCap),
+      obj(tx, args.partner),
+    ],
+  })
+}

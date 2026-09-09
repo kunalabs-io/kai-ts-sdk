@@ -2348,7 +2348,21 @@ export class Position<
       checksEnabled: false,
     })
 
-    const commandResults = sim.commandResults!
+    // A failed simulation (e.g. a version-gate abort in the inspected package)
+    // returns no/truncated command results — surface the failure instead of
+    // crashing on the missing entries below.
+    const expectedResults = tx.getData().commands.length
+    if (!sim.commandResults || sim.commandResults.length < expectedResults) {
+      const failure = (sim as unknown as { FailedTransaction?: { effects?: { status?: unknown } } })
+        .FailedTransaction
+      throw new Error(
+        `devInspectLpUnclaimedRewards: simulation failed for position ${this.id} ` +
+          `(${sim.commandResults?.length ?? 0}/${expectedResults} command results` +
+          (failure?.effects?.status ? `, status: ${JSON.stringify(failure.effects.status)}` : '') +
+          ')'
+      )
+    }
+    const commandResults = sim.commandResults
     const valueResults = commandResults.slice(-2 - rewardResults.length)
 
     const x = BigInt(bcs.u64().parse(valueResults[0].returnValues[0].bcs))

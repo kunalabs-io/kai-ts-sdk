@@ -9,7 +9,7 @@ import { getPublishedAt } from '../../_envs'
 import { obj, pure } from '../../_framework/util'
 
 /**
- * init the `RewarderGlobalVault`
+ * init the `RewarderGlobalVault
  * * `ctx` - The transaction context
  */
 export function init(tx: Transaction, options?: { env?: EnvConfig }): TransactionResult {
@@ -195,7 +195,7 @@ export function borrowRewarder(
 }
 
 /**
- * Borrow mutable `Rewarder` from `RewarderManager`
+ * Borrow mutable `Rewarder` from `RewarderManager
  * * `manager` - The `RewarderManager`
  * * Returns the mutable rewarder
  */

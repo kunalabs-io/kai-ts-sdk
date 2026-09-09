@@ -115,11 +115,15 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
     }
 
     // Step 2: Streaming says NOT OK - fetch data in PARALLEL
+    // (update data only when the oracle has a Hermes connection)
+    const canUpdatePrices = this.oracleService.supportsPriceUpdates
     const [pythUpdateData, onChainData] = await Promise.all([
-      this.oracleService.getPriceFeedUpdateInfo([
-        position.configInfo.pioInfoX,
-        position.configInfo.pioInfoY,
-      ]),
+      canUpdatePrices
+        ? this.oracleService.getPriceFeedUpdateInfo([
+            position.configInfo.pioInfoX,
+            position.configInfo.pioInfoY,
+          ])
+        : null,
       this.oracleService.fetchFreshOnChainPrices(position.configInfo),
     ])
 
@@ -139,8 +143,9 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       60
     )
 
-    // Step 5: If on-chain says OK and no price update needed, skip
-    if (onChainMarginLevel.gte(marginThreshold) && !priceUpdate.needsUpdate) {
+    // Step 5: If on-chain says OK and no price update needed (or none can be
+    // made), skip
+    if (onChainMarginLevel.gte(marginThreshold) && (!priceUpdate.needsUpdate || !canUpdatePrices)) {
       logger.info(
         {
           streamingMarginLevel: streamingMarginLevel.toDP(6).toString(),
@@ -151,11 +156,28 @@ export class FlashSwapExecutor extends BaseLiquidationExecutor {
       return null
     }
 
+    // Without a Hermes connection stale feeds can't be refreshed — the
+    // contract's max-age check would reject the tx. Skip and retry next
+    // cycle; the sponsored pusher normally lands updates every ~10-15s, so
+    // seeing this repeatedly means the pusher is stalled.
+    if (priceUpdate.needsUpdate && !canUpdatePrices) {
+      logger.warn(
+        {
+          stalenessX: onChainData.stalenessXSec,
+          stalenessY: onChainData.stalenessYSec,
+          reason: priceUpdate.reason,
+          onChainMarginLevel: onChainMarginLevel.toDP(6).toString(),
+        },
+        'On-chain price feeds are stale and no Hermes connection to refresh them, skipping'
+      )
+      return null
+    }
+
     // Step 6: Build transaction with price updates + Pyth references
     const tx = new Transaction()
 
     const priceUpdateIncluded = priceUpdate.needsUpdate
-    if (priceUpdateIncluded) {
+    if (priceUpdateIncluded && pythUpdateData) {
       logger.info(
         {
           stalenessX: onChainData.stalenessXSec,

@@ -31,8 +31,17 @@ export interface OracleServiceConfig {
   logger: Logger
   /** Pyth Hermes endpoint URL. Default: https://hermes.pyth.network */
   pythHermesUrl?: string
-  /** Price fetch mode. Default: 'streaming' */
-  mode?: 'streaming' | 'polling'
+  /** Pyth Hermes API key (Bearer token). Required by authenticated Hermes endpoints. */
+  pythHermesApiKey?: string
+  /**
+   * Price fetch mode. Default: 'streaming'.
+   * - 'streaming': Hermes SSE stream
+   * - 'polling': Hermes REST polling
+   * - 'onchain': read prices from the on-chain PriceInfoObjects (kept fresh by
+   *   Pyth's sponsored pusher) — no Hermes connection at all. Price updates
+   *   cannot be built in this mode ({@link OracleService.supportsPriceUpdates}).
+   */
+  mode?: 'streaming' | 'polling' | 'onchain'
   /** Polling interval in milliseconds (polling mode only). Default: 1000 */
   pollingIntervalMs?: number
   /** On-chain staleness check interval in milliseconds. Default: 10000 */
@@ -100,6 +109,28 @@ function getPriceUsdFromFeed(feed: ParsedPriceFeed): Decimal {
 }
 
 /**
+ * Converts an on-chain PriceInfoObject to the Hermes ParsedPriceFeed shape so
+ * the rest of the service is agnostic to where the price came from.
+ * Exported for testing.
+ */
+export function parsedFeedFromPio(feedId: string, pio: PriceInfoObject_): ParsedPriceFeed {
+  const toRpcPrice = (p: PriceInfoObject_['priceInfo']['priceFeed']['price']) => ({
+    price: `${p.price.negative && p.price.magnitude !== 0n ? '-' : ''}${p.price.magnitude}`,
+    conf: p.conf.toString(),
+    expo: Number(p.expo.magnitude) * (p.expo.negative ? -1 : 1),
+    publish_time: Number(p.timestamp),
+  })
+
+  const priceFeed = pio.priceInfo.priceFeed
+  return {
+    id: feedId,
+    price: toRpcPrice(priceFeed.price),
+    ema_price: toRpcPrice(priceFeed.emaPrice),
+    metadata: {},
+  }
+}
+
+/**
  * Converts two Pyth price feeds to a Price<X, Y> object
  */
 function priceFromPythFeeds<X extends PhantomTypeArgument, Y extends PhantomTypeArgument>(
@@ -157,7 +188,8 @@ function createOracleMetrics(meter: Meter): OraclePrometheusMetrics {
  * OracleService provides centralized price management for the liquidation system.
  *
  * Features:
- * - Streams prices via WebSocket from Pyth (with polling fallback)
+ * - Streams prices via WebSocket from Pyth (with polling fallback), or reads
+ *   them from the on-chain PriceInfoObjects ('onchain' mode, no Hermes at all)
  * - Provides fresh margin level calculation at execution time
  * - Tracks on-chain price staleness for update decisions
  * - Uses Pyth as single source for both margin and asset value calculations
@@ -188,9 +220,13 @@ function createOracleMetrics(meter: Meter): OraclePrometheusMetrics {
  * ```
  */
 export class OracleService {
-  private readonly config: Required<Omit<OracleServiceConfig, 'meter'>> & { meter?: Meter }
+  private readonly config: Required<Omit<OracleServiceConfig, 'meter' | 'pythHermesApiKey'>> & {
+    meter?: Meter
+    pythHermesApiKey?: string
+  }
   private readonly logger: Logger
-  private readonly pythConnection: SuiPriceServiceConnection
+  /** null in 'onchain' mode — no Hermes connection is made at all. */
+  private readonly pythConnection: SuiPriceServiceConnection | null
   private readonly feedIds: string[]
   private readonly feedIdToPioMap: Map<string, string>
   private readonly coinTypeToFeedId: Map<string, string> = new Map()
@@ -204,7 +240,7 @@ export class OracleService {
   private pythBaseUpdateFee: bigint = 0n
 
   // Service state
-  private mode: 'streaming' | 'polling'
+  private mode: 'streaming' | 'polling' | 'onchain'
   private running = false
   private pollingInterval: ReturnType<typeof setInterval> | null = null
   private onChainPollInterval: ReturnType<typeof setInterval> | null = null
@@ -223,6 +259,7 @@ export class OracleService {
       client: config.client,
       logger: config.logger,
       pythHermesUrl: config.pythHermesUrl ?? DEFAULT_PYTH_HERMES_URL,
+      pythHermesApiKey: config.pythHermesApiKey,
       mode: config.mode ?? 'streaming',
       pollingIntervalMs: config.pollingIntervalMs ?? DEFAULT_POLLING_INTERVAL_MS,
       onChainPollIntervalMs: config.onChainPollIntervalMs ?? DEFAULT_ON_CHAIN_POLL_INTERVAL_MS,
@@ -232,8 +269,13 @@ export class OracleService {
 
     this.mode = this.config.mode
 
-    // Create Pyth connection internally
-    this.pythConnection = new SuiPriceServiceConnection(this.config.pythHermesUrl)
+    // Create Pyth connection internally ('onchain' mode never talks to Hermes)
+    this.pythConnection =
+      this.mode === 'onchain'
+        ? null
+        : new SuiPriceServiceConnection(this.config.pythHermesUrl, {
+            accessToken: this.config.pythHermesApiKey,
+          })
 
     // Collect all unique feed IDs from position configs
     const { feedIds, feedIdToPioMap } = this.collectFeedInfo()
@@ -286,17 +328,29 @@ export class OracleService {
 
     this.running = true
 
-    // Fetch initial prices and base update fee
-    await Promise.all([this.fetchInitialPrices(), this.fetchPythBaseUpdateFee()])
-
-    // Start price streaming/polling
-    if (this.mode === 'streaming') {
-      await this.startStreaming()
+    if (this.mode === 'onchain') {
+      // On-chain polling is the price source; fail loudly if the initial
+      // fetch doesn't cover every feed. The base update fee is not needed
+      // since price updates can't be built in this mode.
+      await this.fetchOnChainDataOnce()
+      for (const feedId of this.feedIds) {
+        if (!this.priceFeeds.has(feedId)) {
+          throw new Error(`Failed to fetch initial on-chain price for feed ${feedId}`)
+        }
+      }
     } else {
-      this.startPolling()
+      // Fetch initial prices and base update fee
+      await Promise.all([this.fetchInitialPrices(), this.fetchPythBaseUpdateFee()])
+
+      // Start price streaming/polling
+      if (this.mode === 'streaming') {
+        await this.startStreaming()
+      } else {
+        this.startPolling()
+      }
     }
 
-    // Start on-chain staleness tracking
+    // Start on-chain staleness tracking (and, in 'onchain' mode, prices)
     this.startOnChainPolling()
 
     // Start internal health monitoring
@@ -340,6 +394,9 @@ export class OracleService {
    * Fetches initial prices from Pyth before starting streaming/polling.
    */
   private async fetchInitialPrices(): Promise<void> {
+    if (!this.pythConnection) {
+      throw new Error('No Hermes connection in onchain mode')
+    }
     const feeds = (await this.pythConnection.getLatestPriceUpdates(this.feedIds, { parsed: true }))
       .parsed
 
@@ -368,6 +425,9 @@ export class OracleService {
    * Starts WebSocket streaming for price updates.
    */
   private async startStreaming(): Promise<void> {
+    if (!this.pythConnection) {
+      throw new Error('No Hermes connection in onchain mode')
+    }
     // pyth-sui-js v3 streams via Hermes SSE (EventSource); each message is a PriceUpdate.
     const eventSource = await this.pythConnection.getPriceUpdatesStream(this.feedIds, {
       parsed: true,
@@ -393,11 +453,14 @@ export class OracleService {
    * Starts periodic polling for price updates.
    */
   private startPolling(): void {
+    const pythConnection = this.pythConnection
+    if (!pythConnection) {
+      throw new Error('No Hermes connection in onchain mode')
+    }
     this.pollingInterval = setInterval(async () => {
       try {
-        const feeds = (
-          await this.pythConnection.getLatestPriceUpdates(this.feedIds, { parsed: true })
-        ).parsed
+        const feeds = (await pythConnection.getLatestPriceUpdates(this.feedIds, { parsed: true }))
+          .parsed
 
         if (feeds) {
           const now = Date.now()
@@ -463,37 +526,58 @@ export class OracleService {
 
   /**
    * Fetches on-chain arrival times for all tracked price feeds.
+   * In 'onchain' mode this is also the price source: each PIO's price is
+   * converted to the Hermes feed shape and stored in the price cache.
+   * Throws on fetch failure (the polling wrapper catches).
    */
-  private async fetchOnChainData(): Promise<void> {
-    try {
-      const pioIds = Array.from(this.feedIdToPioMap.values())
-      const uniquePioIds = [...new Set(pioIds)]
+  private async fetchOnChainDataOnce(): Promise<void> {
+    const pioIds = Array.from(this.feedIdToPioMap.values())
+    const uniquePioIds = [...new Set(pioIds)]
 
-      const { objects } = await this.config.client.core.getObjects({
-        objectIds: uniquePioIds,
-        include: { content: true },
-      })
+    const { objects } = await this.config.client.core.getObjects({
+      objectIds: uniquePioIds,
+      include: { content: true },
+    })
 
-      const now = Date.now()
+    const now = Date.now()
 
-      for (let i = 0; i < uniquePioIds.length; i++) {
-        const obj = objects[i]
-        if (obj instanceof Error) {
-          continue
-        }
+    for (let i = 0; i < uniquePioIds.length; i++) {
+      const obj = objects[i]
+      if (obj instanceof Error) {
+        continue
+      }
 
-        const arrivalTime = PriceInfoObject_.fromCoreObject(obj).priceInfo.arrivalTime
+      const pio = PriceInfoObject_.fromCoreObject(obj)
+      const arrivalTime = pio.priceInfo.arrivalTime
 
-        // Find which feed ID(s) map to this PIO
-        for (const [feedId, pioId] of this.feedIdToPioMap.entries()) {
-          if (pioId === uniquePioIds[i]) {
-            this.onChainData.set(feedId, {
-              arrivalTimeSec: Number(arrivalTime),
-              fetchedAtMs: now,
-            })
+      // Find which feed ID(s) map to this PIO
+      for (const [feedId, pioId] of this.feedIdToPioMap.entries()) {
+        if (pioId === uniquePioIds[i]) {
+          this.onChainData.set(feedId, {
+            arrivalTimeSec: Number(arrivalTime),
+            fetchedAtMs: now,
+          })
+
+          if (this.mode === 'onchain') {
+            const feed = parsedFeedFromPio(feedId, pio)
+            const prev = this.priceFeeds.get(feedId)
+            this.priceFeeds.set(feedId, feed)
+            // Freshness is the on-chain publish time, so staleness checks
+            // measure the actual price age the contract will see.
+            this.lastUpdateTime.set(feedId, feed.price.publish_time * 1000)
+            if (prev?.price.publish_time !== feed.price.publish_time) {
+              this.priceUpdateCount++
+              this.prometheusMetrics?.priceUpdateCount.add(1)
+            }
           }
         }
       }
+    }
+  }
+
+  private async fetchOnChainData(): Promise<void> {
+    try {
+      await this.fetchOnChainDataOnce()
     } catch (error) {
       this.logger.warn({ err: error }, 'Failed to fetch on-chain price data')
     }
@@ -502,8 +586,13 @@ export class OracleService {
   /**
    * Switches between streaming and polling modes.
    * Useful for incident response when WebSocket has issues.
+   * Not available for services constructed in 'onchain' mode (no Hermes
+   * connection exists), and 'onchain' cannot be switched to.
    */
   async switchMode(mode: 'streaming' | 'polling'): Promise<void> {
+    if (this.mode === 'onchain') {
+      throw new Error('Cannot switch mode: service was constructed in onchain mode')
+    }
     if (mode === this.mode) {
       return
     }
@@ -673,6 +762,10 @@ export class OracleService {
   async getPriceFeedUpdateInfo(
     feeds: PriceFeedInfo<PhantomTypeArgument>[]
   ): Promise<PriceFeedUpdateInfo> {
+    const pythConnection = this.pythConnection
+    if (!pythConnection) {
+      throw new Error('Price feed updates are not available in onchain mode (no Hermes connection)')
+    }
     if (feeds.length === 0) {
       throw new Error('No feeds to update')
     }
@@ -698,6 +791,15 @@ export class OracleService {
       priceFeedsUpdateData,
       baseUpdateFee: this.pythBaseUpdateFee,
     }
+  }
+
+  /**
+   * Whether this service can build price feed update data for transactions.
+   * False in 'onchain' mode — callers must rely on the sponsored pusher
+   * keeping the on-chain feeds fresh.
+   */
+  get supportsPriceUpdates(): boolean {
+    return this.pythConnection !== null
   }
 
   /**
@@ -765,18 +867,22 @@ export class OracleService {
 
   /**
    * Checks if the oracle service is healthy.
-   * Returns false if any price feed hasn't updated in 30 seconds.
+   * Returns false if any price feed hasn't updated in 30 seconds (Hermes
+   * modes) or is older than the max staleness ('onchain' mode, where normal
+   * age is pusher heartbeat + poll interval).
    */
   isHealthy(): boolean {
     if (!this.running) {
       return false
     }
 
+    const maxStaleMs =
+      this.mode === 'onchain' ? this.config.maxPriceStalenessSec * 1000 : HEALTH_CHECK_MAX_STALE_MS
     const now = Date.now()
 
     for (const feedId of this.feedIds) {
       const lastUpdate = this.lastUpdateTime.get(feedId)
-      if (!lastUpdate || now - lastUpdate > HEALTH_CHECK_MAX_STALE_MS) {
+      if (!lastUpdate || now - lastUpdate > maxStaleMs) {
         return false
       }
     }

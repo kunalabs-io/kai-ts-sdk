@@ -183,6 +183,19 @@ export function isAllowedCoin(
   })
 }
 
+export function isAllowedCoinV2(
+  tx: Transaction,
+  typeArg: string,
+  pools: TransactionObjectInput,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::is_allowed_coin_v2`,
+    typeArguments: [typeArg],
+    arguments: [obj(tx, pools)],
+  })
+}
+
 export interface IsPermissionPairArgs {
   pools: TransactionObjectInput
   tickSpacing: number | TransactionArgument
@@ -744,25 +757,6 @@ export interface CreatePoolV2_Args {
   clock: TransactionObjectInput
 }
 
-/**
- * Create pool and add liquidity.
- * * `config` - The global config
- * * `pools` - The global pools
- * * `tick_spacing` - The tick spacing of the pool
- * * `initialize_price` - The initial price of the pool
- * * `url` - The url of the pool which is used in position nft
- * * `tick_lower_idx` - The lower tick index of the pool
- * * `tick_upper_idx` - The upper tick index of the pool
- * * `coin_a` - The coin a
- * * `coin_b` - The coin b
- * * `metadata_a` - The metadata of the coin a
- * * `metadata_b` - The metadata of the coin b
- * * `amount_a` - The amount of coin a
- * * `amount_b` - The amount of coin b
- * * `fix_amount_a` - Fix the amount of coin a or b
- * * `clock` - The clock
- * * `ctx` - Transaction context used to create the pool and add liquidity
- */
 export function createPoolV2_(
   tx: Transaction,
   typeArgs: [string, string],
@@ -784,6 +778,66 @@ export function createPoolV2_(
       obj(tx, args.coinB),
       obj(tx, args.metadataA),
       obj(tx, args.metadataB),
+      pure(tx, args.amountA, `u64`),
+      pure(tx, args.amountB, `u64`),
+      pure(tx, args.fixAmountA, `bool`),
+      obj(tx, args.clock),
+    ],
+  })
+}
+
+export interface CreatePoolV3_Args {
+  config: TransactionObjectInput
+  pools: TransactionObjectInput
+  tickSpacing: number | TransactionArgument
+  initializePrice: bigint | TransactionArgument
+  url: string | TransactionArgument
+  tickLowerIdx: number | TransactionArgument
+  tickUpperIdx: number | TransactionArgument
+  coinA: TransactionObjectInput
+  coinB: TransactionObjectInput
+  amountA: bigint | TransactionArgument
+  amountB: bigint | TransactionArgument
+  fixAmountA: boolean | TransactionArgument
+  clock: TransactionObjectInput
+}
+
+/**
+ * Create pool and add liquidity.
+ * * `config` - The global config
+ * * `pools` - The global pools
+ * * `tick_spacing` - The tick spacing of the pool
+ * * `initialize_price` - The initial price of the pool
+ * * `url` - The url of the pool which is used in position nft
+ * * `tick_lower_idx` - The lower tick index of the pool
+ * * `tick_upper_idx` - The upper tick index of the pool
+ * * `coin_a` - The coin a
+ * * `coin_b` - The coin b
+ * * `amount_a` - The amount of coin a
+ * * `amount_b` - The amount of coin b
+ * * `fix_amount_a` - Fix the amount of coin a or b
+ * * `clock` - The clock
+ * * `ctx` - Transaction context used to create the pool and add liquidity
+ */
+export function createPoolV3_(
+  tx: Transaction,
+  typeArgs: [string, string],
+  args: CreatePoolV3_Args,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::factory::create_pool_v3_`,
+    typeArguments: typeArgs,
+    arguments: [
+      obj(tx, args.config),
+      obj(tx, args.pools),
+      pure(tx, args.tickSpacing, `u32`),
+      pure(tx, args.initializePrice, `u128`),
+      pure(tx, args.url, `${String.$typeName}`),
+      pure(tx, args.tickLowerIdx, `u32`),
+      pure(tx, args.tickUpperIdx, `u32`),
+      obj(tx, args.coinA),
+      obj(tx, args.coinB),
       pure(tx, args.amountA, `u64`),
       pure(tx, args.amountB, `u64`),
       pure(tx, args.fixAmountA, `bool`),
