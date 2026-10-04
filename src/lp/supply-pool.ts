@@ -49,6 +49,8 @@ import {
   klWBTC,
   xBTC,
   klXBTC,
+  USDSUI,
+  klUSDSUI,
 } from '../coin-info'
 import Decimal from 'decimal.js'
 import { Amount } from '../amount'
@@ -403,6 +405,7 @@ export const SUPPLY_POOL_INFOS: {
   wBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
   LBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
   xBTC: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
+  USDSUI: SupplyPoolInfo<PhantomTypeArgument, PhantomTypeArgument>
 } = {
   wUSDC: new SupplyPoolInfo({
     id: '0x86c5ca41be63b5b9a8da0b4ca0f8268d6e87f8cdda8c9e88b25c43efcd5f3074',
@@ -468,5 +471,10 @@ export const SUPPLY_POOL_INFOS: {
     id: '0xae06ce8a8ba18aa3c67d45c6ccc7dae7d0551f36dc1fdcc6093521ce9bd154e2',
     T: xBTC,
     ST: klXBTC,
+  }),
+  USDSUI: new SupplyPoolInfo({
+    id: '0xf32cae26906386c684bb49851ea8dbe3df108bacd9f23e80c1a4c32d97f80b69',
+    T: USDSUI,
+    ST: klUSDSUI,
   }),
 }

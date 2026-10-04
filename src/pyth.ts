@@ -18,6 +18,7 @@ import {
   LBTC,
   WAL,
   xBTC,
+  USDSUI,
 } from './coin-info'
 import { Price } from './price'
 import Decimal from 'decimal.js'
@@ -152,6 +153,13 @@ export const xBTCPioInfo: PriceFeedInfo<PhantomTypeArgument> = new PriceFeedInfo
   priceInfoObjectId: '0xe64832d1b4c9a75139a7313aee69da891297d8397fda2863b5bdcc4af0b79758',
   currencyObjectId: '0x907bb173bffab7c57bbd3350a633aa32c8770937b496d7d88874087b59200bcc',
   T: xBTC,
+})
+
+export const USDSUIPioInfo: PriceFeedInfo<PhantomTypeArgument> = new PriceFeedInfo({
+  priceFeedId: '0xd510fcdb3a63f35d3bb118d5db3afc5815a3f13bc55d48abb893b63f0315902a',
+  priceInfoObjectId: '0x6896ccc8c08a84e47f0ab8affbd3fce2623a72c76f9092e59f8f6ece450119cd',
+  currencyObjectId: '0x535e826a2acddab687c81cb6c6166553b479f61a9023800ec0020baba8d94731',
+  T: USDSUI,
 })
 
 /**

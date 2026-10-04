@@ -48,6 +48,8 @@ import {
   yWBTC,
   yLBTC,
   yXBTC,
+  USDSUI,
+  yUSDSUI,
 } from '../coin-info'
 import { SUPPLY_POOL_STRATEGY_INFOS } from './kai-leverage-supply-pool-strategy'
 import { compressSuiType } from '../gen/_framework/util'
@@ -439,6 +441,7 @@ export type VaultInfoMap = {
   wBTC: VaultInfo<ToPhantomTypeArgument<typeof wBTC.p>, ToPhantomTypeArgument<typeof yWBTC.p>>
   LBTC: VaultInfo<ToPhantomTypeArgument<typeof LBTC.p>, ToPhantomTypeArgument<typeof yLBTC.p>>
   xBTC: VaultInfo<ToPhantomTypeArgument<typeof xBTC.p>, ToPhantomTypeArgument<typeof yXBTC.p>>
+  USDSUI: VaultInfo<ToPhantomTypeArgument<typeof USDSUI.p>, ToPhantomTypeArgument<typeof yUSDSUI.p>>
 }
 
 export const VAULTS: VaultInfoMap = {
@@ -532,6 +535,13 @@ export const VAULTS: VaultInfoMap = {
     id: '0x653beede5a005272526f0c835c272ef37491dc5bff3f8e466175e02675510137',
     capId: '0xad78fad7f003b536675e3b0668f08949035067eb793f92578e26b14eafd1b68d',
     getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.xBTC],
+  }),
+  USDSUI: new VaultInfo({
+    T: USDSUI,
+    YT: yUSDSUI,
+    id: '0x8b5ac7b4420556eb189b9d22a204ea30f69aa8fa539d4ad63e6ebfb82a7639a3',
+    capId: '0xafe0fea23a80f49ada1261bc0e70e1ec0bbfbfb2eade3b2e1520921324f00173',
+    getStrategies: () => [SUPPLY_POOL_STRATEGY_INFOS.USDSUI],
   }),
 }
 

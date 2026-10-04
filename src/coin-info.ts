@@ -254,6 +254,17 @@ export const klXBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   displaySymbol: 'klxBTC',
 })
 
+export const klUSDSUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
+  reified: phantom(
+    '0x0a9f6493f8a743279d784a86580e8df9b18f24988cc1d30843a147d0f99bb62b::klusdsui::KLUSDSUI'
+  ),
+  decimals: 6,
+  name: 'Kai Leverage USDSUI',
+  description: 'Kai Leverage USDSUI Supply Pool LP Token',
+  symbol: 'klUSDSUI',
+  displaySymbol: 'klUSDSUI',
+})
+
 export const USDC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   reified: phantom(
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC'
@@ -546,6 +557,17 @@ export const yXBTC: CoinInfo<PhantomTypeArgument> = new CoinInfo({
   displaySymbol: 'yXBTC',
 })
 
+export const yUSDSUI: CoinInfo<PhantomTypeArgument> = new CoinInfo({
+  reified: phantom(
+    '0xf46591ae3703cd2e858534f6fc214ea663e0289eecd0f192b96cf5ce1327db40::yusdsui::YUSDSUI'
+  ),
+  decimals: 6,
+  name: 'yUSDSUI',
+  description: 'Kai USDSUI vault yield bearing token',
+  symbol: 'yUSDSUI',
+  displaySymbol: 'yUSDSUI',
+})
+
 export const COIN_INFOS: CoinInfo<PhantomTypeArgument>[] = [
   SUI,
   whUSDCe,
@@ -561,6 +583,7 @@ export const COIN_INFOS: CoinInfo<PhantomTypeArgument>[] = [
   klWBTC,
   klLBTC,
   klXBTC,
+  klUSDSUI,
   CETUS,
   USDC,
   yWHUSDCe,
@@ -589,6 +612,7 @@ export const COIN_INFOS: CoinInfo<PhantomTypeArgument>[] = [
   yWBTC,
   yLBTC,
   yXBTC,
+  yUSDSUI,
 ]
 
 export const COIN_INFO_MAP: Map<string, CoinInfo<PhantomTypeArgument>> = new Map(

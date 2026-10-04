@@ -164,7 +164,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-sav': {
       originalId: '0x1c389a85310b47e7630a9361d4e71025bc35e4999d3a645949b1b68b26f2273',
-      publishedAt: '0x9580f10893b5b19ccf41b2782aed96ba23eb4c00f9d401969a8de0b03117fe66',
+      publishedAt: '0xcf5d0f55b02304f03b99a89372567a4072c944ceb718764c502b34c7b8dfd6ae',
       typeOrigins: {
         'kai_leverage_supply_pool::AdminCap':
           '0xe1e61a4b2c25bbc965f40fb895d9d6b9ebe327b9f3e34eb84b1c8dfc7df574ce',

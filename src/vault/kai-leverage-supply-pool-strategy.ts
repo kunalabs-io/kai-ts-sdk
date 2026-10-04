@@ -204,6 +204,15 @@ function buildSupplyPoolStrategyInfos(): StrategyInfoMap {
       policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
       ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
     }),
+    USDSUI: new KaiLeverageSupplyPoolStrategyInfo({
+      name: 'Kai Leverage USDSUI Supply Pool Strategy',
+      id: '0x9c11b34759aa72f977c32b41d1f80981876b1906a672d925e95604b1d04eeea7',
+      vault: VAULTS.USDSUI,
+      adminCapId: '0x124b131d2f5e386a84db26c5e60dac7c699d7d0c6e1f3378ec57d5fb9d73a7bc',
+      supplyPoolInfo: SUPPLY_POOL_INFOS.USDSUI,
+      policyId: '0x1cd2ba942cab8395becee55ae4f21937d229956b8babdb1586a1f9d2098c35e9',
+      ruleId: '0xfad5b9e478587bef702480d6e8144cee832c6f23d0d9f5fcfd0d62b71a22dcd2',
+    }),
   }
 }
 
