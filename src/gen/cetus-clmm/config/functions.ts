@@ -492,6 +492,30 @@ export function checkEmergencyPauseRole(
   })
 }
 
+export interface CheckEmergencyUnpauseRoleArgs {
+  config: TransactionObjectInput
+  member: string | TransactionArgument
+}
+
+/**
+ * Check member has emergency unpause role.
+ * * `config` - The global config
+ * * `member` - The member address
+ */
+export function checkEmergencyUnpauseRole(
+  tx: Transaction,
+  args: CheckEmergencyUnpauseRoleArgs,
+  options?: { env?: EnvConfig },
+): TransactionResult {
+  return tx.moveCall({
+    target: `${getPublishedAt('cetus-clmm', options?.env)}::config::check_emergency_unpause_role`,
+    arguments: [
+      obj(tx, args.config),
+      pure(tx, args.member, `address`),
+    ],
+  })
+}
+
 /**
  * Get tick_spacing of FeeTier.
  * * `fee_tier` - The fee tier

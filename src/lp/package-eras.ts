@@ -180,10 +180,16 @@ export const KAI_LEVERAGE_PACKAGE_ERAS: ReadonlyMap<number, readonly KaiLeverage
         },
       ],
     ],
-    // Era 5: cp 314961231– (pkg v19–v20, pyth pro rail; v20 = cetus clmm v14 re-link)
+    // Era 5: cp 314961231– (pkg v19–v21, pyth pro rail; v20 = cetus clmm v14
+    // re-link, v21 = cetus clmm v15 re-link)
     [
       5,
       [
+        {
+          version: 21,
+          publishedAt: '0xed2d91715c74fe7ec5a8d063cfe6bc21b90d9451c26eb90c03605b10fadd68dd',
+          publishedAtCheckpoint: 335791875,
+        },
         {
           version: 20,
           publishedAt: '0x9dc365fd6716a2f4d567f0e0423e0d42d85d3a10038542166d95bf8c7406a508',
@@ -260,6 +266,17 @@ export const KAI_LEVERAGE_DEAD_WINDOWS: readonly KaiLeverageDeadWindow[] = [
     endCheckpoint: 320578328,
     dex: 'cetus',
     reason: 'cetus clmm package_version 12 -> 14; kai-leverage v20 re-link not yet published',
+  },
+  {
+    // Cetus set GlobalConfig.package_version 14 -> 15 (tx B4WsTFCUrfBbNxrkZuHf
+    // bU8Tr6PHo5o81GQqLczDz4a1); v20 links cetus clmm v14 and aborts with
+    // EPackageVersionDeprecate, v21 (cetus clmm v15) was published at cp
+    // 335791875. Pool-free calls (repay_debt, add_collateral) still worked
+    // here, but none landed on a cetus position.
+    startCheckpoint: 335680429,
+    endCheckpoint: 335791875,
+    dex: 'cetus',
+    reason: 'cetus clmm package_version 14 -> 15; kai-leverage v21 re-link not yet published',
   },
 ]
 

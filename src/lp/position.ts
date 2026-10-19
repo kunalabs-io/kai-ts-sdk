@@ -419,6 +419,43 @@ export interface DevInspectLpUnclaimedRewardsResult {
   stashed: Map<CoinInfo<PhantomTypeArgument>, Amount>
 }
 
+/**
+ * `devInspectLpUnclaimedRewards`' simulation did not return its results. A
+ * report, not a verdict: it carries the execution error as the client gave it
+ * and where the fee/reward collect commands sit in the transaction, so a caller
+ * can tell a failure inside the collects from one elsewhere.
+ */
+export class LpUnclaimedRewardsSimulationError extends Error {
+  readonly positionId: string
+  /**
+   * The execution error from the simulation's status, as the client parsed it
+   * (`$kind: 'MoveAbort'` with structured fields from a gRPC fullnode, `$kind:
+   * 'Unknown'` with the node's message from JSON-RPC/dev-inspect services), or
+   * `null` when the simulation reported none.
+   */
+  readonly executionError: SuiClientTypes.ExecutionError | null
+  /** Command indices `[start, end)` of the fee and reward collect calls. */
+  readonly collectCommands: { start: number; end: number }
+
+  constructor(args: {
+    positionId: string
+    commandResults: number
+    expectedCommandResults: number
+    executionError: SuiClientTypes.ExecutionError | null
+    collectCommands: { start: number; end: number }
+  }) {
+    const reason = args.executionError?.message ?? 'no execution error reported'
+    super(
+      `devInspectLpUnclaimedRewards: simulation failed for position ${args.positionId} ` +
+        `(${args.commandResults}/${args.expectedCommandResults} command results): ${reason}`
+    )
+    this.name = 'LpUnclaimedRewardsSimulationError'
+    this.positionId = args.positionId
+    this.executionError = args.executionError
+    this.collectCommands = args.collectCommands
+  }
+}
+
 export interface OwnerCollectFeesArgs {
   /** The ID of the position's `PositionCap` object */
   positionCapId: string
@@ -2257,6 +2294,9 @@ export class Position<
     let yFeeResult: TransactionArgument
     const rewardResults: [CoinInfo<PhantomTypeArgument>, TransactionResult][] = []
 
+    // Where the fee and reward collects sit in the transaction, so a failure
+    // can be attributed to collecting from the DEX rather than to the receipt.
+    const collectCommandsStart = tx.getData().commands.length
     if (this.isCetus()) {
       const [feeX, feeY] = cetus.rebalanceCollectFee(
         tx,
@@ -2329,6 +2369,8 @@ export class Position<
       )
     }
 
+    const collectCommandsEnd = tx.getData().commands.length
+
     balance.value(tx, ta.X, xFeeResult)
     balance.value(tx, ta.Y, yFeeResult)
 
@@ -2353,14 +2395,16 @@ export class Position<
     // crashing on the missing entries below.
     const expectedResults = tx.getData().commands.length
     if (!sim.commandResults || sim.commandResults.length < expectedResults) {
-      const failure = (sim as unknown as { FailedTransaction?: { effects?: { status?: unknown } } })
-        .FailedTransaction
-      throw new Error(
-        `devInspectLpUnclaimedRewards: simulation failed for position ${this.id} ` +
-          `(${sim.commandResults?.length ?? 0}/${expectedResults} command results` +
-          (failure?.effects?.status ? `, status: ${JSON.stringify(failure.effects.status)}` : '') +
-          ')'
-      )
+      // The failure status sits on the transaction itself (`status`), not on
+      // `effects` (only present when requested).
+      const status = sim.FailedTransaction?.status
+      throw new LpUnclaimedRewardsSimulationError({
+        positionId: this.id,
+        commandResults: sim.commandResults?.length ?? 0,
+        expectedCommandResults: expectedResults,
+        executionError: status && !status.success ? status.error : null,
+        collectCommands: { start: collectCommandsStart, end: collectCommandsEnd },
+      })
     }
     const commandResults = sim.commandResults
     const valueResults = commandResults.slice(-2 - rewardResults.length)

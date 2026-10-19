@@ -11,13 +11,14 @@
  * lp_fee = total_fee - protocol_fee
  * Also, the acl roles is managed by this module, the roles is used for control the access of the cetus clmmpool
  * protocol.
- * Currently, we have 5 roles:
+ * Currently, we have 7 roles:
  * 1. PoolManager: The pool manager can update pool fee rate, pause and unpause the pool.
  * 2. FeeTierManager: The fee tier manager can add/remove fee tier, update fee tier fee rate.
  * 3. ClaimProtocolFee: The claim protocol fee can claim the protocol fee.
  * 4. PartnerManager: The partner manager can add/remove partner, update partner fee rate.
  * 5. RewarderManager: The rewarder manager can add/remove rewarder, update rewarder fee rate.
- * 6. EmergencyPause: The emergency pause can emergency pause the protocol.
+ * 6. EmergencyUnpause: The emergency unpause role can restore the protocol after an emergency pause.
+ * 7. EmergencyPause: The emergency pause role can pause the protocol without being able to unpause it.
  * The package version is used for upgrade the package, when upgrade the package, we need increase the package version.
  */
 

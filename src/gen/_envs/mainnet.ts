@@ -221,7 +221,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-leverage-util': {
       originalId: '0x1e8e36d73a53f7eaeba0d9913714c4727b6b667eede79ea2d5c7af14fa94d2a4',
-      publishedAt: '0xd58a330f151e79ba09692494212cf688754bcfda034c11a6d97b0c176a4b6552',
+      publishedAt: '0x4d0caa2a11fb4c1ace5f144b49c90634c5a2de135d6bf567b26391ca2b7955bf',
       typeOrigins: {
         'batch_swap::BatchSwap':
           '0xd7f2af9b0c736ce49b1a5aad829e620cc6b743da419a5d09ff5f1a86cedfb5bd',
@@ -239,7 +239,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'cetus-clmm': {
       originalId: '0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb',
-      publishedAt: '0x25ebb9a7c50eb17b3fa9c5a30fb8b5ad8f97caaf4928943acbcff7153dfee5e3',
+      publishedAt: '0x260693ec785a6e6c9d81d58c7d2ff72f1288ae0fa6a9725abe05a6478b11f084',
       typeOrigins: {
         'acl::ACL': '0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb',
         'acl::Member': '0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb',
@@ -473,7 +473,7 @@ export const mainnetEnv: EnvConfig = {
     },
     'kai-leverage': {
       originalId: '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',
-      publishedAt: '0x9dc365fd6716a2f4d567f0e0423e0d42d85d3a10038542166d95bf8c7406a508',
+      publishedAt: '0xed2d91715c74fe7ec5a8d063cfe6bc21b90d9451c26eb90c03605b10fadd68dd',
       typeOrigins: {
         'access_init::ACCESS_INIT':
           '0x51e0ccce48f0763f98f1cb4856847c2e1531adacada99cdd7626ab999db57523',

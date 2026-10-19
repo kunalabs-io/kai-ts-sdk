@@ -10,6 +10,7 @@ import { mainnetEnv } from '../gen/_envs/mainnet'
 
 const V19 = '0x634794be3a538c645f9afbb8f652455a665df57e8ccaca69de879c1feb08d908'
 const V20 = '0x9dc365fd6716a2f4d567f0e0423e0d42d85d3a10038542166d95bf8c7406a508'
+const V21 = '0xed2d91715c74fe7ec5a8d063cfe6bc21b90d9451c26eb90c03605b10fadd68dd'
 
 describe('KAI_LEVERAGE_PACKAGE_ERAS', () => {
   // Fails after every kai-leverage upgrade until the era map is brought up to
@@ -48,6 +49,9 @@ describe('getKaiLeveragePublishedAt', () => {
     expect(getKaiLeveragePublishedAt(5, 320578327)).toBe(V19)
     expect(getKaiLeveragePublishedAt(5, 320578328)).toBe(V20)
     expect(getKaiLeveragePublishedAt(5, 330_000_000)).toBe(V20)
+    // v21 published at cp 335791875
+    expect(getKaiLeveragePublishedAt(5, 335791874)).toBe(V20)
+    expect(getKaiLeveragePublishedAt(5, 335791875)).toBe(V21)
   })
 
   it('falls back to the era oldest package before any of them existed', () => {
@@ -57,23 +61,35 @@ describe('getKaiLeveragePublishedAt', () => {
 })
 
 describe('isKaiLeverageDeadWindow', () => {
-  const cetus = KAI_LEVERAGE_DEAD_WINDOWS.find(w => w.dex === 'cetus')!
+  const cetusWindows = KAI_LEVERAGE_DEAD_WINDOWS.filter(w => w.dex === 'cetus')
 
-  it('is half-open [start, end) and DEX-scoped', () => {
-    expect(isKaiLeverageDeadWindow(cetus.startCheckpoint - 1, 'cetus')).toBe(false)
-    expect(isKaiLeverageDeadWindow(cetus.startCheckpoint, 'cetus')).toBe(true)
-    expect(isKaiLeverageDeadWindow(cetus.endCheckpoint - 1, 'cetus')).toBe(true)
-    expect(isKaiLeverageDeadWindow(cetus.endCheckpoint, 'cetus')).toBe(false)
-    expect(isKaiLeverageDeadWindow(cetus.startCheckpoint, 'bluefin')).toBe(false)
+  it('has a window per cetus package_version bump (clmm v14, v15)', () => {
+    expect(cetusWindows).toHaveLength(2)
   })
 
+  it.each(cetusWindows.map((w, i) => [i, w] as const))(
+    'window %i is half-open [start, end) and DEX-scoped',
+    (_, w) => {
+      expect(isKaiLeverageDeadWindow(w.startCheckpoint - 1, 'cetus')).toBe(false)
+      expect(isKaiLeverageDeadWindow(w.startCheckpoint, 'cetus')).toBe(true)
+      expect(isKaiLeverageDeadWindow(w.endCheckpoint - 1, 'cetus')).toBe(true)
+      expect(isKaiLeverageDeadWindow(w.endCheckpoint, 'cetus')).toBe(false)
+      expect(isKaiLeverageDeadWindow(w.startCheckpoint, 'bluefin')).toBe(false)
+    }
+  )
+
   it('matches any DEX when none is given', () => {
-    expect(isKaiLeverageDeadWindow(cetus.startCheckpoint)).toBe(true)
+    for (const w of cetusWindows) {
+      expect(isKaiLeverageDeadWindow(w.startCheckpoint)).toBe(true)
+    }
   })
 
   it('ends where a package that passes the gate becomes available', () => {
-    // The window closes exactly at the publish of the re-linked package.
-    expect(getKaiLeveragePublishedAt(5, cetus.endCheckpoint)).toBe(V20)
-    expect(getKaiLeveragePublishedAt(5, cetus.endCheckpoint - 1)).toBe(V19)
+    // Each window closes exactly at the publish of the re-linked package.
+    const [v14Bump, v15Bump] = cetusWindows
+    expect(getKaiLeveragePublishedAt(5, v14Bump.endCheckpoint)).toBe(V20)
+    expect(getKaiLeveragePublishedAt(5, v14Bump.endCheckpoint - 1)).toBe(V19)
+    expect(getKaiLeveragePublishedAt(5, v15Bump.endCheckpoint)).toBe(V21)
+    expect(getKaiLeveragePublishedAt(5, v15Bump.endCheckpoint - 1)).toBe(V20)
   })
 })
